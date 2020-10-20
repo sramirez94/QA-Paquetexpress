@@ -1,0 +1,570 @@
+<!--
+  @description       :
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             :
+  @last modified on  : 08-10-2020
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+  Modifications Log
+  Ver   Date         Author                               Modification
+  1.0   08-10-2020   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+-->
+<apex:page standardController="SBQQ__Quote__c" extensions="PAQ_COTResumenCotizacionEXC_CTR" language="es-ES" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
+    <head>
+        <style type="text/css">
+            /*#customers {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            }
+            .page-break { display:block; page-break-inside: avoid; }
+                .page-break2 { display:block; page-break-inside: avoid; 
+                                bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); }
+                            }*/
+            @page { size: Letter; margin: 15mm; margin-bottom: 20mm;
+                <!--@top-center { content: " "; font-family: sans-serif; font-size: 90pt;}-->
+                @bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); } }
+                <!--table,td,th {border:0.5px solid black;}-->
+                
+                .page-break { display:block; page-break-inside: avoid; }
+                .page-break2 { display:block; page-break-inside: avoid; 
+                                bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); }
+                            }
+
+        </style>
+    </head>
+    <apex:outputPanel id="PanelC">
+        <!--header-->
+        <apex:pageMessages />
+        <table Id="customers" cellspacing="0" width="100%">
+            <tr>
+                <td width="30%" align="left"  style="font-size:10px; "><img  src="{!$Resource.PaqueteEslogan}" width="220px" height="60px"/></td>
+                <td width="70%" align="center"  style="font-size:20px; color:black; font-family: Arial; align: Center; "><h7> <b>Cotización de servicios Nacionales</b> </h7><br/><br/></td>
+            </tr>
+            <!--<tr>
+                <td width="35%">
+                    <img  src="{!$Resource.PaqueteEslogan}" width="220px" height="60px"/>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" colspan ="2" style="font-size:20px; color:black; font-family: Arial; align: Center; "><h7> <b>Cotización de servicios Nacionales</b> </h7><br/><br/></td>
+            </tr>-->
+
+            <!--=========================================================INFORMACIÓN GENERAL===========================================================-->
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;border-top: 2px solid black; padding-left: 60px">Fecha de creación  </td>
+                <td width="70%" align="left"  style="font-size:9px; border-top: 2px solid black; padding-left: 10px">
+                    <apex:outputText value="{0,date,dd.MM.yyyy}">
+                        <apex:param value="{!wp.objQuote.CreatedDate}" />
+                    </apex:outputText>
+
+                </td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Fecha de solicitud de autorización  </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">
+                    <apex:outputText value="{0,date,dd.MM.yyyy}">
+                        <apex:param value="{!wp.objQuote.LastModifiedDate}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Persona que solicita  </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objQuote.Owner.Name}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Folio de la cotización  </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objQuote.Name}</td>
+            </tr>
+            <tr>
+                <td colspan="2" width="30%" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Información general del cliente</b></td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Nombre de la empresa o compañía  </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">{!wp.objAccount.Name}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Plaza principal </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objAccount.Plaza_Envio__r.Name}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Industria </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objAccount.Industry}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Giro </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">{!wp.objAccount.Giro__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Descripción de la mercancía : </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Descripci_n_de_la_mercanc_a__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Tipo de paquetes </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Tipo_de_paquetes__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Tipo de comercio </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">{!wp.objOpp.Tipo_de_comercio__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Tratamiento operativo </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Tratamiento_operativo__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Modelo de negocios </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Modelo_de_negocios__c}</td>
+            </tr>
+            <tr>
+                <td colspan="2" width="30%" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Condiciones comerciales</b></td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Tipo de documentación  </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">{!wp.objQuote.Tipo_de_documentacion__c}</td>
+            </tr>
+            <!--<tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Modelo de tarifas </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objQuote.Modelo_de_tarifas__c}</td>
+            </tr> -->
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Tipo de cliente </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objAccount.RecordType.Name}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Tipo </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">{!wp.objOpp.Type}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Mercancia</td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Mercanc_a__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Contra quién competimos </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Contra_qui_n_competimos__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Tipo de embalaje </td>
+                <td width="70%" align="left"  style="font-size:9px; padding-left: 10px">{!wp.objOpp.Tipo_de_embalaje__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px; padding-left: 60px">Forma de pago </td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">{!wp.objOpp.Forma_de_pago__c}</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:9px;  padding-left: 60px">Servicios que utilizará <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></td>
+                <td width="70%" align="left"  style="font-size:9px;  padding-left: 10px">
+
+                    <table width="60%" style="border-collapse: collapse;">
+                        <apex:outputText rendered="{!blnRAD}">
+                            <tr >
+                                <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> RECOLECCIÓN A DOMICILIO </td>
+                            </tr>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!blnEAD}">
+                            <tr >
+                                <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> ENTREGA A DOMICILIO </td>
+                            </tr>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!blnZP && blnEAD}">
+                            <tr >
+                                <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> ZONA PLUS </td>
+                            </tr>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!blnSEG}">
+                            <tr >
+                                <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> SEGURO </td>
+                            </tr>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!blnACK}">
+                            <tr >
+                                <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> ACUSE {!UPPER(wp.objQuote.Acuse__c)} </td>
+                            </tr>
+                        </apex:outputText>
+                        <tr style="height: 5px;"></tr>
+                        <tr style="height: 5px;"></tr>
+                        <tr >
+                            <td  width="50%" align="left"  style="font-size:9px; padding-left: 10px; background-color:rgb(220, 230, 241);"> TOTAL PAQUETES </td>
+                            <td  align="Center"  style="font-size:9px;  padding-left: 10px; background-color:rgb(220, 230, 241);"><b>
+                                <apex:outputText value="{0, number, ###,###,##0}">
+                                    <apex:param value="{!wp.objQuote.Paquetes_Mensuales__c}" />
+                                </apex:outputText>
+                            </b></td>
+                        </tr>
+
+                        <tr >
+                            <td  width="50%" align="left"  style="font-size:9px; padding-left: 10px; background-color:rgb(220, 230, 241);"> TOTAL PROPUESTO </td>
+                            <td  align="Center"  style="font-size:9px;  padding-left: 10px; background-color:rgb(220, 230, 241);"><b>
+                                <apex:outputText value="{0, number, $###,###,##0.00}">
+                                    <apex:param value="{!wp.objQuote.Ingreso_Mensual__c}" />
+                                </apex:outputText>
+                            </b></td>
+                        </tr>
+                        <tr >
+                            <td  width="50%" align="left"  style="font-size:9px; padding-left: 10px; background-color:rgb(220, 230, 241);"> TOTAL TARIFA LLENA     </td>
+                            <td  align="Center"  style="font-size:9px;  padding-left: 10px; background-color:rgb(220, 230, 241);"><b>
+                                <apex:outputText value="{0, number, $###,###,##0.00}">
+                                    <apex:param value="{!wp.objQuote.TarifaLlenaMensual__c}" />
+                                </apex:outputText>
+                            </b></td>
+                        </tr>
+                        <tr >
+                            <td  width="50%" align="left"  style="font-size:9px; padding-left: 10px; background-color:rgb(220, 230, 241);"> DESCUENTO GLOBAL </td>
+                            <td  align="Center"  style="font-size:9px;  padding-left: 10px; background-color:rgb(220, 230, 241);"><b>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!wp.objQuote.PAQ_DescuentoGlobal__c}" />
+                                </apex:outputText>
+                            </b></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" width="10%" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Frecuencia de envíos</b></td>
+            </tr>
+         </table>
+        <br/>
+        <!-- STANDAR -->
+        <apex:outputPanel id="tablesPPSTD">
+            <!--STD dual tables Quantity-->
+            <table style="border-collapse: collapse;" width="100%">
+                <tr>
+                    <td colspan="13" align="Center"  style="font-size:10px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIO ESTÁNDAR - COBERTURA PAQUETEXPRESS</b></td>
+                    <apex:outputText rendered="{!blnZP}">
+                        <td colspan="9" align="Center"  style="font-size:10px; padding-top: 5px; padding-bottom: 5px" ><b>SERVICIO ESTÁNDAR - COBERTURA ZONA PLUS</b></td>
+                    </apex:outputText>
+                </tr>
+                <tr>
+                    <td align="left"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >Rango de KM </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> TS </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T0 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T1 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T2 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T3 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T4 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T5 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T6 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T7 </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Peso </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Vol </td>
+                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">TOTAL </td>
+                    <td align="left"  style="font-size:9px; "> </td>
+                    <apex:outputText rendered="{!blnZP}">
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> TS </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T0 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T1 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T2 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T3 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T4 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T5 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}"> T6 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!IF(blnZP, TRUE,FALSE)}">TOTAL </td>
+                    </apex:outputText>
+                </tr>
+
+                <apex:repeat value="{!listrange}" var="keyRange">
+                    <tr>
+                        <td align="left" style="font-size:9px; ">{!keyRange}</td>
+                        <apex:repeat value="{!listFee}" var="keyFee">
+                            <td align="left"  style="font-size:9px; ">
+                                <apex:outputText value="{0, number, ###,###,##0}">
+                                    <apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__Quantity__c}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                        <td align="left"  style="font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!mapT7W[keyRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="left"  style="font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!mapT7V[keyRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="left" style="font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapTotalByRange[keyRange].totalPaquetes}" />
+                            </apex:outputText>
+                        </td>
+
+                        <td align="left"  style="font-size:9px; "> </td>
+                        <apex:outputText rendered="{!blnZp}">
+                            <apex:repeat value="{!listFee}" var="keyFee">
+                                <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                                    <td align="left"   style="font-size:9px;" >
+                                        <apex:outputText value="{0, number, ###,###,##0}">
+                                            <apex:param value="{!mapQuotesZP[keyFee][keyRange].SBQQ__Quantity__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                            </apex:repeat>
+                            <td align="left" style="font-size:9px; ">
+                                <apex:outputText value="{0, number, ###,###,##0}">
+                                    <apex:param value="{!mapTotalByRangeZP[keyRange].totalPaquetes}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:outputText>
+                    </tr>
+                </apex:repeat>
+                <apex:outputText rendered="{!blnZP}">
+                    <tr style="height: 10px"></tr>
+                    <tr>
+                        <td align="left"  style="font-size:9px; ">TOTAL</td>
+                        <apex:repeat value="{!listFee}" var="keyFee">
+                            <td align="left" width="5%" style="font-size:9px; ">
+                                <apex:outputText value="{0, number, ###,###,##0}" rendered="{!blnZP}">
+                                    <apex:param value="{!mapTotalByFee[keyFee].totalPaquetes}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                        <td></td>
+                        <td></td>
+                        <td align="left" width="5%" style="font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}" rendered="{!blnZP}">
+                                <apex:param value="{!total}" />
+                            </apex:outputText>
+                        </td>
+                        <td></td>
+                        <apex:repeat value="{!listFee}" var="keyFee">
+                            <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                                <td align="left" width="7%"  style="font-size:9px;" >
+                                    <apex:outputText value="{0, number, ###,###,##0}">
+                                        <apex:param value="{!mapTotalByFeeZP[keyFee].totalPaquetes}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        </apex:repeat>
+                        <td  align="left" width="7%" style="font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}" rendered="{!blnZP}">
+                                <apex:param value="{!totalZP}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left"  style="font-size:9px; ">FRECUENCIA</td>
+                        <apex:repeat value="{!listFee}" var="keyFee">
+                            <td align="left" width="5%" style="font-size:9px; ">
+                                <apex:outputText value="{0, number, ###,###,##0}" rendered="{!blnZP}">
+                                    <apex:param value="{!mapTotalByFee[keyFee].frecPaquetes}" />
+                                </apex:outputText> %
+                            </td>
+                        </apex:repeat>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <apex:repeat value="{!listFee}" var="keyFee" >
+                            <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                                <td align="left" style="font-size:9px; " >
+                                    <apex:outputText value="{0, number, ###,###,##0}">
+                                        <apex:param value="{!mapTotalByFeeZP[keyFee].frecPaquetes}" />
+                                    </apex:outputText> %
+                                </td>
+                            </apex:outputText>
+                        </apex:repeat>
+                    </tr>
+                </apex:outputText>
+            </table>
+            <br/>
+            <!--Aquí comentario-->
+            <table style="border-collapse: collapse;" width="100%">
+                <tr>
+                    <td colspan="20" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Tarifa propuesta</b></td>
+                </tr>
+            </table>
+            <table style = "border-collapse: collapse;" width="40%">
+                <tr style="height: 2px"></tr>
+                <td width="20%" align="center"   style="font-size:9px; background-color:white; color: black;"></td>
+                <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                    <td align="center"   style="font-size:9px; background-color:white; color: black;">{!nameBlock}</td>
+                </apex:repeat>
+                <td align="center"   style="font-size:9px; background-color:white; color: black;">EXCEDENTE</td>
+                <tr>
+                    <td width="25%" align="Left"   style="font-size:9px; background-color:white; color: black;">Peso báscula Kg</td>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td align="center"   style="font-size:9px; background-color:white; color: black;">{!mapBlocks[nameBlock].decWeight}</td>
+                    </apex:repeat>
+                    <td align="center"   style="font-size:9px; background-color:white; color: black;">1.000</td>
+                </tr>
+                <tr>
+                    <td align="Left"   style="font-size:9px; background-color:white; color: black;">Volumen m3</td>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td align="center" style="font-size:9px; background-color:white; color: black;">{!mapBlocks[nameBlock].decVol}</td>
+                    </apex:repeat>
+                    <td align="center"   style="font-size:9px; background-color:white; color: black;">0.005</td>
+                </tr>
+                <tr>
+                    <td align="Left"   style="font-size:9px; background-color:white; color: black;">Kg volumétrico</td>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td align="center"   style="font-size:9px; background-color:white; color: black;">{!mapBlocks[nameBlock].decVolWeight}</td>
+                    </apex:repeat>
+                    <td align="center"   style="font-size:9px; background-color:white; color: black;">1.000</td>
+                </tr>
+            </table>
+            <br/>
+            <table style="border-collapse: collapse;" width="40%" align = "left">
+                <tr style="height: 2px"></tr>
+                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Kilómetros</td>
+                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>
+                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>
+                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Rango por kg</td>
+                <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                    <tr>
+                        <td width="25%" align="Left"   style="font-size:9px; background-color:white; color: black;">{!strRange}</td>
+                        <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                            <td width="25%" align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                    <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                        <td width="25%" align="center" style="font-size:9px; background-color:white; color: black;">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+
+            <table style="border-collapse: collapse;" width="25%" align = "right">
+                <tr style="height: 2px"></tr>
+                <apex:outputText rendered="{!blnACK}">
+                    <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Acuse interno</td>
+                </apex:outputText>
+                <apex:outputText rendered="{!blnZP}">
+                    <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Zona plus</td>
+                </apex:outputText>
+                <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                    <tr>
+                       <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
+                           <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
+                               <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
+                           </apex:outputText>
+                       </td>
+                       <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
+                           <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
+                               <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
+                           </apex:outputText>
+                       </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+            <br/> <br/> <br/> <br/> <br/> <br/> <br/><br/><br/><br/>
+            <!--STD dual tables Discount-->
+            <!-- Comentario 2-->
+            <table style="border-collapse: collapse;" width="100%">
+                <tr>
+                    <td colspan="20" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Descuento</b></td>
+                </tr>
+            </table>
+            <br/>
+            <div class="col-md-20 col-sm-20">
+                <table style="border-collapse: collapse;" width="49.5%" align = "left">
+                    <tr>
+                        <th colspan="9" align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">COBERTURA PAQUETEXPRESS</th>
+                    </tr>
+
+                    <tr>
+                        <th width = "10%" align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> </th>
+                        <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Peso (Kg)</th>
+                        <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento máximo</th>
+                        <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento promédio</th>
+                        <th width = "2%" align="center"  style="font-size:9px; background-color:white); color: white;">   </th>
+                        <th width = "10%" align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> </th>
+                        <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Peso (Kg)</th>
+                        <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento máximo</th>
+                        <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento promédio</th>
+                    </tr>
+                    <apex:repeat value="{!listKg30}" var="decBlockW">
+                        <tr>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!mapTarifasName[decBlockW]}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!decBlockW}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['MAX'][decBlockW] == 'red', $Resource.red_circle , IF(mapCircleClass['MAX'][decBlockW] == 'yellow', $Resource.yellow_circle , IF(mapCircleClass['MAX'][decBlockW] == 'green', $Resource.green_circle , $Resource.gray_circle) ) )}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW]['MaxDisc']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['AVG'][decBlockW] == 'red', $Resource.red_circle, IF(mapCircleClass['AVG'][decBlockW] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['AVG'][decBlockW] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW]['AVGDisc']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;"></td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!mapTarifasName[decBlockW + 30]}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!decBlockW + 30}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['MAX'][decBlockW + 30] == 'red', $Resource.red_circle, IF(mapCircleClass['AVG'][decBlockW + 30] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['MAX'][decBlockW + 30 ] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW + 30]['MaxDisc']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['AVG'][decBlockW + 30] == 'red', $Resource.red_circle, IF(mapCircleClass['AVG'][decBlockW + 30] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['AVG'][decBlockW + 30] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW + 30]['AVGDisc']}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                </table>
+            </div>
+            <div class="col-md-20 col-sm-20">
+                <table style="border-collapse: collapse;" width="49.5%" align = "right">
+                    <apex:outputText rendered="{!blnZP}">
+                        <tr>
+                            <th colspan="9" align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" rendered = "{!blnZP}">COBERTURA ZONA PLUS</th>
+                        </tr>
+
+                        <tr>
+                            <th width = "10%" align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> </th>
+                            <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Peso (Kg)</th>
+                            <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento máximo</th>
+                            <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento promédio</th>
+                            <th width = "2%" align="center"  style="font-size:9px; background-color:white; color: white;">   </th>
+                            <th width = "10%" align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> </th>
+                            <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Peso (Kg)</th>
+                            <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento máximo</th>
+                            <th  align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Descuento promédio</th>
+                        </tr>
+                    </apex:outputText>
+                    <apex:repeat value="{!listKg30}" var="decBlockW" rendered="{!blnZP}">
+                        <tr>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!mapTarifasName[decBlockW]}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!decBlockW}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['MAXZP'][decBlockW] == 'red', $Resource.red_circle, IF(mapCircleClass['MAXZP'][decBlockW] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['MAXZP'][decBlockW] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW]['MaxDiscZP']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['AVGZP'][decBlockW] == 'red', $Resource.red_circle, IF(mapCircleClass['AVGZP'][decBlockW] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['MAXZP'][decBlockW] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW]['AVGDiscZP']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;"></td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!mapTarifasName[decBlockW + 30]}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!decBlockW + 30}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['MAXZP'][decBlockW + 30] == 'red', $Resource.red_circle, IF(mapCircleClass['MAXZP'][decBlockW + 30] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['AVGZP'][decBlockW + 30] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW + 30]['MaxDiscZP']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['AVGZP'][decBlockW + 30] == 'red', $Resource.red_circle, IF(mapCircleClass['AVGZP'][decBlockW + 30] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['AVGZP'][decBlockW + 30] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW + 30]['AVGDiscZP']}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                </table>
+            </div>
+            <br/><br/>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:page>
