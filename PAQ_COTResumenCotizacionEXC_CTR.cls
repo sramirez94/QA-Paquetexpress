@@ -176,9 +176,18 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else if(!this.mapQuotes.get(fee).containsKey(keyRange))
                     this.mapQuotes.get(fee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
 
+        for(String keyRange: this.listRange){
+            if(!this.mapService.get('ADD').mapRanges.containsKey(keyRange))
+                this.mapService.get('ADD').mapRanges.put(keyRange, 0);
+
+            if(!this.mapService.get('ACK').mapRanges.containsKey(keyRange))
+                this.mapService.get('ACK').mapRanges.put(keyRange, 0);
+
+            /*if(quoteItem.ZonaPlus__c && !this.mapService.get('ZP').mapRanges.containsKey(keyRange))*/
+                this.mapService.get('ZP').mapRanges.put(keyRange, 0);
+        }
         /*System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
         System.debug(LoggingLevel.DEBUG, 'mapQuotesZP :' + JSON.serialize(this.mapQuotemapQuotesZP));*/
-
 
         this.wp.objQuote = queryQuote(sc.getId());
 
@@ -279,6 +288,14 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else if(!mapRangesByBlock.get(quoteItem.PackWeightAVG__c).containsKey(quoteItem.Rango_KM__c))
                     mapRangesByBlock.get(quoteItem.PackWeightAVG__c).put(quoteItem.Rango_KM__c , quoteItem.FLETE__c);
 
+                /*if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                    this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
+
+                if(!this.mapService.get('ACK').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                    this.mapService.get('ACK').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.ACK__c);
+
+                if(quoteItem.ZonaPlus__c && !this.mapService.get('ZP').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                    this.mapService.get('ZP').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);*/
                 if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
                     this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
 
@@ -304,6 +321,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             if(this.blnSEG && this.decSEG == 0)
                 this.decSEG = quoteItem.SEG__c;
         }
+        
+
         //System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
         this.listRangeDestiny.addAll(setRange);
         Integer blockCounter = 1;
@@ -313,7 +332,13 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             blockCounter++;
         }
 
-        for(String keyRange: this.listRangeDestiny){
+        /*for(String keyRange: this.listRangeDestiny){
+            this.mapTotalByRange.put(keyRange, new QuoteWP());
+            this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
+            this.mapT7W.put(keyRange, 0);
+            this.mapT7V.put(keyRange, 0);
+        }*/
+        for(String keyRange: this.listRange){
             this.mapTotalByRange.put(keyRange, new QuoteWP());
             this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
             this.mapT7W.put(keyRange, 0);
@@ -453,7 +478,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             discZP = ((totalAmountQZP - totalAmountSegZP)/ (totalAmountZP - totalAmountSegZP) - 1);
 
         this.mapTotalZP.put('Disc', discZP);
-
+        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'mapT7V: ' + this.mapT7V));
         calculateProjection();
 
     }
