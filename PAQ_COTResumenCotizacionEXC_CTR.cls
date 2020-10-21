@@ -10,6 +10,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
     public List<String> listRange                                           {get; set;}
     public List<String> listRangeDestiny                                    {get; set;}
     public List<Decimal> listKg30                                           {get; set;}
+    public List<Decimal> listKg70                                           {get; set;}
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotes           {get; set;}
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotesZP         {get; set;}
     public Map<String, QuoteWP>  mapTotalByRange                            {get; set;}
@@ -131,6 +132,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         this.mapRangosByDest        = new Map<String, String>();
         this.listRangeDestiny        = new List<String>();
         this.listKg30                = new List<Decimal>();
+        this.listKg70                = new List<Decimal>();
         this.blnByDestiny            = false;
         Decimal coutFee              = 0;
         Decimal countFeeZP           = 0;
@@ -477,9 +479,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         }
 
         for(String keyFee: this.listFee){
-            //System.debug('keyFee : ' + keyFee);
             for(String keyRange: this.listRangeDestiny){
-                //System.debug('keyRange : ' + keyRange);
                 if (this.mapTotalByRange.containsKey(keyRange) && this.mapTotalByRange.get(keyRange).totalPaquetes == 0)
                     this.mapTotalByRange.put(keyRange, new QuoteWP(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
                 else if(!this.mapTotalByRange.containsKey(keyRange))
@@ -502,15 +502,10 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             }
 
         }
-        // System.debug(LoggingLevel.DEBUG, 'totalAmount:BEFORE ' + totalAmount);
-        // System.debug(LoggingLevel.DEBUG, 'totalAmountQ:BEFORE ' + totalAmountQ);
 
         Decimal disc = 0;
         this.mapTotal.put('Full', totalAmount);
         this.mapTotal.put('Quote', totalAmountQ);
-        /*System.debug(LoggingLevel.DEBUG, 'totalAmount :' + totalAmount);
-        System.debug(LoggingLevel.DEBUG, 'totalAmountQ :' + totalAmountQ);
-        System.debug(LoggingLevel.DEBUG, 'totalAmountSeg :' + totalAmountSeg);*/
         if(totalAmount > 0 )
             disc = ((totalAmountQ - totalAmountSeg) / (totalAmount - totalAmountSeg) - 1);
         //System.debug(LoggingLevel.DEBUG, 'disc :' + disc);
@@ -619,10 +614,6 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     range.ACK__C = this.mapQuotes.get(range.Tarifa__c).get(strRange).ACK__C;
                 if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c != null)
                     range.SEG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c;
-                //if(this.mapQuotes.get(range.Tarifa__c).get(strRange).RAD__c != null)
-                //range.RAD__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).RAD__c;
-                /*if(this.mapQuotes.get(range.Tarifa__c).get(strRange).EAD__c != null)
-                    range.EAD__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).EAD__c;*/
                 if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
                     decFlete = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c;
                 if(this.blnRAD)
@@ -638,17 +629,13 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
                 if(i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
                     fltQuoteAdKG = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'mapDiscounts: ' + this.mapRangosByDest.get(strRange)));
                 ejemplo = decFlete + this.wp.mapACK.get('Interno');
-                ejemplo2 = decFlete  + range.RAD__c + range.EAD__c; //+ 
+                ejemplo2 = decFlete  + range.RAD__c + range.EAD__c;
                 if(blnACK)
                     ejemplo2 += this.wp.mapACK.get('Interno');
-                //ejemplo3 = fltGuia + range.ACK__C + fltQuoteAdKG;
                 ejemplo3 = decFlete + range.ACK__C + fltQuoteAdKG;
                 ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
-                //ejemplo5 = ejemplo3 * range.SBQQ__Quantity__c;
                 ejemplo5 = range.Flete__c * range.SBQQ__Quantity__c;
-                //ejemplo6 = ejemplo3 / ejemplo2 - 1;
                 range.SBQQ__NetPrice__c = ejemplo5;
                 if(range.Tarifa__c == 'TARIFA SOBRE')
                     range.SBQQ__Discount__c = (range.Flete__c / decFlete) - 1;
@@ -656,26 +643,21 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
 
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
-
-                //decSUMNetPrice += (range.SBQQ__NetPrice__c - range.SEG__c) * range.SBQQ__Quantity__c;
-                
-                //if(this.blnZP){
-                    rangeZP = new SBQQ__QuoteLine__c (
-                            FLETE__c = 0//wpBlock.mapRanges.get(strRange)
-                            , SBQQ__CustomerPrice__c = 0
-                            , SBQQ__Quantity__c = 0
-                            , SBQQ__NetPrice__c = 0
-                            , KG_ADICIONAL__c = 0
-                            , RAD__c = 0
-                            , EAD__c = 0
-                            , ACK__c = 0
-                            , SEG__c = 0
-                            , Pack_Seg__c = 0
-                            , SBQQ__Discount__c = 0
-                            , PackWeightAVG__c = keyBlock
-                            , Tarifa__c = getTarifa(i)
-                    );
-                    //if(rangeZP.Tarifa__c != 'TARIFA SOBRE'){
+                rangeZP = new SBQQ__QuoteLine__c (
+                        FLETE__c = 0
+                        , SBQQ__CustomerPrice__c = 0
+                        , SBQQ__Quantity__c = 0
+                        , SBQQ__NetPrice__c = 0
+                        , KG_ADICIONAL__c = 0
+                        , RAD__c = 0
+                        , EAD__c = 0
+                        , ACK__c = 0
+                        , SEG__c = 0
+                        , Pack_Seg__c = 0
+                        , SBQQ__Discount__c = 0
+                        , PackWeightAVG__c = keyBlock
+                        , Tarifa__c = getTarifa(i)
+                );
                 rangeZP.EAD__c = 208.5;
                 Decimal TarifaLlenaZP = 0;
                 Decimal FleteZP = 0;
@@ -737,7 +719,6 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             if(decSUMCustomerPriceZP > 0 && decSUMNetPriceZP > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDiscZP'))
                 this.mapDiscounts.get(i).put('AVGDiscZP', decSUMNetPriceZP /decSUMCustomerPriceZP - 1);
         }
-        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'mapDiscounts: ' + this.mapDiscounts));
         // T7
         decSUMCustomerPrice = 0;
         decSUMNetPrice = 0;
@@ -755,114 +736,68 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         Decimal decTotalpropuesta = 0;
         for(Decimal decW : this.mapGuide.keySet()){
             intpeso = decW.intvalue();
-            for (String strRange : listRangeDestiny){
-                range = new SBQQ__QuoteLine__c (
-                        FLETE__c = 0//wpBlock.mapRanges.get(strRange)
-                        , SBQQ__CustomerPrice__c = 0
-                        , SBQQ__Quantity__c = 0
-                        , SBQQ__NetPrice__c = 0
-                        , KG_ADICIONAL__c = 0
-                        , RAD__c = 0
-                        , EAD__c = 0
-                        , ACK__c = 0
-                        , SEG__c = 0
-                        , Pack_Seg__c = 0
-                        , SBQQ__Discount__c = 0
-                        , PackWeightAVG__c = keyBlock
-                        , Tarifa__c = 'TARIFA T7_' + intpeso
-                        , PackVolAVG__c = 0
-                );
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'mapDiscounts: ' + range.Tarifa__c));
-                if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c != null)
-                    range.PackWeightAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c;
-                if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c != null)
-                    range.PackVolAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c;
-                if(this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c != null)
-                    range.Flete__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c;
-                decFleteW = range.PackWeightAVG__c * this.wp.mapTarifarioT.get('TARIFA T7P').get(strRange).Flete__c;
-                decFleteV = this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * range.PackVolAVG__c;
-                if(decFleteV > decFleteW)
-                    decFleteDefinitivo = decFleteV;
-                else decFleteDefinitivo = decFleteW;
-                if(this.blnRAD)
-                    range.RAD__c = decFleteDefinitivo * 0.11;
-                if(this.blnEAD)
-                    range.EAD__c = decFleteDefinitivo * 0.11;
-                range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
-                decTotalNormal = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c * range.SBQQ__CustomerPrice__c;
-                decTotalpropuesta = range.Flete__c * this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                range.SBQQ__Discount__c = range.Flete__c / range.SBQQ__CustomerPrice__c - 1;
-                decSUMCustomerPrice  += decTotalNormal;
-                decSUMNetPrice += decTotalpropuesta;
-                if(!this.mapDiscounts.containsKey(intpeso)){
-                    this.mapDiscounts.put(intpeso, new Map<String, Decimal>{
-                    'MaxDisc' => range.SBQQ__Discount__c
-                    , 'MaxDiscZP' => 0
-                    , 'AVGDisc' => 0
-                    , 'AVGDiscZP' => 0
-                    });
-    
-                    if(intpeso == 0)
-                        this.mapTarifasName.put(intpeso, 'TS');
-                    else
-                        this.mapTarifasName.put(intpeso, 'T7 ' + intpeso);
-                    //if(intpeso <= 30)
-                    if(intpeso <= 70)
-                        this.listKg30.add(intpeso - 30);
-                    else this.listKg30.add(intpeso - 60);
-                    //this.listKg30.add(intpeso - 30);
-                    //this.listKg30.add(intpeso - 30);
-                }
-                if(this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(intpeso).get('MaxDisc')){
-                    this.mapDiscounts.get(intpeso).put('MaxDisc', range.SBQQ__Discount__c);
-                }
-                /*if(this.mapQuotes.containsKey(range.Tarifa__c) && this.mapQuotes.get(range.Tarifa__c).containsKey(strRange)){
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c != null)
-                        range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__CustomerPrice__c != null)
-                        range.SBQQ__CustomerPrice__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__CustomerPrice__c;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__NetPrice__c != null)
-                        range.SBQQ__NetPrice__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__NetPrice__c;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c != null)
-                        range.SEG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c;
-                }
-                if(range.SBQQ__NetPrice__c > 0 )
-                    range.SBQQ__Discount__c = (range.SBQQ__CustomerPrice__c - range.SEG__c) / (range.SBQQ__NetPrice__c - range.SEG__c) - 1;
-                decSUMCustomerPrice += (range.SBQQ__CustomerPrice__c - range.SEG__c) * range.SBQQ__Quantity__c;
-                decSUMNetPrice += (range.SBQQ__NetPrice__c - range.SEG__c) * range.SBQQ__Quantity__c;
-                if(!this.mapDiscounts.containsKey(i)){
-                    this.mapDiscounts.put(i, new Map<String, Decimal>{
-                    'MaxDisc' => range.SBQQ__Discount__c
-                    , 'MaxDiscZP' => 0
-                    , 'AVGDisc' => 0
-                    , 'AVGDiscZP' => 0
-                    });
-    
-                    if(i == 0)
-                        this.mapTarifasName.put(i, 'TS');
-                    else
-                        this.mapTarifasName.put(i, this.mapTarifasKey.get(getTarifa(i)));
-                    if(i <= 30)
-                        this.listKg30.add(i);
-                }
-                if(this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(i).get('MaxDisc')){
-                    this.mapDiscounts.get(i).put('MaxDisc', range.SBQQ__Discount__c);
-                }*/
-            }
-            if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('AVGDisc'))
-                this.mapDiscounts.get(intpeso).put('AVGDisc', decSUMCustomerPrice / decSUMNetPrice - 1);
-        }
+            if(intpeso > 60){
+                for (String strRange : listRangeDestiny){
+                    range = new SBQQ__QuoteLine__c (
+                            FLETE__c = 0
+                            , SBQQ__CustomerPrice__c = 0
+                            , SBQQ__Quantity__c = 0
+                            , SBQQ__NetPrice__c = 0
+                            , KG_ADICIONAL__c = 0
+                            , RAD__c = 0
+                            , EAD__c = 0
+                            , ACK__c = 0
+                            , SEG__c = 0
+                            , Pack_Seg__c = 0
+                            , SBQQ__Discount__c = 0
+                            , PackWeightAVG__c = keyBlock
+                            , Tarifa__c = 'TARIFA T7_' + intpeso
+                            , PackVolAVG__c = 0
+                    );
+                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c != null)
+                        range.PackWeightAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c;
+                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c != null)
+                        range.PackVolAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c;
+                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c != null)
+                        range.Flete__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c;
+                    decFleteW = range.PackWeightAVG__c * this.wp.mapTarifarioT.get('TARIFA T7P').get(strRange).Flete__c;
+                    decFleteV = this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * range.PackVolAVG__c;
+                    if(decFleteV > decFleteW)
+                        decFleteDefinitivo = decFleteV;
+                    else decFleteDefinitivo = decFleteW;
+                    if(this.blnRAD)
+                        range.RAD__c = decFleteDefinitivo * 0.11;
+                    if(this.blnEAD)
+                        range.EAD__c = decFleteDefinitivo * 0.11;
+                    range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
+                    decTotalNormal = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c * range.SBQQ__CustomerPrice__c;
+                    decTotalpropuesta = range.Flete__c * this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
+                    range.SBQQ__Discount__c = range.Flete__c / range.SBQQ__CustomerPrice__c - 1;
+                    decSUMCustomerPrice  += decTotalNormal;
+                    decSUMNetPrice += decTotalpropuesta;
+                    if(!this.mapDiscounts.containsKey(intpeso)){
+                        this.mapDiscounts.put(intpeso, new Map<String, Decimal>{
+                        'MaxDisc' => range.SBQQ__Discount__c
+                        , 'MaxDiscZP' => 0
+                        , 'AVGDisc' => 0
+                        , 'AVGDiscZP' => 0
+                        });
         
-
-        /*if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDisc'))
-            this.mapDiscounts.get(i).put('AVGDisc', decSUMCustomerPrice / decSUMNetPrice - 1);*/
-
-
+                        if(intpeso == 0)
+                            this.mapTarifasName.put(intpeso, 'TS');
+                        else
+                            this.mapTarifasName.put(intpeso, 'T7 ' + intpeso);
+                        this.listKg70.add(intpeso);
+                    }
+                    if(this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(intpeso).get('MaxDisc')){
+                        this.mapDiscounts.get(intpeso).put('MaxDisc', range.SBQQ__Discount__c);
+                    }
+                }
+                if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('AVGDisc'))
+                    this.mapDiscounts.get(intpeso).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
+            }
+        }
        for(Decimal decW: this.mapDiscounts.keySet()){
-           /* MaxDisc' =>
-           , 'MaxDiscZP' =>
-           , 'AVGDisc' => 0
-           , 'AVGDiscZP' => 0 */
             this.mapCircleClass.get('MAX').put(decW , getClass(this.mapDiscounts.get(decW).get('MaxDisc')));
             this.mapCircleClass.get('AVG').put(decW , getClass(this.mapDiscounts.get(decW).get('AVGDisc')));
             this.mapCircleClass.get('MAXZP').put(decW , getClass(this.mapDiscounts.get(decW).get('MaxDiscZP')));
