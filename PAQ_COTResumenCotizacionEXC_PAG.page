@@ -508,6 +508,32 @@
                             </td>
                         </tr>
                     </apex:repeat>
+
+
+                    <apex:repeat value="{!listKg70}" var="decBlockW">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;"></td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!mapTarifasName[decBlockW]}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!decBlockW}</td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['MAX'][decBlockW] == 'red', $Resource.red_circle, IF(mapCircleClass['AVG'][decBlockW] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['MAX'][decBlockW] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW]['MaxDisc']}" />
+                                </apex:outputText>
+                            </td>
+                            <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                <img style="background-color: #fff" src="{!IF(mapCircleClass['AVG'][decBlockW] == 'red', $Resource.red_circle, IF(mapCircleClass['AVG'][decBlockW] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['AVG'][decBlockW] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDiscounts[decBlockW]['AVGDisc']}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+
                 </table>
             </div>
             <div class="col-md-20 col-sm-20">
