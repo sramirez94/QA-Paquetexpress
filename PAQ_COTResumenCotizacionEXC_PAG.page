@@ -260,7 +260,7 @@
                     </apex:outputText>
                 </tr>
 
-                <apex:repeat value="{!listrange}" var="keyRange">
+                <apex:repeat value="{!listrangeDestiny}" var="keyRange">
                     <tr>
                         <td align="left" style="font-size:9px; ">{!keyRange}</td>
                         <apex:repeat value="{!listFee}" var="keyFee">
@@ -452,7 +452,7 @@
             <br/> <br/> <br/> <br/> <br/> <br/> <br/><br/><br/><br/>
             <!--STD dual tables Discount-->
             <!-- Comentario 2-->
-            <table style="border-collapse: collapse;" width="100%">
+			<table style="border-collapse: collapse;" width="100%">
                 <tr>
                     <td colspan="20" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Descuento</b></td>
                 </tr>
