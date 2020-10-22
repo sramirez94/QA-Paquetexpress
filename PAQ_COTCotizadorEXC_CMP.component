@@ -229,7 +229,8 @@
                                 <!-- right -->
                                 <div class="col-sm-4 col-md-4">
                                     <br/>
-                                    <table class="table table-striped table-bordered" ng-show="EX.blnACK && isACK('G')">
+                                    <table class="table table-striped table-bordered" ng-show="false">
+                                    <!--<table class="table table-striped table-bordered" ng-show="EX.blnACK && isACK('G')">-->
                                         <tbody>
                                             <tr>
                                                 <th class="thead-light" width="70%">Promedio de envíos con acuse</th>
@@ -3134,6 +3135,7 @@
 
                 $scope.setACK = function(model){
                     $scope.EX.strACK = model.id;
+                    $scope.calculateEX();
                 };
 
                 $scope.setACKmode = function(model){
@@ -3141,6 +3143,7 @@
                         $scope.EX.strAckCost = 'Guía';
                     if(model.id === 'B')
                         $scope.EX.strAckCost = 'Paquete';
+                    $scope.calculateEX();
                 };
 
                 $scope.setValue = function(name, key, cmp, keyX){
@@ -3280,6 +3283,181 @@
                         }
 
                 };
+                
+                 $scope.sumbit = function (){
+                    var strNameProcess = '';
+                    var strProfile = "{!profileObj}";
+                    var objQuote;
+                    var gerenteSucursal = null;
+
+                    if(strProfile === 'Ejecutivo de telemarketing'
+                        || strProfile === 'Supervisor Telemarketing'
+                        || strProfile === 'Gerente comercial nacional')
+                        gerenteSucursal = $scope.Managers['GSU'];
+
+                    if(strProfile === 'Ejecutivo de telemarketing' || 'Ejecutivo de telemarketing y CC')
+                       strProfile = 'Ejecutivo de venta';
+                    
+                    if(strProfile === 'Supervisor Telemarketing' )
+                       strProfile = 'KAM Regional';
+                    
+                    if(strProfile === 'Gerente comercial nacional' )
+                       strProfile = 'Gerentes de desarrollo de Negocios';
+
+                    if(notEmpty($scope.DML.objQuote))
+                        objQuote = $scope.DML.objQuote;
+                    else
+                        objQuote = $scope.Wrapper.objQuote;
+
+                    $scope.DML.listErrors = [];
+
+                    if($scope.isException(objQuote, strProfile)){
+                        objQuote.SBQQ__Status__c = 'Approved';
+                        if(objQuote.Lead__c)                          
+                            callUpdateStatus($scope, objQuote, objQuote.Lead__r.Name);
+                        if(objQuote.SBQQ__Account__c)
+                            callUpdateStatus($scope, objQuote, objQuote.SBQQ__Account__r.Name);
+                    }
+                    else {
+                        if(objQuote.SBQQ__Status__c === 'Draft')
+                         {
+                            if(objQuote.Descuento_por_linea_o_rangokm__c < 60.01 ){
+                                if(objQuote.Descuento_Global__c > 10
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_10_1_a_25_y_km_menor_a_60';
+                                }
+                                if(objQuote.Descuento_por_linea_o_rango_km_Express__c < 25 ){
+                                    if( objQuote.Descuento_Global_Express__c > 10
+                                            && objQuote.Descuento_Global_Express__c < 25.01
+                                            && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                            && strProfile === 'Ejecutivo de venta'
+                                    )
+                                        strNameProcess = 'AEREO_10_1_A_25_GBAL_MENOR_25_KM';
+                                }
+                                if(objQuote.Descuento_Global__c > 25
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_25_a_40_y_km_menor_que_60';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_25_a_40_y_km_menor_que_60_GE_SUCU';
+                                }
+                                if(objQuote.Descuento_Global__c > 40
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_40_1_a_60_km_menor_a_60_V2';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_40_1_a_60_km_menor_a_60_GE_SUCURS';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_Km_menor_a_60_KAM_Regio';
+                                }
+                                if(objQuote.Descuento_Global__c > 60
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_60_o_mas_GE_SUCURSAL';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+                                }
+                            }
+                            if(objQuote.Descuento_por_linea_o_rango_km_Express__c > 25 ){
+
+                                if( objQuote.Descuento_Global_Express__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                        && (strProfile === 'Ejecutivo de venta'
+                                                || strProfile === 'Gerente de sucursal'
+                                                || strProfile === 'KAM Regional'
+                                        )
+                                )
+                                    strNameProcess = 'AEREO_0_A_10_GBAL_25_O_MAS_KM';
+                                if( objQuote.Descuento_Global_Express__c > 10
+                                        && objQuote.Descuento_Global_Express__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                )
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'AEREO_10_1_A_25_GBAL_MAYOR_25_KM';
+                                if(strProfile === 'Gerente de sucursal' || strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_10_1_A_25_GBAL_MAYOR_25_KM_GE_SUC';
+                            }
+                            if(objQuote.Descuento_por_linea_o_rangokm__c > 60 ){
+                                if(objQuote.Descuento_Global__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60_GE_SUCURSA';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c > 10
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas_GE_SUCURS';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c > 25
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas_GE_SUCURSAL';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas_KAM_Regiona';
+                                }
+                                if(objQuote.Descuento_Global__c > 40
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60_GE_SUCU';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60_KAM_Regi';
+                                }
+                                if(objQuote.Descuento_Global__c > 60
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_60_o_mas_GE_SUCURSAL';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+
+                                }
+
+                            }
+                            if(objQuote.Descuento_Global_Express__c > 25
+                                    && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')) {
+                                if(strProfile === 'Ejecutivo de venta')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL';
+                                if(strProfile === 'Gerente de sucursal')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL_G_SUC';
+                                if(strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL_KAM';
+                                if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GERENTE_DESARROLLO';
+                            }
+                        }
+                        if(notEmpty(strNameProcess))
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.EX.strApprovalComment);
+                        else
+                            $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
+                    }
+                };
+                
 
                 $scope.updateFees = function(strOpp, strList){
                     switch (strOpp) {
@@ -3485,7 +3663,6 @@
                 $scope.fillRanges();
                 //debugger;
                 if($scope.hasRecord()){
-                    debugger;
                     $scope.EX.strAck = $scope.Wrapper.objQuote.Acuse__c;
                     $scope.OnlineDocByRangeKM = $scope.Wrapper.objQuote.RangosKM__c;
                     $scope.OnlineDocByDestiny = $scope.Wrapper.objQuote.Destinos__c;
@@ -3742,25 +3919,34 @@
             // JSRemoting Call InitialInfo
             function callGetHierarchy($scope) {
                 j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
-                //$scope.sent = true;
+                $scope.sent = true;
                 Visualforce.remoting.Manager.invokeAction(
                         '{!$RemoteAction.PAQ_CotizadorNacional_CTR.getHierarchyUser}'
                         , function (result, event) {
-                            //  debugger;
+                            debugger;
                             if (event.status) {
                                 $scope.Wrapper.mapHierarchy = result.mapHierarchy;
                                 j$.each(result.mapHierarchy,
                                         function(key, userId){
-                                            if(key.toUpperCase().includes('GERENTE SUCURSAL'))
-                                                $scope.Managers['GSU'] = userId;
-                                            else if(key.toUpperCase().includes('KAM'))
+                                              if(key.toUpperCase().includes('SUPERVISOR_TELEMARKETING'))
                                                 $scope.Managers['KAM'] = userId;
-                                            else if(key.toUpperCase().includes('GERENCIA DESARROLLO'))
+                                           
+                                            else if(key.toUpperCase().includes('GERENCIA_MARKETING_Y_PDV'))
                                                 $scope.Managers['GDS'] = userId;
-                                            else if(key.toUpperCase().includes('DIRECTOR COMERCIAL'))
+                                           
+                                            else if(key.toUpperCase().includes('DIRECTOR_COMERCIAL'))
                                                 $scope.Managers['DCO'] = userId;
                                         }
                                 );
+                                if(!notEmpty($scope.Managers['GSU']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Gerente_Sucursal__c))
+                                    $scope.Managers['GSU'] = $scope.Wrapper.objEstructura.Gerente_Sucursal__c;
+                                if(!notEmpty($scope.Managers['KAM']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.KAM_regional__c))
+                                    $scope.Managers['KAM'] = $scope.Wrapper.objEstructura.KAM_regional__c;
+                                if(!notEmpty($scope.Managers['GDS']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Gerente_desarrollo_de_negocios__c	))
+                                    $scope.Managers['GDS'] = $scope.Wrapper.objEstructura.Gerente_desarrollo_de_negocios__c	;
+                                if(!notEmpty($scope.Managers['DCO']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Director_Comercial__c))
+                                    $scope.Managers['DCO'] = $scope.Wrapper.objEstructura.Director_Comercial__c;
+                                
                                 $scope.$apply();
                                 j$.unblockUI();
                             }
