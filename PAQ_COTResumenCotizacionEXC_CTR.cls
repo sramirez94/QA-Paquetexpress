@@ -46,6 +46,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
     public map<String, decimal> mapPruebas                                 {get;set;}
     public map<String, String> mapRangosByDest                              {get; set;}
     public boolean blnByDestiny                                             {get; set;}
+    public List<string> listBlocksT7                                        {get; set;}
+    public List<string> listBlocksT7Desc                                    {get; set;}
+    public boolean blnBloquesT7                                             {get; set;}
 
     public PAQ_COTResumenCotizacionEXC_CTR (ApexPages.StandardController sc){
         this.Id                     = sc.getId();
@@ -56,6 +59,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         this.blnZP                  = false;
         this.blnSEG                 = false;
         this.blnACK                 = false;
+        this.blnBloquesT7           = false;
         this.decSEG                 = 0;
         this.mapBlocks              = new Map<String, Block>();
         this.mapPruebas             = new Map<String, Decimal>();
@@ -108,6 +112,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                                         , 'TARIFA T6' => 'T6'
                                         , 'TARIFA T7' => 'T7'
                                     };
+        this.listBlocksT7            = new list<String>();
+        this.listBlocksT7Desc        = new list<String>();
         this.wp                      = new Wrapper();
         this.mapProjEX               = new wpExcedente();
         this.mapQuotes               = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
@@ -737,6 +743,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         for(Decimal decW : this.mapGuide.keySet()){
             intpeso = decW.intvalue();
             if(intpeso > 60){
+                this.listBlocksT7.add('TARIFA T7_' + intpeso);
+                this.listBlocksT7Desc.add('T7 ' + intpeso);
+                blnBloquesT7 = true;
                 for (String strRange : listRangeDestiny){
                     range = new SBQQ__QuoteLine__c (
                             FLETE__c = 0
