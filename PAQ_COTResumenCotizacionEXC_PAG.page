@@ -365,13 +365,36 @@
                 </apex:outputText>
             </table>
             <br/>
+            <apex:outputText rendered="{!blnBloquesT7}">
+                <table style="border-collapse: collapse;" width="40%">
+                    <tr>
+                        <td align="Left"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >Rango de KM </td>
+                        <apex:repeat value="{!listBlocksT7Desc}" var="keyblockT7">
+                            <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >{!keyblockT7}</td>
+                        </apex:repeat>
+                    </tr>
+                    <apex:repeat value="{!listrangeDestiny}" var="keyRange">
+                        <tr>
+                            <td align="left" style="font-size:9px; ">{!keyRange}</td>
+                            <apex:repeat value="{!listBlocksT7}" var="keyblockT7">
+                                <td align="Center"  style="font-size:9px; ">
+                                    <apex:outputText value="{0, number, ###,###,##0}">
+                                        <apex:param value="{!mapQuotes[keyblockT7][keyRange].SBQQ__Quantity__c}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </apex:repeat>
+                </table>
+            </apex:outputText>
+            <br/>
             <!--Aquí comentario-->
             <table style="border-collapse: collapse;" width="100%">
                 <tr>
                     <td colspan="20" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Tarifa propuesta</b></td>
                 </tr>
             </table>
-            <table style = "border-collapse: collapse;" width="40%">
+            <table style = "border-collapse: collapse;" width="50%">
                 <tr style="height: 2px"></tr>
                 <td width="20%" align="center"   style="font-size:9px; background-color:white; color: black;"></td>
                 <apex:repeat value="{!mapBlocks}" var="nameBlock">
@@ -417,11 +440,11 @@
                                 </apex:outputText>
                             </td>
                         </apex:repeat>
-                        <td width="25%" align="center" style="font-size:9px; background-color:white; color: black;">
+                        <!--<td width="25%" align="center" style="font-size:9px; background-color:white; color: black;">
                             <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                 <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
                             </apex:outputText>
-                        </td>
+                        </td>-->
                     </tr>
                 </apex:repeat>
             </table>
