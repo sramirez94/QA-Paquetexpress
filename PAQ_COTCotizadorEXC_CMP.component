@@ -2966,10 +2966,15 @@
                 };
 
                 $scope.removeBlock = function(strKey){
+                    var strkeynew = '';
                     delete $scope.EX.mapBlock[strKey];
                     var index = j$.inArray(strKey, $scope.listBlocksByMaxW);
                     $scope.listBlocksByMaxW.splice(index, 1);
-                    delete $scope.EX.OWFrecc[strKey];
+                    if(strKey.includes('T7')){
+                        strkeynew = strKey.replace('T7', 'T7_');
+                        delete $scope.EX.OWFrecc[strkeynew];
+                        $scope.EX.hasOverWBlocks = false;
+                    }
                     $scope.calculateEX();
                 };
 
