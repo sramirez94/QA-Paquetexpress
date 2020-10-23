@@ -1,0 +1,374 @@
+<apex:component controller="PAQ_CotizadorNacional_CTR">
+
+    <apex:attribute name="LeadId" type="String" description="Lead Object Id" assignTo="{!strLeadId}" />
+    <apex:attribute name="QuoteId" type="String" description="Quote Object Id" assignTo="{!strQuoteId}" />
+    <apex:attribute name="CaseId" type="String" description="Case Object Id" assignTo="{!strCaseId}" />
+    <apex:attribute name="AccountId" type="String" description="Account Object Id" assignTo="{!strAccId}" />
+    <apex:attribute name="OppId" type="String" description="Opportunity Object Id" assignTo="{!strOppId}" />
+
+    <div class="container-fluid" ng-app="Cotizador" ng-controller="cotizadorController as CotCtr" style="display: none">
+        <ul class="nav nav-pills">
+            <li role="presentation" class="tabPill active" id="Home-Tab" ng-show="Home">
+                <a data-toggle="pill" href="#Home">Formas de cotizar</a>
+            </li>
+            <li role="presentation" class="tabPill" id="SPW-Tab" ng-show="SPW">
+                <a data-toggle="pill" href="#SPW">Tarifario abierto de piso</a>
+            </li>
+            <li role="presentation" class="tabPill" id="PPG-Tab" ng-show="PPG">
+                <a data-toggle="pill" class="tabPill" href="#PPG" ng-show="PPG">Guías Prepagadas</a>
+            </li>
+            <li role="presentation" class="tabPill" id="ODC-Tab" ng-show="ODC">
+                <a data-toggle="pill" class="tabPill" href="#ODC" >Documentación en Linea</a>
+            </li>
+            <li role="presentation" class="tabPill" id="7ZP-Tab" ng-show="7ZP">
+                <a data-toggle="pill" class="tabPill" href="#7ZP" >Tarifa T7 zona plus</a>
+            </li>
+        </ul>
+        <br/><br/>
+        <div class="tab-content padding-top-10">
+            <div id="Home" class="tab-pane fade in active" ng-show="Home">
+                <c:PAQ_COTHome_CMP />
+            </div>
+            <div id="SPW" class="tab-pane fade" ng-show="SPW">
+                <div ng-if="StrSTDCotiType==='Envio' && SPW">
+                    <c:PAQ_COTCotizadorSPWSingle_CMP />
+                </div>
+                <div ng-if="StrSTDCotiType==='Convenio' && SPW">
+                    <c:PAQ_COTCotizadorSPW_CMP />
+                </div>
+            </div>
+            <div id="PPG" class="tab-pane fade" ng-show="PPG" >
+                <div ng-if="PPG">
+                    <c:PAQ_COTCotizadorPPG_CMP />
+                </div>
+            </div>
+            <div id="7ZP" class="tab-pane fade" ng-show="7ZP">
+                <div ng-if="7ZP">
+                    <c:PAQ_CotizadorZonaPlus_CMP QuoteId="{!SBQQ__Quote__c.Id}"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" lang="js">
+        var j$ = jQuery.noConflict();
+        //j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+        j$(document).ready(function(){
+            //console.clear(); //console.clear();
+            j$('.container-fluid').show();
+        });
+        (function(){
+            // angujar module
+            var app = angular.module('Cotizador');
+            // main controller
+            /*
+            * Angular module controllers
+            * Begin Angular Controller
+            */
+            app.controller('cotizadorController', ['$scope',function($scope) {
+
+                /*
+                * Controller variables
+                */
+                $scope.DML = {
+                    blnSuccess : true
+                    , listErrors : []
+                };
+                $scope.Fee = [];
+                $scope.FeesArray = ['STD', 'DS', '2D', 'A12'];
+                $scope.FeeType = {
+                    model: undefined,
+                    aviableOptions: [
+                        {id: 'SPW', label: 'Tarifario abierto de piso' },
+                        {id: 'PPG', label: 'Guías Prepagadas' },
+                        {id: 'ODC', label: 'Documentación En Línea'},
+                        {id: '7ZP', label: 'Tarifa T7 zona plus'}
+                    ]
+                };
+                $scope.Home = true;
+                $scope.ODC = false;
+                $scope.OnlineDoc ={
+                    model : undefined,
+                    aviableOptions :[
+                        /*{id: 'floor' , label : 'Tarifario abierto de Piso'},*/
+                        {id: 'fix' , label : 'Costos fijos por Tarifas'}/*,
+                        {id: 'exd' , label : 'Costo base más excedente'},
+                        {id: 'multi' , label : 'Guía multipieza'}*/
+                    ]
+                };
+                $scope.OnlineDocByRangeKM = false;
+                $scope.OnlineDocByDestiny = false;
+                $scope.ListSucursales = [];
+                $scope.Managers = {};
+                $scope.MapQuotesId = {};
+                $scope.PPG = false;
+                $scope.sent = false;
+                $scope.SPW = false;
+                $scope.StrSTDCotiType = '';
+                $scope.7ZP = false;
+                $scope.Wrapper = {};
+
+                //debugger;
+                /*
+                * Controller functions
+                */
+
+                $scope.exit = function(){
+                    if(notEmpty("{!strCaseId}"))
+                        window.location = '/'+"{!strCaseId}";
+                    else if(notEmpty("{!strOppId}"))
+                        window.location = '/'+"{!strOppId}";
+                    else if(notEmpty("{!strLeadId}"))
+                        window.location = '/'+"{!strLeadId}";
+                    else if(notEmpty("{!strAccId}"))
+                        window.location = '/'+"{!strAccId}";
+                    else if(notEmpty("{!strQuoteId}"))
+                        window.location = '/'+"{!strQuoteId}";
+                };
+
+                $scope.hasRecord = function(){
+                    return $scope.Wrapper.objQuote && $scope.Wrapper.objQuote.Id;
+                };
+
+                $scope.isAdmin = function(){
+                    return "{!$Profile.Name}" ==='Administrador del sistema' || "{!$Profile.Name}" ==='System Administrator';
+                };
+
+                $scope.isException = function(objQuote, strProfile){
+                    //objQuote.Descuento_por_linea_o_rangokm__c <= 60
+                    //objQuote.Descuento_Global__c <= 60
+                    var exception = false;
+                    if(objQuote.Tipo_de_documentacion__c == 'Documentación Remota'
+                            || objQuote.Tipo_de_documentacion__c == 'Guías prepagadas'){
+                        if (strProfile === 'Ejecutivo de venta'){
+                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
+                                    && objQuote.Descuento_Global__c <= 10)
+                                exception = true;
+                        }
+                        else if(strProfile === 'Gerente de sucursal'){
+                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
+                                    && objQuote.Descuento_Global__c <= 25)
+                                exception = true;
+                        }
+                        else if(strProfile === 'KAM Regional'){
+                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
+                                    && objQuote.Descuento_Global__c <= 40)
+                                exception = true;
+                        }
+                        else if (strProfile != 'Gerentes de desarrollo de Negocios'){
+                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
+                                    && objQuote.Descuento_Global__c <= 60)
+                                exception = true;
+                        }
+                        else if(strProfile === 'Director comercial') {
+                            exception = true;
+                        }
+                    }
+                    else if(objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
+                        if (strProfile === 'Ejecutivo de venta'){
+                            if(objQuote.Descuento_maximo_de_servicios__c <= 10)
+                                exception = true;
+                        }
+                        else if(strProfile === 'Gerente de sucursal'){
+                            if(objQuote.Descuento_maximo_de_servicios__c <= 25)
+                                exception = true;
+                        }
+                        else if(strProfile === 'KAM Regional'){
+                            if(objQuote.Descuento_maximo_de_servicios__c <= 40)
+                                exception = true;
+                        }
+                        else if (strProfile != 'Gerentes de desarrollo de Negocios'){
+                            if(objQuote.Descuento_maximo_de_servicios__c <= 60)
+                                exception = true;
+                        }
+                        else if(strProfile === 'Director comercial') {
+                            exception = true;
+                        }
+                    }
+                    return exception;
+                };
+
+                $scope.isFeeType = function(strType){
+                    if($scope.FeeType.model)
+                        return $scope.FeeType.model.id === strType;
+                };
+
+                $scope.start = function(){
+
+                    switch ($scope.FeeType.model.id) {
+                        case 'SPW':
+                            j$('.tabPill').removeClass('active');
+                            j$('.tab-pane').removeClass('in active');
+                            $scope.SPW = true;
+                            j$('#SPW').addClass('in active');
+                            j$('#SPW-Tab').addClass('active');
+                            //$scope.StrSTDCotiType = 'Convenio';
+                            if($scope.StrSTDCotiType === 'Convenio'){
+                                $scope.step1 = true;
+                            }
+                            break;
+                        case 'PPG':
+                            j$('.tabPill').removeClass('active');
+                            j$('.tab-pane').removeClass('in active');
+                            $scope.PPG = true;
+                            j$('#PPG').addClass('in active');
+                            j$('#PPG-Tab').addClass('active');
+                            break;
+                        case 'ODC':
+                            if($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'fix'
+                                    && $scope.OnlineDocByRangeKM
+                            ){
+                                j$('.tabPill').removeClass('active');
+                                j$('.tab-pane').removeClass('in active');
+                                $scope.ODC = true;
+                                j$('#ODC').addClass('in active');
+                                j$('#ODC-Tab').addClass('active');
+                            }
+                            break;
+                        case '7ZP':
+                            j$('.tabPill').removeClass('active');
+                            j$('.tab-pane').removeClass('in active');
+                            $scope.7ZP = true;
+                            j$('#7ZP').addClass('in active');
+                            j$('#7ZP-Tab').addClass('active');
+                            break;
+                    }
+                };
+
+                $scope.stop = function(){
+                    $scope.SPW = false;
+                    $scope.PPG = false;
+                    $scope.ODC = false;
+                    $scope.7ZP = false;
+                    $scope.sent = false;
+                };
+
+                $scope.validateODC = function(){
+                    if($scope.isFeeType('ODC'))
+                        if($scope.OnlineDoc.model === undefined)
+                            return false;
+                        else
+                            return true;
+                    else
+                        return true;
+                };
+
+                $scope.validateODCType = function(){
+                    if (!$scope.valOnlineDoc())
+                        return true;
+                    else if (!$scope.OnlineDocByRangeKM && !$scope.OnlineDocByDestiny)
+                        return false;
+                    else
+                        return true;
+                };
+
+                $scope.validateODCDeliveryDoc = function(){
+                    if ($scope.valOnlineDoc())
+                        return $scope.blnRemote || $scope.blnWeb || $scope.blnEcom;
+                    else
+                        return true;
+                };
+
+                $scope.valOnlineDoc = function(){
+                    if($scope.OnlineDoc.model)
+                        return $scope.OnlineDoc.model.id === 'fix'
+                                || $scope.OnlineDoc.model.id === 'exd'
+                                || $scope.OnlineDoc.model.id === 'multi';
+                };
+
+                /*
+                * initial Call
+                */
+                console.log('END LOAD Angular Controller Cotizador');
+                callInitialWrapper($scope);
+
+            }]);
+
+            // JSRemoting Call InitialInfo
+            function callInitialWrapper($scope) {
+                Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.PAQ_CotizadorNacional_CTR.InitialInfo}'
+                        , "{!strLeadId}"
+                        , "{!strQuoteId}"
+                        , "{!strOppId}"
+                        , function (result, event) {
+                            //debugger;
+                            if (event.status) {
+                                $scope.Wrapper = result;
+                                if(result.objQuote) {
+                                    $scope.Wrapper.objAccountId = "{!strAccId}";
+                                    j$('.tabPill').removeClass('active');
+                                    j$('.tab-pane').removeClass('in active');
+                                    switch (result.objQuote.Modelo_de_tarifas__c) {
+                                        case 'Tarifario abierto de piso':
+                                            $scope.FeeType.model = getModel('SPW', $scope.FeeType.aviableOptions);
+                                            $scope.SPW = true;
+                                            $scope.Home = false;
+                                            j$('#SPW').addClass('in active');
+                                            j$('#SPW-Tab').addClass('active');
+                                            if (result.objQuote.TipoCotizacion__c === 'Por envío') {
+                                                $scope.StrSTDCotiType = 'Envio';
+                                            } else if (result.objQuote.TipoCotizacion__c === 'Por convenio') {
+                                                $scope.StrSTDCotiType = 'Convenio';
+                                            }
+                                            break;
+                                        case 'Costos fijos por Tarifas: Por Destinos / Por rangos de km':
+                                            if (result.objQuote.Tipo_de_documentacion__c === 'Guías prepagadas') {
+                                                $scope.PPG = true;
+                                                $scope.Home = false;
+                                                $scope.FeeType.model = getModel('PPG', $scope.FeeType.aviableOptions);
+                                                j$('#PPG').addClass('in active');
+                                                j$('#PPG-Tab').addClass('active');
+                                            }
+                                            else  if (result.objQuote.Tipo_de_documentacion__c === 'Documentación Remota') {
+                                                $scope.ODC = true;
+                                                $scope.Home = false;
+                                                $scope.FeeType.model = getModel('ODC', $scope.FeeType.aviableOptions);
+                                                j$('#ODC').addClass('in active');
+                                                j$('#ODC-Tab').addClass('active');
+                                            }
+                                            break;
+                                    }
+                                }
+                                $scope.sent = false;
+                                $scope.$apply();
+                                //$scope.updateTown();
+                                j$.unblockUI();
+                            } else {
+                                $scope.dml.blnSuccess = false;
+                                $scope.dml.listErrors.push(logErrorMessage(event.message.split(',')));
+                                $scope.$apply();
+                                j$.unblockUI();
+                            }
+                        },
+                        {escape: false, timeout: 120000}
+                );
+            }
+
+            function getModel(strId, arrayOptions) {
+                var model;
+                j$.each(arrayOptions
+                        ,function (key, value) {
+                            if(value.id === strId)
+                                model = value;
+                        }
+                );
+                return model
+            }
+
+            function logErrorMessage (messages){
+                var errorMessage = messages;
+                if (errorMessage[1] !== undefined) {
+                    errorMessage = errorMessage[1].split(':');
+                }
+                else {
+                    errorMessage = errorMessage[0].split(':');
+                }
+                return errorMessage[0];
+            }
+
+            function notEmpty(str){
+                return str !== undefined  && str !== "" && str!== null;
+            }
+        })();
+    </script>
+</apex:component>
