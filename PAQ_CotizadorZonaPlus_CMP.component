@@ -20,6 +20,7 @@
                                 <div class="col-sm-9 col-md-9">
                                     <table class="table table-striped table-bordered">
                                         <thead class="thead-light">
+                                        <th class="center">Seleccionar</th>
                                         <th class="center">Tender</th>
                                         <th class="center">Cantidad</th>
                                         <th class="center">Embalaje</th>
@@ -30,6 +31,7 @@
                                         </thead>
                                         <tbody>
                                         <tr ng-repeat="(i, rad) in ZP.listRAD">
+                                            <td class="center"><input type="checkbox" ng-model="rad.blnSelectedRAD" ng-click="setValue('blnSelectedRAD', i, $event, 'RAD')"/></td>
                                             <td class="center">
                                                 <select class="select" ng-model="ZP.Origin.model" ng-options="option.label for option in  ZP.Origin.aviableOptions" ng-change="ZP.keyOrigin = ZP.Origin.model.id" ng-show="i===0"></select>
                                                 <!--<button type="button" class="btn btn-danger" ng-click="removeBlock('RAD', i)" ng-show="i>0">-</button>-->
@@ -45,6 +47,9 @@
                                     </table>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-primary" ng-click="addBlock('RAD')">Agregar</button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-primary" ng-click="removeBlock('RAD')">Remover</button>
                                     </div>
                                 </div>
                                 <!--right-->
@@ -65,6 +70,7 @@
                                 <div class="col-sm-9 col-md-9">
                                     <table class="table table-striped table-bordered">
                                         <thead class="thead-light">
+                                        <th class="center">Select.</th>
                                         <th class="center">Tender</th>
                                         <th class="center">Cantidad</th>
                                         <th class="center">Embalaje</th>
@@ -75,6 +81,7 @@
                                         </thead>
                                         <tbody>
                                         <tr ng-repeat="(i, rad) in ZP.listEAD">
+                                            <td class="center"><input type="checkbox" ng-model="rad.blnSelectedEAD" ng-click=""/></td>
                                             <td class="center">
                                                 <select class="select" ng-model="ZP.Destiny.model" ng-options="option.label for option in  ZP.Destiny.aviableOptions" ng-change="ZP.keyDestiny = ZP.Destiny.model.id" ng-show="i===0"></select>
                                                 <!--<button type="button" class="btn btn-danger" ng-click="removeBlock('EAD', i)" ng-show="i>0">-</button>-->
@@ -91,6 +98,9 @@
                                     </table>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-primary" ng-click="addBlock('EAD')">Agregar</button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-primary" ng-click="removeBlock('EAD')">Remover</button>
                                     </div>
                                 </div>
                                 <!--right-->
@@ -217,7 +227,7 @@
                 <button type="button" class="btn btn-primary" ng-click="sumbit()" ng-show="hasRecord()">
                     Enviar a Autorización <span class="glyphicon glyphicon-check"></span>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="createQuotesEX()">
+                <button type="button" class="btn btn-primary" ng-click="createQuotesT7ZP()">
                     Guardar <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
                 <button type="button" class="btn btn-danger" ng-click="dataTest()">
@@ -261,6 +271,8 @@
                     , keyDestiny : ''
                     , strRADStatus : ''
                     , strRADStatus : ''
+                    , blnEAD : false
+                    , blnRAD : false
                     , Origin : {
                         model : undefined
                         , aviableOptions : []
@@ -281,6 +293,7 @@
                         , fltExWeight : 0
                         , fltExVolW : 0
                         , fltDominantWeight : 0
+                        , blnSelectedRAD : false //22/10/2020 Salvador: Variable para seleccionar un renglón en la interfaz
                     } ]
                     , listEAD : [
                         {
@@ -295,6 +308,7 @@
                             , fltExWeight : 0
                             , fltExVolW : 0
                             , fltDominantWeight : 0
+                            , blnSelectedEAD : false //22/10/2020 Salvador: Variable para seleccionar un renglón en la interfaz
                         }
                     ]
                 };
@@ -306,6 +320,7 @@
                     , 'EADEX' : 0
                     , SUBGLOBAL : 0
                     , IVAGLOBAL : 0
+                    , PAQUETES : 0
                 };
                 $scope.Wrapper = {};
 
@@ -355,6 +370,7 @@
                         , 'EADEX' : 0
                         , SUBGLOBAL : 0
                         , IVAGLOBAL : 0
+                        , PAQUETES : 0
                     };
                     j$.each($scope.ZP.listRAD, function (index, itemRAD) {
                         origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
@@ -363,8 +379,11 @@
                         itemRAD.fltVolWeight = itemRAD.fltVol / $scope.Wrapper.mapCS['CPV'];
                         itemRAD.fltExVolW = itemRAD.fltVolWeight - 60;
                         itemRAD.fltDominantWeight = getMAX(itemRAD.fltExVolW, itemRAD.fltExWeight);
+                        ValidaDimensionesTender($scope.ZP.keyOrigin, itemRAD.fltLarge, itemRAD.fltWidth, itemRAD.fltHigh, itemRAD.fltWeight);
                         $scope.TOTAL.RAD += $scope.Wrapper.mapCS['AEZP'] * itemRAD.intFrecuency;
-                        $scope.TOTAL.RADEX += origin.Costo__c * itemRAD.fltDominantWeight * itemRAD.intFrecuency;
+                        if(origin !== undefined)
+                            $scope.TOTAL.RADEX += origin.Costo__c * itemRAD.fltDominantWeight * itemRAD.intFrecuency;
+                        $scope.TOTAL.PAQUETES += itemRAD.intFrecuency;
                     });
                     j$.each($scope.ZP.listEAD, function (index, itemEAD) {
                         destiny = $scope.Wrapper.mapTender[$scope.ZP.keyDestiny];
@@ -374,12 +393,170 @@
                         itemEAD.fltExVolW = itemEAD.fltVolWeight - 60;
                         itemEAD.fltDominantWeight = getMAX(itemEAD.fltExVolW, itemEAD.fltExWeight);
                         $scope.TOTAL.EAD += $scope.Wrapper.mapCS['AEZP'] * itemEAD.intFrecuency;
-                        $scope.TOTAL.EADEX += destiny.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency;
+                        if(destiny !== undefined)
+                            $scope.TOTAL.EADEX += destiny.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency;
+                        $scope.TOTAL.PAQUETES += itemEAD.intFrecuency;
                     });
+                    if($scope.TOTAL.RAD !== 0)
+                        $scope.ZP.blnRAD = true;
+                    if($scope.TOTAL.EAD !== 0)
+                        $scope.ZP.blnEAD = true;
                     $scope.TOTAL.SUBGLOBAL = $scope.TOTAL.EADEX + $scope.TOTAL.EAD + $scope.TOTAL.RADEX + $scope.TOTAL.RAD;
                     $scope.TOTAL.IVAGLOBAL = $scope.TOTAL.SUBGLOBAL * ($scope.Wrapper.mapCS['IVA'] / 100);
                     $scope.TOTAL.GLOBAL = $scope.TOTAL.SUBGLOBAL + $scope.TOTAL.IVAGLOBAL;
 
+                };
+
+                $scope.createQuotesT7ZP = function(){
+                    var listQuoteItem = [];
+                    var Quote = {
+                        Acuse__c: 'Interno'
+                        , AcuseCosto__c : 'Guía'
+                        , SBQQ__Primary__c : true
+                        , PAQ_TipoServicio__c : 'Estándar terrestre (STD)'
+                        , Modelo_de_tarifas__c : 'Tarifa T7 zona plus'
+                        , Descuento_Global__c : 0
+                        , PAQ_DescuentoGlobal__c : 0
+                        , Ingreso_Mensual__c : $scope.TOTAL.SUBGLOBAL
+                        , TarifaLlenaMensual__c : $scope.TOTAL.GLOBAL
+                        , Paquetes_Mensuales__c : $scope.TOTAL.PAQUETES
+                        , Gerente_de_sucursal_aprobacion__c : ''
+                        , KAM_aprobacion__c : ''
+                        , Gerente_desarrollo_aprobacion__c : ''
+                        , Director_comercial_aprobacion__c : ''
+                        , Tipo_de_documentacion__c : 'Documentación Remota'
+                        , AVRDeliveryACK__c : 0
+                        , AVRPackByDelivery__c : 0
+                        , Plaza__c: $scope.ZP.keyOrigin
+                        , RangosKM__c: false
+                        , Destinos__c: true
+                        , Servicios_adicionales__c : ''
+                        , SBQQ__Status__c : ''
+                        , Id : $scope.Wrapper.listQuoteItem.Id
+                        //, RecordTypeId : ''//$scope.Wrapper.mapRecordType['EXC']
+                    };
+                    if($scope.Managers !== undefined){
+                        if($scope.Managers['GSU'] !== undefined)
+                            Quote.Gerente_de_sucursal_aprobacion__c = $scope.Managers['GSU']
+                        if($scope.Managers['KAM'] !== undefined)
+                            Quote.KAM_aprobacion__c = $scope.Managers['KAM'];
+                        if($scope.Managers['GDS'] !== undefined)
+                            Quote.Gerente_desarrollo_aprobacion__c = $scope.Managers['GDS'];
+                        if($scope.Managers['DCO'] !== undefined)
+                            Quote.Director_comercial_aprobacion__c = $scope.Managers['DCO'];
+                    }
+                    
+                    if($scope.Wrapper.objQuote && $scope.Wrapper.objQuote.Id){
+                        Quote.Id = $scope.Wrapper.objQuote.Id;
+                        Quote.SBQQ__Status__c = $scope.Wrapper.objQuote.SBQQ__Status__c;
+                    }
+                    if($scope.Wrapper.objLead && notEmpty($scope.Wrapper.objLead.Id))
+                        Quote.Lead__c = $scope.Wrapper.objLead.Id;
+                    if($scope.Wrapper.objAccountId)
+                        Quote.SBQQ__Account__c = $scope.Wrapper.objAccountId;
+                    if($scope.Wrapper.objOpp && notEmpty($scope.Wrapper.objOpp.Id))
+                        Quote.SBQQ__Opportunity2__c = $scope.Wrapper.objOpp.Id;
+                    if($scope.ZP.blnRAD)
+                        Quote.Servicios_adicionales__c = "RAD;";
+                    if($scope.ZP.blnEAD)
+                        Quote.Servicios_adicionales__c += "EAD;";
+                    var quoteItem = {};
+                    j$.each($scope.ZP.listRAD, function (index, itemRAD) {
+                        origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
+                        quoteItem = {
+                            Destiny__c : $scope.ZP.keyOrigin
+                            , SBQQ__Quantity__c : itemRAD.intFrecuency
+                            , SBQQ__Description__c : itemRAD.strDesc
+                            , Large__c : itemRAD.fltLarge
+                            , Width__c : itemRAD.fltWidth
+                            , High__c : itemRAD.fltHigh
+                            , Weight__c : itemRAD.fltWeight
+                            , SBQQ__Discount__c : 0
+                            , SBQQ__CustomerPrice__c : itemRAD.fltExVolW * origin.Costo__c
+                            , SBQQ__NetPrice__c : itemRAD.fltExVolW * origin.Costo__c
+                            , SBQQ__SpecialPrice__c : 0
+                            , QuoteTotal__c : itemRAD.fltExVolW * origin.Costo__c
+                            , PackVolAVG__c : 0
+                            , PackWeightAVG__c : 0
+                            , FLETE__c : 0
+                            , ACK__c : 0
+                            , RAD__c : 205.5 * itemRAD.intFrecuency
+                            , SEG__c : 0
+                            , KG_ADICIONAL__c : 0
+                            , GUIA__c : 0
+                            , Tarifa__c : 'T7 ZP'
+                            , Rango_KM__c : ''
+                            , Pack_Seg__c : 0
+                            , Id : $scope.Wrapper.listQuoteItem.Id
+                            , Vol__c : itemRAD.fltExVolW
+//                            , SBQQ__Quote__c : ''
+                        }
+                        if($scope.Wrapper.listQuoteItem.Id)
+                            quoteItem.Id = $scope.Wrapper.listQuoteItem.Id;
+                        if(Quote.Id)
+                            quoteItem.Id = Quote.Id;
+                        listQuoteItem.push(quoteItem);
+                    });
+                    j$.each($scope.ZP.listEAD, function (index, itemEAD) {
+                        origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
+                        quoteItem = {
+                            /*SBQQ__Discount__c : 0
+                            , SBQQ__CustomerPrice__c : origin.Costo__c
+                            , SBQQ__NetPrice__c : origin.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency
+                            , SBQQ__SpecialPrice__c : 0
+                            , QuoteTotal__c : origin.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency
+                            , PackVolAVG__c : itemEAD.fltVol
+                            , PackWeightAVG__c : itemEAD.fltVolWeight
+                            , FLETE__c : 0
+                            , ACK__c : 0
+                            , RAD__c : 0
+                            , EAD__c : $scope.Wrapper.mapCS['AEZP'] * itemEAD.intFrecuency
+                            , SEG__c : 0
+                            , KG_ADICIONAL__c : 0
+                            , GUIA__c : 0
+                            , Tarifa__c : 'T7 ZP'
+                            , Rango_KM__c : ''
+                            , Pack_Seg__c : 0
+                            , Id : $scope.Wrapper.listQuoteItem.Id
+                            , SBQQ__Quote__c : ''*/
+                            Destiny__c : $scope.ZP.keyOrigin
+                            , SBQQ__Quantity__c : itemEAD.intFrecuency
+                            , SBQQ__Description__c : itemEAD.strDesc
+                            , Large__c : itemEAD.fltLarge
+                            , Width__c : itemEAD.fltWidth
+                            , High__c : itemEAD.fltHigh
+                            , Weight__c : itemEAD.fltWeight
+                            , SBQQ__Discount__c : 0
+                            , SBQQ__CustomerPrice__c : itemEAD.fltExVolW * origin.Costo__c
+                            , SBQQ__NetPrice__c : itemEAD.fltExVolW * origin.Costo__c
+                            , SBQQ__SpecialPrice__c : 0
+                            , QuoteTotal__c : itemEAD.fltExVolW * origin.Costo__c
+                            , PackVolAVG__c : 0
+                            , PackWeightAVG__c : 0
+                            , FLETE__c : 0
+                            , ACK__c : 0
+                            , EAD__c : 205.5 * itemEAD.intFrecuency
+                            , SEG__c : 0
+                            , KG_ADICIONAL__c : 0
+                            , GUIA__c : 0
+                            , Tarifa__c : 'T7 ZP'
+                            , Rango_KM__c : ''
+                            , Pack_Seg__c : 0
+                            , Id : $scope.Wrapper.listQuoteItem.Id
+                            , Vol__c : itemEAD.fltExVolW
+                            //, SBQQ__Quote__c : ''
+                        }
+                        if($scope.Wrapper.listQuoteItem.Id)
+                            quoteItem.Id = $scope.Wrapper.listQuoteItem.Id;
+                        if(Quote.Id)
+                            quoteItem.Id = Quote.Id;
+                        listQuoteItem.push(quoteItem);
+                    });
+                    
+                    callCreateQuoteConv($scope, Quote,listQuoteItem,  $scope.Wrapper.objLead, $scope.Wrapper.objOpp, null);
+                    /*$scope.TOTAL.SUBGLOBAL = $scope.TOTAL.EADEX + $scope.TOTAL.EAD + $scope.TOTAL.RADEX + $scope.TOTAL.RAD;
+                    $scope.TOTAL.IVAGLOBAL = $scope.TOTAL.SUBGLOBAL * ($scope.Wrapper.mapCS['IVA'] / 100);
+                    $scope.TOTAL.GLOBAL = $scope.TOTAL.SUBGLOBAL + $scope.TOTAL.IVAGLOBAL;*/
                 };
 
                 $scope.exit = function(){
@@ -403,11 +580,28 @@
                     return "{!$Profile.Name}" ==='Administrador del sistema' || "{!$Profile.Name}" ==='System Administrator';
                 };
 
-                $scope.removeBlock = function(key, index){
-                    if(key === 'RAD')
-                        $scope.ZP.listRAD.splice(index, 1);
-                    if(key === 'EAD')
-                        $scope.ZP.listEAD.splice(index, 1);
+                $scope.removeBlock = function(key){
+                    if(key === 'RAD'){
+                        j$.each($scope.ZP.listRAD, function(i, rad){
+                            if(rad.blnSelectedRAD){
+                                if(i === 0){
+                                    alert('Imposible eliminar el primer renglón');
+                                    rad.blnSelectedRAD = false;
+                                } else $scope.ZP.listRAD.splice(i, 1);
+                            }
+                        });
+                    }   
+                    if(key === 'EAD'){
+                        j$.each($scope.ZP.listEAD, function(i, rad){
+                            if(rad.blnSelectedEAD){
+                                if(i === 0){
+                                    alert('Imposible eliminar el primer renglón');
+                                    rad.blnSelectedEAD = false;
+                                } else $scope.ZP.listEAD.splice(i, 1);
+                            }
+                        });
+                        
+                    }
                 };
 
                 $scope.setValue = function(name, index, cmp, key){
@@ -450,6 +644,13 @@
                                     $scope.ZP.listEAD[index].fltWeight = getNum(cmp.target.textContent);
                                 break;
                     }
+                    if (notEmpty(cmp.target.checked)){
+                        switch (name){
+                            case 'blnSelectedRAD':
+                                $scope.ZP.listRAD[index].blnSelectedRAD = cmp.target.checked;
+                                break;
+                        }
+                    }
                     $scope.calculate();
                 };
 
@@ -458,7 +659,6 @@
                 */
                 console.log('END LOAD Angular Controller Cotizador ZP');
                 callInitialWrapper($scope);
-
             }]);
 
             // JSRemoting Call InitialInfo
@@ -474,18 +674,37 @@
                                 $scope.Wrapper = result;
                                 $scope.ZP.Origin.aviableOptions = fillPickList(result.mapTender);
                                 $scope.ZP.Destiny.aviableOptions = fillPickList(result.mapTender);
+                                $scope.Wrapper.mapHierarchy = result.mapHierarchy;
                                 j$.each(result.mapHierarchy,
                                         function(key, userId){
-                                            if(key.toUpperCase().includes('GERENTE SUCURSAL'))
+                                            /*if(key.toUpperCase().includes('GERENTE SUCURSAL'))
                                                 $scope.Managers['GSU'] = userId;
                                             else if(key.toUpperCase().includes('KAM'))
                                                 $scope.Managers['KAM'] = userId;
                                             else if(key.toUpperCase().includes('GERENCIA DESARROLLO'))
                                                 $scope.Managers['GDS'] = userId;
                                             else if(key.toUpperCase().includes('DIRECTOR COMERCIAL'))
+                                                $scope.Managers['DCO'] = userId;*/
+                                            if(key.toUpperCase().includes('SUPERVISOR_TELEMARKETING'))
+                                                $scope.Managers['KAM'] = userId;
+                                           
+                                            else if(key.toUpperCase().includes('GERENCIA_MARKETING_Y_PDV'))
+                                                $scope.Managers['GDS'] = userId;
+                                           
+                                            else if(key.toUpperCase().includes('DIRECTOR_COMERCIAL'))
                                                 $scope.Managers['DCO'] = userId;
                                         }
                                 );
+                                if($scope.Managers !== undefined){
+                                    if(!notEmpty($scope.Managers['GSU']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Gerente_Sucursal__c))
+                                        $scope.Managers['GSU'] = $scope.Wrapper.objEstructura.Gerente_Sucursal__c;
+                                    if(!notEmpty($scope.Managers['KAM']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.KAM_regional__c))
+                                        $scope.Managers['KAM'] = $scope.Wrapper.objEstructura.KAM_regional__c;
+                                    if(!notEmpty($scope.Managers['GDS']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Gerente_desarrollo_de_negocios__c	))
+                                        $scope.Managers['GDS'] = $scope.Wrapper.objEstructura.Gerente_desarrollo_de_negocios__c	;
+                                    if(!notEmpty($scope.Managers['DCO']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Director_Comercial__c))
+                                        $scope.Managers['DCO'] = $scope.Wrapper.objEstructura.Director_Comercial__c;
+                                }
                                 j$.unblockUI();
                                 $scope.$apply();
                             } else {
@@ -543,6 +762,86 @@
 
             function notEmpty(str){
                 return str !== undefined  && str !== "" && str!== null;
+            }
+
+            function ValidaDimensionesTender(strTender, fltLargo, fltAncho, fltAlto, fltPeso){
+                if(strTender !== ''){
+                    if(strTender === 'SLP70' || strTender === 'MLM70' || strTender === 'DGO70' ||strTender === 'LMM70' || strTender === 'CVM70' || strTender === 'MTY70' || strTender === 'CRB70' || strTender === 'TPQ70' || strTender === 'CPE70'){
+                        if(fltLargo > 100)
+                            alert("La dimensión largo excede los límites. Debe ser menor de 100 cm.");
+                        if(fltAncho > 100)
+                            alert("La dimensión ancho excede los límites. Debe ser menor de 100 cm.");
+                        if(fltAlto > 120)
+                            alert("La dimensión alto excede los límites. Debe ser menor de 120 cm.");
+                        if(fltPeso > 100)
+                            alert("La dimensión peso excede los límites. Debe ser menor de 100 kg.")
+                    } else {
+                        if(fltLargo > 300)
+                            alert("La dimensión largo excede los límites. Debe ser menor de 300 cm.");
+                        if(fltAncho > 170)
+                            alert("La dimensión ancho excede los límites. Debe ser menor de 170 cm.");
+                        if(fltAlto > 170)
+                            alert("La dimensión alto excede los límites. Debe ser menor de 170 cm.");
+                        if(fltPeso > 300)
+                            alert("La dimensión peso excede los límites. Debe ser menor de 300 kg.")
+                    }
+                }
+                
+            }
+
+            function getBoolean(blnValue){
+                alert(blnValue);
+                if(notEmpty(blnValue))
+                    if(isNaN(blnValue))
+                        return false;
+                    else return true;
+            }
+            function callCreateQuoteConv($scope, objQuote, listQuoteItem, leadObj, oppObj, listSS){
+                j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+                $scope.SuccessMessage = '';
+                $scope.sent = true;
+                $scope.Wrapper.objQuote = {};//Se inicializa el objeto antes de llamar a la función de grabado.
+                Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.PAQ_CotizadorZonaPlus_CTR.saveQuoteConv}'
+                        , objQuote
+                        , listQuoteItem
+                        /*, leadObj
+                        , oppObj
+                        , listSS*/
+                        , function (result, event) {
+                            debugger;
+                            if (event.status) {
+                                $scope.DML.blnSuccess = true;
+                                $scope.DML.listErrors = [];
+                                    if($scope.DML.blnSuccess
+                                            && (!$scope.Wrapper.objQuote || !$scope.Wrapper.objQuote.Id)
+                                            && result.objQuote && result.objQuote.Name
+                                    ){
+                                        $scope.Wrapper.objQuote.Id  =  result.objQuote.Id;
+                                        $scope.Wrapper.objQuote.Name =  result.objQuote.Name;
+                                        $scope.DML.objQuote = result.objQuote;
+                                    }
+                                    if(!$scope.DML.blnSuccess){
+                                        $scope.DML.blnSuccess = false;
+                                        j$.each(result.listErrors, function (i, error) {
+                                            if($scope.DML.listErrors.indexOf(error) === -1)
+                                                $scope.DML.listErrors.push(error);
+                                        });
+                                    }
+                                if($scope.DML.blnSuccess)
+                                    $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
+                                $scope.$apply();
+                                j$.unblockUI();
+
+                            } else {
+                                $scope.DML.blnSuccess = false;
+                                $scope.DML.listErrors.push(logErrorMessage(event.message.split(',')));
+                                $scope.$apply();
+                                j$.unblockUI();
+                            }
+                        },
+                        {escape: false, timeout: 120000}
+                );
             }
         })();
     </script>
