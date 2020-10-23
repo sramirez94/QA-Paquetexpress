@@ -1,0 +1,549 @@
+<apex:component controller="PAQ_CotizadorZonaPlus_CTR">
+
+    <apex:attribute name="LeadId" type="String" description="Lead Object Id" assignTo="{!strLeadId}" />
+    <apex:attribute name="QuoteId" type="String" description="Quote Object Id" assignTo="{!strQuoteId}" />
+    <apex:attribute name="CaseId" type="String" description="Case Object Id" assignTo="{!strCaseId}" />
+    <apex:attribute name="AccountId" type="String" description="Account Object Id" assignTo="{!strAccId}" />
+    <apex:attribute name="OppId" type="String" description="Opportunity Object Id" assignTo="{!strOppId}" />
+
+    <div class="container-fluid" ng-app="CotizadorZP" ng-controller="CotZPController as CotCtr" style="display: none">
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a data-toggle="collapse" href="#RAD"><h3 class="panel-title">Recolección a Domicilio</h3></a>
+                    </div>
+                    <div id="RAD" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div class="row">
+                                <!--left-->
+                                <div class="col-sm-9 col-md-9">
+                                    <table class="table table-striped table-bordered">
+                                        <thead class="thead-light">
+                                        <th class="center">Tender</th>
+                                        <th class="center">Cantidad</th>
+                                        <th class="center">Embalaje</th>
+                                        <th class="center">Largo (cm)</th>
+                                        <th class="center">Ancho (cm)</th>
+                                        <th class="center">Alto (cm)</th>
+                                        <th class="center">Peso (kg)</th>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="(i, rad) in ZP.listRAD">
+                                            <td class="center">
+                                                <select class="select" ng-model="ZP.Origin.model" ng-options="option.label for option in  ZP.Origin.aviableOptions" ng-change="ZP.keyOrigin = ZP.Origin.model.id" ng-show="i===0"></select>
+                                                <!--<button type="button" class="btn btn-danger" ng-click="removeBlock('RAD', i)" ng-show="i>0">-</button>-->
+                                            </td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.intFrecuency | number" ng-blur="setValue('intFrecuency', i, $event, 'RAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.strDesc" ng-blur="setValue('strDesc', i, $event, 'RAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltLarge | number:1" ng-blur="setValue('fltLarge', i, $event, 'RAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltWidth | number:1" ng-blur="setValue('fltWidth', i, $event, 'RAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltHigh | number:1" ng-blur="setValue('fltHigh', i, $event, 'RAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltWeight | number:1" ng-blur="setValue('fltWeight', i, $event, 'RAD')"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-primary" ng-click="addBlock('RAD')">Agregar</button>
+                                    </div>
+                                </div>
+                                <!--right-->
+                                <div class="col-sm-3 col-md-3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a data-toggle="collapse" href="#EAD"><h3 class="panel-title">Entrega a Domicilio</h3></a>
+                    </div>
+                    <div id="EAD" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div class="row">
+                                <!--left-->
+                                <div class="col-sm-9 col-md-9">
+                                    <table class="table table-striped table-bordered">
+                                        <thead class="thead-light">
+                                        <th class="center">Tender</th>
+                                        <th class="center">Cantidad</th>
+                                        <th class="center">Embalaje</th>
+                                        <th class="center">Largo (cm)</th>
+                                        <th class="center">Ancho (cm)</th>
+                                        <th class="center">Alto (cm)</th>
+                                        <th class="center">Peso (kg)</th>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="(i, rad) in ZP.listEAD">
+                                            <td class="center">
+                                                <select class="select" ng-model="ZP.Destiny.model" ng-options="option.label for option in  ZP.Destiny.aviableOptions" ng-change="ZP.keyDestiny = ZP.Destiny.model.id" ng-show="i===0"></select>
+                                                <!--<button type="button" class="btn btn-danger" ng-click="removeBlock('EAD', i)" ng-show="i>0">-</button>-->
+                                            </td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.intFrecuency | number" ng-blur="setValue('intFrecuency', i, $event, 'EAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.strDesc" ng-blur="setValue('strDesc', i, $event, 'EAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltLarge | number:1" ng-blur="setValue('fltLarge', i, $event, 'EAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltWidth | number:1" ng-blur="setValue('fltWidth', i, $event, 'EAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltHigh | number:1" ng-blur="setValue('fltHigh', i, $event, 'EAD')"></td>
+                                            <td class="center" contenteditable="true" ng-bind="rad.fltWeight | number:1" ng-blur="setValue('fltWeight', i, $event, 'EAD')"></td>
+                                        </tr>
+                                        </tbody>
+
+                                    </table>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-primary" ng-click="addBlock('EAD')">Agregar</button>
+                                    </div>
+                                </div>
+                                <!--right-->
+                                <div class="col-sm-3 col-md-3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-striped table-bordered">
+                    <tbody>
+                    <tr>
+                        <td rowspan="2">
+                            <span ng-bind="ZP.strRADStatus"></span>
+                        </td>
+                        <td>EXT-1</td>
+                        <td>RAD ZONA PLUS</td>
+                        <td align="right" ng-bind="TOTAL.RAD | currency"></td>
+                    </tr>
+                    <tr>
+                        <td>ESP-1</td>
+                        <td>ESPECIAL RAD ZP</td>
+                        <td align="right" ng-bind="TOTAL.RADEX | currency"></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2">
+                            <span ng-bind="ZP.strEADStatus"></span>
+                        </td>
+                        <td>EXT-1</td>
+                        <td>EAD ZONA PLUS</td>
+                        <td align="right" ng-bind="TOTAL.EAD | currency"></td>
+                    </tr>
+                    <tr>
+                        <td>ESP-1</td>
+                        <td>ESPECIAL EAD ZP</td>
+                        <td align="right" ng-bind="TOTAL.EADEX | currency"></td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="3">SUB-TOTAL</td>
+                        <td align="right" ng-bind="TOTAL.SUBGLOBAL | currency"></td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="3">IVA</td>
+                        <td align="right" ng-bind="TOTAL.IVAGLOBAL | currency"></td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="3">TOTAL</td>
+                        <td align="right" ng-bind="TOTAL.GLOBAL | currency"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- messages -->
+        <div class="row center">
+            <div class="col-sm-12 col-md-12">
+                <div class="alert alert-danger" role="alert" ng-repeat="(i, errorMessage) in DML.listErrors">
+                    <span ng-bind="errorMessage"></span>
+                </div>
+                <div class="alert alert-success" role="alert" ng-show="DML.blnSuccess && sent">
+                    <span ng-bind="SuccessMessage"></span>  <span ng-show="Wrapper.objQuote.Id"> Ver: <a href="/{{Wrapper.objQuote.Id}}">{{ Wrapper.objQuote.Name }}</a> </span>
+                </div>
+            </div>
+        </div>
+        <!--modal servicios-->
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="modal fade" id="ModalServicesEX" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog big-modal" role="document">
+                        <div class="modal-content big-modal">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Agregar Servicios</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="bootstrap snippet">
+                                    <div class="row">
+                                        <div class="col-sm-4 col-sm-offset-1">
+                                            <div class="list-group" id="list3">
+                                                <a href="#" class="list-group-item active">Servicios Disponibles<input title="toggle all" type="checkbox" class="all pull-right" ng-model="EX.blnServiceAddAll" ng-click="addAll('add')"/></a>
+                                                <a href="#" class="list-group-item" ng-repeat="(i, service) in EX.ServiceSelect.available" ng-click="clickFee(i, 'serviceAdd')">
+                                                    <span ng-bind="service.label"></span>
+                                                    <span class="glyphicon glyphicon-ok" ng-show="service.blnSelected"/>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 v-center">
+                                            <button title="Send to list 2" class="btn btn-default center-block add" ng-click="updateFees('add', 'service')"><i class="glyphicon glyphicon-chevron-right"></i></button>
+                                            <button title="Send to list 1" class="btn btn-default center-block remove" ng-click="updateFees('remove', 'service')"><i class="glyphicon glyphicon-chevron-left"></i></button>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="list-group" id="list4">
+                                                <a href="#" class="list-group-item active">Servicios Seleccionados <input title="toggle all" type="checkbox" class="all pull-right" ng-model="EX.blnServiceRemoveAll" ng-click="addAll('remove')"/></a>
+                                                <a href="#" class="list-group-item" ng-repeat="(i, service) in EX.ServiceSelect.selected" ng-click="clickFee(i, 'serviceRemove')">
+                                                    <span ng-bind="service.label"></span>
+                                                    <span class="glyphicon glyphicon-remove" ng-show="service.blnSelected"/>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row custom-control custom-radio" ng-show="EX.blnSEG">
+                                    <div class="col-sm-1 col-md-1" />
+                                    <div class="col-sm-3 col-md-3"><label class="custom-control-label" >Monto asegurado</label></div>
+                                    <div class="col-sm-3 col-md-3"><input type="number" class="custom-control-input rouded-med" ng-model="EX.fltSEG" ng-change="calculateEX();"/></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- buttons -->
+        <div class="row right">
+            <div class="btn-group ">
+                <button type="button" class="btn btn-default" ng-click="exit()">
+                    <span class="glyphicon glyphicon-menu-left"></span> Salir
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="sumbit()" ng-show="hasRecord()">
+                    Enviar a Autorización <span class="glyphicon glyphicon-check"></span>
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="createQuotesEX()">
+                    Guardar <span class="glyphicon glyphicon-floppy-disk"></span>
+                </button>
+                <button type="button" class="btn btn-danger" ng-click="dataTest()">
+                    DATA TEST
+                </button>
+                <button type="button" class="btn btn-default" ng-click="back()" ng-show="EX.step2 && isAdmin()">
+                    <span class="glyphicon glyphicon-menu-left"></span> Atras
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="next()" ng-show="EX.step1 && isAdmin()">
+                    Siguiente <span class="glyphicon glyphicon-menu-right"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" lang="js">
+        var j$ = jQuery.noConflict();
+        //j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+        j$(document).ready(function(){
+            //console.clear(); //console.clear();
+            j$('.container-fluid').show();
+        });
+        (function(){
+            // angujar module
+            var app = angular.module('CotizadorZP', []);
+            // main controller
+            /*
+            * Angular module controllers
+            * Begin Angular Controller
+            */
+            app.controller('CotZPController', ['$scope',function($scope) {
+
+                /*
+                * Controller variables
+                */
+                $scope.DML = {
+                    blnSuccess : true
+                    , listErrors : []
+                };
+                $scope.ZP = {
+                    keyOrigin : ''
+                    , keyDestiny : ''
+                    , strRADStatus : ''
+                    , strRADStatus : ''
+                    , Origin : {
+                        model : undefined
+                        , aviableOptions : []
+                    }
+                    , Destiny : {
+                        model : undefined
+                        , aviableOptions : []
+                    }
+                    , listRAD : [ {
+                        intFrecuency : 0
+                        , strDesc : ''
+                        , fltLarge : 0
+                        , fltWidth : 0
+                        , fltHigh : 0
+                        , fltWeight : 0
+                        , fltVol : 0
+                        , fltVolWeight : 0
+                        , fltExWeight : 0
+                        , fltExVolW : 0
+                        , fltDominantWeight : 0
+                    } ]
+                    , listEAD : [
+                        {
+                            intFrecuency : 0
+                            , strDesc : ''
+                            , fltLarge : 0
+                            , fltWidth : 0
+                            , fltHigh : 0
+                            , fltWeight : 0
+                            , fltVol : 0
+                            , fltVolWeight : 0
+                            , fltExWeight : 0
+                            , fltExVolW : 0
+                            , fltDominantWeight : 0
+                        }
+                    ]
+                };
+                $scope.TOTAL = {
+                    'GLOBAL' : 0
+                    , 'RAD' : 0
+                    , 'RADEX' : 0
+                    , 'EAD' : 0
+                    , 'EADEX' : 0
+                    , SUBGLOBAL : 0
+                    , IVAGLOBAL : 0
+                };
+                $scope.Wrapper = {};
+
+                //debugger;
+                /*
+                * Controller functions
+                */
+                $scope.addBlock = function(key){
+                    if(key === 'RAD')
+                        $scope.ZP.listRAD.push({
+                            intFrecuency : 0
+                            , strDesc : ''
+                            , fltLarge : 0
+                            , fltWidth : 0
+                            , fltHigh : 0
+                            , fltWeight : 0
+                            , fltVol : 0
+                            , fltVolWeight : 0
+                            , fltExWeight : 0
+                            , fltExVolW : 0
+                            , fltDominantWeight : 0
+                        });
+                    if(key === 'EAD')
+                        $scope.ZP.listEAD.push({
+                            intFrecuency : 0
+                            , strDesc : ''
+                            , fltLarge : 0
+                            , fltWidth : 0
+                            , fltHigh : 0
+                            , fltWeight : 0
+                            , fltVol : 0
+                            , fltVolWeight : 0
+                            , fltExWeight : 0
+                            , fltExVolW : 0
+                            , fltDominantWeight : 0
+                        });
+                };
+
+                $scope.calculate = function(){
+                    var origin = {};
+                    var destiny = {};
+                    $scope.TOTAL = {
+                        'GLOBAL' : 0
+                        , 'RAD' : 0
+                        , 'RADEX' : 0
+                        , 'EAD' : 0
+                        , 'EADEX' : 0
+                        , SUBGLOBAL : 0
+                        , IVAGLOBAL : 0
+                    };
+                    j$.each($scope.ZP.listRAD, function (index, itemRAD) {
+                        origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
+                        itemRAD.fltVol = itemRAD.fltHigh * itemRAD.fltWidth * itemRAD.fltLarge;
+                        itemRAD.fltExWeight = itemRAD.fltWeight - 60;
+                        itemRAD.fltVolWeight = itemRAD.fltVol / $scope.Wrapper.mapCS['CPV'];
+                        itemRAD.fltExVolW = itemRAD.fltVolWeight - 60;
+                        itemRAD.fltDominantWeight = getMAX(itemRAD.fltExVolW, itemRAD.fltExWeight);
+                        $scope.TOTAL.RAD += $scope.Wrapper.mapCS['AEZP'] * itemRAD.intFrecuency;
+                        $scope.TOTAL.RADEX += origin.Costo__c * itemRAD.fltDominantWeight * itemRAD.intFrecuency;
+                    });
+                    j$.each($scope.ZP.listEAD, function (index, itemEAD) {
+                        destiny = $scope.Wrapper.mapTender[$scope.ZP.keyDestiny];
+                        itemEAD.fltVol = itemEAD.fltHigh * itemEAD.fltWidth * itemEAD.fltLarge;
+                        itemEAD.fltExWeight = itemEAD.fltWeight - 60;
+                        itemEAD.fltVolWeight = itemEAD.fltVol / $scope.Wrapper.mapCS['CPV'];
+                        itemEAD.fltExVolW = itemEAD.fltVolWeight - 60;
+                        itemEAD.fltDominantWeight = getMAX(itemEAD.fltExVolW, itemEAD.fltExWeight);
+                        $scope.TOTAL.EAD += $scope.Wrapper.mapCS['AEZP'] * itemEAD.intFrecuency;
+                        $scope.TOTAL.EADEX += destiny.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency;
+                    });
+                    $scope.TOTAL.SUBGLOBAL = $scope.TOTAL.EADEX + $scope.TOTAL.EAD + $scope.TOTAL.RADEX + $scope.TOTAL.RAD;
+                    $scope.TOTAL.IVAGLOBAL = $scope.TOTAL.SUBGLOBAL * ($scope.Wrapper.mapCS['IVA'] / 100);
+                    $scope.TOTAL.GLOBAL = $scope.TOTAL.SUBGLOBAL + $scope.TOTAL.IVAGLOBAL;
+
+                };
+
+                $scope.exit = function(){
+                    if(notEmpty("{!strCaseId}"))
+                        window.location = '/'+"{!strCaseId}";
+                    else if(notEmpty("{!strOppId}"))
+                        window.location = '/'+"{!strOppId}";
+                    else if(notEmpty("{!strLeadId}"))
+                        window.location = '/'+"{!strLeadId}";
+                    else if(notEmpty("{!strAccId}"))
+                        window.location = '/'+"{!strAccId}";
+                    else if(notEmpty("{!strQuoteId}"))
+                        window.location = '/'+"{!strQuoteId}";
+                };
+
+                $scope.hasRecord = function(){
+                    return $scope.Wrapper.objQuote && $scope.Wrapper.objQuote.Id;
+                };
+
+                $scope.isAdmin = function(){
+                    return "{!$Profile.Name}" ==='Administrador del sistema' || "{!$Profile.Name}" ==='System Administrator';
+                };
+
+                $scope.removeBlock = function(key, index){
+                    if(key === 'RAD')
+                        $scope.ZP.listRAD.splice(index, 1);
+                    if(key === 'EAD')
+                        $scope.ZP.listEAD.splice(index, 1);
+                };
+
+                $scope.setValue = function(name, index, cmp, key){
+                    if (notEmpty(cmp.target.textContent))
+                        switch (name) {
+                            case 'intFrecuency':
+                                if(key === 'RAD')
+                                    $scope.ZP.listRAD[index].intFrecuency = getNum(cmp.target.textContent);
+                                if(key === 'EAD')
+                                    $scope.ZP.listEAD[index].intFrecuency = getNum(cmp.target.textContent);
+                                break;
+                            case 'strDesc':
+                                if(key=== 'RAD')
+                                    $scope.ZP.listRAD[index].strDesc = cmp.target.textContent;
+                                if(key === 'EAD')
+                                    $scope.ZP.listEAD[index].strDesc = cmp.target.textContent;
+                                break;
+                            case 'fltLarge':
+                                if(key === 'RAD')
+                                    $scope.ZP.listRAD[index].fltLarge = getNum(cmp.target.textContent);
+                                if(key === 'EAD')
+                                    $scope.ZP.listEAD[index].fltLarge = getNum(cmp.target.textContent);
+                                break;
+                            case 'fltWidth':
+                                if(key === 'RAD')
+                                    $scope.ZP.listRAD[index].fltWidth = getNum(cmp.target.textContent);
+                                if(key === 'EAD')
+                                    $scope.ZP.listEAD[index].fltWidth = getNum(cmp.target.textContent);
+                                break;
+                            case 'fltHigh':
+                                if(key === 'RAD')
+                                    $scope.ZP.listRAD[index].fltHigh = getNum(cmp.target.textContent);
+                                if(key === 'EAD')
+                                    $scope.ZP.listEAD[index].fltHigh = getNum(cmp.target.textContent);
+                                break;
+                            case 'fltWeight':
+                                if(key === 'RAD')
+                                    $scope.ZP.listRAD[index].fltWeight = getNum(cmp.target.textContent);
+                                if(key === 'EAD')
+                                    $scope.ZP.listEAD[index].fltWeight = getNum(cmp.target.textContent);
+                                break;
+                    }
+                    $scope.calculate();
+                };
+
+                /*
+                * initial Call
+                */
+                console.log('END LOAD Angular Controller Cotizador ZP');
+                callInitialWrapper($scope);
+
+            }]);
+
+            // JSRemoting Call InitialInfo
+            function callInitialWrapper($scope) {
+                Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.PAQ_CotizadorZonaPlus_CTR.InitialInfo}'
+                        , "{!strLeadId}"
+                        , "{!strQuoteId}"
+                        , "{!strOppId}"
+                        , function (result, event) {
+                            //debugger;
+                            if (event.status) {
+                                $scope.Wrapper = result;
+                                $scope.ZP.Origin.aviableOptions = fillPickList(result.mapTender);
+                                $scope.ZP.Destiny.aviableOptions = fillPickList(result.mapTender);
+                                j$.each(result.mapHierarchy,
+                                        function(key, userId){
+                                            if(key.toUpperCase().includes('GERENTE SUCURSAL'))
+                                                $scope.Managers['GSU'] = userId;
+                                            else if(key.toUpperCase().includes('KAM'))
+                                                $scope.Managers['KAM'] = userId;
+                                            else if(key.toUpperCase().includes('GERENCIA DESARROLLO'))
+                                                $scope.Managers['GDS'] = userId;
+                                            else if(key.toUpperCase().includes('DIRECTOR COMERCIAL'))
+                                                $scope.Managers['DCO'] = userId;
+                                        }
+                                );
+                                j$.unblockUI();
+                                $scope.$apply();
+                            } else {
+                                $scope.DML.blnSuccess = false;
+                                $scope.DML.listErrors.push(logErrorMessage(event.message.split(',')));
+                                $scope.$apply();
+                                j$.unblockUI();
+                            }
+                        },
+                        {escape: false, timeout: 120000}
+                );
+            }
+
+            function getMAX(fltNum1, fltNum2) {
+                return Math.max(fltNum1, fltNum2);
+            }
+
+            function getModel(strId, arrayOptions) {
+                var model;
+                j$.each(arrayOptions
+                        ,function (key, value) {
+                            if(value.id === strId)
+                                model = value;
+                        }
+                );
+                return model
+            }
+
+            function getNum(strNum) {
+                if(notEmpty(strNum))
+                    if(isNaN(strNum))
+                        return 0;
+                    else
+                        return parseFloat(strNum);
+            }
+
+            function fillPickList(array) {
+                var list = [];
+                j$.each(array, function (key, value) {
+                    list.push({id: value.Name, label: value.Name});
+                });
+                return list;
+            }
+
+            function logErrorMessage (messages){
+                var errorMessage = messages;
+                if (errorMessage[1] !== undefined) {
+                    errorMessage = errorMessage[1].split(':');
+                }
+                else {
+                    errorMessage = errorMessage[0].split(':');
+                }
+                return errorMessage[0];
+            }
+
+            function notEmpty(str){
+                return str !== undefined  && str !== "" && str!== null;
+            }
+        })();
+    </script>
+</apex:component>
