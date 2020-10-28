@@ -2017,8 +2017,10 @@
                             Object.assign(itemZP, item);
                             itemZP.fltEAD = $scope.EX.mapService['ZP'].ranges[keyRange].fltCost;
                             //PAQ
-                            item.fltQuoteFullFee = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
+                            //item.fltQuoteFullFee = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
+                            item.fltQuoteFullFee = $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltBaseFee + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
                             item.fltDisc = (item.fltQuoteFullFee / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;//(item.fltQuoteFee + item.fltACK) / ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee + item.fltACK) -1;
+                            item.fltQuoteFee += item.fltQuoteAdKG;
                             if(item.strFee === 'T0' || item.strFee === 'T1'){
                                 //item.fltTotalQuote = item.fltQuoteFullFee * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
                                 item.fltTotalQuote = item.fltQuoteFee * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
@@ -2044,20 +2046,22 @@
                             fltTotalQuote += item.fltTotalQuote;
                             fltTotalSEG += item.fltTotalSEG;
                             // ZP
-                            itemZP.fltQuoteFullFee = itemZP.fltQuoteFee + itemZP.fltQuoteAdKG + itemZP.fltRAD + itemZP.fltEAD + itemZP.fltACK + itemZP.fltSEG;
+                            //itemZP.fltQuoteFullFee = itemZP.fltQuoteFee + itemZP.fltQuoteAdKG + itemZP.fltRAD + itemZP.fltEAD + itemZP.fltACK + itemZP.fltSEG;
+                            itemZP.fltQuoteFullFee = $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltBaseFee + itemZP.fltRAD + 208.5 + itemZP.fltACK + itemZP.fltSEG;
                             itemZP.fltDisc = (itemZP.fltQuoteFullFee - itemZP.fltSEG) / ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltFullFee - itemZP.fltSEG) -1;
+                            itemZP.fltQuoteFee += itemZP.fltQuoteAdKG + $scope.EX.mapService['ZP'].ranges[keyRange].fltCost;
                             if(itemZP.strFee === 'T0' || itemZP.strFee === 'T1'){
-                                itemZP.fltTotalQuote = itemZP.fltQuoteFullFee * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
+                                itemZP.fltTotalQuote = itemZP.fltQuoteFee * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
                                 itemZP.fltTotalSEG = itemZP.fltSEG * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
 
                             }
                             else if(itemZP.strFee !== 'TS' && itemZP.strFee !== 'T0' && itemZP.strFee !== 'T1'){
-                                itemZP.fltTotalQuote = itemZP.fltQuoteFullFee * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 10);
+                                itemZP.fltTotalQuote = itemZP.fltQuoteFee * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 10);
                                 itemZP.fltTotalSEG = itemZP.fltSEG * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 10);
 
                             }
                             else{
-                                itemZP.fltTotalQuote = itemZP.fltQuoteFullFee * $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency;
+                                itemZP.fltTotalQuote = itemZP.fltQuoteFee * $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency;
                                 itemZP.fltTotalSEG = itemZP.fltSEG * $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency;
 
                             }
@@ -2455,7 +2459,7 @@
                                     strRange = labelRange;
                                 else
                                     strRange = getRange(labelRange);
-                                if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6' ||keyFee === 'T7')
+                                if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6' /*||keyFee === 'T7'*/)
                                     var quoteItem = {
                                         SBQQ__Quantity__c : frecc.intFrecuency
                                         , SBQQ__Discount__c : quote.fltDisc
@@ -2479,7 +2483,7 @@
                                         , SBQQ__Quote__c : Quote.Id
 
                                     };
-                                else {
+                                else if(keyFee.includes('_')) {
                                     debugger;
                                     var key = '';
                                     key = keyFee.replace('_', '');
@@ -2510,12 +2514,12 @@
                                 if(labelRange.includes(' (')){
                                     quoteItem.Destiny__c = labelRange;
                                 }
-                                if (strFee === 'TARIFA T7') {
+                                /*if (strFee === 'TARIFA T7') {
                                     quoteItem.Weight__c = $scope.EX.mapFrecc[keyFee].ranges[keyRange].fltAVGWeight;
                                     quoteItem.Width__c = $scope.EX.mapFrecc[keyFee].ranges[keyRange].fltAVGVol;
                                     quoteItem.Large__c = 1;
                                     quoteItem.High__c = 1;
-                                } else if (keyFee ==! 'TS'||keyFee ==! 'T0' ||keyFee ==! 'T1' ||keyFee ==! 'T2' ||keyFee ==! 'T3' ||keyFee ==! 'T4' ||keyFee ==! 'T5' ||keyFee ==! 'T6'){
+                                } else */if (keyFee !== 'TS' && keyFee !== 'T0' && keyFee !== 'T1' && keyFee !== 'T2' && keyFee !== 'T3' && keyFee !== 'T4' && keyFee !== 'T5' && keyFee !== 'T6' && keyFee !== 'T7'){
                                     quoteItem.Weight__c = $scope.EX.OWFrecc[keyFee].ranges[keyRange].fltAVGWeight;
                                     quoteItem.Width__c = $scope.EX.OWFrecc[keyFee].ranges[keyRange].fltAVGVol;
                                     quoteItem.Large__c = 1;
@@ -2524,11 +2528,11 @@
 
                                 if(strFee === 'TARIFA TS')
                                     quoteItem.Tarifa__c = 'TARIFA SOBRE';
-
-                                if ((quoteItem.SBQQ__Discount__c * -1) > rangeDisc)
-                                    rangeDisc = quoteItem.SBQQ__Discount__c * -1;
-                                listQuoteItem.push(quoteItem);
-
+                                if(keyFee !== 'T7'){
+                                    if ((quoteItem.SBQQ__Discount__c * -1) > rangeDisc)
+                                        rangeDisc = quoteItem.SBQQ__Discount__c * -1;
+                                    listQuoteItem.push(quoteItem);
+                                }
                             }
 
                             if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6'){
