@@ -2019,8 +2019,9 @@
                             //PAQ
                             //item.fltQuoteFullFee = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
                             item.fltQuoteFullFee = $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltBaseFee + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
-                            item.fltDisc = (item.fltQuoteFullFee / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;//(item.fltQuoteFee + item.fltACK) / ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee + item.fltACK) -1;
+                            //item.fltDisc = (item.fltQuoteFullFee / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;//(item.fltQuoteFee + item.fltACK) / ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee + item.fltACK) -1;
                             item.fltQuoteFee += item.fltQuoteAdKG;
+                            item.fltDisc = (item.fltQuoteFee / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;
                             if(item.strFee === 'T0' || item.strFee === 'T1'){
                                 //item.fltTotalQuote = item.fltQuoteFullFee * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
                                 item.fltTotalQuote = item.fltQuoteFee * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
@@ -2048,8 +2049,9 @@
                             // ZP
                             //itemZP.fltQuoteFullFee = itemZP.fltQuoteFee + itemZP.fltQuoteAdKG + itemZP.fltRAD + itemZP.fltEAD + itemZP.fltACK + itemZP.fltSEG;
                             itemZP.fltQuoteFullFee = $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltBaseFee + itemZP.fltRAD + 208.5 + itemZP.fltACK + itemZP.fltSEG;
-                            itemZP.fltDisc = (itemZP.fltQuoteFullFee - itemZP.fltSEG) / ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltFullFee - itemZP.fltSEG) -1;
+                            //itemZP.fltDisc = (itemZP.fltQuoteFullFee - itemZP.fltSEG) / ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltFullFee - itemZP.fltSEG) -1;
                             itemZP.fltQuoteFee += itemZP.fltQuoteAdKG + $scope.EX.mapService['ZP'].ranges[keyRange].fltCost;
+                            itemZP.fltDisc = (itemZP.fltQuoteFee / $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltFullFee) -1;
                             if(itemZP.strFee === 'T0' || itemZP.strFee === 'T1'){
                                 itemZP.fltTotalQuote = itemZP.fltQuoteFee * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
                                 itemZP.fltTotalSEG = itemZP.fltSEG * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
