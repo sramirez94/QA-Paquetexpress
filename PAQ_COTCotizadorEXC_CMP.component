@@ -1445,7 +1445,7 @@
                             $scope.EX.mapFrecc[keyFee+'ZP'].ranges[key].fltAVGWeight = 0;
                             $scope.EX.mapFrecc[keyFee+'ZP'].ranges[key].fltAVGVol = 0;
                         }
-                        $scope.EX.mapQuotes[keyFee][key] = {};
+                        //$scope.EX.mapQuotes[keyFee][key] = {};
                         if(keyFee !== 'T7')
                             $scope.EX.mapQuotesZP[keyFee][key] = {};
                     });
@@ -1663,7 +1663,7 @@
                                 , fltSEG : 0
                                 , fltTotalNormal : 0
                             };
-                            $scope.EX.mapQuotes[keyFee][key] = {};
+                            //$scope.EX.mapQuotes[keyFee][key] = {};
                             $scope.EX.OWFrecc[keyFee+'ZP'].ranges[key] = {
                                 intFrecuency : 0
                                 , fltAVGWeight : fltWeigth  
@@ -1939,6 +1939,7 @@
                     //debugger;
                     $scope.EX.mapProjEX = {};
                     $scope.EX.mapProjEXZP = {};
+                    $scope.EX.mapQuotes = {};
                     $scope.EX.TOTAL.PROPUESTA = 0;
                     $scope.EX.TOTAL.SEGURO = 0;
                     $scope.EX.TOTAL.NORMAL = 0;
@@ -1990,7 +1991,14 @@
                                     key = b.key;
                             });
                         block = $scope.EX.mapBlock[key];
-
+                        if(!getLabel(strFee, $scope.EX.mapQuotes))
+                            $scope.EX.mapQuotes[strFee] = {
+                                block : {}
+                            };
+                        if(!getLabel(key, $scope.EX.mapQuotes[strFee].block) && key.includes(strFee))
+                            $scope.EX.mapQuotes[strFee].block[key] = {
+                                ranges : {}
+                            };
                         j$.each($scope.EX.listRange, function (keyRange, strRange) {
                             var item = {
                                  fltQuoteFee : block.ranges[keyRange].fltCost
@@ -2043,7 +2051,9 @@
                                 item.fltTotalSEG = item.fltSEG * $scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency;
 
                             }
-                            Object.assign($scope.EX.mapQuotes[item.strFee][keyRange], item);
+                            //Object.assign($scope.EX.mapQuotes[item.strFee][keyRange], item);
+                            if(key.includes(item.strFee))
+                                $scope.EX.mapQuotes[item.strFee].block[key].ranges[keyRange] = item;
                             listRanges[keyRange] = item;
                             fltTotalNormal += $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltTotalNormal;
                             fltTotalQuote += item.fltTotalQuote;
@@ -2717,7 +2727,7 @@
                                     /*$scope.EX.mapFrecc['T7V'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];
                                     $scope.EX.mapFrecc['T7P'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];*/
                                 }
-                                $scope.EX.mapQuotes[keyFee][key] = {};
+                                //$scope.EX.mapQuotes[keyFee][key] = {};
                                 if(keyFee != 'T7')
                                     $scope.EX.mapQuotesZP[keyFee][key] = {};
                             }
@@ -2769,7 +2779,7 @@
                                     $scope.EX.mapFrecc['T7V'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];
                                     $scope.EX.mapFrecc['T7P'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];
                                 }
-                                $scope.EX.mapQuotes[keyFee][key] = {};
+                                //$scope.EX.mapQuotes[keyFee][key] = {};
                                 if(keyFee != 'T7')
                                     $scope.EX.mapQuotesZP[keyFee][key] = {};
                             });
