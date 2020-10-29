@@ -180,16 +180,6 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                         this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
             }
         }
-        for(String keyRange: this.listRange){
-            if(!this.mapService.get('ADD').mapRanges.containsKey(keyRange))
-                this.mapService.get('ADD').mapRanges.put(keyRange, 0);
-
-            if(!this.mapService.get('ACK').mapRanges.containsKey(keyRange))
-                this.mapService.get('ACK').mapRanges.put(keyRange, 0);
-
-            if(!this.mapService.get('ZP').mapRanges.containsKey(keyRange))
-                this.mapService.get('ZP').mapRanges.put(keyRange, 0);
-        }
         this.wp.objQuote = queryQuote(sc.getId());
 
         if(wp.objQuote.PAQ_DescuentoGlobal__c != null)
@@ -497,7 +487,6 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     if(i < decW)
                         keyBlock = decW;
             wpBlock = mapBlocksByW.get(keyBlock);
-
             SBQQ__QuoteLine__c range;
             SBQQ__QuoteLine__c rangeZP;
             for (String strRange : listRangeDestiny){
@@ -596,15 +585,20 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 Decimal fltQuoteAdKGZP = 0;
                 Decimal prueba  = 0;
                 Decimal decEAD = 0;
-                if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
-                    FleteZP = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c;
-                if(this.mapQuotesZP.get(range.Tarifa__c).get(strRange).RAD__c != null)
-                    rangeZP.RAD__c = this.mapQuotesZP.get(range.Tarifa__c).get(strRange).RAD__c;
+                if(rangeZP.Tarifa__c == 'TARIFA SOBRE')
+                    FleteZP = 192.57 + 208.5;
+                else {
+                    if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
+                        FleteZP = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c;
+                }
+                if(blnRAD)
+                    rangeZP.RAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), FleteZP);
                 if(this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).EAD__c != null)
                     decEAD = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).EAD__c;
                 if(this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).ACK__c != null)
                     AcuseZP = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).ACK__c;
-                rangeZP.ACK__C = this.wp.mapACK.get('Interno');
+                if(this.blnACK)
+                    rangeZP.ACK__C = this.wp.mapACK.get('Interno');
                 TarifaLlenaZP = FleteZP + rangeZP.RAD__c + rangeZP.EAD__c + rangeZP.ACK__C;
                 TarLlena2ZP = TarifaLlenaZP + rangeZP.RAD__c + rangeZP.EAD__c + rangezp.ACK__C;
                 rangeZP.SBQQ__Quantity__c = rangeZP.RAD__c;
@@ -616,11 +610,13 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c / 10;
                 else rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
                 prueba = fltGuia  + fltQuoteAdKGZP;
-                TarifaPropuestaZP = fltGuia  + fltQuoteAdKGZP + decEAD;
+                TarifaPropuestaZP = fltGuia  + decEAD;
                 TarifaPropuesta2ZP = TarifaPropuestaZP + AcuseZP;
                 rangeZP.SBQQ__CustomerPrice__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c * TarifaLlenaZP;
                 rangeZP.SBQQ__NetPrice__c = Tarifapropuesta2zp * this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                rangeZP.SBQQ__Discount__c = Tarifapropuesta2zp / TarifaLlenaZP - 1;
+                if(range.Tarifa__c == 'TARIFA SOBRE')
+                    rangeZP.SBQQ__Discount__c = (TarifaPropuestaZP / FleteZP) - 1;
+                else rangeZP.SBQQ__Discount__c = (TarifaPropuestaZP / TarifaLlenaZP) - 1;
                 decSUMCustomerPriceZP += rangeZP.SBQQ__CustomerPrice__c;
                 decSUMNetPriceZP += rangeZP.SBQQ__NetPrice__c;
             }
