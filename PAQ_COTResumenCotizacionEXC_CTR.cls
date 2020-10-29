@@ -1,3 +1,6 @@
+/*
+ * Created by Fran on 19/08/2020.
+ */
 public class PAQ_COTResumenCotizacionEXC_CTR {
 
     public Wrapper wp                                                       {get; set;}
@@ -639,23 +642,17 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 if(blnACK)
                     ejemplo2 += this.wp.mapACK.get('Interno');
                 ejemplo3 = decFlete + range.ACK__C + fltQuoteAdKG;
-                ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
+                if(range.Tarifa__c == 'TARIFA SOBRE')
+                    ejemplo4 = range.SBQQ__Quantity__c * decFlete;
+                else ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
                 //ejemplo5 = range.Flete__c * range.SBQQ__Quantity__c;
                 fltGuia += fltQuoteAdKG;
                 ejemplo5 = fltGuia * range.SBQQ__Quantity__c;
                 range.SBQQ__NetPrice__c = ejemplo5;
-                /*if(range.Tarifa__c == 'TARIFA T3'){
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'flete: ' + decFlete));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + range.RAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + range.EAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + ejemplo2));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Paquetes: ' + range.SBQQ__Quantity__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + fltGuia));
-                }*/
-                /*if(range.Tarifa__c == 'TARIFA SOBRE')
-                    range.SBQQ__Discount__c = (range.Flete__c / decFlete) - 1;
-                else range.SBQQ__Discount__c = (range.Flete__c / ejemplo2) - 1;*/
-                range.SBQQ__Discount__c = (fltGuia / ejemplo2) - 1;
+                if(range.Tarifa__c == 'TARIFA SOBRE')
+                    range.SBQQ__Discount__c = (fltGuia / decFlete) - 1;
+                else range.SBQQ__Discount__c = (fltGuia / ejemplo2) - 1;
+                //range.SBQQ__Discount__c = (fltGuia / ejemplo2) - 1;
 
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
