@@ -1,6 +1,3 @@
-/*
- * Created by Fran on 19/08/2020.
- */
 public class PAQ_COTResumenCotizacionEXC_CTR {
 
     public Wrapper wp                                                       {get; set;}
