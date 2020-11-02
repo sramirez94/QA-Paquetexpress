@@ -809,7 +809,6 @@
                         , oppObj
                         , listSS*/
                         , function (result, event) {
-                            debugger;
                             if (event.status) {
                                 $scope.DML.blnSuccess = true;
                                 $scope.DML.listErrors = [];
