@@ -1,0 +1,155 @@
+<apex:page standardController="SBQQ__Quote__c" extensions="PAQ_COTResumenT7ZP_CTR" language="es-ES" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
+    <head>
+        <style type="text/css">
+            @page { size: Letter; margin: 15mm; margin-bottom: 20mm;
+                <!--@top-center { content: " "; font-family: sans-serif; font-size: 90pt;}-->
+                @bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); } }
+                <!--table,td,th {border:0.5px solid black;}-->
+                
+                .page-break { display:block; page-break-inside: avoid; }
+                .page-break2 { display:block; page-break-inside: avoid; 
+                                bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); }
+                            }
+
+        </style>
+    </head>
+    <apex:outputPanel id="PanelC">
+        <table Id="customers" cellspacing="0" width="100%">
+            <tr>
+                <td width="30%" align="left"  style="font-size:10px; "><img  src="{!$Resource.PaqueteEslogan}" width="220px" height="60px"/></td>
+                <td width="70%" align="center"  style="font-size:15px; color:black; font-family: Arial; align: Center; "><h7> <b>Cotización especial de servicio zona plus</b> </h7><br/><br/></td>
+            </tr>
+        </table>
+        <table style="border-collapse: collapse;" width="100%">
+            <tr>
+                <td colspan="20" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Resumen</b></td>
+            </tr>
+        </table>
+        <br/>
+        <apex:outputPanel id="tablesT7ZP">
+            <table style="border-collapse: collapse;" width="100%">
+                <tr>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >FECHA</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >PLAZA QUE SOLICITA</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >TENDER DESTINO</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >COSTO OPERADOR LOGISTICO</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >ID CLIENTE</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >NOMBRE CLIENTE</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >CLAVE GENERADA</td>
+                </tr>
+                <tr>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                        <apex:outputText value="{0,date,dd.MM.yyyy}">
+                            <apex:param value="{!wp.objQuote.CreatedDate}" />
+                        </apex:outputText>
+                    </td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!wp.objQuote.OriginCity__c}</td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!wp.strDestiny}</td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!wp.objQuote.TarifaLlenaMensual__c}</td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+                </tr>
+            </table>
+        </apex:outputPanel>
+        <br/>
+        <table style="border-collapse: collapse;" width="100%">
+            <tr>
+                <td colspan="20" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Detalle cotizado</b></td>
+            </tr>
+        </table>
+        <br/>
+        <table style="border-collapse: collapse;" width="100%">
+            <tr><!--Este bloque después se sustituirá por la iteración con los registros que estén guardados en la base de datos-->
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">MEX70</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">2</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">TARIMAS</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">100</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">140</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">50</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">140</td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">EXT-1</td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;">RAD Zona plus</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">ESP-1</td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;">Especial RAD ZP</td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black"></td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">EXT-1</td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black">EAD Zona plus</td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black"></td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">EXT-1</td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black">Especial EAD ZP</td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black"></td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="right" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black">Subtotal</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                        <apex:param value="{!wp.objQuote.Ingreso_Mensual__c}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="right" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black">IVA</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                        <apex:param value="{!wp.objQuote.Ingreso_Mensual__c * 0.16}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="left" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
+                <td align="right" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black">Total</td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                        <apex:param value="{!wp.objQuote.TarifaLlenaMensual__c}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td style="font-size:9px">Elaboró: </td>
+                <td style="font-size:9px">{!wp.objQuote.owner.Name}</td>
+            </tr>
+        </table>
+    </apex:outputPanel>
+</apex:page>
