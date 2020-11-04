@@ -2046,6 +2046,7 @@
                             let fltTarifaPropuestaZP = 0;
                             let fltAcuse = 0;
                             let fltTarifaPropuesta2 = 0;
+                            let fltTarPropuestaZP = 0;
                             if(i > lastBlock.value)
                                 item.fltQuoteAdKG = $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight * ( i - lastBlock.value);
                             if($scope.EX.blnACK){
@@ -2086,21 +2087,22 @@
                             fltTotalQuote += item.fltTotalQuote;
                             fltTotalSEG += item.fltTotalSEG;
                             // ZP
-                            itemZP.fltQuoteFullFee = $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltBaseFee + itemZP.fltRAD + 208.5 + itemZP.fltACK + itemZP.fltSEG;
+                            itemZP.fltQuoteFullFee = $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltBaseFee + itemZP.fltRAD + 208.5 + fltAcuse + itemZP.fltSEG;
                             fltTarifaPropuestaZP += itemZP.fltQuoteFee +  itemZP.fltQuoteAdKG + $scope.EX.mapService['ZP'].ranges[keyRange].fltCost;
-                            itemZP.fltDisc = (fltTarifaPropuestaZP / $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltFullFee) -1;
+                            fltTarPropuestaZP = fltTarifaPropuestaZP + itemZP.fltACK;
+                            itemZP.fltDisc = (fltTarPropuestaZP / $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].fltFullFee) -1;
                             if(itemZP.strFee === 'T0' || itemZP.strFee === 'T1'){
-                                itemZP.fltTotalQuote = fltTarifaPropuestaZP * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
+                                itemZP.fltTotalQuote = fltTarPropuestaZP * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
                                 itemZP.fltTotalSEG = itemZP.fltSEG * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 5);
 
                             }
                             else if(itemZP.strFee !== 'TS' && itemZP.strFee !== 'T0' && itemZP.strFee !== 'T1'){
-                                itemZP.fltTotalQuote = fltTarifaPropuestaZP * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 10);
+                                itemZP.fltTotalQuote = fltTarPropuestaZP * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 10);
                                 itemZP.fltTotalSEG = itemZP.fltSEG * ($scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency / 10);
 
                             }
                             else{
-                                itemZP.fltTotalQuote = fltTarifaPropuestaZP * $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency;
+                                itemZP.fltTotalQuote = fltTarPropuestaZP * $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency;
                                 itemZP.fltTotalSEG = itemZP.fltSEG * $scope.EX.mapFreccZP[item.strFee].ranges[keyRange].intFrecuency;
 
                             }
