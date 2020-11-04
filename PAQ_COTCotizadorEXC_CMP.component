@@ -2044,10 +2044,14 @@
                             };
                             let fltTarifaPropuesta = 0;
                             let fltTarifaPropuestaZP = 0;
+                            let fltAcuse = 0;
+                            let fltTarifaPropuesta2 = 0;
                             if(i > lastBlock.value)
                                 item.fltQuoteAdKG = $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight * ( i - lastBlock.value);
-                            if($scope.EX.blnACK)
+                            if($scope.EX.blnACK){
                                 item.fltACK = $scope.EX.mapService['ACK'].ranges[keyRange].fltCost;
+                                fltAcuse = $scope.Wrapper.mapACK[$scope.EX.strACK];
+                            }
                             if($scope.EX.blnSEG)
                                 item.fltSEG = ($scope.Wrapper.mapCS['SEG'] / 1000) * $scope.EX.fltSEG;
 
@@ -2055,21 +2059,23 @@
                             Object.assign(itemZP, item);
                             itemZP.fltEAD = $scope.EX.mapService['ZP'].ranges[keyRange].fltCost;
                             //PAQ
-                            item.fltQuoteFullFee = $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltBaseFee + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
+                            item.fltQuoteFullFee = $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltBaseFee + item.fltRAD + item.fltEAD + fltAcuse + item.fltSEG;
                             fltTarifaPropuesta = item.fltQuoteFee + item.fltQuoteAdKG;
-                            item.fltDisc = (item.fltQuoteFee / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;
+                            fltTarifaPropuesta2 = item.fltACK + fltTarifaPropuesta;
+                            //item.fltDisc = (item.fltQuoteFee / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;
+                            item.fltDisc = (fltTarifaPropuesta2 / $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee) - 1;
                             if(item.strFee === 'T0' || item.strFee === 'T1'){
-                                item.fltTotalQuote = fltTarifaPropuesta * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
+                                item.fltTotalQuote = fltTarifaPropuesta2 * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
                                 item.fltTotalSEG = item.fltSEG * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 5);
 
                             }
                             else if(item.strFee !== 'TS' && item.strFee !== 'T0'  && item.strFee !== 'T1'){
-                                item.fltTotalQuote = fltTarifaPropuesta * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 10);
+                                item.fltTotalQuote = fltTarifaPropuesta2 * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 10);
                                 item.fltTotalSEG = item.fltSEG * ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency / 10);
 
                             }
                             else {
-                                item.fltTotalQuote = fltTarifaPropuesta * $scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency;
+                                item.fltTotalQuote = fltTarifaPropuesta2 * $scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency;
                                 item.fltTotalSEG = item.fltSEG * $scope.EX.mapFrecc[item.strFee].ranges[keyRange].intFrecuency;
 
                             }
@@ -2219,17 +2225,37 @@
                             }
                         });
                     }
-                    $scope.EX.TOTAL.DESCUENTO = ($scope.EX.TOTAL.PROPUESTA - $scope.EX.TOTAL.SEGURO) / ( $scope.EX.TOTAL.NORMAL - $scope.EX.TOTAL.SEGURO)-1;
-                    /*else{
+                    else{
+                        $scope.EX.mapQuotes['T7'] = {
+                            strBlock : ''
+                            , block : {}
+                        };
+                        $scope.EX.mapQuotes['T7'].block[lastBlock.key] = {
+                            ranges : {}
+                        };
                         j$.each($scope.EX.listRange, function (keyRange, strRange) {
+                            let fltAcuseT7 = 0;
+                            let fltTarifaLlenaV = 0;
+                            let fltTarifaLlenaP = 0;
+                            let fltEADV = 0;
+                            let fltEADP = 0;
+                            let fltRADP = 0;
+                            let fltRADV = 0;
+                            let fltSEV = 0;
+                            let fltACK = 0;
+                            let fltTarPropV = 0;
+                            let fltTarPropP = 0;
+                            let fltTotPropV = 0;
+                            let fltTotPropP = 0;
                             var item = {
-                                fltQuoteFee : $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost
+                                //fltQuoteFee : $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost
+                                fltQuoteFee : 0
                                 , fltQuoteFullFeeP : 0
                                 , fltQuoteFullFeeV : 0
                                 , fltQuoteFullFee : 0
                                 , fltQuoteBaseFee : 0
                                 , fltQuoteAdKG : $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight  * ( $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight - lastBlock.value )
-                                , fltQuoteAdM3 : $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol  * ( $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol - lastBlock.vol  )
+                                , fltQuoteAdM3 : $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol  * ( $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol - lastBlock.value  )
                                 , fltRAD : 0
                                 , fltEAD : 0
                                 , fltACK : 0
@@ -2239,33 +2265,63 @@
                                 , fltDisc : 0
                                 , strBlockKey : lastBlock.key
                                 , strFee : 'T7'
+                                , fltTotalNormal : 0
                             };
-                            if($scope.EX.blnACK)
+                            if($scope.EX.blnACK){
                                 item.fltACK = $scope.EX.mapService['ACK'].ranges[keyRange].fltCost;
+                                fltAcuseT7 = $scope.Wrapper.mapACK[$scope.EX.strACK];
+                            }
                             if($scope.EX.blnSEG)
                                 item.fltSEG = ($scope.Wrapper.mapCS['SEG'] / 1000) * $scope.EX.fltSEG;
 
-                            item.fltQuoteFullFeeP = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
-                            item.fltQuoteFullFeeV = item.fltQuoteFee + item.fltQuoteAdM3 + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
+                            //item.fltQuoteFullFeeP = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
+                            //item.fltQuoteFullFeeV = item.fltQuoteFee + item.fltQuoteAdM3 + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
+                            fltTarifaLlenaV = $scope.Wrapper.mapTarifarioT['TARIFA T7V'][strRange].Flete__c * $scope.EX.mapFrecc['T7V'].ranges[keyRange].fltAVGVol;
+                            fltTarifaLlenaP = $scope.EX.mapFrecc['T7P'].ranges[keyRange].fltAVGWeight * $scope.Wrapper.mapTarifarioT['TARIFA T7P'][strRange].Flete__c;
+                            fltTarPropV = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7V'].ranges[keyRange].fltAVGVol - $scope.EX.mapBlock[lastBlock.key].fltMaxV) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol;
+                            fltTarPropP = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7P'].ranges[keyRange].fltAVGWeight - $scope.EX.mapBlock[lastBlock.key].fltMaxW) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight;
+                            fltTotPropV = fltTarPropV + item.fltACK;
+                            fltTotPropP = fltTarPropP + item.fltACK;
+                            if($scope.EX.blnEAD){
+                                fltEADP = fltTarifaLlenaP * 0.11;
+                                fltEADV = fltTarifaLlenaV * 0.11;
+                            }
+                            if ($scope.EX.blnRAD) {
+                                fltRADP = fltTarifaLlenaP * 0.11;
+                                fltRADV = fltTarifaLlenaV * 0.11;
+                            }
+                            /*item.fltQuoteFullFeeP = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + fltAcuseT7 + item.fltSEG;
+                            item.fltQuoteFullFeeV = item.fltQuoteFee + item.fltQuoteAdM3 + item.fltRAD + item.fltEAD + fltAcuseT7 + item.fltSEG;*/
+                            item.fltQuoteFullFeeP = fltTarifaLlenaP + fltRADP + fltEADP + fltAcuseT7 + item.fltSEG;
+                            item.fltQuoteFullFeeV = fltTarifaLlenaV + fltRADV + fltEADV + fltAcuseT7 + item.fltSEG;
 
-                            if($scope.EX.mapFrecc['T7P'].ranges[keyRange].fltFullFee > 0)
-                                discP = item.fltQuoteFullFeeP / $scope.EX.mapFrecc['T7P'].ranges[keyRange].fltFullFee -1;
-                            if($scope.EX.mapFrecc['T7V'].ranges[keyRange].fltFullFee > 0)
-                                discV = item.fltQuoteFullFeeV / $scope.EX.mapFrecc['T7V'].ranges[keyRange].fltFullFee -1;
+                            //if($scope.EX.mapFrecc['T7P'].ranges[keyRange].fltFullFee > 0)
+                            //discP = item.fltQuoteFullFeeP / $scope.EX.mapFrecc['T7P'].ranges[keyRange].fltFullFee -1;
+                            discP = fltTotPropP / item.fltQuoteFullFeeP - 1; 
+                            //if($scope.EX.mapFrecc['T7V'].ranges[keyRange].fltFullFee > 0)
+                            //discV = item.fltQuoteFullFeeV / $scope.EX.mapFrecc['T7V'].ranges[keyRange].fltFullFee -1;
+                            discV = fltTotPropV / item.fltQuoteFullFeeV - 1;
 
                             if(discP < discV ){
                                 item.fltQuoteFullFee = item.fltQuoteFullFeeP;
                                 item.fltQuoteBaseFee = item.fltQuoteFee + item.fltQuoteAdKG;
                                 item.strFee = 'T7P';
+                                item.fltEAD = fltEADP;
+                                item.fltRAD = fltRADP;
+                                item.fltTotalQuote = (fltTarPropP + item.fltACK) * $scope.EX.mapFrecc['T7'].ranges[keyRange].intFrecuency;
                             }
                             else{
                                 item.fltQuoteFullFee = item.fltQuoteFullFeeV;
                                 item.fltQuoteBaseFee = item.fltQuoteFee + item.fltQuoteAdKG;
                                 item.strFee = 'T7V';
+                                item.fltEAD = fltEADV;
+                                item.fltRAD = fltRADV;
+                                item.fltTotalQuote = fltTotPropV * $scope.EX.mapFrecc['T7'].ranges[keyRange].intFrecuency;
                             }
+                            item.fltTotalNormal = $scope.EX.mapFrecc['T7'].ranges[keyRange].intFrecuency * item.fltQuoteFullFee;
                             $scope.EX.mapFrecc['T7'].ranges[keyRange].fltFullFee = $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltFullFee;
                             $scope.EX.mapFrecc['T7'].ranges[keyRange].fltTotalNormal = $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltTotalNormal;
-                            item.fltTotalQuote = item.fltQuoteFullFee * $scope.EX.mapFrecc['T7'].ranges[keyRange].intFrecuency;
+                            
                             item.fltTotalSEG = item.fltSEG * $scope.EX.mapFrecc['T7'].ranges[keyRange].intFrecuency;
                             /*if($scope.EX.blnACK && $scope.isACK('G'))
                                 item.fltTotalQuote += (
@@ -2278,11 +2334,13 @@
                                                 / $scope.EX.mapService['ACK'].fltAVGPackByDay
                                         )
                                         * $scope.EX.mapService.ACK.ranges[keyRange].fltCost;*/
-                            /*if($scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltTotalNormal > 0 && item.fltQuoteFullFee > 0 )
+                            if($scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltTotalNormal > 0 && item.fltQuoteFullFee > 0 )
                                 item.fltDisc = (item.fltQuoteFullFee - item.fltTotalSEG) / ($scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltTotalNormal - item.fltTotalSEG) -1;
-                            Object.assign($scope.EX.mapQuotes['T7'][keyRange], item);
+                            //Object.assign($scope.EX.mapQuotes['T7'][keyRange], item);
+                            $scope.EX.mapQuotes['T7'].block[lastBlock.key].strBlock = lastBlock.key;
+                            $scope.EX.mapQuotes['T7'].block[lastBlock.key].ranges[keyRange] = item;
                             listRanges[keyRange] = item;
-                            fltTotalNormal += $scope.EX.mapFrecc[item.strFee].ranges[keyRange].fltTotalNormal;
+                            fltTotalNormal += item.fltTotalNormal;
                             fltTotalQuote += item.fltTotalQuote;
                             fltTotalSEG += item.fltTotalSEG;
                             if($scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight > t7W)
@@ -2296,14 +2354,14 @@
                             , fltTotalQuote : fltTotalQuote
                             , fltDisc : (fltTotalQuote - fltTotalSEG) / ( fltTotalNormal - fltTotalSEG) -1
                             ,  ranges : listRanges
-                        };*/
-                    /*    $scope.EX.TOTAL.PROPUESTA += fltTotalQuote;
+                        };
+                        $scope.EX.TOTAL.PROPUESTA += fltTotalQuote;
                         $scope.EX.TOTAL.SEGURO += fltTotalSEG;
                         $scope.EX.TOTAL.NORMAL += fltTotalNormal;
-                    }*/
+                    }
+                    $scope.EX.TOTAL.DESCUENTO = ($scope.EX.TOTAL.PROPUESTA - $scope.EX.TOTAL.SEGURO) / ( $scope.EX.TOTAL.NORMAL - $scope.EX.TOTAL.SEGURO)-1;
                     //if($scope.EX.blnACK && $scope.isACK('G'))
                     //      $scope.EX.TOTAL.NORMAL += (($scope.EX.TOTAL.PAQUETES * $scope.EX.mapService['ACK'].fltAVGDeliveryByACK) / $scope.EX.mapService['ACK'].fltAVGPackByDay) * $scope.Wrapper.mapACK[$scope.EX.strACK];
-
                     $scope.calculateDiscProjection();
                 };
 
@@ -2475,7 +2533,7 @@
                                             strRange = labelRange;
                                         else
                                             strRange = getRange(labelRange);
-                                        if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6' /*||keyFee === 'T7'*/)
+                                        if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6' ||keyFee === 'T7')
                                             var quoteItem = {
                                                 SBQQ__Quantity__c : frecc.intFrecuency
                                                 , SBQQ__Discount__c : quote.fltDisc
@@ -2502,13 +2560,19 @@
                                         if(labelRange.includes(' (')){
                                             quoteItem.Destiny__c = labelRange;
                                         }
+                                        if (strFee === 'TARIFA T7') {
+                                            quoteItem.Weight__c = $scope.EX.mapFrecc[keyFee].ranges[keyRange].fltAVGWeight;
+                                            quoteItem.Width__c = $scope.EX.mapFrecc[keyFee].ranges[keyRange].fltAVGVol;
+                                            quoteItem.Large__c = 1;
+                                            quoteItem.High__c = 1;
+                                        }
                                         if(strFee === 'TARIFA TS')
                                             quoteItem.Tarifa__c = 'TARIFA SOBRE';
                                         if(keyFee !== 'T7'){
                                             if ((quoteItem.SBQQ__Discount__c * -1) > rangeDisc)
                                                 rangeDisc = quoteItem.SBQQ__Discount__c * -1;
-                                            listQuoteItem.push(quoteItem);
                                         }
+                                        listQuoteItem.push(quoteItem);
                                     }
 
                                     if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6'){
