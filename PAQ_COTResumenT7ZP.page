@@ -60,15 +60,83 @@
         </table>
         <br/>
         <table style="border-collapse: collapse;" width="100%">
-            <tr><!--Este bloque después se sustituirá por la iteración con los registros que estén guardados en la base de datos-->
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">MEX70</td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">2</td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">TARIMAS</td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">100</td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">140</td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">50</td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">140</td>
+            <tr>
+                <td colspan="20" align="Center"  style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black; background-color:rgb(31, 73, 125);color:white"><b>RAD</b></td>
             </tr>
+            <tr>
+                <apex:repeat value="{!listOrigen}" var="keyOrigen">
+                    <tr>
+                        <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesRAD[keyOrigen].SBQQ__Quantity__c}" />
+                            </apex:outputText>
+                            
+                        </td>
+                        <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!mapQuotesRAD[keyOrigen].SBQQ__Description__c}</td>
+                        <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesRAD[keyOrigen].Large__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesRAD[keyOrigen].Width__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesRAD[keyOrigen].High__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesRAD[keyOrigen].Weight__c}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </tr>
+        </table>
+        <br/>
+        <table style="border-collapse: collapse;" width="100%">
+            <tr>
+                <td colspan="20" align="Center"  style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black; background-color:rgb(31, 73, 125);color:white"><b>EAD</b></td>
+            </tr>
+            <apex:repeat value="{!listDestiny}" var="keyDestiny">
+                <tr>
+                    <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                        <apex:outputText value="{0, number, ###,###,##0}">
+                            <apex:param value="{!mapQuotesEAD[keyDestiny].SBQQ__Quantity__c}" />
+                        </apex:outputText>
+                        
+                    </td>
+                    <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!mapQuotesEAD[keyDestiny].SBQQ__Description__c}</td>
+                    <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                        <apex:outputText value="{0, number, ###,###,##0}">
+                            <apex:param value="{!mapQuotesEAD[keyDestiny].Large__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                        <apex:outputText value="{0, number, ###,###,##0}">
+                            <apex:param value="{!mapQuotesEAD[keyDestiny].Width__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                        <apex:outputText value="{0, number, ###,###,##0}">
+                            <apex:param value="{!mapQuotesEAD[keyDestiny].High__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td align="Center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                        <apex:outputText value="{0, number, ###,###,##0}">
+                            <apex:param value="{!mapQuotesEAD[keyDestiny].Weight__c}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </apex:repeat>
+            
+        </table>
+        <br/>
+        <table style="border-collapse: collapse;" width="100%">
             <tr>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">EXT-1</td>
@@ -76,7 +144,11 @@
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;"></td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0}">
+                        <apex:param value="{!decTotalRAD}" />
+                    </apex:outputText>
+                </td>
             </tr>
             <tr>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
@@ -85,7 +157,11 @@
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black"></td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0}">
+                        <apex:param value="{!decTotalRADEX}" />
+                    </apex:outputText>
+                </td>
             </tr>
             <tr>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
@@ -94,7 +170,11 @@
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black">EAD Zona plus</td>
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black"></td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0}">
+                        <apex:param value="{!decTotalEAD}" />
+                    </apex:outputText>
+                </td>
             </tr>
             <tr>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
@@ -103,7 +183,11 @@
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black">Especial EAD ZP</td>
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black"></td>
                 <td align="center" style="font-size:9px;border-bottom: .5px solid black;border-right: .5px solid black"></td>
-                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black"></td>
+                <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black">
+                    <apex:outputText value="{0, number, $###,###,##0}">
+                        <apex:param value="{!decTotalEADEX}" />
+                    </apex:outputText>
+                </td>
             </tr>
             <tr>
                 <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-left: .5px solid black;border-right: .5px solid black"></td>
