@@ -225,7 +225,7 @@
                     <span class="glyphicon glyphicon-menu-left"></span> Salir
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="sumbit()" ng-show="hasRecord()">
-                    Enviar a Autorización <span class="glyphicon glyphicon-check"></span>
+                    Generar clave de autorización <span class="glyphicon glyphicon-check"></span>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="createQuotesT7ZP()">
                     Guardar <span class="glyphicon glyphicon-floppy-disk"></span>
@@ -360,6 +360,7 @@
                 };
 
                 $scope.calculate = function(){
+                    debugger;
                     var origin = {};
                     var destiny = {};
                     $scope.TOTAL = {
@@ -381,8 +382,11 @@
                         itemRAD.fltDominantWeight = getMAX(itemRAD.fltExVolW, itemRAD.fltExWeight);
                         ValidaDimensionesTender($scope.ZP.keyOrigin, itemRAD.fltLarge, itemRAD.fltWidth, itemRAD.fltHigh, itemRAD.fltWeight);
                         $scope.TOTAL.RAD += $scope.Wrapper.mapCS['AEZP'] * itemRAD.intFrecuency;
-                        if(origin !== undefined)
-                            $scope.TOTAL.RADEX += origin.Costo__c * itemRAD.fltDominantWeight * itemRAD.intFrecuency;
+                        if(origin !== undefined){
+                            if(itemRAD.fltWeight > 60)
+                                $scope.TOTAL.RADEX += origin.Costo__c * itemRAD.fltDominantWeight * itemRAD.intFrecuency;
+                            else $scope.TOTAL.RADEX = 0;
+                        }
                         $scope.TOTAL.PAQUETES += itemRAD.intFrecuency;
                     });
                     j$.each($scope.ZP.listEAD, function (index, itemEAD) {
@@ -393,8 +397,11 @@
                         itemEAD.fltExVolW = itemEAD.fltVolWeight - 60;
                         itemEAD.fltDominantWeight = getMAX(itemEAD.fltExVolW, itemEAD.fltExWeight);
                         $scope.TOTAL.EAD += $scope.Wrapper.mapCS['AEZP'] * itemEAD.intFrecuency;
-                        if(destiny !== undefined)
-                            $scope.TOTAL.EADEX += destiny.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency;
+                        if(destiny !== undefined){
+                            if(itemEAD.fltWeight > 60)
+                                $scope.TOTAL.EADEX += destiny.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency;
+                            else $scope.TOTAL.EADEX = 0;
+                        }
                         $scope.TOTAL.PAQUETES += itemEAD.intFrecuency;
                     });
                     if($scope.TOTAL.RAD !== 0)
@@ -432,8 +439,8 @@
                         , Destinos__c: true
                         , Servicios_adicionales__c : ''
                         , SBQQ__Status__c : ''
+                        , OriginCity__c : ''
                         , Id : $scope.Wrapper.listQuoteItem.Id
-                        //, RecordTypeId : ''//$scope.Wrapper.mapRecordType['EXC']
                     };
                     if($scope.Managers !== undefined){
                         if($scope.Managers['GSU'] !== undefined)
@@ -463,6 +470,7 @@
                     var quoteItem = {};
                     j$.each($scope.ZP.listRAD, function (index, itemRAD) {
                         origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
+                        Quote.OriginCity__c = $scope.ZP.keyOrigin;
                         quoteItem = {
                             Destiny__c : $scope.ZP.keyOrigin
                             , SBQQ__Quantity__c : itemRAD.intFrecuency
@@ -488,7 +496,7 @@
                             , Rango_KM__c : ''
                             , Pack_Seg__c : 0
                             , Id : $scope.Wrapper.listQuoteItem.Id
-                            , Vol__c : itemRAD.fltExVolW
+                            , Vol__c : itemRAD.fltVol
 //                            , SBQQ__Quote__c : ''
                         }
                         if($scope.Wrapper.listQuoteItem.Id)
@@ -500,26 +508,7 @@
                     j$.each($scope.ZP.listEAD, function (index, itemEAD) {
                         origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
                         quoteItem = {
-                            /*SBQQ__Discount__c : 0
-                            , SBQQ__CustomerPrice__c : origin.Costo__c
-                            , SBQQ__NetPrice__c : origin.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency
-                            , SBQQ__SpecialPrice__c : 0
-                            , QuoteTotal__c : origin.Costo__c * itemEAD.fltDominantWeight * itemEAD.intFrecuency
-                            , PackVolAVG__c : itemEAD.fltVol
-                            , PackWeightAVG__c : itemEAD.fltVolWeight
-                            , FLETE__c : 0
-                            , ACK__c : 0
-                            , RAD__c : 0
-                            , EAD__c : $scope.Wrapper.mapCS['AEZP'] * itemEAD.intFrecuency
-                            , SEG__c : 0
-                            , KG_ADICIONAL__c : 0
-                            , GUIA__c : 0
-                            , Tarifa__c : 'T7 ZP'
-                            , Rango_KM__c : ''
-                            , Pack_Seg__c : 0
-                            , Id : $scope.Wrapper.listQuoteItem.Id
-                            , SBQQ__Quote__c : ''*/
-                            Destiny__c : $scope.ZP.keyOrigin
+                            Destiny__c : $scope.ZP.keyDestiny
                             , SBQQ__Quantity__c : itemEAD.intFrecuency
                             , SBQQ__Description__c : itemEAD.strDesc
                             , Large__c : itemEAD.fltLarge
@@ -543,7 +532,7 @@
                             , Rango_KM__c : ''
                             , Pack_Seg__c : 0
                             , Id : $scope.Wrapper.listQuoteItem.Id
-                            , Vol__c : itemEAD.fltExVolW
+                            , Vol__c : itemEAD.fltVol
                             //, SBQQ__Quote__c : ''
                         }
                         if($scope.Wrapper.listQuoteItem.Id)
@@ -584,24 +573,51 @@
                     if(key === 'RAD'){
                         j$.each($scope.ZP.listRAD, function(i, rad){
                             if(rad.blnSelectedRAD){
+                                $scope.ZP.listRAD.splice(i,1);
                                 if(i === 0){
-                                    alert('Imposible eliminar el primer renglón');
+                                    $scope.ZP.listRAD.push({
+                                        intFrecuency : 0
+                                        , strDesc : ''
+                                        , fltLarge : 0
+                                        , fltWidth : 0
+                                        , fltHigh : 0
+                                        , fltWeight : 0
+                                        , fltVol : 0
+                                        , fltVolWeight : 0
+                                        , fltExWeight : 0
+                                        , fltExVolW : 0
+                                        , fltDominantWeight : 0
+                                    });
                                     rad.blnSelectedRAD = false;
-                                } else $scope.ZP.listRAD.splice(i, 1);
+                                }
                             }
                         });
                     }   
                     if(key === 'EAD'){
-                        j$.each($scope.ZP.listEAD, function(i, rad){
-                            if(rad.blnSelectedEAD){
+                        j$.each($scope.ZP.listEAD, function(i, ead){
+                            if(ead.blnSelectedEAD){
+                                $scope.ZP.listEAD.splice(i, 1);
                                 if(i === 0){
-                                    alert('Imposible eliminar el primer renglón');
-                                    rad.blnSelectedEAD = false;
-                                } else $scope.ZP.listEAD.splice(i, 1);
+                                    $scope.ZP.listEAD.push({
+                                        intFrecuency : 0
+                                        , strDesc : ''
+                                        , fltLarge : 0
+                                        , fltWidth : 0
+                                        , fltHigh : 0
+                                        , fltWeight : 0
+                                        , fltVol : 0
+                                        , fltVolWeight : 0
+                                        , fltExWeight : 0
+                                        , fltExVolW : 0
+                                        , fltDominantWeight : 0
+                                    });
+                                    ead.blnSelectedEAD = false;
+                                }
                             }
                         });
                         
                     }
+                    $scope.calculate();
                 };
 
                 $scope.setValue = function(name, index, cmp, key){
@@ -653,7 +669,9 @@
                     }
                     $scope.calculate();
                 };
-
+                $scope.sumbit = function(){
+                    GeneraClaveAutorizacion($scope);
+                };
                 /*
                 * initial Call
                 */
@@ -809,6 +827,7 @@
                         , oppObj
                         , listSS*/
                         , function (result, event) {
+                            debugger;
                             if (event.status) {
                                 $scope.DML.blnSuccess = true;
                                 $scope.DML.listErrors = [];
@@ -840,6 +859,31 @@
                             }
                         },
                         {escape: false, timeout: 120000}
+                );
+            }
+            function GeneraClaveAutorizacion($scope){
+                j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+                $scope.SuccessMessage = '';
+                $scope.sent = true;
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.PAQ_CotizadorZonaPlus_CTR.GeneraClaveAutorizacion}'
+                    , $scope.Wrapper.objQuote.Id
+                    , function(result, event){
+                        if(event.status){
+                            $scope.DML.blnSuccess = true;
+                            $scope.DML.listErrors = [];
+                            if($scope.DML.blnSuccess)
+                                    $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
+                            $scope.$apply();
+                            j$.unblockUI();
+                        } else {
+                            $scope.DML.blnSuccess = false;
+                            $scope.DML.listErrors.push(logErrorMessage(event.message.split(',')));
+                            $scope.$apply();
+                            j$.unblockUI();
+                        }
+                    },
+                    {escape: false, timeout: 120000}
                 );
             }
         })();
