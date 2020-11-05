@@ -31,7 +31,7 @@
                 <tr>
                     <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >FECHA</td>
                     <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >PLAZA QUE SOLICITA</td>
-                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >TENDER DESTINO</td>
+                    <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >TENDER</td>
                     <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >COSTO OPERADOR LOGISTICO</td>
                     <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >ID CLIENTE</td>
                     <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >NOMBRE CLIENTE</td>
@@ -48,7 +48,7 @@
                     <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!wp.objQuote.TarifaLlenaMensual__c}</td>
                     <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
                     <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
-                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black"></td>
+                    <td align="center" style="font-size:9px;border-top: .5px solid black; border-bottom: .5px solid black;border-right: .5px solid black;border-left: .5px solid black">{!wp.objQuote.Clave_de_autorizacion__c}</td>
                 </tr>
             </table>
         </apex:outputPanel>
