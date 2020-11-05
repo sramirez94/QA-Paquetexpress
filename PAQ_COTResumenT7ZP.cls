@@ -81,7 +81,8 @@ public class PAQ_COTResumenT7ZP_CTR {
 		return mapCS;
 	}
     public static SBQQ__Quote__c queryQuote(String strQuoteId){
-        return [SELECT PAQ_TipoServicio__c, OriginCity__c, SBQQ__Status__c, CreatedDate, Name, Paquetes_Mensuales__c, Ingreso_Mensual__c, SBQQ__NetAmount__c, Descuento_Global__c, TarifaLlenaMensual__c, PAQ_DescuentoGlobal__c, Plaza__c, owner.Name
+        return [SELECT PAQ_TipoServicio__c, OriginCity__c, SBQQ__Status__c, CreatedDate, Name, Paquetes_Mensuales__c, Ingreso_Mensual__c, SBQQ__NetAmount__c, Descuento_Global__c, 
+        TarifaLlenaMensual__c, PAQ_DescuentoGlobal__c, Plaza__c, owner.Name, Clave_de_autorizacion__c
         FROM SBQQ__Quote__c WHERE Id = :strQuoteId];
     }
     public String QueryObtieneDestino(String strQuoteId, String strOrigen){
