@@ -20,9 +20,6 @@
             <li role="presentation" class="tabPill" id="ODC-Tab" ng-show="ODC">
                 <a data-toggle="pill" class="tabPill" href="#ODC" >Documentación en Linea</a>
             </li>
-            <li role="presentation" class="tabPill" id="7ZP-Tab" ng-show="7ZP">
-                <a data-toggle="pill" class="tabPill" href="#7ZP" >Tarifa T7 zona plus</a>
-            </li>
         </ul>
         <br/><br/>
         <div class="tab-content padding-top-10">
@@ -42,9 +39,9 @@
                     <c:PAQ_COTCotizadorPPG_CMP />
                 </div>
             </div>
-            <div id="7ZP" class="tab-pane fade" ng-show="7ZP">
-                <div ng-if="7ZP">
-                    <c:PAQ_CotizadorZonaPlus_CMP QuoteId="{!SBQQ__Quote__c.Id}"/>
+            <div id="ODC" class="tab-pane fade" ng-show="ODC">
+                <div ng-if="ODC">
+                    <c:PAQ_COTCotizadorODC_CMP />
                 </div>
             </div>
         </div>
@@ -80,8 +77,7 @@
                     aviableOptions: [
                         {id: 'SPW', label: 'Tarifario abierto de piso' },
                         {id: 'PPG', label: 'Guías Prepagadas' },
-                        {id: 'ODC', label: 'Documentación En Línea'},
-                        {id: '7ZP', label: 'Tarifa T7 zona plus'}
+                        {id: 'ODC', label: 'Documentación En Línea'}
                     ]
                 };
                 $scope.Home = true;
@@ -104,7 +100,6 @@
                 $scope.sent = false;
                 $scope.SPW = false;
                 $scope.StrSTDCotiType = '';
-                $scope.7ZP = false;
                 $scope.Wrapper = {};
 
                 //debugger;
@@ -224,13 +219,6 @@
                                 j$('#ODC-Tab').addClass('active');
                             }
                             break;
-                        case '7ZP':
-                            j$('.tabPill').removeClass('active');
-                            j$('.tab-pane').removeClass('in active');
-                            $scope.7ZP = true;
-                            j$('#7ZP').addClass('in active');
-                            j$('#7ZP-Tab').addClass('active');
-                            break;
                     }
                 };
 
@@ -238,7 +226,6 @@
                     $scope.SPW = false;
                     $scope.PPG = false;
                     $scope.ODC = false;
-                    $scope.7ZP = false;
                     $scope.sent = false;
                 };
 
