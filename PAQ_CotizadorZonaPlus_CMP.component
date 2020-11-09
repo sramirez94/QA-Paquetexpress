@@ -244,24 +244,24 @@
     </div>
     <script type="text/javascript" lang="js">
         var j$ = jQuery.noConflict();
-        //j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+        j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
         j$(document).ready(function(){
             //console.clear(); //console.clear();
             j$('.container-fluid').show();
         });
         (function(){
             // angujar module
-            var app = angular.module('CotizadorZP', []);
+            var app = angular.module('Cotizador', []);
             // main controller
             /*
             * Angular module controllers
             * Begin Angular Controller
             */
             app.controller('CotZPController', ['$scope',function($scope) {
-
                 /*
                 * Controller variables
                 */
+               console.log('INICIA CARGA ZP');
                 $scope.DML = {
                     blnSuccess : true
                     , listErrors : []
@@ -273,6 +273,7 @@
                     , strRADStatus : ''
                     , blnEAD : false
                     , blnRAD : false
+                    , blnGeneraClaveAut : false
                     , Origin : {
                         model : undefined
                         , aviableOptions : []
@@ -322,9 +323,8 @@
                     , IVAGLOBAL : 0
                     , PAQUETES : 0
                 };
-                $scope.Wrapper = {};
+                //$scope.Wrapper = {};
 
-                //debugger;
                 /*
                 * Controller functions
                 */
@@ -415,6 +415,7 @@
                 };
 
                 $scope.createQuotesT7ZP = function(){
+                    debugger;
                     var listQuoteItem = [];
                     var Quote = {
                         Acuse__c: 'Interno'
@@ -439,7 +440,7 @@
                         , Destinos__c: true
                         , Servicios_adicionales__c : ''
                         , SBQQ__Status__c : ''
-                        , OriginCity__c : ''
+                        , OriginCity__c : $scope.ZP.keyOrigin
                         , Id : $scope.Wrapper.listQuoteItem.Id
                     };
                     if($scope.Managers !== undefined){
@@ -459,8 +460,8 @@
                     }
                     if($scope.Wrapper.objLead && notEmpty($scope.Wrapper.objLead.Id))
                         Quote.Lead__c = $scope.Wrapper.objLead.Id;
-                    if($scope.Wrapper.objAccountId)
-                        Quote.SBQQ__Account__c = $scope.Wrapper.objAccountId;
+                    if($scope.Wrapper.objOpp.objAccountId)
+                        Quote.SBQQ__Account__c = $scope.Wrapper.objOpp.objAccountId;
                     if($scope.Wrapper.objOpp && notEmpty($scope.Wrapper.objOpp.Id))
                         Quote.SBQQ__Opportunity2__c = $scope.Wrapper.objOpp.Id;
                     if($scope.ZP.blnRAD)
@@ -469,77 +470,81 @@
                         Quote.Servicios_adicionales__c += "EAD;";
                     var quoteItem = {};
                     j$.each($scope.ZP.listRAD, function (index, itemRAD) {
-                        origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
-                        Quote.OriginCity__c = $scope.ZP.keyOrigin;
-                        quoteItem = {
-                            Destiny__c : $scope.ZP.keyOrigin
-                            , SBQQ__Quantity__c : itemRAD.intFrecuency
-                            , SBQQ__Description__c : itemRAD.strDesc
-                            , Large__c : itemRAD.fltLarge
-                            , Width__c : itemRAD.fltWidth
-                            , High__c : itemRAD.fltHigh
-                            , Weight__c : itemRAD.fltWeight
-                            , SBQQ__Discount__c : 0
-                            , SBQQ__CustomerPrice__c : itemRAD.fltExVolW * origin.Costo__c
-                            , SBQQ__NetPrice__c : itemRAD.fltExVolW * origin.Costo__c
-                            , SBQQ__SpecialPrice__c : 0
-                            , QuoteTotal__c : itemRAD.fltExVolW * origin.Costo__c
-                            , PackVolAVG__c : 0
-                            , PackWeightAVG__c : 0
-                            , FLETE__c : 0
-                            , ACK__c : 0
-                            , RAD__c : 205.5 * itemRAD.intFrecuency
-                            , SEG__c : 0
-                            , KG_ADICIONAL__c : 0
-                            , GUIA__c : 0
-                            , Tarifa__c : 'T7 ZP'
-                            , Rango_KM__c : ''
-                            , Pack_Seg__c : 0
-                            , Id : $scope.Wrapper.listQuoteItem.Id
-                            , Vol__c : itemRAD.fltVol
-//                            , SBQQ__Quote__c : ''
+                        if(itemRAD.intFrecuency > 0){
+                            origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
+                            //Quote.OriginCity__c = $scope.ZP.keyOrigin;
+                            quoteItem = {
+                                Destiny__c : $scope.ZP.keyOrigin
+                                , SBQQ__Quantity__c : itemRAD.intFrecuency
+                                , SBQQ__Description__c : itemRAD.strDesc
+                                , Large__c : itemRAD.fltLarge
+                                , Width__c : itemRAD.fltWidth
+                                , High__c : itemRAD.fltHigh
+                                , Weight__c : itemRAD.fltWeight
+                                , SBQQ__Discount__c : 0
+                                , SBQQ__CustomerPrice__c : itemRAD.fltExVolW * origin.Costo__c
+                                , SBQQ__NetPrice__c : itemRAD.fltExVolW * origin.Costo__c
+                                , SBQQ__SpecialPrice__c : 0
+                                , QuoteTotal__c : itemRAD.fltExVolW * origin.Costo__c
+                                , PackVolAVG__c : 0
+                                , PackWeightAVG__c : 0
+                                , FLETE__c : 0
+                                , ACK__c : 0
+                                , RAD__c : 205.5 * itemRAD.intFrecuency
+                                , SEG__c : 0
+                                , KG_ADICIONAL__c : 0
+                                , GUIA__c : 0
+                                , Tarifa__c : 'T7 ZP'
+                                , Rango_KM__c : ''
+                                , Pack_Seg__c : 0
+                                , Id : $scope.Wrapper.listQuoteItem.Id
+                                , Vol__c : itemRAD.fltVol
+    //                            , SBQQ__Quote__c : ''
+                            }
+                            if($scope.Wrapper.listQuoteItem.Id)
+                                quoteItem.Id = $scope.Wrapper.listQuoteItem.Id;
+                            if(Quote.Id)
+                                quoteItem.Id = Quote.Id;
+                            listQuoteItem.push(quoteItem);
                         }
-                        if($scope.Wrapper.listQuoteItem.Id)
-                            quoteItem.Id = $scope.Wrapper.listQuoteItem.Id;
-                        if(Quote.Id)
-                            quoteItem.Id = Quote.Id;
-                        listQuoteItem.push(quoteItem);
                     });
                     j$.each($scope.ZP.listEAD, function (index, itemEAD) {
-                        origin = $scope.Wrapper.mapTender[$scope.ZP.keyOrigin];
-                        quoteItem = {
-                            Destiny__c : $scope.ZP.keyDestiny
-                            , SBQQ__Quantity__c : itemEAD.intFrecuency
-                            , SBQQ__Description__c : itemEAD.strDesc
-                            , Large__c : itemEAD.fltLarge
-                            , Width__c : itemEAD.fltWidth
-                            , High__c : itemEAD.fltHigh
-                            , Weight__c : itemEAD.fltWeight
-                            , SBQQ__Discount__c : 0
-                            , SBQQ__CustomerPrice__c : itemEAD.fltExVolW * origin.Costo__c
-                            , SBQQ__NetPrice__c : itemEAD.fltExVolW * origin.Costo__c
-                            , SBQQ__SpecialPrice__c : 0
-                            , QuoteTotal__c : itemEAD.fltExVolW * origin.Costo__c
-                            , PackVolAVG__c : 0
-                            , PackWeightAVG__c : 0
-                            , FLETE__c : 0
-                            , ACK__c : 0
-                            , EAD__c : 205.5 * itemEAD.intFrecuency
-                            , SEG__c : 0
-                            , KG_ADICIONAL__c : 0
-                            , GUIA__c : 0
-                            , Tarifa__c : 'T7 ZP'
-                            , Rango_KM__c : ''
-                            , Pack_Seg__c : 0
-                            , Id : $scope.Wrapper.listQuoteItem.Id
-                            , Vol__c : itemEAD.fltVol
-                            //, SBQQ__Quote__c : ''
+                        if(itemEAD.intFrecuency > 0){
+                            origin = $scope.Wrapper.mapTender[$scope.ZP.keyDestiny];
+                            quoteItem = {
+                                Destiny__c : $scope.ZP.keyDestiny
+                                , SBQQ__Quantity__c : itemEAD.intFrecuency
+                                , SBQQ__Description__c : itemEAD.strDesc
+                                , Large__c : itemEAD.fltLarge
+                                , Width__c : itemEAD.fltWidth
+                                , High__c : itemEAD.fltHigh
+                                , Weight__c : itemEAD.fltWeight
+                                , SBQQ__Discount__c : 0
+                                , SBQQ__CustomerPrice__c : itemEAD.fltExVolW * origin.Costo__c
+                                , SBQQ__NetPrice__c : itemEAD.fltExVolW * origin.Costo__c
+                                , SBQQ__SpecialPrice__c : 0
+                                , QuoteTotal__c : itemEAD.fltExVolW * origin.Costo__c
+                                , PackVolAVG__c : 0
+                                , PackWeightAVG__c : 0
+                                , FLETE__c : 0
+                                , ACK__c : 0
+                                , EAD__c : 205.5 * itemEAD.intFrecuency
+                                , SEG__c : 0
+                                , KG_ADICIONAL__c : 0
+                                , GUIA__c : 0
+                                , Tarifa__c : 'T7 ZP'
+                                , Rango_KM__c : ''
+                                , Pack_Seg__c : 0
+                                , Id : $scope.Wrapper.listQuoteItem.Id
+                                , Vol__c : itemEAD.fltVol
+                                //, SBQQ__Quote__c : ''
+                            }
+                            if($scope.Wrapper.listQuoteItem.Id)
+                                quoteItem.Id = $scope.Wrapper.listQuoteItem.Id;
+                            if(Quote.Id)
+                                quoteItem.Id = Quote.Id;
+                            listQuoteItem.push(quoteItem);
                         }
-                        if($scope.Wrapper.listQuoteItem.Id)
-                            quoteItem.Id = $scope.Wrapper.listQuoteItem.Id;
-                        if(Quote.Id)
-                            quoteItem.Id = Quote.Id;
-                        listQuoteItem.push(quoteItem);
                     });
                     
                     callCreateQuoteConv($scope, Quote,listQuoteItem,  $scope.Wrapper.objLead, $scope.Wrapper.objOpp, null);
@@ -675,8 +680,9 @@
                 /*
                 * initial Call
                 */
-                console.log('END LOAD Angular Controller Cotizador ZP');
                 callInitialWrapper($scope);
+                console.log('END LOAD Angular Controller Cotizador ZP');
+                debugger;
             }]);
 
             // JSRemoting Call InitialInfo
@@ -687,7 +693,6 @@
                         , "{!strQuoteId}"
                         , "{!strOppId}"
                         , function (result, event) {
-                            //debugger;
                             if (event.status) {
                                 $scope.Wrapper = result;
                                 $scope.ZP.Origin.aviableOptions = fillPickList(result.mapTender);
@@ -723,6 +728,9 @@
                                     if(!notEmpty($scope.Managers['DCO']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Director_Comercial__c))
                                         $scope.Managers['DCO'] = $scope.Wrapper.objEstructura.Director_Comercial__c;
                                 }
+                                LlenarDatosPoblado($scope);
+                                if($scope.ZP.listRAD || $scope.ZP.listEAD)
+                                    $scope.calculate();
                                 j$.unblockUI();
                                 $scope.$apply();
                             } else {
@@ -885,6 +893,68 @@
                     },
                     {escape: false, timeout: 120000}
                 );
+            }
+            function LlenarDatosPoblado($scope){
+                if($scope.hasRecord()){
+                    var origin = {};
+                    var destiny = {};
+                    j$.each($scope.Wrapper.listQuoteItem, function (index, quoteItem) {
+                        if(quoteItem.RAD__c !== undefined){
+                            if(index !== 0)
+                                $scope.ZP.listRAD[index] = {
+                                intFrecuency : 0
+                                , strDesc : ''
+                                , fltLarge : 0
+                                , fltWidth : 0
+                                , fltHigh : 0
+                                , fltWeight : 0
+                                , fltVol : 0
+                                , fltVolWeight : 0
+                                , fltExWeight : 0
+                                , fltExVolW : 0
+                                , fltDominantWeight : 0
+                            };
+                            $scope.ZP.keyOrigin = $scope.Wrapper.objQuote.OriginCity__c;
+                            if(quoteItem.High__c !== 0)
+                                $scope.ZP.listRAD[index].fltHigh    = quoteItem.High__c;
+                            if(quoteItem.Width__c !== 0)
+                                $scope.ZP.listRAD[index].fltWidth   = quoteItem.Width__c;
+                            if(quoteItem.Large__c !== 0)
+                                $scope.ZP.listRAD[index].fltLarge   = quoteItem.Large__c;
+                            if(quoteItem.Weight__c !== 0)
+                                $scope.ZP.listRAD[index].fltWeight      = quoteItem.Weight__c;
+                            $scope.ZP.listRAD[index].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                            $scope.ZP.Origin.model = $scope.ZP.keyOrigin;
+                            /*j$.each($scope.ZP.Origin.aviableOptions,(index, item){
+                                console.log(index);
+                            });*/
+                        }
+                        /*if(quoteItem.EAD__c !== undefined){
+                            $scope.ZP.listEAD[index] = {
+                                intFrecuency : 0
+                                , strDesc : ''
+                                , fltLarge : 0
+                                , fltWidth : 0
+                                , fltHigh : 0
+                                , fltWeight : 0
+                                , fltVol : 0
+                                , fltVolWeight : 0
+                                , fltExWeight : 0
+                                , fltExVolW : 0
+                                , fltDominantWeight : 0
+                            };
+                            //$scope.ZP.keyDestiny = $scope.Wrapper.objQuote.OriginCity__c;
+                            if(quoteItem.High__c !== 0)
+                                $scope.ZP.listEAD[index].fltHigh    = quoteItem.High__c;
+                            if(quoteItem.Width__c !== 0)
+                                $scope.ZP.listEAD[index].fltWidth   = quoteItem.Width__c;
+                            if(quoteItem.Large__c !== 0)
+                                $scope.ZP.listEAD[index].fltLarge   = quoteItem.Large__c;
+                            if(quoteItem.Weight__c !== 0)
+                                $scope.ZP.listEAD[index].fltWeight      = quoteItem.Weight__c;
+                        }*/
+                    });
+                }
             }
         })();
     </script>
