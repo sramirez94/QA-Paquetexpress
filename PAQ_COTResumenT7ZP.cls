@@ -10,13 +10,19 @@ public class PAQ_COTResumenT7ZP_CTR {
     public Decimal decTotalEAD                                              {get; set;}
     public Decimal decTotalRADEX                                            {get; set;}
     public Decimal decTotalEADEX                                            {get; set;}
+    public Boolean blnEAD                                                   {get; set;}
+    public Boolean blnRAD                                                   {get; set;}
+    public String strTender                                                 {get; set;}
+    public String NombreCuenta                                              {get; set;}
+    public String strIdSipweb                                               {get; set;}
+    public String strSucursal                                               {get; set;}
     public PAQ_COTResumenT7ZP_CTR(ApexPages.StandardController sc) {
         this.wp                     = new Wrapper();
         this.wp.objQuote            = queryQuote(sc.getId());
         this.strOrigen              = this.wp.objQuote.OriginCity__c;
-        this.wp.strDestiny          = QueryObtieneDestino(sc.getId(), this.strOrigen);
-        this.wp.listQuoteItemRAD    = queryQuoteItemRAD(sc.getId(), this.strOrigen);
-        this.wp.listQuoteItemEAD    = queryQuoteItemEAD(sc.getId(), this.wp.strDestiny);
+        this.wp.strDestiny          = QueryObtieneDestino(sc.getId());
+        this.wp.listQuoteItemRAD    = queryQuoteItemRAD(sc.getId());
+        this.wp.listQuoteItemEAD    = queryQuoteItemEAD(sc.getId());
         this.mapQuotesRAD           = new Map<Integer, SBQQ__QuoteLine__c>();
         this.mapQuotesEAD           = new Map<Integer, SBQQ__QuoteLine__c>();
         this.listDestiny            = new list<Integer>();
@@ -25,19 +31,46 @@ public class PAQ_COTResumenT7ZP_CTR {
         this.decTotalEAD            = 0;
         this.decTotalRADEX          = 0;
         this.decTotalEADEX          = 0;
+        this.blnRAD                 = false;
+        this.blnEAD                 = false;
+        this.strTender              = '';
+        this.strIdSipweb            = '';
+        this.NombreCuenta           = '';
+        this.strSucursal            = '';
         this.wp.mapCS = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
         for(CapacidadSucursal__c tender : queryTender())
             wp.mapTender.put(tender.Name, tender);
-        Integer i = 0;
-        for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItemRAD){
-            this.listOrigen.add(i+=1);
-            this.mapQuotesRAD.put(i,quoteItem);
+        if(this.wp.listQuoteItemRAD.size() > 0){
+            Integer i = 0;
+            this.blnRAD = true;
+            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItemRAD){
+                this.listOrigen.add(i+=1);
+                this.mapQuotesRAD.put(i,quoteItem);
+            }
         }
-        Integer x = 0;
-        for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItemEAD){
-            this.listDestiny.add(x += 1);
-            this.mapQuotesEAD.put(x,quoteItem);
+        if(this.wp.listQuoteItemEAD.size() > 0){
+            Integer x = 0;
+            this.blnEAD = true;
+            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItemEAD){
+                this.listDestiny.add(x += 1);
+                this.mapQuotesEAD.put(x,quoteItem);
+            }
         }
+        if(this.blnEAD)
+            strTender = this.mapQuotesEAD.get(1).Destiny__c;
+        if(this.blnRAD)
+            strTender = this.mapQuotesRAD.get(1).Destiny__c;
+        if (this.blnRAD && this.blnEAD)
+            strTender = this.mapQuotesEAD.get(1).Destiny__c + ' / ' + this.mapQuotesRAD.get(1).Destiny__c;
+        if(this.wp.objQuote.SBQQ__Account__c != null){
+            for(Account ac : QueryDatosCuenta(this.wp.objQuote.SBQQ__Account__c)){
+                this.NombreCuenta = ac.Name;
+                this.strIdSipweb = ac.Id_SIpWeb__c;
+                this.strSucursal = ac.Sucursal__c;
+            }
+        }
+        if(this.strSucursal != '')
+            this.strOrigen = QueryNombreSucursal(strSucursal);
         CalculaTotalesRADyEAD();
         this.decTotalRADEX = CalculaEspecialRADyEAD(this.wp.listQuoteItemRAD);
         this.decTotalEADEX = CalculaEspecialRADyEAD(this.wp.listQuoteItemEAD);
@@ -81,26 +114,33 @@ public class PAQ_COTResumenT7ZP_CTR {
 		return mapCS;
 	}
     public static SBQQ__Quote__c queryQuote(String strQuoteId){
-        return [SELECT PAQ_TipoServicio__c, OriginCity__c, SBQQ__Status__c, CreatedDate, Name, Paquetes_Mensuales__c, Ingreso_Mensual__c, SBQQ__NetAmount__c, Descuento_Global__c, 
-        TarifaLlenaMensual__c, PAQ_DescuentoGlobal__c, Plaza__c, owner.Name, Clave_de_autorizacion__c
+        return [SELECT PAQ_TipoServicio__c, OriginCity__c, CreatedDate, Paquetes_Mensuales__c, Ingreso_Mensual__c, SBQQ__NetAmount__c, Descuento_Global__c, 
+        TarifaLlenaMensual__c, PAQ_DescuentoGlobal__c, Plaza__c, owner.Name, Clave_de_autorizacion__c, SBQQ__Account__c
         FROM SBQQ__Quote__c WHERE Id = :strQuoteId];
     }
-    public String QueryObtieneDestino(String strQuoteId, String strOrigen){
+    public String QueryObtieneDestino(String strQuoteId){
         SBQQ__QuoteLine__c QL;
-        QL = [SELECT Destiny__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId AND Destiny__c <> :strOrigen LIMIT 1];
+        QL = [SELECT Destiny__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId AND EAD__c <> null LIMIT 1];
         return QL.Destiny__c;
     }
-    public static List<SBQQ__QuoteLine__c> queryQuoteItemRAD(String strQuoteId, String strRAD){
+    public static List<SBQQ__QuoteLine__c> queryQuoteItemRAD(String strQuoteId){
         return [SELECT SBQQ__Quantity__c, SBQQ__CustomerTotal__c, SBQQ__CustomerPrice__c, SBQQ__NetPrice__c, SBQQ__NetTotal__c, QuoteTotal__c, Tarifa__c, Width__c, Weight__c, Large__c, High__c, ZonaPlus__c, Destiny__c, SBQQ__Description__c, Vol__c
-        FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId AND Destiny__c = :strRAD ORDER BY CreatedDate ASC];
+        FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId AND RAD__c <> null ORDER BY CreatedDate ASC];
     }
-    public static List<SBQQ__QuoteLine__c> queryQuoteItemEAD(String strQuoteId, String strEAD){
+    public static List<SBQQ__QuoteLine__c> queryQuoteItemEAD(String strQuoteId){
         return [SELECT SBQQ__Quantity__c, SBQQ__CustomerTotal__c, SBQQ__CustomerPrice__c, SBQQ__NetPrice__c, SBQQ__NetTotal__c, QuoteTotal__c, Tarifa__c, Width__c, Weight__c, Large__c, High__c, ZonaPlus__c, Destiny__c, SBQQ__Description__c, Vol__c
-        FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId AND Destiny__c = :strEAD ORDER BY CreatedDate ASC];
+        FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId AND EAD__c <> null ORDER BY CreatedDate ASC];
     }
     public static List<CapacidadSucursal__c> queryTender(){
 		return [SELECT Name, Costo__c, Nivel__c, OP__c FROM CapacidadSucursal__c];
-	}
+    }
+    public static list<Account> QueryDatosCuenta(String idCliente){
+        return [SELECT Name, Id_SIpWeb__c, Sucursal__c FROM Account WHERE ID = :idCliente];
+    }
+    public static String QueryNombreSucursal(String idSuc){
+        Sucursal__c sc = [SELECT NAME FROM SUCURSAL__C WHERE ID = :idSuc];
+        return sc.NAME;
+    }
     public class Wrapper {
         public SBQQ__Quote__c                       objQuote            {get; set;}
         public Boolean				                blnZP          	    {get; set;}
