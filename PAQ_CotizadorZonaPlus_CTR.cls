@@ -13,7 +13,7 @@ public class PAQ_CotizadorZonaPlus_CTR {
 	}
 
 	@RemoteAction
-	public static Wrapper InitialInfo(String strLeadId, String strQuoteId, String strOppId){
+	public static Wrapper InitialInfo(String strLeadId, String strQuoteId, String StrOp){
 		Wrapper wp               = new Wrapper();
 		String strYear           = '';
 		Set<String> setDestinies = new Set<String>();
@@ -30,15 +30,15 @@ public class PAQ_CotizadorZonaPlus_CTR {
                 if(String.isNotBlank(quoyeItem.Destiny__c))
                     setDestinies.add(quoyeItem.Destiny__c);
             }
-		}
+        }
 		if(String.isNotBlank(strLeadId))
 			wp.objLead = queryLead(strLeadId);
 		else if(wp.objQuote != null && String.isNotBlank(wp.objQuote.Lead__c))
 			wp.objLead = queryLead(wp.objQuote.Lead__c);
 		
-		if(String.isNotBlank(strOppId)){
-			wp.objOpp = queryOpportunity(strOppId);
-			wp.listPrevQuotes = queryPrevQuote(strOppId);
+		if(String.isNotBlank(StrOp)){
+			wp.objOpp = queryOpportunity(StrOp);
+			wp.listPrevQuotes = queryPrevQuote(StrOp);
 		}
         wp.objEstructura = queryEstructura(wp.objLead.Sucursal__c, wp.objOpp.Account.Sucursal__c);
         wp.mapHierarchy = getHierarchy();
@@ -66,8 +66,10 @@ public class PAQ_CotizadorZonaPlus_CTR {
         String ClaveAut = '';
         Integer consecutivo = 0;
         String dia = '';
+        String strCuenta = '';
         Integer intdia = 0;
         SBQQ__Quote__c Clave;
+        SBQQ__Quote__c DatosCot;
         List<SBQQ__Quote__c> ClavesAut = [SELECT Clave_de_autorizacion__c FROM SBQQ__Quote__c WHERE Fecha_de_autorizacion__c = :Date.Today() ORDER BY Fecha_de_autorizacion_s__c  DESC LIMIT 1];
         SBQQ__Quote__c Quote = [SELECT Clave_de_autorizacion__c, Fecha_de_autorizacion__c, Fecha_de_autorizacion_s__c FROM SBQQ__Quote__c WHERE id = :strIdQuote LIMIT 1];
         if(Date.today().day() < 10)
@@ -88,6 +90,18 @@ public class PAQ_CotizadorZonaPlus_CTR {
         Quote.Fecha_de_autorizacion__c = system.today();
         Quote.Fecha_de_autorizacion_s__c = system.now();
         update Quote;
+        DatosCot = [SELECT Name, SBQQ__Account__r.Name, owner.Email, Clave_de_autorizacion__c FROM SBQQ__Quote__c WHERE Clave_de_autorizacion__c = :strNuevaClave];
+        EnviaCorreoAutorizacion(DatosCot.Name, DatosCot.SBQQ__Account__r.Name, DatosCot.Clave_de_autorizacion__c, DatosCot.owner.Email);
+    }
+    public static void EnviaCorreoAutorizacion(String StrCot, String strCli, String strClave, String strEmail){
+        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        List<String> emails = new List<String>{'sramirez.0794@gmail.com', 'sramirez94@outlook.com'};
+        List<String> correo = new List<String>{strEmail};
+        email.setSubject('Cotización autorizada');
+        email.setHtmlBody('<hr color="purple" Style="border:15px;"/><br><br>Se le notifica que la cotización para el cliente <strong>' + strCli + '</strong> ya se encuentra con clave de autorización generada <strong>' + strClave + '</strong> para documentar en piso. <br/>Folio de cotización: <strong>' + StrCot + '.</strong><br><br><hr color="purple" Style="border:15px;"/>');
+        email.setToAddresses(correo);
+        email.setCcAddresses(emails);
+        Messaging.SendEmailResult[]r = Messaging.sendEmail(new Messaging.SingleEmailMessage[] {email});
     }
     public static Boolean TieneClaveAutorizacion(String strIdQuote){
         SBQQ__Quote__c Quote = [SELECT Clave_de_autorizacion__c FROM SBQQ__Quote__c WHERE Id = :strIdQuote LIMIT 1];
@@ -354,6 +368,7 @@ public class PAQ_CotizadorZonaPlus_CTR {
         , ZonaPlus__c
         , Destiny__c
         , PAQ_QGuides__c
+        , SBQQ__Description__c 
         FROM SBQQ__QuoteLine__c
         WHERE SBQQ__Quote__c =: strQuoteId
         ORDER BY CreatedDate ASC];
