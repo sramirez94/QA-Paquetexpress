@@ -33,7 +33,7 @@
                                         <tr ng-repeat="(i, rad) in ZP.listRAD">
                                             <td class="center"><input type="checkbox" ng-model="rad.blnSelectedRAD" ng-click="setValue('blnSelectedRAD', i, $event, 'RAD')"/></td>
                                             <td class="center">
-                                                <select class="select" ng-model="ZP.Origin.model" ng-options="option.label for option in  ZP.Origin.aviableOptions" ng-change="ZP.keyOrigin = ZP.Origin.model.id" ng-show="i===0"></select>
+                                                <select id="TederOrigen" class="select" ng-model="ZP.Origin.model" ng-options="option.label for option in  ZP.Origin.aviableOptions" ng-change="ZP.keyOrigin = ZP.Origin.model.id" ng-show="i===0"></select>
                                                 <!--<button type="button" class="btn btn-danger" ng-click="removeBlock('RAD', i)" ng-show="i>0">-</button>-->
                                             </td>
                                             <td class="center" contenteditable="true" ng-bind="rad.intFrecuency | number" ng-blur="setValue('intFrecuency', i, $event, 'RAD')"></td>
@@ -68,7 +68,7 @@
                             <div class="row">
                                 <!--left-->
                                 <div class="col-sm-9 col-md-9">
-                                    <table class="table table-striped table-bordered">
+                                    <table id="tableEAD" class="table table-striped table-bordered">
                                         <thead class="thead-light">
                                         <th class="center">Select.</th>
                                         <th class="center">Tender</th>
@@ -83,7 +83,7 @@
                                         <tr ng-repeat="(i, rad) in ZP.listEAD">
                                             <td class="center"><input type="checkbox" ng-model="rad.blnSelectedEAD" ng-click=""/></td>
                                             <td class="center">
-                                                <select class="select" ng-model="ZP.Destiny.model" ng-options="option.label for option in  ZP.Destiny.aviableOptions" ng-change="ZP.keyDestiny = ZP.Destiny.model.id" ng-show="i===0"></select>
+                                                <select id="TenderDest" class="select" ng-model="ZP.keyDestiny.model" ng-options="option.label for option in  ZP.Destiny.aviableOptions" ng-change="ZP.keyDestiny = ZP.Destiny.model.id" ng-show="i===0"></select>
                                                 <!--<button type="button" class="btn btn-danger" ng-click="removeBlock('EAD', i)" ng-show="i>0">-</button>-->
                                             </td>
                                             <td class="center" contenteditable="true" ng-bind="rad.intFrecuency | number" ng-blur="setValue('intFrecuency', i, $event, 'EAD')"></td>
@@ -224,7 +224,7 @@
                 <button type="button" class="btn btn-default" ng-click="exit()">
                     <span class="glyphicon glyphicon-menu-left"></span> Salir
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="sumbit()" ng-show="hasRecord()">
+                <button type="button" class="btn btn-primary" ng-click="sumbit()" ng-show="ZP.blnGeneraClaveAut">
                     Generar clave de autorización <span class="glyphicon glyphicon-check"></span>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="createQuotesT7ZP()">
@@ -274,6 +274,7 @@
                     , blnEAD : false
                     , blnRAD : false
                     , blnGeneraClaveAut : false
+                    , blnGuardoCambios : false
                     , Origin : {
                         model : undefined
                         , aviableOptions : []
@@ -415,7 +416,6 @@
                 };
 
                 $scope.createQuotesT7ZP = function(){
-                    debugger;
                     var listQuoteItem = [];
                     var Quote = {
                         Acuse__c: 'Interno'
@@ -682,11 +682,11 @@
                 */
                 callInitialWrapper($scope);
                 console.log('END LOAD Angular Controller Cotizador ZP');
-                debugger;
             }]);
 
             // JSRemoting Call InitialInfo
             function callInitialWrapper($scope) {
+                debugger;
                 Visualforce.remoting.Manager.invokeAction(
                         '{!$RemoteAction.PAQ_CotizadorZonaPlus_CTR.InitialInfo}'
                         , "{!strLeadId}"
@@ -854,6 +854,8 @@
                                                 $scope.DML.listErrors.push(error);
                                         });
                                     }
+                                    if($scope.Wrapper.objOpp.AccountId && $scope.Wrapper.objOpp['Account'].Sucursal__c)
+                                        $scope.ZP.blnGeneraClaveAut = true;
                                 if($scope.DML.blnSuccess)
                                     $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
                                 $scope.$apply();
@@ -924,26 +926,28 @@
                             if(quoteItem.Weight__c !== 0)
                                 $scope.ZP.listRAD[index].fltWeight      = quoteItem.Weight__c;
                             $scope.ZP.listRAD[index].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                            $scope.ZP.Origin.model = $scope.ZP.keyOrigin;
+                            $scope.ZP.listRAD[index].strDesc = quoteItem.SBQQ__Description__c;
+                            //$scope.ZP.Origin.model = $scope.ZP.keyOrigin;
                             /*j$.each($scope.ZP.Origin.aviableOptions,(index, item){
                                 console.log(index);
                             });*/
                         }
-                        /*if(quoteItem.EAD__c !== undefined){
-                            $scope.ZP.listEAD[index] = {
-                                intFrecuency : 0
-                                , strDesc : ''
-                                , fltLarge : 0
-                                , fltWidth : 0
-                                , fltHigh : 0
-                                , fltWeight : 0
-                                , fltVol : 0
-                                , fltVolWeight : 0
-                                , fltExWeight : 0
-                                , fltExVolW : 0
-                                , fltDominantWeight : 0
-                            };
-                            //$scope.ZP.keyDestiny = $scope.Wrapper.objQuote.OriginCity__c;
+                        if(quoteItem.EAD__c !== undefined){
+                            if(index !== 0)
+                                $scope.ZP.listEAD[index] = {
+                                    intFrecuency : 0
+                                    , strDesc : ''
+                                    , fltLarge : 0
+                                    , fltWidth : 0
+                                    , fltHigh : 0
+                                    , fltWeight : 0
+                                    , fltVol : 0
+                                    , fltVolWeight : 0
+                                    , fltExWeight : 0
+                                    , fltExVolW : 0
+                                    , fltDominantWeight : 0
+                                };
+                            $scope.ZP.keyDestiny = quoteItem.Destiny__c;
                             if(quoteItem.High__c !== 0)
                                 $scope.ZP.listEAD[index].fltHigh    = quoteItem.High__c;
                             if(quoteItem.Width__c !== 0)
@@ -952,7 +956,26 @@
                                 $scope.ZP.listEAD[index].fltLarge   = quoteItem.Large__c;
                             if(quoteItem.Weight__c !== 0)
                                 $scope.ZP.listEAD[index].fltWeight      = quoteItem.Weight__c;
-                        }*/
+                            $scope.ZP.listEAD[index].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                            $scope.ZP.listEAD[index].strDesc = quoteItem.SBQQ__Description__c;
+                            //$scope.ZP.Origin.model = 1;
+                            //$scope.ZP.Destiny.model = ($scope.ZP.keyDestiny, $scope.ZP.Destiny.aviableOptions);
+                            //document.getElementById("TenderDest").selectedIndex = "2";
+                            //document.getElementById("{Component.tableEAD.EAD.TenderDest}").selectedIndex = 1;
+                            //document.ZP.Destiny.aviableOptions("{!$Component.tableEAD.EAD.TenderDest}").selectedIndex = "8";
+                            //document.getElementById("TenderDest").selectedIndex = "8";
+                            /*j$.each($scope.ZP.Destiny.aviableOptions,function (key, value) {
+                                if(value.id === $scope.ZP.keyDestiny)
+                                    document.getElementById("TederOrigen").selectedIndex = value.id;
+                                    //$('#TenderDest').val($scope.ZP.keyDestiny);
+                                    //$scope.ZP.Destiny.aviableOptions.get(key);
+                                    //document.getElementById("TenderDest").options.item(key).selected;
+                                    //$scope.ZP.Destiny.aviableOptions.indexOf(key);
+                                    //document.getElementById('TenderDest').innerHTML = key;
+                                    //EAD.TenderDest.value = key;
+                                //console.log($scope.ZP.Destiny.model[key].id);
+                            });*/
+                        }
                     });
                 }
             }
