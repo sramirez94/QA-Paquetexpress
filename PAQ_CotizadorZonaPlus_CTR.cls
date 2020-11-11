@@ -174,36 +174,6 @@ public class PAQ_CotizadorZonaPlus_CTR {
             }
             wp.listQuoteItems = queryQuoteItem(wp.objQuote.Id);
         }
-        /*if(objLead != null){
-            if(quoteInsResult.isSuccess())
-                objLead.Cotizacion_Principal__c = quoteInsResult.getId();
-            Database.SaveResult resLead = Database.update(objLead, false);
-            if(!resLead.isSuccess()){
-                wp.blnSuccess = false;
-                for(Database.Error errLead : resLead.getErrors())
-                    wp.listErrors.add('Error actualizando Prospecto: ' + errLead.getMessage());
-            }
-        }
-        if(objOpp != null){
-            Database.SaveResult resOpp = Database.update(objOpp, false);
-            if(!resOpp.isSuccess()){
-				wp.blnSuccess = false;
-                for(Database.Error errOpp : resOpp.getErrors())
-                    wp.listErrors.add( 'Error actualizando Oportunidad: ' + errOpp.getMessage());
-            }
-        }
-        if(listSS != null){
-            for(PAQ_SpecialService__c SSitem: listSS)
-                SSitem.Quote__c = quoteInsResult.getId();
-
-            for(Database.SaveResult insSS : Database.insert(listSS, false)){
-                if(!insSS.isSuccess()) {
-					wp.blnSuccess = false;
-					for (Database.Error ssErr : insSS.getErrors())
-						wp.listErrors.add('Error creando Servicio Especial: ' + ssErr.getMessage());
-				}
-            }
-        }*/
         return wp;
     }
 
@@ -339,6 +309,7 @@ public class PAQ_CotizadorZonaPlus_CTR {
         , Plaza__c
         , RangosKM__c
         , Destinos__c
+        , Clave_de_autorizacion__c
         //,Nombre_Prospecto__c
         //,Nombre_oportunidad__c
         FROM SBQQ__Quote__c
