@@ -52,16 +52,18 @@ public class PAQ_CotizadorZonaPlus_CTR {
 		return wp;
 	}
     @remoteAction
-    public static String GeneraClaveAutorizacion(String Id){
-        String mensaje = '';
-        CreaClaveDeAutorizacion(Id);
-        mensaje = 'Proceso finalizado';
-        Return mensaje;
+    public static DmlWrapper GeneraClaveAutorizacion(String Id){
+        String M = '';
+        DmlWrapper wp = new DmlWrapper();
+        M = CreaClaveDeAutorizacion(Id);
+        if(M != '')
+            wp.listErrors.add('Error al generar clave de autorización: ' + M);
+        return wp;
     }
 	/*
 	*  Query Functions
     */
-    public static void CreaClaveDeAutorizacion(String strIdQuote){
+    public static  String CreaClaveDeAutorizacion(String strIdQuote){
         String strNuevaClave = '';
         String ClaveAut = '';
         Integer consecutivo = 0;
@@ -89,13 +91,20 @@ public class PAQ_CotizadorZonaPlus_CTR {
         Quote.Clave_de_autorizacion__c = strNuevaClave;
         Quote.Fecha_de_autorizacion__c = system.today();
         Quote.Fecha_de_autorizacion_s__c = system.now();
-        update Quote;
-        DatosCot = [SELECT Name, SBQQ__Account__r.Name, owner.Email, Clave_de_autorizacion__c FROM SBQQ__Quote__c WHERE Clave_de_autorizacion__c = :strNuevaClave];
-        EnviaCorreoAutorizacion(DatosCot.Name, DatosCot.SBQQ__Account__r.Name, DatosCot.Clave_de_autorizacion__c, DatosCot.owner.Email);
+        //update Quote;
+        Database.SaveResult resQuote = Database.update(Quote, false);
+        if(!resQuote.isSuccess()){
+            Database.Error errQt;
+            return 'Error actualizando Oportunidad: ' + errQt.getMessage();
+        } else {
+            DatosCot = [SELECT Name, SBQQ__Account__r.Name, owner.Email, Clave_de_autorizacion__c FROM SBQQ__Quote__c WHERE Clave_de_autorizacion__c = :strNuevaClave];
+            EnviaCorreoAutorizacion(DatosCot.Name, DatosCot.SBQQ__Account__r.Name, DatosCot.Clave_de_autorizacion__c, DatosCot.owner.Email);
+            return '';
+        }
     }
     public static void EnviaCorreoAutorizacion(String StrCot, String strCli, String strClave, String strEmail){
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-        List<String> emails = new List<String>{'sramirez.0794@gmail.com', 'sramirez94@outlook.com'};
+        List<String> emails = new List<String>{'lzavala@paquetexpress.com.mx', 'asistentecomercial@paquetexpress.com.mx'};
         List<String> correo = new List<String>{strEmail};
         email.setSubject('Cotización autorizada');
         email.setHtmlBody('<hr color="purple" Style="border:15px;"/><br><br>Se le notifica que la cotización para el cliente <strong>' + strCli + '</strong> ya se encuentra con clave de autorización generada <strong>' + strClave + '</strong> para documentar en piso. <br/>Folio de cotización: <strong>' + StrCot + '.</strong><br><br><hr color="purple" Style="border:15px;"/>');
@@ -265,7 +274,7 @@ public class PAQ_CotizadorZonaPlus_CTR {
 	}
 
 	public static List<CapacidadSucursal__c> queryTender(){
-		return [SELECT Name, Costo__c, Nivel__c, OP__c FROM CapacidadSucursal__c];
+		return [SELECT Name, Costo__c, Nivel__c, OP__c, Largo__c, Ancho__c, Alto__c, Peso__c FROM CapacidadSucursal__c];
 	}
 
 	public static User getManager(String strRoleId){
