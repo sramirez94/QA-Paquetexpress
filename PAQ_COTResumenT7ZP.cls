@@ -64,9 +64,12 @@ public class PAQ_COTResumenT7ZP_CTR {
             strTender = this.mapQuotesEAD.get(1).Destiny__c + ' / ' + this.mapQuotesRAD.get(1).Destiny__c;
         if(this.wp.objQuote.SBQQ__Account__c != null){
             for(Account ac : QueryDatosCuenta(this.wp.objQuote.SBQQ__Account__c)){
-                this.NombreCuenta = ac.Name;
-                this.strIdSipweb = ac.Id_SIpWeb__c;
-                this.strSucursal = ac.Sucursal__c;
+                if(ac.Name != null)
+                    this.NombreCuenta = ac.Name;
+                if(ac.Id_SIpWeb__c != null)
+                    this.strIdSipweb = ac.Id_SIpWeb__c;
+                if(ac.Sucursal__c != null)
+                    this.strSucursal = ac.Sucursal__c;
             }
         }
         if(this.strSucursal != '')
