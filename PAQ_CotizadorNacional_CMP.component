@@ -20,9 +20,12 @@
             <li role="presentation" class="tabPill" id="ODC-Tab" ng-show="ODC">
                 <a data-toggle="pill" class="tabPill" href="#ODC" >Documentación en Linea</a>
             </li>
-            <li role="presentation" class="tabPill" id="7ZP-Tab" ng-show="TZP">
-                <a data-toggle="pill" class="tabPill" href="#7ZP" >Cotizador T7 zona plus</a>
+            <!--<li role="presentation" class="tabPill" id="GMP-Tab" ng-show="GMP">
+                <a data-toggle="pill" class="tabPill" href="#GMP" >Documentación en Linea</a>
             </li>
+            <li role="presentation" class="tabPill" id="EXC-Tab" ng-show="EXC">
+                <a data-toggle="pill" class="tabPill" href="#EXC" >Documentación en Linea</a>
+            </li>-->
         </ul>
         <br/><br/>
         <div class="tab-content padding-top-10">
@@ -30,10 +33,10 @@
                 <c:PAQ_COTHome_CMP />
             </div>
             <div id="SPW" class="tab-pane fade" ng-show="SPW">
-                <div ng-if="StrSTDCotiType==='Envio' && SPW">
+                <!--<div ng-if="StrSTDCotiType==='Envio'">
                     <c:PAQ_COTCotizadorSPWSingle_CMP />
-                </div>
-                <div ng-if="StrSTDCotiType==='Convenio' && SPW">
+                </div>-->
+                <div ng-if="StrSTDCotiType==='Convenio'">
                     <c:PAQ_COTCotizadorSPW_CMP />
                 </div>
             </div>
@@ -47,11 +50,16 @@
                     <c:PAQ_COTCotizadorODC_CMP />
                 </div>
             </div>
-            <div id="7ZP" class="tab-pane fade" ng-show="7ZP">
-                <div ng-if="TZP">
-                    <c:PAQ_CotizadorZonaPlus_CMP LeadId="{!strLeadId}" QuoteId="{!strQuoteId}" OppId="{!strOppId}"/>
+           <!-- <div id="GMP" class="tab-pane fade" ng-show="GMP">
+                <div ng-if="GMP">
+                    <c:PAQ_COTCotizadorGMP_CMP />
                 </div>
             </div>
+            <div id="EXC" class="tab-pane fade" ng-show="EXC">
+                <div ng-if="EXC">
+                    <c:PAQ_COTCotizadorEXC_CMP />
+                </div>
+            </div>-->
         </div>
     </div>
     <script type="text/javascript" lang="js">
@@ -85,8 +93,7 @@
                     aviableOptions: [
                         {id: 'SPW', label: 'Tarifario abierto de piso' },
                         {id: 'PPG', label: 'Guías Prepagadas' },
-                        {id: 'ODC', label: 'Documentación En Línea'},
-                        {id: '7ZP', label: 'Cotizador T7 zona plus'}
+                        {id: 'ODC', label: 'Documentación En Línea'}
                     ]
                 };
                 $scope.Home = true;
@@ -94,7 +101,7 @@
                 $scope.OnlineDoc ={
                     model : undefined,
                     aviableOptions :[
-                        /*{id: 'floor' , label : 'Tarifario abierto de Piso'},*/
+                        {id: 'floor' , label : 'Tarifario abierto de Piso'},
                         {id: 'fix' , label : 'Costos fijos por Tarifas'}/*,
                         {id: 'exd' , label : 'Costo base más excedente'},
                         {id: 'multi' , label : 'Guía multipieza'}*/
@@ -102,13 +109,15 @@
                 };
                 $scope.OnlineDocByRangeKM = false;
                 $scope.OnlineDocByDestiny = false;
+                $scope.BlnElectricGuide = false;
+                $scope.BlnPrintedGuide = false;
+                $scope.BlnPrintedGuide = false;
                 $scope.ListSucursales = [];
                 $scope.Managers = {};
                 $scope.MapQuotesId = {};
                 $scope.PPG = false;
                 $scope.sent = false;
                 $scope.SPW = false;
-                $scope.TZP = false;
                 $scope.StrSTDCotiType = '';
                 $scope.Wrapper = {};
 
@@ -138,66 +147,13 @@
                     return "{!$Profile.Name}" ==='Administrador del sistema' || "{!$Profile.Name}" ==='System Administrator';
                 };
 
-                $scope.isException = function(objQuote, strProfile){
-                    //objQuote.Descuento_por_linea_o_rangokm__c <= 60
-                    //objQuote.Descuento_Global__c <= 60
-                    var exception = false;
-                    if(objQuote.Tipo_de_documentacion__c == 'Documentación Remota'
-                            || objQuote.Tipo_de_documentacion__c == 'Guías prepagadas'){
-                        if (strProfile === 'Ejecutivo de venta'){
-                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
-                                    && objQuote.Descuento_Global__c <= 10)
-                                exception = true;
-                        }
-                        else if(strProfile === 'Gerente de sucursal'){
-                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
-                                    && objQuote.Descuento_Global__c <= 25)
-                                exception = true;
-                        }
-                        else if(strProfile === 'KAM Regional'){
-                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
-                                    && objQuote.Descuento_Global__c <= 40)
-                                exception = true;
-                        }
-                        else if (strProfile != 'Gerentes de desarrollo de Negocios'){
-                            if(objQuote.Descuento_por_linea_o_rangokm__c <= 60
-                                    && objQuote.Descuento_Global__c <= 60)
-                                exception = true;
-                        }
-                        else if(strProfile === 'Director comercial') {
-                            exception = true;
-                        }
-                    }
-                    else if(objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
-                        if (strProfile === 'Ejecutivo de venta'){
-                            if(objQuote.Descuento_maximo_de_servicios__c <= 10)
-                                exception = true;
-                        }
-                        else if(strProfile === 'Gerente de sucursal'){
-                            if(objQuote.Descuento_maximo_de_servicios__c <= 25)
-                                exception = true;
-                        }
-                        else if(strProfile === 'KAM Regional'){
-                            if(objQuote.Descuento_maximo_de_servicios__c <= 40)
-                                exception = true;
-                        }
-                        else if (strProfile != 'Gerentes de desarrollo de Negocios'){
-                            if(objQuote.Descuento_maximo_de_servicios__c <= 60)
-                                exception = true;
-                        }
-                        else if(strProfile === 'Director comercial') {
-                            exception = true;
-                        }
-                    }
-                    return exception;
-                };
-
                 $scope.isFeeType = function(strType){
                     if($scope.FeeType.model)
                         return $scope.FeeType.model.id === strType;
                 };
 
                 $scope.start = function(){
+
                     switch ($scope.FeeType.model.id) {
                         case 'SPW':
                             j$('.tabPill').removeClass('active');
@@ -205,10 +161,10 @@
                             $scope.SPW = true;
                             j$('#SPW').addClass('in active');
                             j$('#SPW-Tab').addClass('active');
-                            //$scope.StrSTDCotiType = 'Convenio';
-                            if($scope.StrSTDCotiType === 'Convenio'){
+                            $scope.StrSTDCotiType = 'Convenio';
+                            //if($scope.StrSTDCotiType === 'Convenio'){
                                 $scope.step1 = true;
-                            }
+                            //}
                             break;
                         case 'PPG':
                             j$('.tabPill').removeClass('active');
@@ -219,7 +175,7 @@
                             break;
                         case 'ODC':
                             if($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'fix'
-                                    && $scope.OnlineDocByRangeKM
+                                    && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
                             ){
                                 j$('.tabPill').removeClass('active');
                                 j$('.tab-pane').removeClass('in active');
@@ -227,13 +183,36 @@
                                 j$('#ODC').addClass('in active');
                                 j$('#ODC-Tab').addClass('active');
                             }
-                            break;
-                        case '7ZP':
-                            j$('.tabPill').removeClass('active');
-                            j$('.tab-pane').removeClass('in active');
-                            $scope.TZP = true;
-                            j$('#7ZP').addClass('in active');
-                            j$('#7ZP-Tab').addClass('active');
+                            else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'floor'
+                            ){
+                                j$('.tabPill').removeClass('active');
+                                j$('.tab-pane').removeClass('in active');
+                                $scope.SPW = true;
+                                j$('#SPW').addClass('in active');
+                                j$('#SPW-Tab').addClass('active');
+                                $scope.StrSTDCotiType = 'Convenio';
+                                //if($scope.StrSTDCotiType === 'Convenio'){
+                                $scope.step1 = true;
+                                //}
+                            }
+                            else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'exd'
+                                    && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
+                            ){
+                                j$('.tabPill').removeClass('active');
+                                j$('.tab-pane').removeClass('in active');
+                                $scope.EXC = true;
+                                j$('#EXC').addClass('in active');
+                                j$('#EXC-Tab').addClass('active');
+                            }
+                            else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'multi'
+                                    && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
+                            ){
+                                j$('.tabPill').removeClass('active');
+                                j$('.tab-pane').removeClass('in active');
+                                $scope.GMP = true;
+                                j$('#GMP').addClass('in active');
+                                j$('#GMP-Tab').addClass('active');
+                            }
                             break;
                     }
                 };
@@ -242,7 +221,6 @@
                     $scope.SPW = false;
                     $scope.PPG = false;
                     $scope.ODC = false;
-                    $scope.TZP = false;
                     $scope.sent = false;
                 };
 
@@ -295,6 +273,7 @@
                         , "{!strQuoteId}"
                         , "{!strOppId}"
                         , function (result, event) {
+                            //debugger;
                             if (event.status) {
                                 $scope.Wrapper = result;
                                 if(result.objQuote) {
@@ -329,6 +308,24 @@
                                                 j$('#ODC').addClass('in active');
                                                 j$('#ODC-Tab').addClass('active');
                                             }
+                                            break;
+                                        case 'Costo base más excedente: Por Destinos / Por rangos de km':
+                                            $scope.FeeType.model = getModel('ODC', $scope.FeeType.aviableOptions);
+                                            $scope.OnlineDoc.model = getModel('exd', $scope.OnlineDoc.aviableOptions);
+                                            $scope.OnlineDocByRangeKM = true;
+                                            $scope.BlnRemote = true;
+                                            $scope.EXC = true;
+                                            j$('#EXC').addClass('in active');
+                                            j$('#EXC-Tab').addClass('active');
+                                            break;
+                                        case 'Guía multipieza: Por Destinos / Por Rangos de km':
+                                            $scope.FeeType.model = getModel('ODC', $scope.FeeType.aviableOptions);
+                                            $scope.OnlineDoc.model = getModel('multi', $scope.OnlineDoc.aviableOptions);
+                                            $scope.OnlineDocByRangeKM = true;
+                                            $scope.BlnRemote = true;
+                                            $scope.GMP = true;
+                                            j$('#GMP').addClass('in active');
+                                            j$('#GMP-Tab').addClass('active');
                                             break;
                                     }
                                 }
