@@ -553,8 +553,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 /*if(range.Tarifa__c == 'TARIFA SOBRE')
                     ejemplo4 = range.SBQQ__Quantity__c * decFlete;
                 else*/ ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
-                fltGuia += range.ACK__C;
-                fltGuia += fltQuoteAdKG;
+                //fltGuia += range.ACK__C;
+                //fltGuia += fltQuoteAdKG;
                 ejemplo5 = fltGuia * range.SBQQ__Quantity__c;
                 range.SBQQ__NetPrice__c = ejemplo5;
                 /*if(range.Tarifa__c == 'TARIFA SOBRE')
@@ -562,6 +562,23 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else*/ range.SBQQ__Discount__c = (fltGuia / ejemplo2) - 1;
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
+                if(range.Tarifa__c == 'TARIFA T0'){
+                    /*ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'rangos: ' + strRange));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa: ' + rangeZP.Tarifa__c));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'flete: ' + FleteZP));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + rangeZP.RAD__c));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + rangeZP.EAD__c));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + TarifaLlenaZP));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Paquetes: ' + rangeZP.SBQQ__Quantity__c));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + TarifaLlenaZP));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).GUIA__c));*/
+
+
+                    //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'TOTAL NORMAL: ' + decSUMCustomerPrice));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Bloque: ' + keyBlock));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + fltGuia));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'TOTAL PROPUESTA: ' + ejemplo5));
+                }
                 rangeZP = new SBQQ__QuoteLine__c (
                         FLETE__c = 0
                         , SBQQ__CustomerPrice__c = 0
@@ -619,21 +636,6 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 /*if(range.Tarifa__c == 'TARIFA SOBRE')
                     rangeZP.SBQQ__Discount__c = (TarifaPropuestaZP / FleteZP) - 1;
                 else */rangeZP.SBQQ__Discount__c = (TarifaPropuestaZP / TarifaLlenaZP) - 1;
-                /*if(rangeZP.Tarifa__c == 'TARIFA T0'){
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'rangos: ' + strRange));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa: ' + rangeZP.Tarifa__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'flete: ' + FleteZP));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + rangeZP.RAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + rangeZP.EAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + TarifaLlenaZP));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Paquetes: ' + rangeZP.SBQQ__Quantity__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + TarifaLlenaZP));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).GUIA__c));
-
-
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'TOTAL NORMAL: ' + rangeZP.SBQQ__CustomerPrice__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'TOTAL PROPUESTA: ' + rangeZP.SBQQ__NetPrice__c));
-                }*/
                 decSUMCustomerPriceZP += rangeZP.SBQQ__CustomerPrice__c;
                 decSUMNetPriceZP += rangeZP.SBQQ__NetPrice__c;
                 if(!this.mapDiscounts.containsKey(i)){
@@ -913,6 +915,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         , Forma_de_pago__c
         , Modelo_de_negocios__c
         , Mercanc_a__c
+        , Consideraciones_especiales__c
         , Contra_qui_n_competimos__c
         , Tipo_de_embalaje__c
         , Principal_destino1__r.Name
