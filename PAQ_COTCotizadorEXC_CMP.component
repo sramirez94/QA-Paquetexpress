@@ -3286,7 +3286,8 @@
                                 break;
                             case 'intFrecuency':
                                 $scope.EX.mapFrecc[keyX].ranges[key].intFrecuency = getNum(cmp.target.textContent);
-                                $scope.calculateXY();
+                                if($scope.EX.mapFrecc[keyX].ranges[key].intFrecuency !== 0 && $scope.EX.mapFrecc[keyX].ranges[key].intFrecuency !== undefined)
+                                    $scope.calculateXY();
                                 break;
                             case 'intFrecuencyZP':
                                 $scope.EX.mapFreccZP[keyX].ranges[key].intFrecuency = getNum(cmp.target.textContent);
@@ -3298,7 +3299,8 @@
                                 break;
                             case 'fltFreccRange':
                                 $scope.EX.mapRanges[key]['PAQ'].fltFrecc = getNumFromPercent(cmp.target.textContent);
-                                $scope.calculateQ();
+                                if($scope.EX.mapRanges[key]['PAQ'].fltFrecc !== 0 || $scope.EX.mapRanges[key]['PAQ'].fltFrecc !== undefined)
+                                    $scope.calculateQ();
                                 break;
                             case 'intQTotal':
                                 $scope.EX.mapFrecc.intQTotal = getNum(cmp.target.textContent);
@@ -4409,6 +4411,10 @@
                     return  getNum(strNum) / 100;
                 else
                     return 0;
+                /*if (getNum(str) > 0)
+                    return  getNum(str) / 100;
+                else
+                    return 0;*/
             }
 
             function getRange(strRange){ //VER (0-400)
