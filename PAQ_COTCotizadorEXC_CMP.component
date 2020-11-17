@@ -1196,7 +1196,7 @@
                             , 'T7' :{fltFrecc: 0, intQTotal:0}
                         }
                     }
-                    , mapLimits:{
+                    /*, mapLimits:{
                         'TS': { max : 1, min : 0.49 }
                         , 'T0': { max : 5, min : 0.49}
                         , 'T1': { max : 10, min : 5}
@@ -1205,6 +1205,16 @@
                         , 'T4': { max : 40, min : 30}
                         , 'T5': { max : 50, min : 40}
                         , 'T6': { max : 60, min : 50}
+                    }*/
+                    , mapLimits:{
+                        'TS': { max : 1, min : 0.49 }
+                        , 'T0': { max : 5, min : 0.49}
+                        , 'T1': { max : 10, min : 6}
+                        , 'T2': { max : 20, min : 11}
+                        , 'T3': { max : 30, min : 21}
+                        , 'T4': { max : 40, min : 31}
+                        , 'T5': { max : 50, min : 41}
+                        , 'T6': { max : 60, min : 51}
                     }
                     , mapBlock : {
 
@@ -2006,23 +2016,27 @@
                             strFee = 'T0';
                         else
                             j$.each($scope.EX.mapLimits, function (keyF, limits) {
-                                if(i > limits.min && i <= limits.max)
+                                /*if(i > limits.min && i <= limits.max)
+                                    strFee = keyF;*/
+                                if(i > limits.min && i <= limits.max || i === limits.min)
                                     strFee = keyF;
                             });
-                        if(i <= firstBlock.value)
+                        if(i <= firstBlock.value){
                             key = firstBlock.key;
-                        else if(i >= lastBlock.value)
+                        }else if(i >= lastBlock.value){
                             key = lastBlock.key;
-                        else
+                        }else{
                             j$.each(listBlocksReverse, function (index, b) {
                                 if(i < b.value)
                                     key = b.key;
                             });
+                        }
                         block = $scope.EX.mapBlock[key];
-                        $scope.EX.mapQuotes[strFee].block[key] = {
-                            strBlock : ''
-                            , ranges : {}
-                        };
+                        //if(key.includes(strFee) || i === 0)
+                            $scope.EX.mapQuotes[strFee].block[key] = {
+                                strBlock : ''
+                                , ranges : {}
+                            };
                         $scope.EX.mapQuotesZP[strFee].block[key] = {
                             strBlock : ''
                             , ranges : {}
@@ -3291,7 +3305,8 @@
                                 break;
                             case 'intFrecuencyZP':
                                 $scope.EX.mapFreccZP[keyX].ranges[key].intFrecuency = getNum(cmp.target.textContent);
-                                $scope.calculateXY();
+                                if($scope.EX.mapFreccZP[keyX].ranges[key].intFrecuency !== 0 && $scope.EX.mapFreccZP[keyX].ranges[key].intFrecuency !== undefined)
+                                    $scope.calculateXY();
                                 break;
                             case 'fltFreccFee':
                                 $scope.EX.mapFrecc[keyX].fltFrecc = getNumFromPercent(cmp.target.textContent);
@@ -4407,14 +4422,14 @@
                 var strNum = '';
                 var index = str.indexOf("%");
                 strNum = str.slice(0, index);
-                if (getNum(strNum) > 0)
+                /*if (getNum(strNum) > 0)
                     return  getNum(strNum) / 100;
                 else
-                    return 0;
-                /*if (getNum(str) > 0)
+                    return 0;*/
+                if (getNum(str) > 0)
                     return  getNum(str) / 100;
                 else
-                    return 0;*/
+                    return 0;
             }
 
             function getRange(strRange){ //VER (0-400)
