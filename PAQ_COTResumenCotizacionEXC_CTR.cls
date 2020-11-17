@@ -568,34 +568,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else*/ range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
-                if(range.Tarifa__c == 'TARIFA T1'){
                     //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Mapa: ' + mapBlocksByW.get(keyBlock).mapRanges.get(strRange)));
-                    /*ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'rangos: ' + strRange));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa: ' + rangeZP.Tarifa__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'flete: ' + FleteZP));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + rangeZP.RAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + rangeZP.EAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + TarifaLlenaZP));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Paquetes: ' + rangeZP.SBQQ__Quantity__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + TarifaLlenaZP));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).GUIA__c));*/
-
-
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Bloque: ' + i));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'rangos: ' + strRange));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa base: ' + decFlete));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + range.RAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + range.EAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Acusee: ' + this.wp.mapACK.get('Interno')));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llena: ' + ejemplo2));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + fltGuia));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Acuse capturado: ' + range.ACK__C));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta 2: ' + decTarifaPropuesta2));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'TOTAL NORMAL: ' + decSUMCustomerPrice));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Costo adicional: ' + fltQuoteAdKG));
-                    
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'TOTAL PROPUESTA: ' + ejemplo5));
-                }
                 rangeZP = new SBQQ__QuoteLine__c (
                         FLETE__c = 0
                         , SBQQ__CustomerPrice__c = 0
@@ -652,7 +625,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 rangeZP.SBQQ__NetPrice__c = Tarifapropuesta2zp * this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
                 /*if(range.Tarifa__c == 'TARIFA SOBRE')
                     rangeZP.SBQQ__Discount__c = (TarifaPropuestaZP / FleteZP) - 1;
-                else */rangeZP.SBQQ__Discount__c = (TarifaPropuestaZP / TarifaLlenaZP) - 1;
+                else */rangeZP.SBQQ__Discount__c = (TarifaPropuesta2ZP / TarifaLlenaZP) - 1;
                 decSUMCustomerPriceZP += rangeZP.SBQQ__CustomerPrice__c;
                 decSUMNetPriceZP += rangeZP.SBQQ__NetPrice__c;
                 if(!this.mapDiscounts.containsKey(i)){
