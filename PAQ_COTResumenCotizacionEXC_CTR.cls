@@ -550,8 +550,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     fltQuoteAdKG = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
                 ejemplo = decFlete + this.wp.mapACK.get('Interno');
                 ejemplo2 = decFlete  + range.RAD__c + range.EAD__c;
-                if(blnACK)
-                    ejemplo2 += this.wp.mapACK.get('Interno');
+                /*if(blnACK)
+                    ejemplo2 += this.wp.mapACK.get('Interno');*/
                 decTarifaPropuesta2 = fltGuia + range.ACK__c + fltQuoteAdKG;
                 //ejemplo3 = decFlete + range.ACK__C + fltQuoteAdKG;
                 ejemplo3 = range.Flete__c + range.ACK__C + fltQuoteAdKG;
@@ -568,6 +568,13 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else*/ range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
+                /*if(range.Tarifa__c == 'TARIFA T0'){
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'FLETE: ' + decFlete));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + range.RAD__c));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + range.EAD__c));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa llena: ' + ejemplo2));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa propuesta: ' + decTarifaPropuesta2));
+                }*/
                     //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Mapa: ' + mapBlocksByW.get(keyBlock).mapRanges.get(strRange)));
                 rangeZP = new SBQQ__QuoteLine__c (
                         FLETE__c = 0
