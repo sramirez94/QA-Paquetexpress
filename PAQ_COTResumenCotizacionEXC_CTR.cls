@@ -657,8 +657,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 this.mapDiscounts.get(i).put('AVGDiscZP', decSUMNetPriceZP /decSUMCustomerPriceZP - 1);
         }
         // T7
-        decSUMCustomerPrice = 0;
-        decSUMNetPrice = 0;
+        
         keyBlock = lastBlock;
         Integer i = 61;
         //wpBlock = mapBlocksByW.get(keyBlock);
@@ -672,6 +671,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         Decimal decTotalpropuesta = 0;
         for(Decimal decW : this.mapGuide.keySet()){
             intpeso = decW.intvalue();
+            decFleteDefinitivo = 0;
+            decSUMCustomerPrice = 0;
+            decSUMNetPrice = 0;
             if(intpeso > 60){
                 this.listBlocksT7.add('TARIFA T7_' + intpeso);
                 this.listBlocksT7Desc.add('T7 ' + intpeso);
@@ -693,6 +695,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                             , Tarifa__c = 'TARIFA T7_' + intpeso
                             , PackVolAVG__c = 0
                     );
+                    decTotalNormal = 0;
                     if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c != null)
                         range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
                     if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c != null)
@@ -710,7 +713,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                         range.RAD__c = decFleteDefinitivo * 0.11;
                     if(this.blnEAD)
                         range.EAD__c = decFleteDefinitivo * 0.11;
-                    range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
+                    //range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
+                    range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c + 61.75;
                     decTotalNormal = range.SBQQ__Quantity__c * range.SBQQ__CustomerPrice__c;
                     decTotalpropuesta = range.Flete__c * range.SBQQ__Quantity__c;
                     range.SBQQ__Discount__c = range.Flete__c / range.SBQQ__CustomerPrice__c - 1;
@@ -733,9 +737,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     if(this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(intpeso).get('MaxDisc')){
                         this.mapDiscounts.get(intpeso).put('MaxDisc', range.SBQQ__Discount__c);
                     }
+                    if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('AVGDisc'))
+                        this.mapDiscounts.get(intpeso).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
                 }
-                if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('AVGDisc'))
-                    this.mapDiscounts.get(intpeso).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
             }
         }
        for(Decimal decW: this.mapDiscounts.keySet()){
