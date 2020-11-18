@@ -2871,7 +2871,7 @@
                                     , fltSEG : 0
                                     , fltTotalNormal : 0
                                 };
-                                if(keyFee != 'T7')
+                                if(keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P')
                                     $scope.EX.mapFreccZP[keyFee].ranges[key] = {
                                         intFrecuency : 0
                                         , fltBaseFee : 0
