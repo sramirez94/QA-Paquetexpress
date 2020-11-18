@@ -17,6 +17,9 @@
             <li role="presentation" class="tabPill" id="PPG-Tab" ng-show="PPG">
                 <a data-toggle="pill" class="tabPill" href="#PPG" ng-show="PPG">Guías Prepagadas</a>
             </li>
+            <li role="presentation" class="tabPill" id="7ZP-Tab" ng-show="TZP">
+                <a data-toggle="pill" class="tabPill" href="#7ZP" >Cotizador T7 zona plus</a>
+            </li>
             <li role="presentation" class="tabPill" id="ODC-Tab" ng-show="ODC">
                 <a data-toggle="pill" class="tabPill" href="#ODC" >Documentación en Linea</a>
             </li>
@@ -60,6 +63,11 @@
                     <c:PAQ_COTCotizadorEXC_CMP />
                 </div>
             </div>
+            <div id="7ZP" class="tab-pane fade" ng-show="TZP">
+                <div ng-if="TZP">
+                    <c:PAQ_CotizadorZonaPlus_CMP LeadId="{!strLeadId}" QuoteId="{!strQuoteId}" OppId="{!strOppId}"/>
+                </div>
+            </div>
         </div>
     </div>
     <script type="text/javascript" lang="js">
@@ -93,7 +101,8 @@
                     aviableOptions: [
                         {id: 'SPW', label: 'Tarifario abierto de piso' },
                         {id: 'PPG', label: 'Guías Prepagadas' },
-                        {id: 'ODC', label: 'Documentación En Línea'}
+                        {id: 'ODC', label: 'Documentación En Línea'},
+                        {id: '7ZP', label: 'Cotizador T7 zona plus'}
                     ]
                 };
                 $scope.Home = true;
@@ -121,6 +130,7 @@
                 $scope.PPG = false;
                 $scope.sent = false;
                 $scope.SPW = false;
+                $scope.TZP = false;
                 $scope.StrSTDCotiType = '';
                 $scope.Wrapper = {};
 
@@ -217,6 +227,13 @@
                                 j$('#GMP-Tab').addClass('active');
                             }
                             break;
+                        case '7ZP':
+                            j$('.tabPill').removeClass('active');
+                            j$('.tab-pane').removeClass('in active');
+                            $scope.TZP = true;
+                            j$('#7ZP').addClass('in active');
+                            j$('#7ZP-Tab').addClass('active');
+                            break;
                     }
                 };
 
@@ -224,6 +241,7 @@
                     $scope.SPW = false;
                     $scope.PPG = false;
                     $scope.ODC = false;
+                    $scope.TZP = false;
                     $scope.sent = false;
                 };
 
@@ -334,6 +352,13 @@
                                             j$('#GMP').addClass('in active');
                                             j$('#GMP-Tab').addClass('active');
                                             break;
+                                       case 'Tarifa T7 zona plus':
+                                            $scope.TZP = true;
+                                            $scope.Home = false;
+                                            $scope.FeeType.model = getModel('7ZP', $scope.FeeType.aviableOptions);
+                                            j$('#7ZP').addClass('in active');
+                                            j$('#7ZP-Tab').addClass('active');
+                                        break;
                                     }
                                 }
                                 $scope.sent = false;
