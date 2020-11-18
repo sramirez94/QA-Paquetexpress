@@ -1088,6 +1088,8 @@
                         , 'T5': 'TARIFA T5'
                         , 'T6': 'TARIFA T6'
                         , 'T7': 'TARIFA T7'
+                        , 'T7P': 'TARIFA T7P'
+                        , 'T7V': 'TARIFA T7V'
                     }
                     , listFeeZP : {
                         'TS': 'TARIFA SOBRE'
@@ -1356,6 +1358,8 @@
                     , 'T5': 'TARIFA T5'
                     , 'T6': 'TARIFA T6'
                     , 'T7': 'TARIFA T7'
+                    , 'T7P': 'TARIFA T7P'
+                    , 'T7V': 'TARIFA T7V'
                 };
                 /*$scope.listTender = { //29/09/2020 Salvador: Lista para almacenar los tenders para la T7ZP
                         'ACA':'ACA'
@@ -1821,7 +1825,7 @@
                                 destrange = rangeresp.replace(keyRange + ' (', '');
                                 destrange = destrange.replace(')', '');
                             } else destrange = strRange;
-                            if(keyFee === 'TS' || keyFee === 'T0'|| keyFee === 'T1'|| keyFee === 'T2'|| keyFee === 'T3'|| keyFee === 'T4'|| keyFee === 'T5'|| keyFee === 'T6'|| keyFee === 'T7')
+                            if(keyFee === 'TS' || keyFee === 'T0'|| keyFee === 'T1'|| keyFee === 'T2'|| keyFee === 'T3'|| keyFee === 'T4'|| keyFee === 'T5'|| keyFee === 'T6'|| keyFee === 'T7' || keyFee === 'T7V' || keyFee === 'T7P')
                                 var item = $scope.EX.mapFrecc[keyFee].ranges[keyRange];
                             else
                                 var item = $scope.EX.OWFrecc[keyFee].ranges[keyRange];
@@ -2254,6 +2258,7 @@
                         $scope.EX.mapQuotes['T7'].block[lastBlock.key] = {
                             ranges : {}
                         };
+                        
                         j$.each($scope.EX.listRange, function (keyRange, strRange) {
                             let fltAcuseT7 = 0;
                             let fltTarifaLlenaV = 0;
@@ -2268,6 +2273,13 @@
                             let fltTarPropP = 0;
                             let fltTotPropV = 0;
                             let fltTotPropP = 0;
+                            let destrange = '';
+                            let rangeresp = '';
+                            rangeresp = strRange;
+                            if(strRange.includes(' (')){
+                                destrange = rangeresp.replace(keyRange + ' (', '');
+                                destrange = destrange.replace(')', '');
+                            } else destrange = strRange;
                             var item = {
                                 //fltQuoteFee : $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost
                                 fltQuoteFee : 0
@@ -2297,10 +2309,14 @@
 
                             //item.fltQuoteFullFeeP = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
                             //item.fltQuoteFullFeeV = item.fltQuoteFee + item.fltQuoteAdM3 + item.fltRAD + item.fltEAD + item.fltACK + item.fltSEG;
-                            fltTarifaLlenaV = $scope.Wrapper.mapTarifarioT['TARIFA T7V'][strRange].Flete__c * $scope.EX.mapFrecc['T7V'].ranges[keyRange].fltAVGVol;
-                            fltTarifaLlenaP = $scope.EX.mapFrecc['T7P'].ranges[keyRange].fltAVGWeight * $scope.Wrapper.mapTarifarioT['TARIFA T7P'][strRange].Flete__c;
-                            fltTarPropV = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7V'].ranges[keyRange].fltAVGVol - $scope.EX.mapBlock[lastBlock.key].fltMaxV) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol;
-                            fltTarPropP = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7P'].ranges[keyRange].fltAVGWeight - $scope.EX.mapBlock[lastBlock.key].fltMaxW) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight;
+                            //fltTarifaLlenaV = $scope.Wrapper.mapTarifarioT['TARIFA T7V'][destrange].Flete__c * $scope.EX.mapFrecc['T7V'].ranges[keyRange].fltAVGVol;
+                            //fltTarifaLlenaP = $scope.EX.mapFrecc['T7P'].ranges[keyRange].fltAVGWeight * $scope.Wrapper.mapTarifarioT['TARIFA T7P'][destrange].Flete__c;
+                            fltTarifaLlenaV = $scope.Wrapper.mapTarifarioT['TARIFA T7V'][destrange].Flete__c * $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol;
+                            fltTarifaLlenaP = $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight * $scope.Wrapper.mapTarifarioT['TARIFA T7P'][destrange].Flete__c;
+                            //fltTarPropV = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7V'].ranges[keyRange].fltAVGVol - $scope.EX.mapBlock[lastBlock.key].fltMaxV) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol;
+                            //fltTarPropP = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7P'].ranges[keyRange].fltAVGWeight - $scope.EX.mapBlock[lastBlock.key].fltMaxW) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight;
+                            fltTarPropV = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol - $scope.EX.mapBlock[lastBlock.key].fltMaxV) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol;
+                            fltTarPropP = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost + ($scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight - $scope.EX.mapBlock[lastBlock.key].fltMaxW) * $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight;
                             fltTotPropV = fltTarPropV + item.fltACK;
                             fltTotPropP = fltTarPropP + item.fltACK;
                             if($scope.EX.blnEAD){
@@ -2431,16 +2447,16 @@
                     $scope.EX.mapFreccZP.fltFEETotal = 1;
                     j$.each($scope.EX.listFee, function (keyFee, strFee) {
                         $scope.EX.mapFrecc[keyFee].intQTotal = 0;
-                        if(keyFee !== 'T7')
+                        if(keyFee !== 'T7' && keyFee !== 'T7P' && keyFee !== 'T7V')
                             $scope.EX.mapFreccZP[keyFee].intQTotal = 0;
                         j$.each($scope.EX.listRange, function (keyRange, strRange) {
                             $scope.EX.TOTAL['PAQUETES'] += $scope.EX.mapFrecc[keyFee].ranges[keyRange].intFrecuency;
-                            if(keyFee !== 'T7')
+                            if(keyFee !== 'T7' && keyFee !== 'T7P' && keyFee !== 'T7V')
                                 $scope.EX.TOTAL['PAQUETES'] += $scope.EX.mapFreccZP[keyFee].ranges[keyRange].intFrecuency;
 
                             $scope.EX.mapFrecc.intQTotal += $scope.EX.mapFrecc[keyFee].ranges[keyRange].intFrecuency;
                             $scope.EX.mapFrecc[keyFee].intQTotal += $scope.EX.mapFrecc[keyFee].ranges[keyRange].intFrecuency;
-                            if(keyFee !== 'T7'){
+                            if(keyFee !== 'T7' && keyFee !== 'T7P' && keyFee !== 'T7V'){
                                 $scope.EX.mapFreccZP.intQTotal += $scope.EX.mapFreccZP[keyFee].ranges[keyRange].intFrecuency;
                                 $scope.EX.mapFreccZP[keyFee].intQTotal += $scope.EX.mapFreccZP[keyFee].ranges[keyRange].intFrecuency;
                             }
@@ -2460,7 +2476,7 @@
                     j$.each($scope.EX.listFee, function (keyFee, strFee) {
                         if($scope.EX.mapFrecc.intQTotal > 0)
                             $scope.EX.mapFrecc[keyFee].fltFrecc = $scope.EX.mapFrecc[keyFee].intQTotal / $scope.EX.mapFrecc.intQTotal;
-                        if(keyFee !== 'T7' && $scope.EX.mapFreccZP.intQTotal > 0)
+                        if(keyFee !== 'T7'  && keyFee !== 'T7P' && keyFee !== 'T7V' && $scope.EX.mapFreccZP.intQTotal > 0)
                             $scope.EX.mapFreccZP[keyFee].fltFrecc = $scope.EX.mapFreccZP[keyFee].intQTotal / $scope.EX.mapFreccZP.intQTotal;
                     });
                     j$.each($scope.EX.listRange, function (keyRange, strRange) {
@@ -2468,7 +2484,7 @@
                         $scope.EX.mapRanges[keyRange]['ZP'].intQTotal = 0;
                         j$.each($scope.EX.listFee, function (keyFee, strFee) {
                             $scope.EX.mapRanges[keyRange]['PAQ'].intQTotal += $scope.EX.mapFrecc[keyFee].ranges[keyRange].intFrecuency;
-                            if(keyFee !== 'T7')
+                            if(keyFee !== 'T7'  && keyFee !== 'T7P' && keyFee !== 'T7V')
                                 $scope.EX.mapRanges[keyRange]['ZP'].intQTotal += $scope.EX.mapFreccZP[keyFee].ranges[keyRange].intFrecuency;
                         });
                         if($scope.EX.mapFrecc.intQTotal > 0) {
@@ -2818,8 +2834,8 @@
                                     $scope.EX.mapFrecc[keyFee].ranges[key].fltAVGVol = 0;
                                     $scope.EX.mapFrecc[keyFee].ranges[key].blnSameWeight = false;
                                     $scope.EX.mapFrecc[keyFee].ranges[key].fltSameVol = false;
-                                    /*$scope.EX.mapFrecc['T7V'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];
-                                    $scope.EX.mapFrecc['T7P'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];*/
+                                    $scope.EX.mapFrecc['T7V'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];
+                                    $scope.EX.mapFrecc['T7P'].ranges[key] = $scope.EX.mapFrecc[keyFee].ranges[key];
                                 }
                                 //$scope.EX.mapQuotes[keyFee][key] = {};
                                 //if(keyFee != 'T7')
@@ -2843,6 +2859,7 @@
                             $scope.EX.mapService['Add'].ranges[key] = { fltCostWeight : 0, fltCostVol : 0};
                             $scope.EX.mapService['ACK'].ranges[key] = { fltCost : 0 };
                             $scope.EX.mapService['ZP'].ranges[key] = { fltCost : 0 };
+                            debugger;
                             j$.each($scope.listFee, function (keyFee, strFee) {
                                 $scope.EX.mapFrecc[keyFee].ranges[key] = {
                                     intFrecuency : 0
@@ -4252,6 +4269,7 @@
                                     $scope.EX.mapService['ACK'].ranges[strDestiny] = { fltCost : 0 };
                                     $scope.EX.mapService['ZP'].ranges[strDestiny] = { fltCost : 0 };
                                     j$.each($scope.listFee, function (keyFee, strFee) {
+                                        debugger;
                                         if(!keyFee.includes('T7_')){
                                             $scope.EX.mapFrecc[keyFee].ranges[strDestiny] = {
                                                 intFrecuency : 0
@@ -4263,16 +4281,17 @@
                                                 , fltSEG : 0
                                                 , fltTotalNormal : 0
                                             };
-                                            $scope.EX.mapFreccZP[keyFee].ranges[strDestiny] = {
-                                                intFrecuency : 0
-                                                , fltBaseFee : 0
-                                                , fltFullFee : 0
-                                                , fltRAD : 0
-                                                , fltEAD : 0
-                                                , fltACK : 0
-                                                , fltSEG : 0
-                                                , fltTotalNormal : 0
-                                            };
+                                            if(keyFee !== 'T7P' && keyFee !== 'T7V')
+                                                $scope.EX.mapFreccZP[keyFee].ranges[strDestiny] = {
+                                                    intFrecuency : 0
+                                                    , fltBaseFee : 0
+                                                    , fltFullFee : 0
+                                                    , fltRAD : 0
+                                                    , fltEAD : 0
+                                                    , fltACK : 0
+                                                    , fltSEG : 0
+                                                    , fltTotalNormal : 0
+                                                };
                                             j$.each($scope.EX.mapLimits, function (keyFee, limits) {
                                                 j$.each($scope.EX.mapBlock, function (range, item) {
                                                     var key = keyFee;
@@ -4332,10 +4351,10 @@
                                             'PAQ': {fltFrecc: 0, intQTotal:0}
                                             , 'ZP' :{fltFrecc: 0, intQTotal:0}
                                             , 'T7' :{fltFrecc: 0, intQTotal:0}
-                                        }
-                                        $scope.EX.mapQuotes[keyFee][strDestiny] = {};
+                                        };
+                                        /*$scope.EX.mapQuotes[keyFee][strDestiny] = {};
                                         if(keyFee !== 'T7' && !keyFee.includes('T7_'))
-                                            $scope.EX.mapQuotesZP[keyFee][strDestiny] = {};
+                                            $scope.EX.mapQuotesZP[keyFee][strDestiny] = {};*/
                                     });
                                 }
                                 else
