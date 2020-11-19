@@ -2574,7 +2574,7 @@
                                         var frecc = $scope.EX.mapFrecc[keyFee].ranges[keyRange];
                                     var quote = $scope.EX.mapQuotes[keyFee].block[block.strBlock].ranges[keyRange];
                                     
-                                    if(frecc.intFrecuency > 0){
+                                    //if(frecc.intFrecuency > 0){
                                         if (getId(labelRange, $scope.EX.OriginalListRange))
                                             strRange = labelRange;
                                         else
@@ -2619,13 +2619,13 @@
                                                 rangeDisc = quoteItem.SBQQ__Discount__c * -1;
                                         }
                                         listQuoteItem.push(quoteItem);
-                                    }
+                                    //}
 
                                     if(keyFee === 'TS'||keyFee === 'T0' ||keyFee === 'T1' ||keyFee === 'T2' ||keyFee === 'T3' ||keyFee === 'T4' ||keyFee === 'T5' ||keyFee === 'T6'){
                                         var freccZP = $scope.EX.mapFreccZP[keyFee].ranges[keyRange];
                                         //var quoteZP = $scope.EX.mapQuotesZP[keyFee][keyRange];
                                         var quoteZP = $scope.EX.mapQuotesZP[keyFee].block[block.strBlock].ranges[keyRange];
-                                        if(freccZP.intFrecuency > 0) {
+                                        //if(freccZP.intFrecuency > 0) {
                                             if (getId(labelRange, $scope.EX.OriginalListRange))
                                                 strRange = labelRange;
                                             else
@@ -2661,9 +2661,9 @@
                                             if ((quoteItemZP.SBQQ__Discount__c * -1) > rangeDisc)
                                                 rangeDisc = quoteItemZP.SBQQ__Discount__c * -1;
                                             listQuoteItem.push(quoteItemZP);
-                                        }
+                                        /*}
                                         else if (freccZP.intFrecuency === 0 && freccZP.Id)
-                                                listDelete.push(freccZP.Id);
+                                                listDelete.push(freccZP.Id);*/
                                     }
 
                                 });
@@ -3998,6 +3998,7 @@
                         }
                         if(getLabel(key, $scope.EX.mapBlock) && quoteItem.PackVolAVG__c && quoteItem.GUIA__c ){
                             $scope.EX.mapBlock[key].fltVolW = quoteItem.PackVolAVG__c;
+                            $scope.EX.mapBlock[key].fltMaxV = quoteItem.PackVolAVG__c;
                             $scope.EX.mapBlock[key].fltVolWeight = quoteItem.PackVolAVG__c * 200;
                             $scope.EX.mapBlock[key].ranges[keyRange].fltCost = quoteItem.GUIA__c;
                         }
