@@ -1291,7 +1291,7 @@
                         , 'T4':{ranges:{}, fltFrecc: 0, intQTotal:0}
                         , 'T5':{ranges:{}, fltFrecc: 0, intQTotal:0}
                         , 'T6':{ranges:{}, fltFrecc: 0, intQTotal:0}
-                        , 'T7':{ranges:{}, fltFrecc: 0, intQTotal:0}
+                        //, 'T7':{ranges:{}, fltFrecc: 0, intQTotal:0}
                         , intQTotal : 0
                         , fltFTotal : 0
                         , fltFEETotal : 0
@@ -2382,8 +2382,10 @@
                             listRanges[keyRange] = item;
                             if(item.fltTotalNormal !== 0 && item.fltTotalNormal !== NaN)
                                 fltTotalNormal += item.fltTotalNormal;
+                            else fltTotalNormal += 0;
                             if(item.fltTotalQuote !== 0 && item.fltTotalQuote !== NaN)
                                 fltTotalQuote += item.fltTotalQuote;
+                            else fltTotalQuote += 0;
                             fltTotalSEG += item.fltTotalSEG;
                             if($scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight > t7W)
                                 t7W = $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight;
@@ -2494,8 +2496,10 @@
                         });
                         if($scope.EX.mapFrecc.intQTotal > 0) {
                             $scope.EX.mapRanges[keyRange]['PAQ'].fltFrecc = $scope.EX.mapRanges[keyRange]['PAQ'].intQTotal / $scope.EX.mapFrecc.intQTotal;
-                            $scope.EX.mapRanges[keyRange]['ZP'].fltFrecc = $scope.EX.mapRanges[keyRange]['ZP'].intQTotal / $scope.EX.mapFrecc.intQTotal;
+                            //$scope.EX.mapRanges[keyRange]['ZP'].fltFrecc = $scope.EX.mapRanges[keyRange]['ZP'].intQTotal / $scope.EX.mapFrecc.intQTotal;
                         }
+                        if($scope.EX.mapFreccZP.intQTotal > 0)
+                            $scope.EX.mapRanges[keyRange]['ZP'].fltFrecc = $scope.EX.mapRanges[keyRange]['ZP'].intQTotal / $scope.EX.mapFreccZP.intQTotal;
                     });
                     if($scope.EX.mapFreccZP.intQTotal > 0)
                         $scope.EX.blnZP = true;
@@ -3929,6 +3933,7 @@
                                     $scope.EX.mapBlock[key] = {
                                         strLabel : key
                                         , fltMaxW : quoteItem.PackWeightAVG__c
+                                        , fltMaxV : quoteItem.PackVolAVG__c
                                         , fltVolW : quoteItem.PackVolAVG__c
                                         , fltVolWeight: 0
                                         , blnSameCost : false
@@ -3958,7 +3963,7 @@
                                             , fltAVGVol : $scope.EX.mapBlock[key].fltMaxV
                                             , fltAVGWeight : $scope.EX.mapBlock[key].fltMaxW
                                         };
-                                    if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges))
+                                    if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges) && keyFee != 'TARIFA T7')
                                         $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
                                             intFrecuency : 0
                                             , fltBaseFee : 0
@@ -3969,6 +3974,8 @@
                                             , fltSEG : 0
                                             , fltTotalNormal : 0
                                         };
+                                    $scope.EX.mapFrecc['T7V'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
+                                    $scope.EX.mapFrecc['T7P'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
                                     $scope.EX.mapRanges[destino] = {
                                         'PAQ': {fltFrecc: 0, intQTotal:0}
                                         , 'ZP' :{fltFrecc: 0, intQTotal:0}
@@ -4450,17 +4457,20 @@
             }
 
             function getNumFromPercent(str) {
-                var strNum = '';
-                var index = str.indexOf("%");
-                strNum = str.slice(0, index);
-                /*if (getNum(strNum) > 0)
-                    return  getNum(strNum) / 100;
-                else
-                    return 0;*/
-                if (getNum(str) > 0)
-                    return  getNum(str) / 100;
-                else
-                    return 0;
+                if(str.includes('%')){
+                    var strNum = '';
+                    var index = str.indexOf("%");
+                    strNum = str.slice(0, index);
+                    if (getNum(strNum) > 0)
+                        return  getNum(strNum) / 100;
+                    else
+                        return 0;
+                } else {
+                    if (getNum(str) > 0)
+                        return  getNum(str) / 100;
+                    else
+                        return 0;
+                }
             }
 
             function getRange(strRange){ //VER (0-400)
