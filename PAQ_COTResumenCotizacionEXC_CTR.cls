@@ -627,8 +627,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else if (rangeZP.Tarifa__c != 'TARIFA SOBRE' || rangeZP.Tarifa__c != 'TARIFA T0'|| rangeZP.Tarifa__c != 'TARIFA T1' || rangeZP.Tarifa__c != 'TARIFA T2')
                     rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c / 10;
                 else rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                //prueba = fltGuia  + fltQuoteAdKGZP;
-                prueba = fltGuia + mapService.get('ZP').mapRanges.get(strRange);
+                prueba = fltGuia  + fltQuoteAdKGZP;
+                if(mapService.get('ZP').mapRanges.get(strRange) != null)
+                    prueba = fltGuia + mapService.get('ZP').mapRanges.get(strRange);
                 TarifaPropuestaZP = fltGuia  + decEAD;
                 TarifaPropuesta2ZP = TarifaPropuestaZP + AcuseZP;
                 rangeZP.SBQQ__CustomerPrice__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c * TarifaLlenaZP;
@@ -734,7 +735,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     if(this.blnEAD)
                         range.EAD__c = decFleteDefinitivo * 0.11;
                     //range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
-                    range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c + 61.75;
+                    range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
+                    if(blnACK)
+                        range.SBQQ__CustomerPrice__c += this.wp.mapACK.get('Interno');
                     decTotalNormal = range.SBQQ__Quantity__c * range.SBQQ__CustomerPrice__c;
                     decTotalpropuesta = range.Flete__c * range.SBQQ__Quantity__c;
                     range.SBQQ__Discount__c = range.Flete__c / range.SBQQ__CustomerPrice__c - 1;
