@@ -160,7 +160,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         this.mapTotal.put('Quote', 0);
         this.mapTotalZP.put('Quote', 0);
 
-        for(String keyFee: this.listFee){
+        /*for(String keyFee: this.listFee){
             this.mapTotalByFee.put(keyFee, new QuoteWP());
             this.mapTotalByFeeZP.put(keyFee, new QuoteWP());
             this.mapTotalDiscFee.put(keyFee, 0);
@@ -179,7 +179,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     else if(!this.mapQuotesZP.get(keyFee).containsKey(keyRange))
                         this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
             }
-        }
+        }*/
         this.wp.objQuote = queryQuote(sc.getId());
 
         if(wp.objQuote.PAQ_DescuentoGlobal__c != null)
@@ -291,6 +291,45 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     this.mapService.get('ZP').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);
             }
 
+            /*if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
+                if(quoteItem.ZonaPlus__c)
+                    this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                else
+                    this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+            }
+            else{
+                if(quoteItem.ZonaPlus__c)
+                    this.mapQuotesZP.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                else
+                    this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+            }*/
+            if(this.blnSEG && this.decSEG == 0)
+                this.decSEG = quoteItem.SEG__c;
+        }
+        this.listRangeDestiny.addAll(setRange);
+        //para pruebas
+        for(String keyFee: this.listFee){
+            this.mapTotalByFee.put(keyFee, new QuoteWP());
+            this.mapTotalByFeeZP.put(keyFee, new QuoteWP());
+            this.mapTotalDiscFee.put(keyFee, 0);
+            this.mapTotalDiscFeeZP.put(keyFee, 0);
+            for(String keyRange: this.listRangeDestiny){
+                if(!this.mapQuotes.containsKey(keyFee))
+                    this.mapQuotes.put(keyFee, new Map<String, SBQQ__QuoteLine__c>{
+                    keyRange => new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0)
+                    });
+                else if(!this.mapQuotes.get(keyFee).containsKey(keyRange))
+                    this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
+
+                if(keyFee != 'TARIFA T7')
+                    if(!this.mapQuotesZP.containsKey(keyFee))
+                        this.mapQuotesZP.put(keyFee, new Map<String, SBQQ__QuoteLine__c>{keyRange => new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0)});
+                    else if(!this.mapQuotesZP.get(keyFee).containsKey(keyRange))
+                        this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
+            }
+        }
+
+        for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
             if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
                 if(quoteItem.ZonaPlus__c)
                     this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
@@ -303,10 +342,10 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else
                     this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
             }
-            if(this.blnSEG && this.decSEG == 0)
-                this.decSEG = quoteItem.SEG__c;
         }
-        this.listRangeDestiny.addAll(setRange);
+        
+
+
         Integer blockCounter = 1;
         for(Decimal decW : this.mapGuide.keySet()){
             this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
@@ -464,7 +503,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         Decimal decSUMNetPrice = 0;
         Decimal decSUMNetPriceZP = 0;
         Decimal fltTotalQuote = 0;
-        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + this.mapQuotesZP.get('TARIFA T0').get('0-400')));
+        Decimal decRespExcedente = 0;
+        Decimal respTarifaPropuesta = 0;
         for(Integer i = 0; i <= 60; i++ ){
             decSUMCustomerPrice = 0;
             decSUMCustomerPriceZP = 0;
@@ -507,7 +547,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     strRango = this.mapRangosByDest.get(strRange);
                 else strRango = strRange;
                 range = new SBQQ__QuoteLine__c (
-                    FLETE__c = wpBlock.mapRanges.get(strRango)
+                    FLETE__c = wpBlock.mapRanges.get(strRange)
                     , SBQQ__CustomerPrice__c = 0
                     , SBQQ__NetPrice__c = 0
                     , SBQQ__Quantity__c = 0
@@ -524,14 +564,10 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 if (range.Tarifa__c == 'TARIFA SOBRE')
                     tarifa = 'TARIFA TS';
                 else tarifa = range.Tarifa__c;
-                /*if(this.mapQuotes.get(range.Tarifa__c).get(strRange).GUIA__c != null)
-                    fltGuia = this.mapQuotes.get(range.Tarifa__c).get(strRange).GUIA__c;*/
                 if(mapBlocksByW.get(keyBlock).mapRanges.get(strRange) != null)
                     fltGuia = mapBlocksByW.get(keyBlock).mapRanges.get(strRange);
                 if (i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
                     range.KG_ADICIONAL__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c;
-                /*if(this.mapQuotes.get(range.Tarifa__c).get(strRange).ACK__C != null)
-                    range.ACK__C = this.mapQuotes.get(range.Tarifa__c).get(strRange).ACK__C;*/
                 if(this.mapService.get('ACK').mapRanges.get(strRange)!= null)
                     range.ACK__c = mapService.get('ACK').mapRanges.get(strRange);
                 if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c != null)
@@ -550,34 +586,32 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
                 if(i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
                     fltQuoteAdKG = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
+                if(fltQuoteAdKG > 0){
+                    decRespExcedente = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c;
+                }
                 ejemplo = decFlete + this.wp.mapACK.get('Interno');
                 ejemplo2 = decFlete  + range.RAD__c + range.EAD__c;
                 if(blnACK)
                     ejemplo2 += this.wp.mapACK.get('Interno');
-                decTarifaPropuesta2 = fltGuia + range.ACK__c + fltQuoteAdKG;
-                //ejemplo3 = decFlete + range.ACK__C + fltQuoteAdKG;
+                decTarifaPropuesta2 = fltGuia + range.ACK__c;// + fltQuoteAdKG;
+                if(i > lastBlock && fltQuoteAdKG == 0)
+                    fltQuoteAdKG = decRespExcedente + respTarifaPropuesta;
+                decTarifaPropuesta2 += fltQuoteAdKG;
                 ejemplo3 = range.Flete__c + range.ACK__C + fltQuoteAdKG;
-                /*if(range.Tarifa__c == 'TARIFA SOBRE')
-                    ejemplo4 = range.SBQQ__Quantity__c * decFlete;
-                else*/ ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
+                ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
                 fltGuia += range.ACK__C;
                 fltGuia += fltQuoteAdKG;
-                //ejemplo5 = fltGuia * range.SBQQ__Quantity__c;
                 ejemplo5 = decTarifaPropuesta2 * range.SBQQ__Quantity__c;
                 range.SBQQ__NetPrice__c = ejemplo5;
-                /*if(range.Tarifa__c == 'TARIFA SOBRE')
-                    range.SBQQ__Discount__c = (fltGuia / decFlete) - 1;
-                else*/ range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
+                range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
+                /*if(range.Tarifa__c == 'TARIFA T4'){
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa propuesta: ' + decTarifaPropuesta2));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'respaldo costo excedete: ' + decRespExcedente));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifa llea: ' + ejemplo2));
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'respaldo de tarifa propuesta: ' + respTarifaPropuesta));
+                }*/
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
-                /*if(range.Tarifa__c == 'TARIFA SOBRE'){
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'FLETE: ' + decFlete));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'RAD: ' + range.RAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'EAD: ' + range.EAD__c));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa llena: ' + ejemplo2));
-                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'tarifa propuesta: ' + decTarifaPropuesta2));
-                }*/
-                    //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Mapa: ' + mapBlocksByW.get(keyBlock).mapRanges.get(strRange)));
                 rangeZP = new SBQQ__QuoteLine__c (
                         FLETE__c = 0
                         , SBQQ__CustomerPrice__c = 0
@@ -669,6 +703,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 if(this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('MaxDisc') && rangeZP.SBQQ__Discount__c < this.mapDiscounts.get(i).get('MaxDiscZP')){
                     this.mapDiscounts.get(i).put('MaxDiscZP', rangeZP.SBQQ__Discount__c);
                 }
+                respTarifaPropuesta = decTarifaPropuesta2;
             }
             
             if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDisc'))
