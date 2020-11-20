@@ -1048,7 +1048,7 @@
         });
         (function(){
             // angujar module
-            //var app = angular.module('Cotizador');
+            var app = angular.module('Cotizador');
             // main controller
             /*
             * Angular module controllers
@@ -2184,6 +2184,7 @@
                             j$.each($scope.EX.listRange, function (keyRange, strRange) {
                                 if (keyFee.includes('T7_')){
                                     decTarifaLlenaT7 = 0;
+                                    let fltTotalTarifaLlena = 0;
                                     var item = {
                                         fltQuoteFee : $scope.EX.mapBlock[key].ranges[keyRange].fltCost
                                         , fltQuoteFullFeeP : $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltFullFee
@@ -2203,31 +2204,34 @@
                                         , strFee : keyFee
                                         , fltTotalNormal : 0
                                     };
+                                    fltTotalTarifaLlena = item.fltQuoteFee;
+                                    if($scope.EX.blnACK)
+                                        fltTotalTarifaLlena += item.fltACK;
                                     if($scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltFullFee > 0)
-                                        discP = $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltTarPropuesta / $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltFullFee -1;
+                                        discP = fltTotalTarifaLlena / $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltFullFee -1;//$scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltTarPropuesta / $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltFullFee -1;
                                     if($scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltFullFee > 0)
-                                        discV = $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltTarPropuesta / $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltFullFee -1;
+                                        discV = fltTotalTarifaLlena / $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltFullFee -1;//$scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltTarPropuesta / $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltFullFee -1;
                                     let strTarifa = '';
                                     let TarifaLlena = 0;
                                     let flete = 0;
                                     if(discP < discV ){
                                         item.fltQuoteFullFee = $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltFullFee;
-                                        item.fltQuoteBaseFee = item.fltQuoteFee + item.fltQuoteAdKG;
+                                        item.fltQuoteBaseFee = item.fltQuoteFee;// + item.fltQuoteAdKG;
                                         item.fltDisc         = discP;
                                         strTarifa = 'TARIFA T7P';
                                         decTarifaLlenaT7 = $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltBaseFee + $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltRAD + $scope.EX.mapTarifas7[keyFee + 'P'].ranges[keyRange].fltEAD;
                                     } else{
                                         item.fltQuoteFullFee = $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltFullFee;
-                                        item.fltQuoteBaseFee = item.fltQuoteFee + item.fltQuoteAdKG;
+                                        item.fltQuoteBaseFee = item.fltQuoteFee; //+ item.fltQuoteAdKG;
                                         item.fltDisc         = discV;
                                         strTarifa = 'TARIFA T7V';
                                         decTarifaLlenaT7 = $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltBaseFee + $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltRAD + $scope.EX.mapTarifas7[keyFee + 'V'].ranges[keyRange].fltEAD;
                                     }
                                     if(item.fltACK !== 0)
                                         //item.fltQuoteFee += item.fltACK;
-                                        decTarifaLlenaT7 += item.fltACK;//item.fltQuoteFee + item.fltACK;
+                                        decTarifaLlenaT7 += $scope.Wrapper.mapACK[$scope.EX.strACK];//item.fltACK;//item.fltQuoteFee + item.fltACK;
                                     //item.fltTotalQuote = item.fltQuoteFullFee * $scope.EX.OWFrecc[keyFee].ranges[keyRange].intFrecuency;
-                                    item.fltTotalQuote = item.fltQuoteFee * $scope.EX.OWFrecc[keyFee].ranges[keyRange].intFrecuency;
+                                    item.fltTotalQuote = fltTotalTarifaLlena * $scope.EX.OWFrecc[keyFee].ranges[keyRange].intFrecuency;
                                     item.fltTotalSEG = item.fltSEG * $scope.EX.OWFrecc[keyFee].ranges[keyRange].intFrecuency;
                                     //item.fltTotalNormal = item.fltQuoteFee * $scope.EX.OWFrecc[keyFee].ranges[keyRange].intFrecuency;
                                     item.fltTotalNormal = $scope.EX.OWFrecc[keyFee].ranges[keyRange].intFrecuency * decTarifaLlenaT7;
@@ -3113,10 +3117,13 @@
                 };
 
                 $scope.removeBlock = function(strKey){
+                    var clave = '';
+                    if(strKey.includes('T7'))
+                        clave = strKey.replace('T7', 'T7_');
                     delete $scope.EX.mapBlock[strKey];
                     var index = j$.inArray(strKey, $scope.listBlocksByMaxW);
                     $scope.listBlocksByMaxW.splice(index, 1);
-                    delete $scope.EX.OWFrecc[strKey];
+                    delete $scope.EX.OWFrecc[clave];
                     $scope.calculateEX();
                 };
 
@@ -3155,6 +3162,7 @@
                                         item.fltCost = fltCost;
 
                                 });
+                                $scope.calculateEX();
                             break;
                         case 'Add':
                             if(blnCheck)
@@ -3623,7 +3631,7 @@
                             }
                         }
                         if(notEmpty(strNameProcess))
-                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.OD.strApprovalComment);
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.EX.strApprovalComment);
                         else
                             $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
                     }
@@ -3761,7 +3769,7 @@
                             }
                         }
                         if(notEmpty(strNameProcess))
-                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.OD.strApprovalComment);
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.EX.strApprovalComment);
                         else
                             $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
                     }
@@ -4029,7 +4037,10 @@
                     j$.each($scope.Wrapper.listQuoteItem, function (index, quoteItem) {
                         if (quoteItem.PackWeightAVG__c > 60){
                             var key = 'T7' + quoteItem.PackWeightAVG__c;
-                            var keyFee = quoteItem.Tarifa__c;
+                            var keyFee = '';
+                            if(quoteItem.Tarifa__c.includes('TARIFA T7_'))
+                                keyFee = quoteItem.Tarifa__c
+                            else keyFee = getId(quoteItem.Tarifa__c, $scope.EX.listFee);
                             $scope.EX.hasOverWBlocks = true;
                         } else {
                             var key = $scope.getKey(quoteItem.PackWeightAVG__c);
@@ -4476,10 +4487,10 @@
                                                     , fltTotalNormal : 0
                                                 };
                                             else {
-                                                /*$scope.EX.mapFrecc[keyFee].ranges[key].fltAVGWeight = 0;
-                                                $scope.EX.mapFrecc[keyFee].ranges[key].fltAVGVol = 0;
-                                                $scope.EX.mapFrecc[keyFee].ranges[key].blnSameWeight = false;
-                                                $scope.EX.mapFrecc[keyFee].ranges[key].fltSameVol = false;*/
+                                                $scope.EX.mapFrecc[keyFee].ranges[strDestiny].fltAVGWeight = 0;
+                                                $scope.EX.mapFrecc[keyFee].ranges[strDestiny].fltAVGVol = 0;
+                                                $scope.EX.mapFrecc[keyFee].ranges[strDestiny].blnSameWeight = false;
+                                                $scope.EX.mapFrecc[keyFee].ranges[strDestiny].fltSameVol = false;
                                                 $scope.EX.mapFrecc['T7V'].ranges[strDestiny] = $scope.EX.mapFrecc[keyFee].ranges[strDestiny];
                                                 $scope.EX.mapFrecc['T7P'].ranges[strDestiny] = $scope.EX.mapFrecc[keyFee].ranges[strDestiny];
                                             }
