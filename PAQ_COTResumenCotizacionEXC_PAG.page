@@ -242,9 +242,11 @@
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T4 </td>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T5 </td>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T6 </td>
-                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T7 </td>
-                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Peso </td>
-                    <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Vol </td>
+                    <apex:outputText rendered="{!blnBloquesT7 == false}">
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T7 </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Peso </td>
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Vol </td>
+                    </apex:outputText>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">TOTAL </td>
                     <td align="left"  style="font-size:9px; "> </td>
                     <apex:outputText rendered="{!blnZP}">
@@ -260,26 +262,30 @@
                     </apex:outputText>
                 </tr>
 
-                <apex:repeat value="{!listrangeDestiny}" var="keyRange">
+                <apex:repeat value="{!listRangeDestiny}" var="keyRange">
                     <tr>
                         <td align="left" style="font-size:9px; ">{!keyRange}</td>
                         <apex:repeat value="{!listFee}" var="keyFee">
+                            <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                                <td align="left"  style="font-size:9px; ">
+                                    <apex:outputText value="{0, number, ###,###,##0}">
+                                        <apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__Quantity__c}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        </apex:repeat>
+                        <apex:outputText rendered="{!blnBloquesT7 == false}">
                             <td align="left"  style="font-size:9px; ">
-                                <apex:outputText value="{0, number, ###,###,##0}">
-                                    <apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__Quantity__c}" />
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    <apex:param value="{!mapT7W[keyRange]}" />
                                 </apex:outputText>
                             </td>
-                        </apex:repeat>
-                        <td align="left"  style="font-size:9px; ">
-                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                <apex:param value="{!mapT7W[keyRange]}" />
-                            </apex:outputText>
-                        </td>
-                        <td align="left"  style="font-size:9px; ">
-                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                <apex:param value="{!mapT7V[keyRange]}" />
-                            </apex:outputText>
-                        </td>
+                            <td align="left"  style="font-size:9px; ">
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    <apex:param value="{!mapT7V[keyRange]}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:outputText>
                         <td align="left" style="font-size:9px; ">
                             <apex:outputText value="{0, number, ###,###,##0}">
                                 <apex:param value="{!mapTotalByRange[keyRange].totalPaquetes}" />
@@ -376,18 +382,18 @@
                     <apex:repeat value="{!listrangeDestiny}" var="keyRange">
                         <tr>
                             <td align="left" style="font-size:9px; ">{!keyRange}</td>
-                            <apex:repeat value="{!listBlocksT7}" var="keyblockT7">
+                            <!--<apex:repeat value="{!listBlocksT7}" var="keyblockT7">
                                 <td align="Center"  style="font-size:9px; ">
                                     <apex:outputText value="{0, number, ###,###,##0}">
                                         <apex:param value="{!mapQuotes[keyblockT7][keyRange].SBQQ__Quantity__c}" />
                                     </apex:outputText>
                                 </td>
-                            </apex:repeat>
+                            </apex:repeat>-->
                         </tr>
                     </apex:repeat>
                 </table>
             </apex:outputText>
-            <br/>
+            
             <!--Aquí comentario-->
             <table style="border-collapse: collapse;" width="100%">
                 <tr>
@@ -424,53 +430,63 @@
                 </tr>
             </table>
             <br/>
-            <table style="border-collapse: collapse;" width="40%" align = "left">
+            <table style="border-collapse: collapse;" width="50%" align = "left">
                 <tr style="height: 2px"></tr>
                 <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Kilómetros</td>
+                <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                    <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>    
+                </apex:repeat>
                 <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>
-                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>
-                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Rango por kg</td>
+                <!--<td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"></td>
+                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"></td>
+                <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"></td>-->
                 <apex:repeat value="{!listRangeDestiny}" var="strRange">
                     <tr>
-                        <td width="25%" align="Left"   style="font-size:9px; background-color:white; color: black;">{!strRange}</td>
+                        <td width="20%" align="Left"   style="font-size:9px; background-color:white; color: black;">{!strRange}</td>
                         <apex:repeat value="{!mapBlocks}" var="nameBlock">
                             <td width="25%" align="Center"   style="font-size:9px; background-color:white; color: black;">
-                                <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                <!--<apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
-                                </apex:outputText>
+                                </apex:outputText>-->
                             </td>
                         </apex:repeat>
-                        <!--<td width="25%" align="center" style="font-size:9px; background-color:white; color: black;">
+                        <td  align="center" style="font-size:9px; background-color:white; color: black;">
                             <apex:outputText value="{0, number, $ ###,###,##0.00}">
-                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                                <!--<apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />-->
                             </apex:outputText>
-                        </td>-->
+                        </td>
                     </tr>
                 </apex:repeat>
             </table>
 
             <table style="border-collapse: collapse;" width="25%" align = "right">
-                <tr style="height: 2px"></tr>
+                <!--<tr style="height: 2px"></tr>-->
                 <apex:outputText rendered="{!blnACK}">
                     <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Acuse interno</td>
                 </apex:outputText>
                 <apex:outputText rendered="{!blnZP}">
                     <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Zona plus</td>
                 </apex:outputText>
-                <apex:repeat value="{!listRangeDestiny}" var="strRange">
-                    <tr>
-                       <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
-                           <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
-                               <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
-                           </apex:outputText>
-                       </td>
-                       <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
-                           <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
-                               <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
-                           </apex:outputText>
-                       </td>
-                    </tr>
-                </apex:repeat>
+                <apex:outputText rendered="{!OR(blnACK, blnZP)}">
+                    <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                        <tr>
+                            <apex:outputText rendered="{!blnACK}">
+                                <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
+                                        <!--<apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />-->
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!blnZP}">
+                                <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
+                                        <!--apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />-->
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        </tr>
+                    </apex:repeat>
+                </apex:outputText>
             </table>
             <br/> <br/> <br/> <br/> <br/> <br/> <br/><br/><br/><br/>
             <!--STD dual tables Discount-->
