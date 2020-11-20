@@ -5,6 +5,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
 
     public Wrapper wp                                                       {get; set;}
     public List<String> listFee                                             {get; set;}
+    public List<String> listFeeT7                                           {get; set;}
     public List<String> listFeeZP                                           {get; set;}
     public Map<Decimal, Decimal> mapGuide                                   {get; set;}
     public List<String> listRange                                           {get; set;}
@@ -15,7 +16,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotesZP         {get; set;}
     public Map<String, QuoteWP>  mapTotalByRange                            {get; set;}
     public Map<String, QuoteWP>  mapTotalByFee                              {get; set;}
-    public Map<String, Decimal>  mapTotalByFeeT7                            {get; set;}
+    public Map<String, Decimal>  mapTotalByRangeT7                          {get; set;}
     public Map<String, QuoteWP>  mapTotalByRangeZP                          {get; set;}
     public Map<String, QuoteWP>  mapTotalByFeeZP                            {get; set;}
     public Map<String, Decimal> mapT7W                                      {get; set;}
@@ -103,6 +104,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                                         , '2001-2400'
                                         , 'Más de 2400'
                                      };
+        this.listFeeT7              = new List<String>();
         this.mapTarifasName          = new Map<Decimal, String>();
         this.mapTarifasKey           = new Map<String, String>{
                                         'TARIFA SOBRE' => 'TS'
@@ -124,7 +126,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         this.mapTotalByRange         = new Map<String, QuoteWP>();
         this.mapTotalByRangeZP       = new Map<String, QuoteWP>();
         this.mapTotalByFee           = new Map<String, QuoteWP>();
-        this.mapTotalByFeeT7         = new Map<String, Decimal>();
+        this.mapTotalByRangeT7       = new Map<String, Decimal>();
         this.mapTotalByFeeZP         = new Map<String, QuoteWP>();
         this.mapT7W                  = new Map<String, Decimal>();
         this.mapT7V                  = new Map<String, Decimal>();
@@ -248,7 +250,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 } else {
                     setRange.add(quoteItem.Rango_KM__c);
                 }
-            }
+            }else
+                setRange.add(quoteItem.Rango_KM__c);
             if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
                 if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
                     if(wp.perSob == 0)
@@ -340,6 +343,9 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                         this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
             }
         }
+        String strTarifa = '';
+        for(String keyRange: this.listRangeDestiny)
+            this.mapTotalByRangeT7.put(keyRange, 0);
 
         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
             if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
@@ -354,9 +360,28 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 else
                     this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
             }
+            strTarifa = quoteItem.Tarifa__c;
+            if(strTarifa.contains('TARIFA T7_')){
+                if(!this.listFeeT7.contains(strTarifa))
+                    this.listFeeT7.add(strTarifa);
+            }
         }
-        
-
+        for(String strkeyfee : this.listFeeT7){
+            strTarifa = strkeyfee;
+            if(strTarifa.contains('TARIFA T7_')){
+                for(String keyRange: this.listRangeDestiny){
+                    if (this.mapTotalByRangeT7.containsKey(keyRange) && this.mapTotalByRangeT7.get(keyRange) == 0)
+                        this.mapTotalByRangeT7.put(keyRange, this.mapQuotes.get(strTarifa).get(keyRange).SBQQ__Quantity__c);
+                    else if(!this.mapTotalByRangeT7.containsKey(keyRange))
+                        this.mapTotalByRangeT7.put(keyRange, 0);
+                    else if(this.mapTotalByRangeT7.get(keyRange) != 0){
+                        Decimal tempRangeCount = this.mapTotalByRangeT7.get(keyRange);
+                        this.mapTotalByRangeT7.put(keyRange, 0);
+                        this.mapTotalByRangeT7.put(keyRange, tempRangeCount + this.mapQuotes.get(strTarifa).get(keyRange).SBQQ__Quantity__c);
+                    }
+                }
+            }
+        }
 
         Integer blockCounter = 1;
         for(Decimal decW : this.mapGuide.keySet()){
@@ -373,9 +398,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         for(String keyFee: this.listFee){
             for(String keyRange: this.listRangeDestiny){
                 if(this.mapQuotes.get(keyFee).containsKey(keyRange) &&  this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
-                    if(this.mapQuotes.get(keyFee).containsKey('TARIFA T7_'))
-                        this.totalT7 += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    else total += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                    total += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
                     if(this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange)){
                         if(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null)
                             totalAmount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
@@ -435,9 +458,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 }
 
             }
-            if(keyFee.contains('TARIFA T7_'))
-                this.mapTotalByFeeT7.put(keyFee, totalT7);
-            else this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
+            this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
             if(keyFee != 'TARIFA T7')
                 this.mapTotalByFeeZP.put(keyFee, new QuoteWP(countFeeZP, totalZP, amountZP));
             for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
@@ -493,6 +514,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             discZP = ((totalAmountQZP - totalAmountSegZP)/ (totalAmountZP - totalAmountSegZP) - 1);
 
         this.mapTotalZP.put('Disc', discZP);
+        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + this.mapTotalByRangeT7));
         calculateProjection();
     }
 
@@ -577,7 +599,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     , PackWeightAVG__c = keyBlock
                     , Tarifa__c = getTarifa(i)
                 );
-                /*if (range.Tarifa__c == 'TARIFA SOBRE')
+                if (range.Tarifa__c == 'TARIFA SOBRE')
                     tarifa = 'TARIFA TS';
                 else tarifa = range.Tarifa__c;
                 if(mapBlocksByW.get(keyBlock).mapRanges.get(strRange) != null)
@@ -619,7 +641,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 fltGuia += fltQuoteAdKG;
                 ejemplo5 = decTarifaPropuesta2 * range.SBQQ__Quantity__c;
                 range.SBQQ__NetPrice__c = ejemplo5;
-                range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;*/
+                range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
                 decSUMCustomerPrice += ejemplo4;
                 decSUMNetPrice += ejemplo5;
                 rangeZP = new SBQQ__QuoteLine__c (
@@ -647,7 +669,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 Decimal fltQuoteAdKGZP = 0;
                 Decimal prueba  = 0;
                 Decimal decEAD = 0;
-/*                if(rangeZP.Tarifa__c == 'TARIFA SOBRE')
+                if(rangeZP.Tarifa__c == 'TARIFA SOBRE')
                     FleteZP = 192.57; //+ 208.5;
                 else {
                     if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
@@ -678,7 +700,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                 TarifaPropuesta2ZP = TarifaPropuestaZP + AcuseZP;
                 rangeZP.SBQQ__CustomerPrice__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c * TarifaLlenaZP;
                 rangeZP.SBQQ__NetPrice__c = prueba * this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                rangeZP.SBQQ__Discount__c = (prueba / TarifaLlenaZP) - 1;*/
+                rangeZP.SBQQ__Discount__c = (prueba / TarifaLlenaZP) - 1;
                 decSUMCustomerPriceZP += rangeZP.SBQQ__CustomerPrice__c;
                 decSUMNetPriceZP += rangeZP.SBQQ__NetPrice__c;
                 if(!this.mapDiscounts.containsKey(i)){
