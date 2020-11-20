@@ -1048,7 +1048,7 @@
         });
         (function(){
             // angujar module
-            var app = angular.module('Cotizador');
+            //var app = angular.module('Cotizador');
             // main controller
             /*
             * Angular module controllers
@@ -3033,14 +3033,18 @@
                 $scope.isException = function(objQuote, strProfile){
                     var exception = false;
                     if(objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')) {
-                        if (strProfile === 'Ejecutivo de venta') {
+                        if (objQuote.SBQQ__Opportunity2__c && strProfile === 'Ejecutivo de venta') {
                             if (objQuote.Descuento_por_linea_o_rangokm__c <= 60
                                     && objQuote.Descuento_Global__c < 10.01)
                                 exception = true;
-                        } else if (strProfile === 'Gerente de sucursal') {
+                        } else if (objQuote.SBQQ__Opportunity2__c && strProfile === 'Gerente de sucursal') {
                             if (objQuote.Descuento_por_linea_o_rangokm__c <= 60
                                     && objQuote.Descuento_Global__c < 25.01)
                                 exception = true;
+                        } else if (objQuote.Lead__c && strProfile === 'Gerente de sucursal') {
+                            if (objQuote.Descuento_por_linea_o_rangokm__c >= 60.01
+                                    && objQuote.Descuento_Global__c < 25.01)
+                                exception = true;    
                         } else if (strProfile === 'KAM Regional') {
                             if (objQuote.Descuento_por_linea_o_rangokm__c <= 60
                                     && objQuote.Descuento_Global__c < 40.01)
@@ -3056,12 +3060,16 @@
                         exception = true;
                     if(exception && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')){
                         exception = false;
-                        if (strProfile === 'Ejecutivo de venta') {
+                        if (objQuote.SBQQ__Opportunity2__c && strProfile === 'Ejecutivo de venta') {
                             if (objQuote.Descuento_por_linea_o_rango_km_Express__c <= 25
                                     && objQuote.Descuento_Global_Express__c <= 10)
                                 exception = true;
-                        } else if (strProfile === 'Gerente de sucursal') {
+                        } else if (objQuote.SBQQ__Opportunity2__c && strProfile === 'Gerente de sucursal') {
                             if (objQuote.Descuento_por_linea_o_rango_km_Express__c <= 25
+                                    && objQuote.Descuento_Global_Express__c <= 25)
+                                exception = true;
+                        } else if (objQuote.Lead__c && strProfile === 'Gerente de sucursal') {
+                            if (objQuote.Descuento_por_linea_o_rango_km_Express__c >= 25.01
                                     && objQuote.Descuento_Global_Express__c <= 25)
                                 exception = true;
                         } else if (strProfile === 'KAM Regional') {
@@ -3421,25 +3429,24 @@
                 };
                 
                  $scope.sumbit = function (){
-                     debugger;
                     var strNameProcess = '';
                     var strProfile = "{!profileObj}";
                     var objQuote;
                     var gerenteSucursal = null;
 
                     if(strProfile === 'Ejecutivo de telemarketing'
-                        || strProfile === 'Supervisor Telemarketing'
-                        || strProfile === 'Gerente comercial nacional')
+                            || strProfile === 'Supervisor Telemarketing'
+                            || strProfile === 'Gerente comercial nacional')
                         gerenteSucursal = $scope.Managers['GSU'];
 
                     if(strProfile === 'Ejecutivo de telemarketing' || 'Ejecutivo de telemarketing y CC')
-                       strProfile = 'Ejecutivo de venta';
-                    
+                        strProfile = 'Ejecutivo de venta';
+
                     if(strProfile === 'Supervisor Telemarketing' )
-                       strProfile = 'KAM Regional';
-                    
+                        strProfile = 'KAM Regional';
+
                     if(strProfile === 'Gerente comercial nacional' )
-                       strProfile = 'Gerentes de desarrollo de Negocios';
+                        strProfile = 'Gerentes de desarrollo de Negocios';
 
                     if(notEmpty($scope.DML.objQuote))
                         objQuote = $scope.DML.objQuote;
@@ -3449,13 +3456,178 @@
                     $scope.DML.listErrors = [];
 
                     if($scope.isException(objQuote, strProfile)){
+                        if(objQuote.SBQQ__Opportunity2__c){
+                            objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'Gerente de sucursal'){
+                        objQuote.SBQQ__Status__c = 'preauthorized';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'KAM Regional'){
                         objQuote.SBQQ__Status__c = 'Approved';
-                        if(objQuote.Lead__c)                          
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'Gerentes de desarrollo de Negocios'){
+                        objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'Director comercial'){
+                        objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        if(objQuote.Lead__c)
                             callUpdateStatus($scope, objQuote, objQuote.Lead__r.Name);
                         if(objQuote.SBQQ__Account__c)
                             callUpdateStatus($scope, objQuote, objQuote.SBQQ__Account__r.Name);
                     }
-                    else {
+                    else if(objQuote.Lead__c){
+                        if(objQuote.SBQQ__Status__c === 'Draft')
+                         {
+                            if(objQuote.Descuento_por_linea_o_rangokm__c < 60.01 ){
+                                if(objQuote.Descuento_Global__c > 0
+                                        && objQuote.Descuento_Global__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_Global__c >= 10.01
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_por_linea_o_rango_km_Express__c < 25 ){
+                                    if( objQuote.Descuento_Global_Express__c > 0
+                                            && objQuote.Descuento_Global_Express__c < 10.01
+                                            && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                            && strProfile === 'Ejecutivo de venta'
+                                    )
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_por_linea_o_rango_km_Express__c < 25.00 ){
+                                    if( objQuote.Descuento_Global_Express__c >= 10.01
+                                            && objQuote.Descuento_Global_Express__c < 25.01
+                                            && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                            && strProfile === 'Ejecutivo de venta'
+                                    )
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_Global__c >= 25.01
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                }
+                                if(objQuote.Descuento_Global__c >= 40.01
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_Km_menor_a_60_KAM_Regio';
+                                }
+                                if(objQuote.Descuento_Global__c >= 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+                                }
+                            }
+                            if(objQuote.Descuento_por_linea_o_rango_km_Express__c >= 25.01 ){
+								if( objQuote.Descuento_Global_Express__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                        && (strProfile === 'Ejecutivo de venta'
+                                        )
+                                )
+                                    strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                if( objQuote.Descuento_Global_Express__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                        && (strProfile === 'KAM Regional'
+                                        )
+                                )
+                                    strNameProcess = 'AEREO_0_A_10_GBAL_25_O_MAS_KM';
+                                if( objQuote.Descuento_Global_Express__c >= 10.01
+                                        && objQuote.Descuento_Global_Express__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                )
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                if(strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_10_1_A_25_GBAL_MAYOR_25_KM_GE_SUC';
+                            }
+                            if(objQuote.Descuento_por_linea_o_rangokm__c >= 60.01 ){
+                                if(objQuote.Descuento_Global__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c >= 10.01
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c >= 25.01
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas_KAM_Regiona';
+                                }
+                                if(objQuote.Descuento_Global__c >= 40.01
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60_KAM_Regi';
+                                }
+                                if(objQuote.Descuento_Global__c >= 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+
+                                }
+
+                            }
+                            if(objQuote.Descuento_Global_Express__c >= 25.01
+                                    && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')) {
+                                if(strProfile === 'Ejecutivo de venta')
+                                    strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                if(strProfile === 'Gerente de sucursal')
+                                    strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                if(strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL_KAM';
+                                if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GERENTE_DESARROLLO';
+                            }
+                        }
+                        if(notEmpty(strNameProcess))
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.OD.strApprovalComment);
+                        else
+                            $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
+                    }
+                    else if(objQuote.SBQQ__Opportunity2__c){
                         if(objQuote.SBQQ__Status__c === 'Draft')
                          {
                             if(objQuote.Descuento_por_linea_o_rangokm__c < 60.01 ){
@@ -3589,7 +3761,7 @@
                             }
                         }
                         if(notEmpty(strNameProcess))
-                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.EX.strApprovalComment);
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.OD.strApprovalComment);
                         else
                             $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
                     }
@@ -4304,6 +4476,10 @@
                                                     , fltTotalNormal : 0
                                                 };
                                             else {
+                                                /*$scope.EX.mapFrecc[keyFee].ranges[key].fltAVGWeight = 0;
+                                                $scope.EX.mapFrecc[keyFee].ranges[key].fltAVGVol = 0;
+                                                $scope.EX.mapFrecc[keyFee].ranges[key].blnSameWeight = false;
+                                                $scope.EX.mapFrecc[keyFee].ranges[key].fltSameVol = false;*/
                                                 $scope.EX.mapFrecc['T7V'].ranges[strDestiny] = $scope.EX.mapFrecc[keyFee].ranges[strDestiny];
                                                 $scope.EX.mapFrecc['T7P'].ranges[strDestiny] = $scope.EX.mapFrecc[keyFee].ranges[strDestiny];
                                             }
