@@ -50,6 +50,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
     public map<String, String> mapRangosByDest                              {get; set;}
     public boolean blnByDestiny                                             {get; set;}
     public List<string> listBlocksT7                                        {get; set;}
+    public Map<String, Decimal> mapT7Vol                                            {get; set;}
     public List<string> listBlocksT7Desc                                    {get; set;}
     public boolean blnBloquesT7                                             {get; set;}
 
@@ -118,6 +119,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                                         , 'TARIFA T7' => 'T7'
                                     };
         this.listBlocksT7            = new list<String>();
+        this.mapT7Vol                = new Map<String, Decimal>();
         this.listBlocksT7Desc        = new list<String>();
         this.wp                      = new Wrapper();
         this.mapProjEX               = new wpExcedente();
@@ -745,8 +747,8 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         Decimal decTotalNormal = 0;
         Decimal decTotalpropuesta = 0;
         String strRango = '';
-//        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + listRangeDestiny));
         for(Decimal decW : this.mapGuide.keySet()){
+            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + this.mapGuide.get(decW)));
             intpeso = decW.intvalue();
             decFleteDefinitivo = 0;
             decSUMCustomerPrice = 0;
@@ -754,6 +756,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             if(intpeso > 60){
                 this.listBlocksT7.add('TARIFA T7_' + intpeso);
                 this.listBlocksT7Desc.add('T7 ' + intpeso);
+                this.mapT7Vol.put('T7 ' + intpeso, this.mapGuide.get(decW));
                 blnBloquesT7 = true;
                 for (String strRange : listRangeDestiny){
                     range = new SBQQ__QuoteLine__c (
