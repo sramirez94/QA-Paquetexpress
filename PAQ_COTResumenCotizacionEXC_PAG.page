@@ -242,11 +242,11 @@
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T4 </td>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T5 </td>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T6 </td>
-                    <apex:outputText rendered="{!blnBloquesT7 == false}">
+                    <!--<apex:outputText rendered="{!blnBloquesT7 == false}">-->
                         <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T7 </td>
                         <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Peso </td>
                         <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> Prom Vol </td>
-                    </apex:outputText>
+                    <!--</apex:outputText>-->
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">TOTAL </td>
                     <td align="left"  style="font-size:9px; "> </td>
                     <apex:outputText rendered="{!blnZP}">
@@ -266,15 +266,15 @@
                     <tr>
                         <td align="left" style="font-size:9px; ">{!keyRange}</td>
                         <apex:repeat value="{!listFee}" var="keyFee">
-                            <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                            <!--<apex:outputText rendered="{!blnBloquesT7 == false && keyFee == 'TARIFA T7'}">-->
                                 <td align="left"  style="font-size:9px; ">
                                     <apex:outputText value="{0, number, ###,###,##0}" >
                                         <apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__Quantity__c}" />
                                     </apex:outputText>
                                 </td>
-                            </apex:outputText>
+                            <!--</apex:outputText>-->
                         </apex:repeat>
-                        <apex:outputText rendered="{!blnBloquesT7 == false}">
+                        <!--<apex:outputText rendered="{!blnBloquesT7 == false}">-->
                             <td align="left"  style="font-size:9px; ">
                                 <apex:outputText value="{0, number, ###,###,##0.00}">
                                     <apex:param value="{!mapT7W[keyRange]}" />
@@ -285,7 +285,7 @@
                                     <apex:param value="{!mapT7V[keyRange]}" />
                                 </apex:outputText>
                             </td>
-                        </apex:outputText>
+                        <!--</apex:outputText>-->
                         <td align="left" style="font-size:9px; ">
                             <apex:outputText value="{0, number, ###,###,##0}">
                                 <apex:param value="{!mapTotalByRange[keyRange].totalPaquetes}" />
@@ -295,13 +295,13 @@
                         <td align="left"  style="font-size:9px; "> </td>
                         <apex:outputText rendered="{!blnZp}">
                             <apex:repeat value="{!listFee}" var="keyFee">
-                                <apex:outputText rendered="{!keyFee != 'TARIFA T7' && blnBloquesT7 == false}">
+                                <!--<apex:outputText rendered="{!keyFee != 'TARIFA T7' && blnBloquesT7 == false}">-->
                                     <td align="left"   style="font-size:9px;" >
                                         <apex:outputText value="{0, number, ###,###,##0}">
                                             <apex:param value="{!mapQuotesZP[keyFee][keyRange].SBQQ__Quantity__c}" />
                                         </apex:outputText>
                                     </td>
-                                </apex:outputText>
+                                <!--</apex:outputText>-->
                             </apex:repeat>
                             <td align="left" style="font-size:9px; ">
                                 <apex:outputText value="{0, number, ###,###,##0}">
@@ -331,13 +331,13 @@
                         </td>
                         <td></td>
                         <apex:repeat value="{!listFee}" var="keyFee">
-                            <apex:outputText rendered="{!keyFee != 'TARIFA T7' && blnBloquesT7 == false}">
+                            <!--<apex:outputText rendered="{!keyFee != 'TARIFA T7' && blnBloquesT7 == false}">-->
                                 <td align="left" width="7%"  style="font-size:9px;" >
                                     <apex:outputText value="{0, number, ###,###,##0}">
                                         <apex:param value="{!mapTotalByFeeZP[keyFee].totalPaquetes}" />
                                     </apex:outputText>
                                 </td>
-                            </apex:outputText>
+                            <!--</apex:outputText>-->
                         </apex:repeat>
                         <td  align="left" width="7%" style="font-size:9px; ">
                             <apex:outputText value="{0, number, ###,###,##0}" rendered="{!blnZP}">
@@ -376,7 +376,7 @@
                     <tr>
                         <td align="Left"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >Rango de KM </td>
                         <apex:repeat value="{!listBlocksT7Desc}" var="keyblockT7">
-                            <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >{!keyblockT7} Kg</td>
+                            <td align="Center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;" >{!keyblockT7} Kg / {!mapT7Vol[keyblockT7]} m3</td>
                         </apex:repeat>
                         <td align="Left"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Total</td>
                     </tr>
