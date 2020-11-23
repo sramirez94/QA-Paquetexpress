@@ -50,6 +50,8 @@ public class Ctrl_ResumenDeContizacion {
     public Decimal totalSTD {get; set;}
     public Decimal totalSTDZP {get; set;}
     public String lastGuide {get; set;}
+    public boolean T7ZonaPlus {get;set;}
+    public String strId {get;set;}
 
 
     public Ctrl_ResumenDeContizacion (ApexPages.StandardController sc){
@@ -76,6 +78,8 @@ public class Ctrl_ResumenDeContizacion {
         this.blnDS = false;
         this.bln2D = false;
         this.blnA12 = false;
+        this.T7ZonaPlus = false;
+        this.strId = '';
 
 		this.listFee = new List<String> {
 			'TARIFA SOBRE'
@@ -246,7 +250,7 @@ public class Ctrl_ResumenDeContizacion {
                 }
             }
         }
-
+        strId = sc.getId();
         if(this.wp.objQuote.Modelo_de_tarifas__c == 'Tarifario abierto de piso'
                 && this.wp.objQuote.TipoCotizacion__c == 'Por convenio'){
             this.Sipweb = true;
@@ -264,7 +268,10 @@ public class Ctrl_ResumenDeContizacion {
                 this.ServicioEstandar = true;
             if (this.wp.objQuote.PAQ_TipoServicio__c.contains('Servicio Express Garantizado (SEG)'))
                 this.ServicioExpress = true;
+        }else if(this.wp.objQuote.Modelo_de_tarifas__c == 'Tarifa T7 zona plus'){
+            this.T7ZonaPlus = true;
         }
+        doRedireccionamiento();
         if (String.isNotBlank(this.wp.objQuote.Acuse__c))
             this.blnACK = true;
         if(String.isNotBlank(wp.objQuote.SBQQ__Account__c))
@@ -721,7 +728,13 @@ public class Ctrl_ResumenDeContizacion {
 
         // System.debug(LoggingLevel.DEBUG, 'mapSS: ' + JSON.serialize(this.wp.mapSS) );
     }
-
+    public Pagereference doRedireccionamiento(){
+        if(this.T7ZonaPlus){
+            PageReference pageRef = new PageReference('/apex/PAQ_COTResumenT7ZP?=&id=' + strId);
+            pageRef.setRedirect(true);
+            return pageRef;
+        }else  return null;
+    }
     public static SBQQ__Quote__c queryQuote(String strQuoteId){
         return [SELECT Id
         , Acuse__c
