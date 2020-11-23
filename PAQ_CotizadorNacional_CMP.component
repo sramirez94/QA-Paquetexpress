@@ -17,15 +17,18 @@
             <li role="presentation" class="tabPill" id="PPG-Tab" ng-show="PPG">
                 <a data-toggle="pill" class="tabPill" href="#PPG" ng-show="PPG">Guías Prepagadas</a>
             </li>
+            <li role="presentation" class="tabPill" id="7ZP-Tab" ng-show="TZP">
+                <a data-toggle="pill" class="tabPill" href="#7ZP" >Cotizador T7 zona plus</a>
+            </li>
             <li role="presentation" class="tabPill" id="ODC-Tab" ng-show="ODC">
                 <a data-toggle="pill" class="tabPill" href="#ODC" >Documentación en Linea</a>
             </li>
-            <!--<li role="presentation" class="tabPill" id="GMP-Tab" ng-show="GMP">
+            <li role="presentation" class="tabPill" id="GMP-Tab" ng-show="GMP">
                 <a data-toggle="pill" class="tabPill" href="#GMP" >Documentación en Linea</a>
             </li>
             <li role="presentation" class="tabPill" id="EXC-Tab" ng-show="EXC">
                 <a data-toggle="pill" class="tabPill" href="#EXC" >Documentación en Linea</a>
-            </li>-->
+            </li>
         </ul>
         <br/><br/>
         <div class="tab-content padding-top-10">
@@ -33,7 +36,7 @@
                 <c:PAQ_COTHome_CMP />
             </div>
             <div id="SPW" class="tab-pane fade" ng-show="SPW">
-                <!--<div ng-if="StrSTDCotiType==='Envio'">
+               <!-- <div ng-if="StrSTDCotiType==='Envio'">
                     <c:PAQ_COTCotizadorSPWSingle_CMP />
                 </div>-->
                 <div ng-if="StrSTDCotiType==='Convenio'">
@@ -50,7 +53,7 @@
                     <c:PAQ_COTCotizadorODC_CMP />
                 </div>
             </div>
-           <!-- <div id="GMP" class="tab-pane fade" ng-show="GMP">
+           <div id="GMP" class="tab-pane fade" ng-show="GMP">
                 <div ng-if="GMP">
                     <c:PAQ_COTCotizadorGMP_CMP />
                 </div>
@@ -59,7 +62,12 @@
                 <div ng-if="EXC">
                     <c:PAQ_COTCotizadorEXC_CMP />
                 </div>
-            </div>-->
+            </div>
+            <div id="7ZP" class="tab-pane fade" ng-show="TZP">
+                <div ng-if="TZP">
+                    <c:PAQ_CotizadorZonaPlus_CMP LeadId="{!strLeadId}" QuoteId="{!strQuoteId}" OppId="{!strOppId}"/>
+                </div>
+            </div>
         </div>
     </div>
     <script type="text/javascript" lang="js">
@@ -93,7 +101,8 @@
                     aviableOptions: [
                         {id: 'SPW', label: 'Tarifario abierto de piso' },
                         {id: 'PPG', label: 'Guías Prepagadas' },
-                        {id: 'ODC', label: 'Documentación En Línea'}
+                        {id: 'ODC', label: 'Documentación En Línea'},
+                        {id: '7ZP', label: 'Cotizador T7 zona plus'}
                     ]
                 };
                 $scope.Home = true;
@@ -102,9 +111,9 @@
                     model : undefined,
                     aviableOptions :[
                         {id: 'floor' , label : 'Tarifario abierto de Piso'},
-                        {id: 'fix' , label : 'Costos fijos por Tarifas'}/*,
+                        {id: 'fix' , label : 'Costos fijos por Tarifas'},
                         {id: 'exd' , label : 'Costo base más excedente'},
-                        {id: 'multi' , label : 'Guía multipieza'}*/
+                        {id: 'multi' , label : 'Guía multipieza'}
                     ]
                 };
                 $scope.OnlineDocByRangeKM = false;
@@ -112,12 +121,16 @@
                 $scope.BlnElectricGuide = false;
                 $scope.BlnPrintedGuide = false;
                 $scope.BlnPrintedGuide = false;
+                $scope.BlnRemoteGuide = false;
+                $scope.BlnWebGuide = false;
+                $scope.BlnEcommerceGuide = false;
                 $scope.ListSucursales = [];
                 $scope.Managers = {};
                 $scope.MapQuotesId = {};
                 $scope.PPG = false;
                 $scope.sent = false;
                 $scope.SPW = false;
+                $scope.TZP = false;
                 $scope.StrSTDCotiType = '';
                 $scope.Wrapper = {};
 
@@ -214,6 +227,13 @@
                                 j$('#GMP-Tab').addClass('active');
                             }
                             break;
+                        case '7ZP':
+                            j$('.tabPill').removeClass('active');
+                            j$('.tab-pane').removeClass('in active');
+                            $scope.TZP = true;
+                            j$('#7ZP').addClass('in active');
+                            j$('#7ZP-Tab').addClass('active');
+                            break;
                     }
                 };
 
@@ -221,6 +241,7 @@
                     $scope.SPW = false;
                     $scope.PPG = false;
                     $scope.ODC = false;
+                    $scope.TZP = false;
                     $scope.sent = false;
                 };
 
@@ -245,7 +266,7 @@
 
                 $scope.validateODCDeliveryDoc = function(){
                     if ($scope.valOnlineDoc())
-                        return $scope.blnRemote || $scope.blnWeb || $scope.blnEcom;
+                        return $scope.BlnRemoteGuide || $scope.BlnWebGuide || $scope.BlnEcommerceGuide;
                     else
                         return true;
                 };
@@ -262,7 +283,11 @@
                 */
                 console.log('END LOAD Angular Controller Cotizador');
                 callInitialWrapper($scope);
-
+                /*$scope.FeeType.model = getModel('ODC', $scope.FeeType.aviableOptions);
+                $scope.OnlineDoc.model = getModel('exd', $scope.OnlineDoc.aviableOptions);
+                $scope.OnlineDocByRangeKM = true;
+                $scope.BlnRemote = true;
+               $scope.start();*/
             }]);
 
             // JSRemoting Call InitialInfo
@@ -327,6 +352,13 @@
                                             j$('#GMP').addClass('in active');
                                             j$('#GMP-Tab').addClass('active');
                                             break;
+                                       case 'Tarifa T7 zona plus':
+                                            $scope.TZP = true;
+                                            $scope.Home = false;
+                                            $scope.FeeType.model = getModel('7ZP', $scope.FeeType.aviableOptions);
+                                            j$('#7ZP').addClass('in active');
+                                            j$('#7ZP-Tab').addClass('active');
+                                        break;
                                     }
                                 }
                                 $scope.sent = false;
@@ -334,8 +366,8 @@
                                 //$scope.updateTown();
                                 j$.unblockUI();
                             } else {
-                                $scope.dml.blnSuccess = false;
-                                $scope.dml.listErrors.push(logErrorMessage(event.message.split(',')));
+                                $scope.DML.blnSuccess = false;
+                                $scope.DML.listErrors.push(logErrorMessage(event.message.split(',')));
                                 $scope.$apply();
                                 j$.unblockUI();
                             }
