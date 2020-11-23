@@ -52,6 +52,7 @@ public class Ctrl_ResumenDeContizacion {
     public String lastGuide {get; set;}
     public boolean T7ZonaPlus {get;set;}
     public String strId {get;set;}
+    public boolean CBME {get;set;}
 
 
     public Ctrl_ResumenDeContizacion (ApexPages.StandardController sc){
@@ -79,6 +80,7 @@ public class Ctrl_ResumenDeContizacion {
         this.bln2D = false;
         this.blnA12 = false;
         this.T7ZonaPlus = false;
+        this.CBME = false;
         this.strId = '';
 
 		this.listFee = new List<String> {
@@ -270,7 +272,8 @@ public class Ctrl_ResumenDeContizacion {
                 this.ServicioExpress = true;
         }else if(this.wp.objQuote.Modelo_de_tarifas__c == 'Tarifa T7 zona plus'){
             this.T7ZonaPlus = true;
-        }
+        }else if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km')
+            this.CBME = true;
         doRedireccionamiento();
         if (String.isNotBlank(this.wp.objQuote.Acuse__c))
             this.blnACK = true;
@@ -731,6 +734,10 @@ public class Ctrl_ResumenDeContizacion {
     public Pagereference doRedireccionamiento(){
         if(this.T7ZonaPlus){
             PageReference pageRef = new PageReference('/apex/PAQ_COTResumenT7ZP?=&id=' + strId);
+            pageRef.setRedirect(true);
+            return pageRef;
+        }if(this.CBME){
+            PageReference pageRef = new PageReference('/apex/PAQ_COTResumenCotizacionEXC_PAG?=&id=' + strId);
             pageRef.setRedirect(true);
             return pageRef;
         }else  return null;
