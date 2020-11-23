@@ -23,9 +23,9 @@
             <li role="presentation" class="tabPill" id="ODC-Tab" ng-show="ODC">
                 <a data-toggle="pill" class="tabPill" href="#ODC" >Documentación en Linea</a>
             </li>
-            <li role="presentation" class="tabPill" id="GMP-Tab" ng-show="GMP">
+            <!--<li role="presentation" class="tabPill" id="GMP-Tab" ng-show="GMP">
                 <a data-toggle="pill" class="tabPill" href="#GMP" >Documentación en Linea</a>
-            </li>
+            </li>-->
             <li role="presentation" class="tabPill" id="EXC-Tab" ng-show="EXC">
                 <a data-toggle="pill" class="tabPill" href="#EXC" >Documentación en Linea</a>
             </li>
@@ -36,7 +36,7 @@
                 <c:PAQ_COTHome_CMP />
             </div>
             <div id="SPW" class="tab-pane fade" ng-show="SPW">
-               <!-- <div ng-if="StrSTDCotiType==='Envio'">
+                <!--<div ng-if="StrSTDCotiType==='Envio'">
                     <c:PAQ_COTCotizadorSPWSingle_CMP />
                 </div>-->
                 <div ng-if="StrSTDCotiType==='Convenio'">
@@ -53,7 +53,7 @@
                     <c:PAQ_COTCotizadorODC_CMP />
                 </div>
             </div>
-           <div id="GMP" class="tab-pane fade" ng-show="GMP">
+            <div id="GMP" class="tab-pane fade" ng-show="GMP">
                 <div ng-if="GMP">
                     <c:PAQ_COTCotizadorGMP_CMP />
                 </div>
@@ -112,8 +112,8 @@
                     aviableOptions :[
                         {id: 'floor' , label : 'Tarifario abierto de Piso'},
                         {id: 'fix' , label : 'Costos fijos por Tarifas'},
-                        {id: 'exd' , label : 'Costo base más excedente'},
-                        {id: 'multi' , label : 'Guía multipieza'}
+                        {id: 'exd' , label : 'Costo base más excedente'}/*,
+                        {id: 'multi' , label : 'Guía multipieza'}*/
                     ]
                 };
                 $scope.OnlineDocByRangeKM = false;
@@ -266,7 +266,7 @@
 
                 $scope.validateODCDeliveryDoc = function(){
                     if ($scope.valOnlineDoc())
-                        return $scope.BlnRemoteGuide || $scope.BlnWebGuide || $scope.BlnEcommerceGuide;
+                        return $scope.blnRemote || $scope.blnWeb || $scope.blnEcom || $scope.BlnRemoteGuide || $scope.BlnWebGuide || $scope.BlnEcommerceGuide;
                     else
                         return true;
                 };
@@ -283,11 +283,7 @@
                 */
                 console.log('END LOAD Angular Controller Cotizador');
                 callInitialWrapper($scope);
-                /*$scope.FeeType.model = getModel('ODC', $scope.FeeType.aviableOptions);
-                $scope.OnlineDoc.model = getModel('exd', $scope.OnlineDoc.aviableOptions);
-                $scope.OnlineDocByRangeKM = true;
-                $scope.BlnRemote = true;
-               $scope.start();*/
+
             }]);
 
             // JSRemoting Call InitialInfo
@@ -366,8 +362,8 @@
                                 //$scope.updateTown();
                                 j$.unblockUI();
                             } else {
-                                $scope.DML.blnSuccess = false;
-                                $scope.DML.listErrors.push(logErrorMessage(event.message.split(',')));
+                                $scope.dml.blnSuccess = false;
+                                $scope.dml.listErrors.push(logErrorMessage(event.message.split(',')));
                                 $scope.$apply();
                                 j$.unblockUI();
                             }
