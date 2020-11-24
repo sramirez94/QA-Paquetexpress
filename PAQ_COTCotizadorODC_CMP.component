@@ -2385,7 +2385,7 @@
                                         );
                                 }
                         );
-
+                        //here
                         if ($scope.OD.mapQuotes['T7'].blnShow) {
                             Quote.Tarifa_7__c = true;
                             Quote.TipoCotizacion__c = $scope.PPT7Calc;
@@ -2461,6 +2461,58 @@
                                             );
                                         }
                                 );
+                                j$.each($scope.OD.mapTender, function(strTender, map){
+                                    if($scope.OD.mapQuotesT7ZP.Tender[strTender].intFrecuency > 0){
+                                        var QuoteItemT7ZP = {
+                                            SBQQ__Quantity__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].intFrecuency
+                                            , SBQQ__Discount__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].fltDiscount * 100
+                                            , SBQQ__CustomerPrice__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].flttarifaProp
+                                            , SBQQ__NetPrice__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].fltTotalQuote
+                                            , SBQQ__SpecialPrice__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].flttarifaProp
+                                            , QuoteTotal__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].fltQuoteFee
+                                            , PackWeightAVG__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].fltPesoDom
+                                            , PackVolAVG__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].fltPesoVol
+                                            , ACK__c: 0
+                                            , EAD__c: 0
+                                            , RAD__c: 0
+                                            , SEG__c: 0
+                                            , Tarifa__c: 'TARIFA T7'
+                                            , Rango_KM__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].strRange
+                                            , ZonaPlus__c: true
+                                            , Pack_Seg__c: 0
+                                            , Id: $scope.OD.mapQuotesT7ZP.Tender[strTender].Id
+                                            , SBQQ__VolumeDiscount__c: 0
+                                            , SBQQ__Quote__c: Quote.Id
+                                            , Destiny__c : strTender
+                                        };
+                                        listQuoteItem.push(QuoteItemT7ZP);
+                                    }
+                                });
+                                j$.each($scope.OD.listRange, function(keyRange, strRange){
+                                    var QuoteItemT7ZPTotales = {
+                                        SBQQ__Quantity__c: 0
+                                        , SBQQ__Discount__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltDescuento * 100
+                                        , SBQQ__CustomerPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta
+                                        , SBQQ__NetPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena
+                                        , SBQQ__SpecialPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltCost
+                                        , QuoteTotal__c: 0
+                                        , PackWeightAVG__c: 0
+                                        , PackVolAVG__c: 0
+                                        , ACK__c: 0
+                                        , EAD__c: 0
+                                        , RAD__c: 0
+                                        , SEG__c: 0
+                                        , Tarifa__c: 'TARIFA T7'
+                                        , Rango_KM__c: strRange
+                                        , ZonaPlus__c: true
+                                        , Pack_Seg__c: 0
+                                        , SBQQ__VolumeDiscount__c: 0
+                                        , SBQQ__Quote__c: Quote.Id
+                                        , Destiny__c : ''
+                                        , SBQQ__Description__c : 'Propuesta'
+                                    };
+                                    listQuoteItem.push(QuoteItemT7ZPTotales);
+                                });
                         }
                         if($scope.OD.blnZP)
                             Quote.Servicios_adicionales__c += ";EAD Zona plus";
@@ -4803,6 +4855,7 @@
                             , fltVol : Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
                             , fltCost : Tender.Costo__c
                             , fltExc : Tender.Costo__c
+                            , id : ''
                         };
                 });
                 j$.each($scope.OD.mapTender, function(keyName, strName){
@@ -4830,6 +4883,7 @@
                         , fltWeightAmount : 0
                         , fltVolAmount : 0
                         , fltLargo : 0
+
                         , fltPeso : 0
                         , fltAlto : 0
                         , fltAncho : 0
