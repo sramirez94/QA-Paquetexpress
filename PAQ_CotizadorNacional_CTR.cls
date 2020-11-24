@@ -48,7 +48,6 @@ public class PAQ_CotizadorNacional_CTR {
         if(String.isBlank(strYear))
             for (AcusePorGuia__mdt objACK : queryACK())
                 wp.mapACK.put(objACK.Label, objACK.Amount__c);
-
         if(String.isBlank(strYear))
         for(ServicioDomicilio__c objService : queryDomesticService()){
             if(!wp.mapDomesticService.containsKey(objService.Servicio__c))
@@ -108,6 +107,7 @@ public class PAQ_CotizadorNacional_CTR {
             /*when else {
 			}*/
         }
+
 
         if(String.isBlank(strYear))
             wp.mapCS = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
@@ -554,6 +554,8 @@ public class PAQ_CotizadorNacional_CTR {
         if(objManager.UserRole.Name.Contains('EJECUTIVOS TELEMARKETING (18)') || objManager.UserRole.Name.Contains('SUPERVISOR TELEMARKETING') || objManager.UserRole.Name.Contains('GERENCIA MARKETING Y PDV')){
             wp.mapHierarchy = functionUsers();
         }    
+        for(CapacidadSucursal__c tender : queryTender())
+			wp.mapTender.put(tender.Name, tender);
         return wp;
     }
 
@@ -1032,6 +1034,9 @@ public class PAQ_CotizadorNacional_CTR {
         return [SELECT Id, DeveloperName FROM RecordType WHERE SobjectType = 'SBQQ__Quote__c'];
     }
 
+    public static List<CapacidadSucursal__c> queryTender(){
+		return [SELECT Name, Costo__c, Nivel__c, OP__c, Largo__c, Ancho__c, Alto__c, Peso__c FROM CapacidadSucursal__c ORDER BY Name];
+	}
     /*
 	*  Data Structure for calls
 	*/
@@ -1058,6 +1063,7 @@ public class PAQ_CotizadorNacional_CTR {
         public List<PAQ_SpecialService__c>                              listSS              {get; set;}
         public Map<String, String>                                      mapUs               {get; set;}
         public Estructura__c                                            objEstructura       {get; set;}
+        public Map<String, CapacidadSucursal__c> 		                mapTender			{get; set;}
 
         public Wrapper (){
             this.mapSursalByZipCode = new Map<String,Map<String, CoberturaPorCodigoPostal__c>>();
@@ -1076,6 +1082,7 @@ public class PAQ_CotizadorNacional_CTR {
             this.mapDestiny         = new Map<String, String>();
             this.mapRecordType      = new Map<String, String>();
             this.mapUs              = new map<String, String>();
+            this.mapTender			= new Map<String, CapacidadSucursal__c>();
         }
     }
 
