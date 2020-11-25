@@ -2398,5 +2398,125 @@
                 </td>-->
             </tr>
         </table>
+        <br/>
+        <apex:outputPanel id="PropuestaT7ZP">
+            <table style="border-collapse: collapse; margin-left: 0%;" width="100%">
+                <tr>
+                    <td colspan="100" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Detalle de EAD zona plus tarimas</b></td>
+                </tr>
+            </table>
+            <br/>
+            <table style="border-collapse: collapse; margin-left: 0%;" width="50%" align="Center">
+                <tr>
+                    <td colspan="3" align="Center"  style="font-size:10px; padding-top: 5px; padding-bottom: 5px"><b>Tarifa T7 zona plus</b></td>
+                </tr>
+                <tr>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">Rango km</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">Costo propuesto</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">Total propuesto</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">Total tarifa llena</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">Descuento</td>
+                </tr>
+                <apex:repeat value="{!listRangeProp}" var="keyRange">
+                    <tr>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">{!keyRange}</td>
+                        <td align="Center"  style="border: 1px solid black; font-size:9px;  ">
+                            $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                <apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center"  style="border: 1px solid black; font-size:9px;  ">
+                            $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                <apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center"  style="border: 1px solid black; font-size:9px;  ">
+                            $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                <apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__NetPrice__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center"  style="border: 1px solid black; font-size:9px;  ">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__Discount__c}" />
+                            </apex:outputText>%
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </apex:outputPanel>
+        <br/>
+        <apex:outputPanel id="TarifaT7ZP">
+            <table style="border-collapse: collapse; margin-left: 0%;" width="100%" align="Center">
+                <tr>
+                    <td colspan="3" align="Center"  style="font-size:10px; padding-top: 5px; padding-bottom: 5px"><b>Detalle de envíos</b></td>
+                </tr>
+                <tr>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">ORIGEN</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">TENDER DESTINO</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">RANGO KM</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; "># PAQ</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">PESO KG</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">PESO VOLUM</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">PESO PREDOM</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">TARIFA LLENA</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">TOTAL TARIFA LLENA</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">TARIFA PROPUESTA</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">TOTAL TARIFA PROPUESTA</td>
+                    <td align="Center" style="border: 1px solid black; font-size:9px; ">DESCUENTO</td>
+                </tr>
+                <apex:repeat value="{!listRangeT7}" var="keyRange">
+                    <tr>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">{!strOrigen}</td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">{!keyRange}</td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">{!mapQuotesT7ZP[keyRange].Rango_KM__c}</td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__Quantity__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].Weight__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].PackVolAVG__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].PackWeightAVG__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].Flete__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__NetPrice__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].Guia__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__Discount__c}" />
+                            </apex:outputText>%
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </apex:outputPanel>
     </apex:outputPanel>
 </apex:page>
