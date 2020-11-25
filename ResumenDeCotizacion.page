@@ -1829,6 +1829,9 @@
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T4 </td>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T5 </td>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T6 </td>
+                    <apex:outputText rendered="{!T7ZP}">
+                        <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T7 </td>
+                    </apex:outputText>
                     <td align="left"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">TOTAL </td>
 
                 </tr>
@@ -1870,6 +1873,11 @@
                                 </td>
                             </apex:outputText>
                         </apex:repeat>
+                        <td align="left" style="font-size:9px; ">
+                            <apex:outputText value="{0, number, ###,###,##0}">
+                                <apex:param value="{!mapTotalesT7ZP[keyRange]}" />
+                            </apex:outputText>
+                        </td>
                         <td align="left" style="font-size:9px; ">
                             <apex:outputText value="{0, number, ###,###,##0}">
                                 <apex:param value="{!mapTotalByRangeZP[keyRange].totalPaquetes}" />
@@ -1960,6 +1968,9 @@
                     <td align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T4 </td>
                     <td align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T5 </td>
                     <td align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T6 </td>
+                    <apex:outputText rendered="{!T7ZP}">
+                        <td align="center"  style="font-size:9px; background-color:rgb(31, 73, 125); color: white;"> T7 kg </td>
+                    </apex:outputText>
                 </tr>
 
                 <apex:repeat value="{!listRangeDestiny}" var="keyRange">
@@ -2002,6 +2013,13 @@
                                 </td>
                             </apex:outputText>
                         </apex:repeat>
+                        <apex:outputText rendered="{!T7ZP}">
+                            <td align="center"   style="font-size:9px;" >
+                                $ <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                    <apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:outputText>
                     </tr>
                 </apex:repeat>
                 <tr style="height: 10px"></tr>
