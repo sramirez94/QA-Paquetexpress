@@ -1,4 +1,4 @@
-<apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_ResumenDeContizacion" language="es-ES" renderAs="pdf">
+<apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_ResumenDeContizacion" language="es-ES" renderAs="pdf" action="{!doRedireccionamiento}">
     <head>
         <style>
             #customers {
@@ -9,6 +9,7 @@
 
         </style>      
     </head>
+    <apex:pageMessages />
     <apex:outputPanel id="PanelA" rendered="{!Sipweb}">
         <!-- header -->
         <table Id="customers" cellspacing="0" width="100%">
