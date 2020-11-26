@@ -338,7 +338,7 @@
                                 </tr>
                                 <tr ng-repeat="(keyRange, strRange) in OD.listRange">
                                     <td class="thead-light" ng-bind="strRange"></td>
-                                    <td class="thead-light center" contenteditable="true" ng-bind="OD.mapPropuesta['PROP'].ranges[keyRange].fltCost | currency" ng-blur="setValue('fltCostoPropuestoXKg', strRange, $event, 'T7ZP')"></td>
+                                    <td class="thead-light center" contenteditable="true" ng-bind="OD.mapPropuesta['PROP'].ranges[keyRange].fltCost | currency" ng-blur="setValue('fltCostoPropuestoXKg', keyRange, $event, 'T7ZP')"></td>
                                     <td class="center" ng-bind="OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta | currency" ng-blur=""></td>
                                     <td class="center" ng-bind="OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena | currency" ng-blur=""></td>
                                     <td class="center" ng-bind="OD.mapPropuesta['PROP'].ranges[keyRange].fltDescuento | percentage:2"></td>
@@ -2490,6 +2490,8 @@
                                             , Width__c : $scope.OD.mapQuotesT7ZP.Tender[strTender].fltAncho
                                             , High__c : $scope.OD.mapQuotesT7ZP.Tender[strTender].fltAlto
                                             , Weight__c : $scope.OD.mapQuotesT7ZP.Tender[strTender].fltPeso
+                                            , Flete__c : $scope.OD.mapQuotesT7ZP.Tender[strTender].fltFullFee
+                                            , GUIA__c : $scope.OD.mapQuotesT7ZP.Tender[strTender].fltQuoteFull
                                         };
                                         listQuoteItem.push(QuoteItemT7ZP);
                                     }
@@ -2502,11 +2504,11 @@
                                         , SBQQ__NetPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena
                                         , SBQQ__SpecialPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltCost
                                         , QuoteTotal__c: 0
-                                        , PackWeightAVG__c: 0
+                                        , PackWeightAVG__c: $scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR
                                         , PackVolAVG__c: 0
                                         , ACK__c: 0
-                                        , EAD__c: 0
-                                        , RAD__c: 0
+                                        , EAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltZP
+                                        , RAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltRAD
                                         , SEG__c: 0
                                         , Tarifa__c: 'TARIFA T7'
                                         , Rango_KM__c: strRange
@@ -2517,6 +2519,8 @@
                                         , Destiny__c : ''
                                         , SBQQ__Description__c : 'Propuesta'
                                         , Id : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].Id
+                                        , Flete__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
+                                        , Guia__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
                                     };
                                     listQuoteItem.push(QuoteItemT7ZPTotales);
                                 });
@@ -2909,6 +2913,20 @@
                                         , fltTotalTarifaLlena : 0
                                         , fltDescuento : 0
                                         , fltQuoteFee : 0
+                                        , fltVol : 0
+                                        , fltPeso : 0
+                                        , fltFlete : 0
+                                        , fltRAD : 0
+                                        , fltEAD : 0
+                                        , fltZP : 0
+                                        , fltACK : 0
+                                        , fltTarifaLlena : 0
+                                        , fltTarifaPropuesta : 0
+                                        , fltAdicZP : 0
+                                        , fltTotalTarifaPropuesta : 0
+                                        , fltPrecio : 0
+                                        , fltTotalNormal : 0
+                                        , fltTotPropuesta : 0
                                     };
                                     $scope.OD.mapRanges[keyRange] = {
                                         fltCost: 0
@@ -4218,41 +4236,6 @@
                     $scope.OD.mapQuotesT7ZP.fltFeeTotalQuote = 0;
                     j$.each($scope.OD.mapTender, function(strTender, map){
                         if($scope.OD.mapQuotesT7ZP.Tender[strTender].intFrecuency !== 0){
-                            /*if ($scope.OD.mapPropuesta['PROP'].ranges[$scope.OD.mapQuotesT7ZP.Tender[strTender].strRange].fltCost === 0){
-                                alert('Debe ingresar un costo propuesto por kg. Rango de km: ' + $scope.OD.mapQuotesT7ZP.Tender[strTender].strRange);
-                                blnError = true;
-                                return blnError;
-                            }
-                            if ($scope.OD.mapQuotesT7ZP.Tender[strTender].strOrigen === ''){
-                                alert('Debe ingresar un origen para la cotización');
-                                blnError = true;
-                                return blnError;
-                            }
-                            if ($scope.OD.mapQuotesT7ZP.Tender[strTender].strRange === ''){
-                                alert('Debe calcular obtener los rangos de km para poder continuar');
-                                blnError = true;
-                                return blnError;
-                            }
-                            if ($scope.OD.mapQuotesT7ZP.Tender[strTender].fltLargo === 0){
-                                alert('No puede calcular propuesta sin el valor de "Largo". Tender: ' + strTender);
-                                blnError = true;
-                                return blnError;
-                            }
-                            if ($scope.OD.mapQuotesT7ZP.Tender[strTender].fltAncho === 0){
-                                alert('No puede calcular propuesta sin el valor de "Ancho". Tender: ' + strTender);
-                                blnError = true;
-                                return blnError;
-                            }
-                            if ($scope.OD.mapQuotesT7ZP.Tender[strTender].fltAlto === 0){
-                                alert('No puede calcular propuesta sin el valor de "Alto". Tender: ' + strTender);
-                                blnError = true;
-                                return blnError;
-                            }
-                            if ($scope.OD.mapQuotesT7ZP.Tender[strTender].fltPeso === 0){
-                                alert('No puede calcular propuesta sin el valor de "Peso". Tender: ' + strTender);
-                                blnError = true;
-                                return blnError;
-                            }*/
                             let M = '';
                             let strRango = '';
                             if($scope.OD.mapQuotesT7ZP.Tender[strTender].strRange === 'Más de 2400')
@@ -4280,7 +4263,22 @@
                     });
                     $scope.OD.mapQuotesT7ZP.fltFeeTotalDesc = $scope.OD.mapQuotesT7ZP.fltFeeTotalQuote / $scope.OD.mapQuotesT7ZP.fltFeeTotalNormal -1;
                     $scope.AgregaTotalesT7ZP($scope.OD.mapQuotesT7ZP.intFeeTotalFrec, $scope.OD.mapQuotesT7ZP.fltFeeTotalNormal, $scope.OD.mapQuotesT7ZP.fltFeeTotalQuote, $scope.OD.mapQuotesT7ZP.fltFeeTotalDesc);
+                    $scope.CalculaTotalesPropuesta($scope);
                 };
+                $scope.CalculaTotalesPropuesta = function($scope){
+                    j$.each($scope.OD.listRange, function(keyRange, strRange){
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltPrecio               = $scope.OD.mapQuotes['T7V'].ranges[keyRange].fltAmount;//$scope.Wrapper.mapTarifarioT['TARIFA T7V'][keyRange].Flete__c;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltFlete                = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltPrecio * $scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltRAD                  = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltFlete * 0.11;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltZP                   = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena / $scope.OD.mapQuotesT7ZP.intFeeTotalFrec;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTarifaLlena          = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltFlete + $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltRAD + $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltZP + $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltACK;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTarifaPropuesta      = $scope.OD.mapQuotes['T7'].ranges[keyRange].fltQuoteFee;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltAdicZP               = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta / $scope.OD.mapQuotesT7ZP.intFeeTotalFrec;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaPropuesta = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTarifaPropuesta + $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltAdicZP;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal          = $scope.OD.mapQuotesT7ZP.intFeeTotalFrec * $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTarifaLlena;
+                        $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta         = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaPropuesta * $scope.OD.mapQuotesT7ZP.intFeeTotalFrec;
+                    });
+                }
                 $scope.AgregaTotalPropuestaMapaPropuesta = function(strRange, fltTotal){
                     var rango = '';
                     if (strRange === 'Más de 2400')
@@ -4298,9 +4296,11 @@
                         $scope.OD.mapPropuesta['PROP'].ranges[rango].fltTotalTarifaLlena += fltTotal;
                 }
                 $scope.AgregaTotalesT7ZP = function(intPaq, fltTotProp, fltTotNormal, fltDesc){
+                    $scope.OD.TOTAL['DESCUENTO'] = 0;
                     $scope.OD.TOTAL['NORMAL']       += fltTotNormal;
                     $scope.OD.TOTAL['PROPUESTA']    += fltTotProp;
                     $scope.OD.TOTAL['PAQUETES']     += intPaq;
+                    $scope.OD.TOTAL['DESCUENTO'] = ($scope.OD.TOTAL['PROPUESTA']  - $scope.OD.TOTAL['SEGURO']) / ($scope.OD.TOTAL['NORMAL'] - $scope.OD.TOTAL['SEGURO']) -1;
                 }
                 $scope.AgregaDescuentoMapaPropuesta = function(strRange, fltTotalPropuesta, fltTotalTarifaLlena){
                     var range = '';
@@ -4419,6 +4419,7 @@
                                                 , intFrecuency : quoteItem.SBQQ__Quantity__c
                                                 , strRange : quoteItem.Rango_KM__c
                                                 , strOrigen : $scope.OD.strOrigen
+                                                , fltFullFee : quoteItem.Flete__c
                                             }
                                         else{
                                             let rango = '';
@@ -5721,6 +5722,13 @@
                                         , fltWeightAmount : 0
                                         , fltVolAmount : 0
                                     };
+                                    $scope.OD.mapPropuesta['PROP'].ranges[strDestiny] = {
+                                        fltCost : 0
+                                        , fltTotalPropuesta : 0
+                                        , fltTotalTarifaLlena : 0
+                                        , fltDescuento : 0
+                                        , fltQuoteFee : 0
+                                    }
                                     j$.each($scope.OD.listFee
                                             , function (keyFee, strFee) {
                                                 var keyRange = strDestiny;
