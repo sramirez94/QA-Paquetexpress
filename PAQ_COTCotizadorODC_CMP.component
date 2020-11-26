@@ -2511,7 +2511,7 @@
                                         , RAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltRAD
                                         , SEG__c: 0
                                         , Tarifa__c: 'TARIFA T7'
-                                        , Rango_KM__c: strRange
+                                        //, Rango_KM__c: strRange
                                         , ZonaPlus__c: true
                                         , Pack_Seg__c: 0
                                         , SBQQ__VolumeDiscount__c: 0
@@ -2522,6 +2522,12 @@
                                         , Flete__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
                                         , Guia__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
                                     };
+                                    if($scope.OnlineDocByDestiny){
+                                        /*let rango = '';
+                                        rango = strRange.replace(keyRange + ' (');
+                                        rango = rango.replace(')');*/
+                                        QuoteItemT7ZPTotales.Rango_KM__c = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].strRango;
+                                    } else QuoteItemT7ZPTotales.Rango_KM__c = strRange;
                                     listQuoteItem.push(QuoteItemT7ZPTotales);
                                 });
                         }
@@ -4238,9 +4244,13 @@
                         if($scope.OD.mapQuotesT7ZP.Tender[strTender].intFrecuency !== 0){
                             let M = '';
                             let strRango = '';
-                            if($scope.OD.mapQuotesT7ZP.Tender[strTender].strRange === 'Más de 2400')
-                                strRango = '+2400';
-                            else strRango = $scope.OD.mapQuotesT7ZP.Tender[strTender].strRange;
+                            if(!$scope.OnlineDocByDestiny){
+                                if($scope.OD.mapQuotesT7ZP.Tender[strTender].strRange === 'Más de 2400')
+                                    strRango = '+2400';
+                                else strRango = $scope.OD.mapQuotesT7ZP.Tender[strTender].strRange;
+                            } else {
+                                strRango = strTender.replace('70','');
+                            }
                             M = ValidaDimensionesTender(strTender, $scope.OD.mapQuotesT7ZP.Tender[strTender].fltLargo, $scope.OD.mapQuotesT7ZP.Tender[strTender].fltPeso, $scope.OD.mapQuotesT7ZP.Tender[strTender].fltAlto, $scope.OD.mapQuotesT7ZP.Tender[strTender].fltAncho, $scope);
                             if(M !== ''){
                                 alert(M);
@@ -4332,7 +4342,7 @@
                 debugger;
                 var t7Fee = {'T7P':'TARIFA T7-P', 'T7V':'TARIFA T7-V'};
                 $scope.fillRanges();
-                if($scope.Wrapper.mapTender)
+                if($scope.Wrapper.mapTender && !$scope.OnlineDocByDestiny)
                     LlenaMapaTenders($scope);
                 if($scope.hasRecord()){
                     $scope.OnlineDocByRangeKM = $scope.Wrapper.objQuote.RangosKM__c;
@@ -4895,55 +4905,74 @@
                 );
             }
             function LlenaMapaTenders($scope){
-                j$.each($scope.Wrapper.mapTender, function(Name, Tender){
-                    if(Name !== 'TENDER')
-                        $scope.OD.mapTender[Name] = {
-                            strName : Name.replace('70', '')
-                            , keyName : Name
-                            , fltLarge : Tender.Largo__c
-                            , fltWidth : Tender.Peso__c
-                            , fltHigh : Tender.Alto__c
-                            , fltWeight : Tender.Peso__c
-                            , fltVol : Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
-                            , fltCost : Tender.Costo__c
-                            , fltExc : Tender.Costo__c
-                            , id : ''
-                        };
-                });
-                j$.each($scope.OD.mapTender, function(keyName, strName){
-                    $scope.OD.mapQuotesT7ZP.Tender[keyName] = {
-                        fltSeg : 0
-                        , strOrigen : ''
-                        , strRange : ''
-                        , strTenderDestino : ''
-                        , fltFullFee : 0
-                        , fltNormalFee : 0
-                        , fltTotalQuote : 0
-                        , fltDiscount : 0
-                        , intFrecuency : 0
-                        , fltQuoteFee : 0
-                        , fltAmountSeg : 0
-                        , fltEAD: 0
-                        , fltEADZP: 0
-                        , fltRAD : 0
-                        , fltAmount : 0
-                        , fltACK : 0
-                        , fltVolAVR : 0
-                        , fltPesoVol : 0
-                        , fltWeightAVR : 0
-                        , fltWeight : 0
-                        , fltWeightAmount : 0
-                        , fltVolAmount : 0
-                        , fltLargo : 0
+                if(!$scope.OnlineDocByDestiny){
+                    j$.each($scope.Wrapper.mapTender, function(Name, Tender){
+                        if(Name !== 'TENDER')
+                            $scope.OD.mapTender[Name] = {
+                                strName : Name.replace('70', '')
+                                , keyName : Name
+                                , fltLarge : Tender.Largo__c
+                                , fltWidth : Tender.Peso__c
+                                , fltHigh : Tender.Alto__c
+                                , fltWeight : Tender.Peso__c
+                                , fltVol : Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
+                                , fltCost : Tender.Costo__c
+                                , fltExc : Tender.Costo__c
+                                , id : ''
+                            };
+                    });
+                    j$.each($scope.OD.mapTender, function(keyName, strName){
+                        $scope.OD.mapQuotesT7ZP.Tender[keyName] = {
+                            fltSeg : 0
+                            , strOrigen : ''
+                            , strRange : ''
+                            , strTenderDestino : ''
+                            , fltFullFee : 0
+                            , fltNormalFee : 0
+                            , fltTotalQuote : 0
+                            , fltDiscount : 0
+                            , intFrecuency : 0
+                            , fltQuoteFee : 0
+                            , fltAmountSeg : 0
+                            , fltEAD: 0
+                            , fltEADZP: 0
+                            , fltRAD : 0
+                            , fltAmount : 0
+                            , fltACK : 0
+                            , fltVolAVR : 0
+                            , fltPesoVol : 0
+                            , fltWeightAVR : 0
+                            , fltWeight : 0
+                            , fltWeightAmount : 0
+                            , fltVolAmount : 0
+                            , fltLargo : 0
 
-                        , fltPeso : 0
-                        , fltAlto : 0
-                        , fltAncho : 0
-                        , fltExc : 0
-                        , fltPesoDom : 0
-                        , flttarifaProp : 0
-                    };
-                });
+                            , fltPeso : 0
+                            , fltAlto : 0
+                            , fltAncho : 0
+                            , fltExc : 0
+                            , fltPesoDom : 0
+                            , flttarifaProp : 0
+                        };
+                    });
+                } else {
+                    j$.each($scope.Wrapper.mapTender, function(Name, Tender){
+                        j$.each($scope.OD.mapTender, function(strTender, map){
+                            if(Name === strTender){
+                                $scope.OD.mapTender[strTender].strName      = Name.replace('70', '');
+                                $scope.OD.mapTender[strTender].keyName      = Name;
+                                $scope.OD.mapTender[strTender].fltLarge     = Tender.Largo__c;
+                                $scope.OD.mapTender[strTender].fltWidth     = Tender.Peso__c;
+                                $scope.OD.mapTender[strTender].fltHigh      = Tender.Alto__c;
+                                $scope.OD.mapTender[strTender].fltWeight    = Tender.Peso__c;
+                                $scope.OD.mapTender[strTender].fltVol       = Tender.Alto__c * Tender.Peso__c * Tender.Largo__c;
+                                $scope.OD.mapTender[strTender].fltCost      = Tender.Costo__c;
+                                $scope.OD.mapTender[strTender].fltExc       = Tender.Costo__c;
+                                $scope.OD.mapTender[strTender].id           = ''
+                            }
+                        });
+                    });
+                }
             }
             function callCreateQuoteConv($scope, objQuote, listQuoteItem, leadObj, oppObj, listSS){
                 j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
@@ -5722,12 +5751,58 @@
                                         , fltWeightAmount : 0
                                         , fltVolAmount : 0
                                     };
+                                    $scope.OD.mapTender[strDestiny + '70'] = {
+                                        strName : strDestiny
+                                        , keyName : strDestiny
+                                        , fltLarge : 0//Tender.Largo__c
+                                        , fltWidth : 0//Tender.Peso__c
+                                        , fltHigh : 0//Tender.Alto__c
+                                        , fltWeight : 0//Tender.Peso__c
+                                        , fltVol : 0//Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
+                                        , fltCost : 0//Tender.Costo__c
+                                        , fltExc : 0//Tender.Costo__c
+                                        , id : ''
+                                    };
+                                    LlenaMapaTenders($scope);
+                                    $scope.OD.mapQuotesT7ZP.Tender[strDestiny + '70'] = {
+                                        fltSeg : 0
+                                        , strOrigen : $scope.OD.strOrigin
+                                        , strRange : result.strDestinyKM
+                                        , strTenderDestino : ''
+                                        , fltFullFee : 0
+                                        , fltNormalFee : 0
+                                        , fltTotalQuote : 0
+                                        , fltDiscount : 0
+                                        , intFrecuency : 0
+                                        , fltQuoteFee : 0
+                                        , fltAmountSeg : 0
+                                        , fltEAD: 0
+                                        , fltEADZP: 0
+                                        , fltRAD : 0
+                                        , fltAmount : 0
+                                        , fltACK : 0
+                                        , fltVolAVR : 0
+                                        , fltPesoVol : 0
+                                        , fltWeightAVR : 0
+                                        , fltWeight : 0
+                                        , fltWeightAmount : 0
+                                        , fltVolAmount : 0
+                                        , fltLargo : 0
+
+                                        , fltPeso : 0
+                                        , fltAlto : 0
+                                        , fltAncho : 0
+                                        , fltExc : 0
+                                        , fltPesoDom : 0
+                                        , flttarifaProp : 0
+                                    };
                                     $scope.OD.mapPropuesta['PROP'].ranges[strDestiny] = {
                                         fltCost : 0
                                         , fltTotalPropuesta : 0
                                         , fltTotalTarifaLlena : 0
                                         , fltDescuento : 0
                                         , fltQuoteFee : 0
+                                        , strRango : result.strDestinyKM
                                     }
                                     j$.each($scope.OD.listFee
                                             , function (keyFee, strFee) {
