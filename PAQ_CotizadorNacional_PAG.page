@@ -1,0 +1,118 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" standardController="SBQQ__Quote__c" docType="HTML-5.0" contentType="text/html;charset=utf-8">
+    <!-- estilos personalizados -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
+    <!-- jquery  -->
+    <apex:includeScript value="{!$Resource.PAQ_JQuery}"/>
+    <!-- Boostrap css -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Boostrap3, 'bootstrap-3.3.7-dist/css/bootstrap.min.css')}"/>
+    <!-- jquery UI 11.2.1 css-->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.css')}"/>
+    <!-- Boostrap js -->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_Boostrap3,'bootstrap-3.3.7-dist/js/bootstrap.min.js')}"/>
+    <!-- jquery UI 11.2.1 js-->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.js')}"/>
+    <!-- Recurso Sforce -->
+    <apex:includeScript value="/support/console/40.0/integration.js"/>
+    <!-- AngularJS -->
+    <apex:includeScript value="{!$Resource.PAQ_AngularJS}"/>
+    <!-- blockUI JS -->
+    <apex:includeScript value="{!$Resource.PAQ_BlockUI}" />
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+        <style>
+            body{
+                font-size: 12px !important;
+            }
+            table{
+                font-size: 13px !important;
+            }
+            h3{
+                font-size: 14px !important;
+            }
+            .alertDanger{
+                color: #721c24;
+                background-color: #f8d7da;
+                border-color: #f5c6cb;
+            }
+
+            .invalid{
+                color: #721c24 !important;
+                background-color: #f8d7da !important;
+                border-color: #f5c6cb !important;
+            }
+
+            .bold{
+                font-weight: bold;
+            }
+            .btn-primary {
+                color: #ffffff !important;
+                background-color: #337ab7 !important;
+                font-size: 17px !important;
+            }
+            .btn-default {
+                color: #333 !important;
+                background-color: #ccc !important;
+                font-size: 17px !important;
+            }
+            .disabled{
+                background-color: #d28e8e;
+            }
+            .ng-touched.missing{
+                border-color: #c52d2d;
+                border-style: solid;
+            }
+            .ng-touched.valid{
+                border-color: #2fc52d;
+                border-style: solid;
+            }
+            .modal-dialog.big-modal{
+                width: 80% !important;
+            }
+            .pad3{
+                padding-left: 5px;
+            }
+            .right{
+                text-align: right;
+            }
+            .center{
+                text-align: center;
+            }
+            .rouded{
+                border-radius: 100px;
+                padding-left: 6px;
+                width: 25%;
+            }
+            .rouded-med{
+                border-radius: 100px;
+                padding-left: 6px;
+                width: 75%;
+            }
+            .row{
+                padding-bottom: 5px;
+            }
+            select{
+                width: 100%;
+                border-radius: 4px;
+            }
+            .select{
+                width: initial;
+            }
+            .tableTitle{
+                font-weight: bold;
+                text-align: center;
+            }
+            .thead-light {
+                color: #495057;
+                background-color: #e9ecef;
+                border-color: #dee2e6;
+            }
+            .v-center {
+                min-height:200px;
+                display: flex;
+                justify-content:center;
+                flex-flow: column wrap;
+            }
+        </style>
+    </head>
+    <c:PAQ_CotizadorNacional_CMP LeadId="{!SBQQ__Quote__c.Lead__c}" QuoteId="{!SBQQ__Quote__c.Id}" />
+</apex:page>
