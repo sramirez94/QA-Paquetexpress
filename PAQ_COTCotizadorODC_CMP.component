@@ -846,6 +846,9 @@
                 <button type="button" class="btn btn-primary" ng-click="nextOD()" ng-show="ODstep1 && isAdmin()">
                     Siguiente <span class="glyphicon glyphicon-menu-right"></span>
                 </button>
+                <button type="button" class="btn btn-primary" ng-click="redireccionar()">
+                    Cotizar T7 zona plus
+                </button>
             </div>
         </div>
         <!--mensagges-->
@@ -1250,12 +1253,33 @@
                                 </button>
                                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
                             </div>
+                            <!--<div id="7ZP" class="tab-pane fade" ng-show="OD.blnCotZonaPlus">
+                                <div ng-if="OD.blnCotZonaPlus">
+                                    <c:PAQ_COTApartadoT7ZP/>
+                                </div>
+                            </div>-->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <!--<div class="container-fluid" ng-app="Cotizador" ng-controller="ODCController as ODCCTR" style="display: none">
+        <ul class="nav nav-pills">
+            <li role="presentation" class="tabPill" id="OZP-Tab" ng-show="OD.blnCotZonaPlus">
+                <a data-toggle="pill" class="tabPill" href="#OZP" >Doc. Linea zona plus</a>
+            </li>
+        </ul>
+        <br/><br/>
+        <div class="tab-content padding-top-10">
+            <div id="OZP" class="tab-pane fade" ng-show="OD.blnCotZonaPlus">
+                <div ng-if="OD.blnCotZonaPlus">
+                    <c:PAQ_COTCotizadorEXC_CMP />
+                </div>
+            </div>
+        </div>
+        
+    <!--</div>-->
     <script type="text/javascript" lang="js">
         var j$ = jQuery.noConflict();
         //j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
@@ -1299,6 +1323,7 @@
                     , blnFeeRemoveAll : false
                     , blnServiceRemoveAll :false
                     , OriginDisabled : false
+                    , blnCotZonaPlus : false
                     , strOrigen : ''
                     , listFee : {
                         'TS': 'TARIFA SOBRE'
@@ -1814,7 +1839,7 @@
                             $scope.OD.TOTAL['PROPUESTA'] += $scope.SS.service[keyService].potential;
                         }
                     });
-                    $scope.ValidarPropuesta();
+                    //$scope.ValidarPropuesta();
                 };
 
                 $scope.calculateOD = function(){
@@ -4224,6 +4249,18 @@
                     $scope.OD.blnServiceAddAll = false;
                     $scope.OD.blnServiceRemoveAll = false;
                     $scope.calculateEXPOD();
+                };
+                $scope.redireccionar = function(){
+                    debugger;
+                    $scope.DocLineaTZP = true;
+                    j$('.tabPill').removeClass('active');
+                    j$('.tab-pane').removeClass('in active');
+                    $scope.$parent.DocLineaTZP = true;
+                    $scope.OD.blnCotZonaPlus = true;
+                    j$('#OZP').addClass('in active');
+                    j$('#OZP').addClass('active');
+                    $scope.Quotes = $scope.OD.mapTender;
+                    $scope.start();
                 };
                 $scope.ValidarPropuesta = function(){
                 /*29/09/2020 Salvador: Funcionalidad para calcular la propuesta antes de grabar la cotización*/
