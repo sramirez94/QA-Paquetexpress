@@ -1,0 +1,474 @@
+<apex:component controller="PAQ_CotizadorNacional_CTR">
+    <div ng-controller="ODCControllerTZP as ODCZP">
+        <div class="col-md-6 col-sm-6">
+            <div class="panel panel-default" style="overflow: scroll;">
+                <div class="panel-heading">
+                    <a data-toggle="collapse" href="#T7ZP"><h3 class="panel-title" >PROPUESTA</h3></a>
+                </div>
+                <div id="T7ZPPROP" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <table class="table table-striped" >
+                            <thead class="thead-light">
+                            <tr>
+                                <th>Rango KM</th>
+                                <th>Costo propuesto por kg</th>
+                                <th>Total propuesta</th>
+                                <th>Total tarifa llena</th>
+                                <th>Descuento</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td colspan="1">Replicar</td>
+                                <td class="thead-light center"><input type="checkbox" ng-model="ODZP.mapPropuesta['PROP'].blnSameQuote" ng-click="replicate('Quote7ZP', ODZP.mapPropuesta['PROP'].ranges['0-400'].fltCost, strFeeKey)" /></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr ng-repeat="(keyRange, strRange) in ODZP.listRange">
+                                <td class="thead-light" ng-bind="strRange"></td>
+                                <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost | currency" ng-blur="setValue('fltCostoPropuestoXKg', keyRange, $event, 'T7ZP')"></td>
+                                <td class="center" ng-bind="ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta | currency" ng-blur=""></td>
+                                <td class="center" ng-bind="ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena | currency" ng-blur=""></td>
+                                <td class="center" ng-bind="ODZP.mapPropuesta['PROP'].ranges[keyRange].fltDescuento | percentage:2"></td>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td></td>
+                                <td class="center"><span ng-bind="ODZP.mapPropuesta['PROP'].fltFeeTotalNormal | currency"></span></td>
+                                <td class="center"><span ng-bind="ODZP.mapPropuesta['PROP'].fltFeeTotalQuote | currency"></span></td>
+                                <td class="center"><span ng-bind="ODZP.mapPropuesta['PROP'].fltFeeTotalDesc | percentage:2"></span></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default" style="overflow: scroll;">
+                    <div class="panel-heading"> 
+                        <a data-toggle="collapse" href="#T7ZP"><h3 class="panel-title" >TARIFA T7 ZONA PLUS</h3></a>
+                    </div>
+                    <div id="T7ZP" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div class="row">
+                                <table class="table table-striped">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th class="center">Origen</th>
+                                            <th class="center">Tender destino</th>
+                                            <th class="center">Rango KM</th>
+                                            <th class="center">#Paquetes</th>
+                                            <th class="center">Largo</th>
+                                            <th class="center">Ancho</th>
+                                            <th class="center">Alto</th>
+                                            <th class="center">Peso</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="1">Replicar</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="thead-light center"><input type="checkbox" ng-model="ODZP.mapQuotesT7ZP.blnSameFrecuency" ng-click="replicate('frecuencyT7ZP', null, index, keytender)"/></td>
+                                            <td class="thead-light center"><input type="checkbox" ng-model="ODZP.mapQuotesT7ZP.blnSameLarge" ng-click="replicate('LargeT7ZP', null, index, keytender)"/></td>
+                                            <td class="thead-light center"><input type="checkbox" ng-model="ODZP.mapQuotesT7ZP.blnSameAncho" ng-click="replicate('AnchoT7ZP', null, index, keytender)"/></td>
+                                            <td class="thead-light center"><input type="checkbox" ng-model="ODZP.mapQuotesT7ZP.blnSameHigh" ng-click="replicate('AltoT7ZP', null, index, keytender)"/></td>
+                                            <td class="thead-light center"><input type="checkbox" ng-model="ODZP.mapQuotesT7ZP.blnSameWeigth" ng-click="replicate('PesoT7ZP', null, index, keytender)"/></td>
+                                        </tr>
+                                        <tr ng-repeat="(keyTender, strTender) in ODZP.mapTender">
+                                            <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].strOrigen" ng-blur="setValue('PPStrOrigen', keyTender, $event, 'T7ZP')"></td>
+                                            <td class="center" ng-bind="keyTender"></td>
+                                            <td class="center" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].strRange" ng-blur=""></td>
+                                            <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].intFrecuency | number" ng-blur="setValue('frecuencyT7ZP', keyTender, $event, 'T7ZP')"></td>
+                                            <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].fltLargo | number" ng-blur="setValue('fltLargo', keyTender, $event, 'T7ZP')"></td>
+                                            <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].fltAncho | number" ng-blur="setValue('fltAncho', keyTender, $event, 'T7ZP')"></td>
+                                            <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].fltAlto | number" ng-blur="setValue('fltAlto', keyTender, $event, 'T7ZP')"></td>
+                                            <td class="thead-light center" contenteditable="true" ng-bind="ODZP.mapQuotesT7ZP.Tender[keyTender].fltPeso | number" ng-blur="setValue('PPfltPeso', keyTender, $event, 'T7ZP')"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-default" ng-click="Saludo()">
+            <span class="glyphicon glyphicon-menu-left"></span> Atras
+        </button>
+    </div>
+
+<script type="text/javascript" lang="js">
+    var j$ = jQuery.noConflict();
+    j$(document).ready(function(){
+        j$('.container-fluid').show();
+    });
+    (function(){
+        var app = angular.module('Cotizador');
+        app.controller('ODCControllerTZP', ['$scope',function($scope, $rootScope) {
+            $scope.ODZP = {
+                blnActivo : false
+                , mapTender : {}
+                , mapQuotesT7ZP : {}
+                , mapPropuesta : {}
+                , listRange : {}
+                , fltRespaldoTotalPropuesta : 0
+                , fltRespaldoTotalNormal : 0
+                , intRespaldoPaq : 0
+            };
+            $scope.Saludo = function(){
+                debugger;
+                $scope.ODZP.blnActivo = true;
+                alert('Hola mundo');
+            };
+            $scope.setValue = function(name, key, cmp, keyX, fee){
+                if (notEmpty(cmp.target.textContent))
+                    switch (name) {
+                        case 'fltCostoPropuestoXKg':
+                            var strkey = '';
+                            if (key === 'Más de 2400')
+                                strkey = '+2400'
+                            else strkey = key;
+                            $scope.ODZP.mapPropuesta['PROP'].ranges[strkey].fltCost  = getNumFromCurrency(cmp.target.textContent);
+                        break;
+                        case 'frecuencyT7ZP':
+                            $scope.ODZP.mapQuotesT7ZP.Tender[key].intFrecuency = getNum(cmp.target.textContent);
+                            //$scope.ValidarPropuesta();
+                        break;
+                        case 'PPStrOrigen':
+                            var Origen = cmp.target.textContent; //23/11/2020 Salvador: Se respalda el origen digitado.
+                            $scope.ODZP.strOrigen = Origen;
+                            j$.each($scope.ODZP.mapTender, function(keyTender, strTender){
+                                $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strOrigen = Origen; //23/1/2020 Salvador: Se asigna el origen, será el mismo para todos.
+                                $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strTenderDestino = keyTender;//23/11/2020 Salvador: Se le agrega un 70 al tender ya que de esa forma se compone la clave
+                                $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltNormalFee = 208.50; //23/11/2020 Salvador: Cuota fija hasta T6, a partir de aquí se cobran excedentes
+                            });
+                            j$.each($scope.ODZP.mapTender, function(keyTender, strTender){
+                                ObtieneRangoKMT7ZP($scope, $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strOrigen, keyTender.replace('70',''));
+                            });
+                            $scope.$apply();
+                            j$.unblockUI();
+                        break;
+                        case 'frecuencyT7ZP':
+                            $scope.ODZP.mapQuotesT7ZP.Tender[key].intFrecuency = getNum(cmp.target.textContent);
+                            //$scope.ValidarPropuesta();
+                            //$scope.calculateEXPOD();
+                        break;
+                        case 'PPfltPeso':
+                            $scope.ODZP.mapQuotesT7ZP.Tender[key].fltPeso = getNum(cmp.target.textContent);
+                            //$scope.ValidarPropuesta();
+                            //$scope.calculateEXPOD();
+                        break;
+                        case 'fltLargo':
+                            $scope.ODZP.mapQuotesT7ZP.Tender[key].fltLargo = getNum(cmp.target.textContent);
+                            //$scope.ValidarPropuesta();
+                            //$scope.calculateEXPOD();
+                        break;
+                        case 'fltAncho':
+                            $scope.ODZP.mapQuotesT7ZP.Tender[key].fltAncho = getNum(cmp.target.textContent);
+                            //$scope.ValidarPropuesta();
+                            //$scope.calculateEXPOD();
+                        break;
+                        case 'fltAlto':
+                            $scope.ODZP.mapQuotesT7ZP.Tender[key].fltAlto = getNum(cmp.target.textContent);
+                            //$scope.ValidarPropuesta();
+                            //$scope.calculateEXPOD();
+                        break;
+                    };
+                $scope.$parent.$parent.$$childHead.$$childHead.calculateEXPOD();
+                $scope.ValidarPropuesta();
+            };
+            $scope.replicate = function(field, num, key, fee){
+                num = null;
+                switch (field) {
+                    case 'LargeT7ZP': //28/09/2020 Salvador: Replica el valor de la columna "Largo"
+                        if($scope.ODZP.mapQuotesT7ZP.blnSameLarge)
+                            j$.each($scope.ODZP.mapTender, function (keyTender, strTender) {
+                                if (num === null)
+                                    num = $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltLargo;
+                                else $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltLargo = num;
+                                //$scope.ValidarPropuesta();
+                            });
+                    break;
+                    case 'AnchoT7ZP': //28/09/2020 Salvador: Replica el valor de la columna "Ancho"
+                        if($scope.ODZP.mapQuotesT7ZP.blnSameAncho)
+                            j$.each($scope.ODZP.mapTender, function (keyTender, strTender) {
+                                if (num === null)
+                                    num = $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltAncho;
+                                else $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltAncho = num;
+                                //$scope.ValidarPropuesta();
+                            });
+                    break;
+                    case 'AltoT7ZP': //28/09/2020 Salvador: Replica el valor de la columna "Alto"
+                        if($scope.ODZP.mapQuotesT7ZP.blnSameHigh)
+                            j$.each($scope.ODZP.mapTender, function (keyTender, strTender) {
+                                if (num === null)
+                                    num = $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltAlto;
+                                else $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltAlto = num;
+                                //$scope.ValidarPropuesta();
+                            });
+                    break;
+                    case 'PesoT7ZP': //28/09/2020 Salvador: Replica el valor de la columna "Alto"
+                        if($scope.ODZP.mapQuotesT7ZP.blnSameWeigth)
+                            j$.each($scope.ODZP.mapTender, function (keyTender, strTender) {
+                                if (num === null)
+                                    num = $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltPeso;
+                                else $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltPeso = num;
+                                //$scope.ValidarPropuesta();
+                            });
+                    break;
+                    case 'Quote7ZP': //28/09/2020 Salvador: Caso para replicar tarifa del mapa de propuesta de T7 ZP
+                        if($scope.ODZP.mapPropuesta['PROP'].blnSameQuote) //28/09/2020 Salvador: si se marcó la casilla de replica
+                            j$.each($scope.ODZP.listRange, function (keyRange, strTender) { //28/09/2020 Salvador: Recorre la lista de rangos para obtener el rango sobre el que va a usar como llame de mappropuesta
+                                if(num == null)
+                                    num = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost;
+                                else $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost = num;
+                            });
+                    break;
+                    $scope.ValidarPropuesta();
+                };
+            };
+            $scope.ValidarPropuesta = function(){
+            /*29/09/2020 Salvador: Funcionalidad para calcular la propuesta antes de grabar la cotización*/
+                var blnError = false;
+                /*$scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['NORMAL']       = 0;
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PROPUESTA']    = 0;
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PAQUETES']     = 0;*/
+                
+                $scope.fltRespaldoTotalNormal = $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['NORMAL'];
+                $scope.fltRespaldoTotalPropuesta = $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PROPUESTA'];
+                $scope.intRespaldoPaq = $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PAQUETES'];
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['NORMAL']       = 0;
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PROPUESTA']    = 0;
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PAQUETES']     = 0;
+
+                j$.each($scope.ODZP.listRange, function(keyRange, strRange){
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta   = 0;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena = 0;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltDescuento        = 0;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltQuoteFee         = 0;
+                });
+                $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalNormal     = 0;
+                $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalQuote      = 0;
+                $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalDesc       = 0;
+                $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec = 0;
+                $scope.ODZP.mapQuotesT7ZP.fltFeeTotalNormal = 0;
+                $scope.ODZP.mapQuotesT7ZP.fltFeeTotalQuote = 0;
+                j$.each($scope.ODZP.mapTender, function(strTender, map){
+                    if($scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency !== 0){
+                        let M = '';
+                        let strRango = '';
+                        if(!$scope.OnlineDocByDestiny){
+                            if($scope.ODZP.mapQuotesT7ZP.Tender[strTender].strRange === 'Más de 2400')
+                                strRango = '+2400';
+                            else strRango = $scope.ODZP.mapQuotesT7ZP.Tender[strTender].strRange;
+                        } else {
+                            strRango = strTender.replace('70','');
+                        }
+                        /*M = ValidaDimensionesTender(strTender, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltLargo, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPeso, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltAlto, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltAncho, $scope);
+                        if(M !== ''){
+                            alert(M);
+                            xhrInstance.abort();
+                        }*/
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoVol = ObtienePesoVolum($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltLargo, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltAncho, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltAlto);
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom = ObtienePesoDominante($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPeso, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoVol);
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee = ObtieneTarifaLlena($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom, $scope.ODZP.mapTender[strTender].fltExc);
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltTotalQuote = ObtieneTotalTarifaLlena($scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee);
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp = ObtieneTarifaPropuesta($scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltCost, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom);
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltQuoteFull = $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp * $scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency;
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltDiscount = $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp / $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee - 1;
+                        $scope.AgregaTotalPropuestaMapaPropuesta(strRango, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltQuoteFull);
+                        $scope.AgregaTotalTarifaLlenaMapaPropuesta(strRango, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltTotalQuote);
+                        $scope.AgregaDescuentoMapaPropuesta(strRango, $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltTotalPropuesta, $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltTotalTarifaLlena);
+                        $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec += $scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency;
+                        $scope.ODZP.mapQuotesT7ZP.fltFeeTotalNormal += $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltTotalQuote;
+                        $scope.ODZP.mapQuotesT7ZP.fltFeeTotalQuote += $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp;
+                    }
+                });
+                $scope.ODZP.mapQuotesT7ZP.fltFeeTotalDesc = $scope.ODZP.mapQuotesT7ZP.fltFeeTotalQuote / $scope.ODZP.mapQuotesT7ZP.fltFeeTotalNormal -1;
+                $scope.AgregaTotalesT7ZP($scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec, $scope.ODZP.mapQuotesT7ZP.fltFeeTotalNormal, $scope.ODZP.mapQuotesT7ZP.fltFeeTotalQuote, $scope.ODZP.mapQuotesT7ZP.fltFeeTotalDesc);
+                $scope.CalculaTotalesPropuesta($scope);
+            };
+            $scope.CalculaTotalesPropuesta = function($scope){
+                j$.each($scope.ODZP.listRange, function(keyRange, strRange){
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltPrecio               = $scope.ODZP.mapQuotes['T7V'].ranges[keyRange].fltAmount;//$scope.Wrapper.mapTarifarioT['TARIFA T7V'][keyRange].Flete__c;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltFlete                = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltPrecio * $scope.ODZP.mapQuotes['T7'].ranges[keyRange].fltVolAVR;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltRAD                  = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltFlete * 0.11;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltZP                   = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena / $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarifaLlena          = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltFlete + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltRAD + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltZP + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltACK;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarifaPropuesta      = $scope.ODZP.mapQuotes['T7'].ranges[keyRange].fltQuoteFee;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltAdicZP               = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta / $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaPropuesta = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarifaPropuesta + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltAdicZP;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal          = $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarifaLlena;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta         = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec;
+                });
+            }
+            $scope.AgregaTotalPropuestaMapaPropuesta = function(strRange, fltTotal){
+                var rango = '';
+                if (strRange === 'Más de 2400')
+                    rango = '+2400';
+                else rango = strRange;
+                if(fltTotal !== 0)
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[rango].fltTotalPropuesta += fltTotal;
+            }
+            $scope.AgregaTotalTarifaLlenaMapaPropuesta = function(strRange, fltTotal){
+                var rango = '';
+                if (strRange === 'Más de 2400')
+                    rango = '+2400';
+                else rango = strRange;
+                if(fltTotal !== 0)
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[rango].fltTotalTarifaLlena += fltTotal;
+            }
+            $scope.AgregaTotalesT7ZP = function(intPaq, fltTotProp, fltTotNormal, fltDesc){
+                /*$scope.ODZP.TOTAL['DESCUENTO'] = 0;
+                $scope.ODZP.TOTAL['NORMAL']       += fltTotNormal;
+                $scope.ODZP.TOTAL['PROPUESTA']    += fltTotProp;
+                $scope.ODZP.TOTAL['PAQUETES']     += intPaq;
+                $scope.ODZP.TOTAL['DESCUENTO'] = ($scope.ODZP.TOTAL['PROPUESTA']  - $scope.ODZP.TOTAL['SEGURO']) / ($scope.ODZP.TOTAL['NORMAL'] - $scope.ODZP.TOTAL['SEGURO']) -1;*/
+                $scope.fltRespaldoTotalNormal += fltTotNormal;
+                $scope.fltRespaldoTotalPropuesta += fltTotProp;
+                $scope.intRespaldoPaq += intPaq;
+
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['NORMAL'] = $scope.fltRespaldoTotalNormal;
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PROPUESTA']    = $scope.fltRespaldoTotalPropuesta;
+                $scope.$parent.$parent.$$childHead.$$childHead.OD.TOTAL['PAQUETES']     = $scope.intRespaldoPaq;
+            }
+            $scope.AgregaDescuentoMapaPropuesta = function(strRange, fltTotalPropuesta, fltTotalTarifaLlena){
+                var range = '';
+                var descuento = 0;
+                if (strRange === 'Más de 2400')
+                    range = '+2400';
+                else range = strRange;
+                if(range !== ''){
+                    $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalNormal = 0;
+                    $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalQuote = 0;
+                    $scope.ODZP.mapPropuesta['PROP'].ranges[range].fltDescuento = fltTotalPropuesta / fltTotalTarifaLlena - 1;
+                    j$.each($scope.ODZP.listRange, function (keyRange, strRange) {
+                        $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalNormal     += $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta;
+                        $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalQuote      += $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena;
+                    });
+                    descuento = $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalNormal / $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalQuote - 1;
+                    $scope.ODZP.mapPropuesta['PROP'].fltFeeTotalDesc       = descuento;
+                }
+            }
+            añadeInfoHeredada($scope);
+        }]);
+        app.filter('percentage', ['$filter', function ($filter) {
+            return function (input, decimals) {
+                return $filter('number')(input * 100, decimals) + '%';
+            };
+        }]);
+        function añadeInfoHeredada($scope){
+            $scope.ODZP.mapTender = $scope.$parent.$parent.$$childHead.$$childHead.OD.mapTender;
+            $scope.ODZP.mapQuotesT7ZP = $scope.$parent.$parent.$$childHead.$$childHead.OD.mapQuotesT7ZP;
+            $scope.ODZP.mapPropuesta = $scope.$parent.$parent.$$childHead.$$childHead.OD.mapPropuesta;
+            $scope.ODZP.listRange = $scope.$parent.$parent.$$childHead.$$childHead.OD.listRange;
+        }
+        function getNum(strNum) {
+            if(notEmpty(strNum))
+                if(isNaN(strNum))
+                    return 0;
+                else
+                    return parseFloat(strNum);
+        }
+
+        function getNumFromCurrency(strNum) {
+            var subStr = '';
+            if(notEmpty(strNum)){
+                if(strNum.indexOf('$') !== -1)
+                    subStr = strNum.substring(1, strNum.length);
+                else
+                    subStr = strNum;
+                if(subStr.length > 3 && strNum.indexOf(',') !== -1)
+                    subStr = subStr.replace(',', '');
+                if(isNaN(subStr))
+                    return 0;
+                else
+                    return parseFloat(subStr);
+            } else
+                return 0;
+        }
+        function notEmpty(str){
+            return str !== undefined  && str !== "" && str!== null;
+        }
+        function ObtieneRangoKMT7ZP($scope, strOrigen, strTenderDestino){
+            j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+            $scope.SuccessMessage = '';
+            $scope.sent = true;
+            $scope.DestinyErrorMessage = '';
+            $scope.DestinySuccessMessage = '';
+            Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.PAQ_CotizadorNacional_CTR.checkDestiny}'
+                    , strOrigen
+                    , strTenderDestino
+                    , function (result, event) {
+                        if (event.status) {
+                            $scope.DML = result;  
+                            if(result.blnSuccess){
+                                var strDestiny = strTenderDestino;
+                                $scope.DestinySuccessMessage = 'Se ha agregado el destino!';
+                                $scope.ODZP.mapQuotesT7ZP.Tender[strTenderDestino + '70'].strRange = result.strDestinyKM;
+                                //return result.strDestinyKM;
+                            } else $scope.ODZP.mapQuotesT7ZP.Tender[strTenderDestino + '70'].strRange = '0';
+                        } else {
+                            $scope.$apply();
+                            j$.unblockUI();
+                        }
+                        $scope.$apply();
+                        j$.unblockUI();
+                    }
+                    ,{escape: false, timeout: 120000}
+            );
+        }
+        function ObtieneTarifaLlena(decPesoPred, decExc){
+            //19/09/2020 Salvador: Función para obtener el total de tarifa llena para la tarifa T7 ZP
+            var decTarifaLlena = 0;
+            if (decPesoPred !== 0 && decExc !== 0)
+                decTarifaLlena = 208.5 + ((decPesoPred - 60) * decExc);
+            return decTarifaLlena;
+        }
+        function ObtieneTotalTarifaLlena(intPaq, fltFullFee){
+            var fltTarLlena = 0;
+            if (fltFullFee !== 0 && intPaq !== 0)
+                fltTarLlena = fltFullFee * intPaq;
+            return fltTarLlena;
+        }
+        function ObtienePesoVolum(fltLargo, fltAncho, fltAlto){
+            var fltPesoVol = 0
+            if (fltLargo !== 0 && fltAncho !== 0 && fltAlto !== 0)
+                fltPesoVol = (fltLargo * fltAncho * fltAlto) / 5000;
+            return fltPesoVol
+        }
+        function ObtienePesoDominante(decPeso, decPesoVol){
+            //19/09/2020 Salvador: Función para obtener el peso dominante para la tarifa T7 ZP
+            var decPesoDominante = 0;
+            if (decPesoVol > decPeso)
+                decPesoDominante = decPesoVol;
+            else decPesoDominante = decPeso;
+            return decPesoDominante;
+        }
+        function ObtieneTarifaPropuesta(fltCostoPropuestoXKg, fltPesoPred){
+            return fltCostoPropuestoXKg * fltPesoPred;
+        }
+        function ValidaDimensionesTender(strTender, fltLargo, fltAncho, fltAlto, fltPeso, $scope){
+            Mensaje = '';
+            if(strTender !== ''){
+                if(fltLargo > $scope.ODZP.mapTender[strTender].fltLarge)
+                    Mensaje = "La dimensión ancho excede los límites. Debe ser menor de " + $scope.ODZP.mapTender[strTender].fltLarge;
+                if(fltAncho > $scope.ODZP.mapTender[strTender].fltWidth)
+                    Mensaje = "La dimensión ancho excede los límites. Debe ser menor de " + $scope.ODZP.mapTender[strTender].fltWidth;
+                if(fltAlto > $scope.ODZP.mapTender[strTender].fltHigh)
+                    Mensaje = "La dimensión alto excede los límites. Debe ser menor de " + $scope.ODZP.mapTender[strTender].fltHigh;
+                if(fltPeso > $scope.ODZP.mapTender[strTender].fltWeight)
+                    Mensaje = "La dimensión peso excede los límites. Debe ser menor de " + $scope.ODZP.mapTender[strTender].fltWeight;
+            }
+            return Mensaje;
+            
+        }
+    })();
+</script>
+</apex:component>
