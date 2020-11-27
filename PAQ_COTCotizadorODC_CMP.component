@@ -2958,6 +2958,7 @@
                                         , fltPrecio : 0
                                         , fltTotalNormal : 0
                                         , fltTotPropuesta : 0
+                                        , intFrecuency : 0
                                     };
                                     $scope.OD.mapRanges[keyRange] = {
                                         fltCost: 0
@@ -4255,11 +4256,11 @@
                     $scope.DocLineaTZP = true;
                     j$('.tabPill').removeClass('active');
                     j$('.tab-pane').removeClass('in active');
-                    $scope.$parent.DocLineaTZP = true;
-                    $scope.OD.blnCotZonaPlus = true;
+                    $scope.$parent.$parent.DocLineaTZP = true;
+                    $scope.$parent.$parent.blnT7CostosFijos = true;
                     j$('#OZP').addClass('in active');
                     j$('#OZP').addClass('active');
-                    $scope.Quotes = $scope.OD.mapTender;
+                    //$scope.Quotes = $scope.OD.mapTender;
                     $scope.start();
                 };
                 $scope.ValidarPropuesta = function(){
