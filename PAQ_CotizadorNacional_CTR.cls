@@ -45,6 +45,8 @@ public class PAQ_CotizadorNacional_CTR {
                     strYear = String.valueOf(wp.objQuote.Fecha_de_creacion_sugar__c.year());
             }
         }
+        for(CapacidadSucursal__c tender : queryTender())
+			wp.mapTender.put(tender.Name, tender);
         if(String.isBlank(strYear))
             for (AcusePorGuia__mdt objACK : queryACK())
                 wp.mapACK.put(objACK.Label, objACK.Amount__c);
@@ -868,6 +870,8 @@ public class PAQ_CotizadorNacional_CTR {
         , ZonaPlus__c
         , Destiny__c
         , PAQ_QGuides__c
+        , SBQQ__SpecialPrice__c
+        , SBQQ__Description__c
         FROM SBQQ__QuoteLine__c
         WHERE SBQQ__Quote__c =: strQuoteId
         ORDER BY CreatedDate ASC];
