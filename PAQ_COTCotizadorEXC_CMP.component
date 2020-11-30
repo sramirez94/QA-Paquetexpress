@@ -1258,7 +1258,7 @@
                         available : [
                             {id:'RAD' , label : 'Recolección a domicilio', blnSelected : false }
                             , {id:'EAD' , label : 'Entrega a domicilio', blnSelected : false }
-                            , {id:'SEG' , label : 'Seguro', blnSelected : false }
+                            //, {id:'SEG' , label : 'Seguro', blnSelected : false }
                             , {id:'ACK' , label : 'Acuse', blnSelected : false }
                         ]
                         , selected : []
@@ -2309,6 +2309,7 @@
                                 , strFee : 'T7'
                                 , fltTotalNormal : 0
                             };
+                            item.fltQuoteFee = $scope.EX.mapBlock[lastBlock.key].ranges[keyRange].fltCost;
                             if($scope.EX.blnACK){
                                 item.fltACK = $scope.EX.mapService['ACK'].ranges[keyRange].fltCost;
                                 fltAcuseT7 = $scope.Wrapper.mapACK[$scope.EX.strACK];
@@ -3221,6 +3222,7 @@
                                     else
                                         item.fltAVGVol = fltCost;
                                 });
+                            $scope.calculateXY();
                             break;
                         case 'AVGWeight':
                             if(blnCheck)
@@ -3230,6 +3232,7 @@
                                     else
                                         item.fltAVGWeight = fltCost;
                                 });
+                            $scope.calculateEX();
                             break;
                         case 'Quote7ZP': //29/09/2020 Salvador: Caso para replicar tarifa del mapa de propuesta de T7 ZP
                             if($scope.EX.mapPropuesta['PROP'].blnSameQuote) //29/09/2020 Salvador: si se marcó la casilla de replica
@@ -4146,17 +4149,19 @@
                                             , fltAVGVol : $scope.EX.mapBlock[key].fltMaxV
                                             , fltAVGWeight : $scope.EX.mapBlock[key].fltMaxW
                                         };
-                                    if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges) && keyFee != 'TARIFA T7')
-                                        $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
-                                            intFrecuency : 0
-                                            , fltBaseFee : 0
-                                            , fltFullFee : 0
-                                            , fltRAD : 0
-                                            , fltEAD : 0
-                                            , fltACK : 0
-                                            , fltSEG : 0
-                                            , fltTotalNormal : 0
-                                        };
+                                    if(keyFee !== 'T7'){
+                                        if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges))
+                                            $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
+                                                intFrecuency : 0
+                                                , fltBaseFee : 0
+                                                , fltFullFee : 0
+                                                , fltRAD : 0
+                                                , fltEAD : 0
+                                                , fltACK : 0
+                                                , fltSEG : 0
+                                                , fltTotalNormal : 0
+                                            };
+                                    }
                                     $scope.EX.mapFrecc['T7V'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
                                     $scope.EX.mapFrecc['T7P'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
                                     $scope.EX.mapRanges[destino] = {
@@ -4199,7 +4204,7 @@
                             $scope.EX.mapFreccZP[keyFee].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
 
                         } else {
-                            if (quoteItem.PackWeightAVG__c > 60) {
+                            if (keyFee.includes('T7_')/*quoteItem.PackWeightAVG__c > 60*/) {
                                 if (notEmpty(quoteItem.Destiny__c)){
                                     $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
                                     $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].Id = quoteItem.Id;
