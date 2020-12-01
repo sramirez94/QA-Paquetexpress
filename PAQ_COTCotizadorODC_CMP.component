@@ -4134,7 +4134,29 @@
                                         $scope.PPT7Calc = $scope.Wrapper.objQuote.TipoCotizacion__c;
                                     
 
-                                        if(quoteItem.Tarifa__c === 'TARIFA T7' && quoteItem.ZonaPlus__c){
+                                    if(quoteItem.Tarifa__c === 'TARIFA T7' && quoteItem.ZonaPlus__c){
+                                        let rango = '';
+                                        if($scope.OnlineDocByDestiny){
+                                            $scope.OD.mapQuotesT7ZP.Tender = {};
+                                            rango = quoteItem.Destiny__c;
+                                            $scope.OD.mapTender[quoteItem.Destiny__c] = {
+                                                strName : quoteItem.Destiny__c
+                                                , keyName : quoteItem.Destiny__c
+                                                , fltLarge : 0//Tender.Largo__c
+                                                , fltWidth : 0//Tender.Peso__c
+                                                , fltHigh : 0//Tender.Alto__c
+                                                , fltWeight : 0//Tender.Peso__c
+                                                , fltVol : 0//Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
+                                                , fltCost : 0//Tender.Costo__c
+                                                , fltExc : 0//Tender.Costo__c
+                                                , id : ''
+                                            };
+                                            LlenaMapaTenders($scope);
+                                        } else {
+                                            if(quoteItem.Rango_KM__c === 'Más de 2400')
+                                                rango = '+2400';
+                                            else rango = quoteItem.Rango_KM__c;
+                                        }
                                         if(!quoteItem.SBQQ__Description__c)
                                             $scope.OD.mapQuotesT7ZP.Tender[quoteItem.Destiny__c] = {
                                                 Id : quoteItem.Id
@@ -4167,27 +4189,7 @@
                                                 range: quoteItem.Rango_KM__c
                                                 , name: quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')'
                                             } ;*/
-                                            let rango = '';
-                                            if($scope.OnlineDocByDestiny){
-                                                rango = quoteItem.Destiny__c;
-                                                $scope.OD.mapTender[quoteItem.Destiny__c] = {
-                                                    strName : quoteItem.Destiny__c
-                                                    , keyName : quoteItem.Destiny__c
-                                                    , fltLarge : 0//Tender.Largo__c
-                                                    , fltWidth : 0//Tender.Peso__c
-                                                    , fltHigh : 0//Tender.Alto__c
-                                                    , fltWeight : 0//Tender.Peso__c
-                                                    , fltVol : 0//Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
-                                                    , fltCost : 0//Tender.Costo__c
-                                                    , fltExc : 0//Tender.Costo__c
-                                                    , id : ''
-                                                };
-                                                LlenaMapaTenders($scope);
-                                            } else {
-                                                if(quoteItem.Rango_KM__c === 'Más de 2400')
-                                                    rango = '+2400';
-                                                else rango = quoteItem.Rango_KM__c;
-                                            }
+                                            
                                             $scope.OD.mapPropuesta['PROP'].ranges[rango] = {
                                                 fltDescuento : quoteItem.SBQQ__Discount__c
                                                 , fltTotalPropuesta : quoteItem.SBQQ__CustomerPrice__c
@@ -4196,7 +4198,160 @@
                                                 , Id : quoteItem.Id
                                             };
                                         }
-                                    }// else {
+                                        if(notEmpty(quoteItem.Destiny__c)) {
+                                            if(!getId(
+                                                    quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')'
+                                                    , $scope.OD.listRange
+                                            )){
+                                                $scope.OD.listRange[quoteItem.Destiny__c] = quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')';
+                                                $scope.ODZP.listRange[quoteItem.Destiny__c] = quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')';
+                                                $scope.OD.listDestiny[quoteItem.Destiny__c] = {
+                                                    range: quoteItem.Rango_KM__c
+                                                    , name: quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')'
+                                                } ;
+                                                j$.each(
+                                                        $scope.OD.listFee
+                                                        , function(keyFee, fee){
+                                                            $scope.OD.mapQuotes[keyFee].ranges[quoteItem.Destiny__c] = {
+                                                                fltSeg : 0
+                                                                , fltFullFee : 0
+                                                                , fltNormalFee : 0
+                                                                , fltTotalQuote : 0
+                                                                , fltDiscount : 0
+                                                                , intFrecuency : 0
+                                                                , fltQuoteFee : 0
+                                                                , fltAmountSeg : 0
+                                                                , fltEAD: 0
+                                                                , fltEADZP: 0
+                                                                , fltRAD : 0
+                                                                , fltAmount : 0
+                                                                , fltACK : 0
+                                                                , fltMAN : 0
+                                                                , fltEDC : 0
+                                                                , fltEDD : 0
+                                                                , fltCRF : 0
+                                                            };
+                                                            if(keyFee !== 'T7')
+                                                                $scope.ODZP.mapQuotes[keyFee].ranges[quoteItem.Destiny__c] = {
+                                                                    fltSeg : 0
+                                                                    , fltFullFee : 0
+                                                                    , fltNormalFee : 0
+                                                                    , fltTotalQuote : 0
+                                                                    , fltDiscount : 0
+                                                                    , intFrecuency : 0
+                                                                    , fltQuoteFee : 0
+                                                                    , fltAmountSeg : 0
+                                                                    , fltEAD: 0
+                                                                    , fltEADZP: 0
+                                                                    , fltRAD : 0
+                                                                    , fltAmount : 0
+                                                                    , fltACK : 0
+                                                                    , fltMAN : 0
+                                                                    , fltEDC : 0
+                                                                    , fltEDD : 0
+                                                                    , fltCRF : 0
+
+                                                                };
+                                                            $scope.OD.mapRanges[quoteItem.Destiny__c] = {
+                                                                fltCost: 0
+                                                            };
+                                                            $scope.SS.ranges[quoteItem.Destiny__c] = {
+                                                                fltTotalByRange : 0
+                                                                , Service: []
+                                                            };
+                                                            j$.each($scope.SS.listService
+                                                                    , function(keyService, strService){
+                                                                        $scope.SS.service[keyService] = {
+                                                                            mainDestinies : ''
+                                                                            , potential : 0
+                                                                        };
+                                                                        $scope.SS.ranges[quoteItem.Destiny__c].Service[keyService] = {
+                                                                            Option : {
+                                                                                model : undefined
+                                                                                , aviableOptions : [] }
+                                                                            , fltAmount : 0
+                                                                        };
+                                                                        j$.each($scope.SS.listOption
+                                                                                , function(keyOption, strOption){
+                                                                                    $scope.SS.ranges[quoteItem.Destiny__c].Service[keyService].Option.aviableOptions.push({id: keyOption, label: strOption});
+                                                                                }
+                                                                        );
+                                                                    }
+                                                            );
+                                                        }
+                                                );
+                                                $scope.OD.mapQuotes['T7'].ranges[quoteItem.Destiny__c].fltVolAVR = 0;
+                                                $scope.OD.mapQuotes['T7'].ranges[quoteItem.Destiny__c].fltWeightAVR = 0;
+                                                $scope.OD.mapQuotes['T7P'].ranges[quoteItem.Destiny__c] = {
+                                                    fltSeg : 0
+                                                    , fltFullFee : 0
+                                                    , fltNormalFee : 0
+                                                    , fltTotalQuote : 0
+                                                    , fltDiscount : 0
+                                                    , intFrecuency : 0
+                                                    , fltQuoteFee : 0
+                                                    , fltAmountSeg : 0
+                                                    , fltEAD: 0
+                                                    , fltEADZP: 0
+                                                    , fltRAD : 0
+                                                    , fltAmount : 0
+                                                    , fltACK : 0
+                                                    , fltVolAVR : 1
+                                                    , fltVol : 1
+                                                    , fltWeightAVR : 1
+                                                    , fltWeight : 1
+                                                    , fltWeightAmount : 0
+                                                    , fltVolAmount : 0
+                                                };
+                                                $scope.OD.mapQuotes['T7V'].ranges[quoteItem.Destiny__c] = {
+                                                    fltSeg : 0
+                                                    , fltFullFee : 0
+                                                    , fltNormalFee : 0
+                                                    , fltTotalQuote : 0
+                                                    , fltDiscount : 0
+                                                    , intFrecuency : 0
+                                                    , fltQuoteFee : 0
+                                                    , fltAmountSeg : 0
+                                                    , fltEAD: 0
+                                                    , fltEADZP: 0
+                                                    , fltRAD : 0
+                                                    , fltAmount : 0
+                                                    , fltACK : 0
+                                                    , fltVolAVR : 1
+                                                    , fltVol : 1
+                                                    , fltWeightAVR : 1
+                                                    , fltWeight : 1
+                                                    , fltWeightAmount : 0
+                                                    , fltVolAmount : 0
+                                                };
+                                                j$.each($scope.ODEXP.mapBlock, function (key, listBlock) {
+                                                    j$.each(listBlock, function (i, block) {
+                                                        block.ranges[quoteItem.Destiny__c] = {
+                                                            intFrecuency : 0
+                                                            , fltFrecuency :0
+                                                            , fltWeight : 0
+                                                            , fltVol : 0
+                                                            , fltVolWeight : 0
+                                                            , fltDominantWeight : 0
+                                                            , fltLarge : 0
+                                                            , fltHigh : 0
+                                                            , fltWidth : 0
+                                                            , fltAmount : 0
+                                                            , fltFullFee : 0
+                                                            , fltTotalFull : 0
+                                                            , fltQuoteFee : 0
+                                                            , fltQuoteGuide : 0
+                                                            , fltAditionalKG : 0
+                                                            , fltQuoteExtra : 0
+                                                            , fltTotalQuote : 0
+                                                            , fltDisc : 0
+                                                        };
+                                                    });
+                                                });
+                                            }
+                                            quoteItem.Rango_KM__c = quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')';
+                                        }
+                                    } else {
                                         if(notEmpty(quoteItem.Destiny__c)) {
                                             if(!getId(
                                                     quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')'
@@ -4415,6 +4570,8 @@
                                             $scope.OD.mapQuotes[getId(quoteItem.Tarifa__c.toUpperCase(), t7Fee)].ranges[getId(quoteItem.Rango_KM__c, $scope.OD.listRange)].fltVolAVR = quoteItem.PackVolAVG__c;
                                             $scope.OD.mapQuotes[getId(quoteItem.Tarifa__c.toUpperCase(), t7Fee)].ranges[getId(quoteItem.Rango_KM__c, $scope.OD.listRange)].fltWeightAVR  = quoteItem.PackWeightAVG__c;
                                         }
+                                    }
+                                        
                                     //}
                                 }
                         );
