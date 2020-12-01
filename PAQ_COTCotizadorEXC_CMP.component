@@ -58,6 +58,10 @@
                                     <table class="table table-striped table-bordered">
                                         <thead class="thead-light">
                                             <th colspan="15" class="center">COSTO BASE</th>
+                                            <tr>
+                                                <th width="16%" class="thead-light verticalTH">Cotizar T7 zona plus</th>
+                                                <th class="center" ng-repeat="(keyBlock, block) in EX.mapBlock"><input type="checkbox" name="radioTZP" ng-model="EX.mapBlock[keyBlock].blnT7ZP" id="radioTZP" ng-show="EX.mapBlock[keyBlock].fltMaxW > 60" ng-click="setValue('blnT7ZP', keyRange, $event, keyBlock)"/></th>
+                                            </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
@@ -892,6 +896,7 @@
                     strACK : ''
                     , strOrigin : ''
                     , strDestiny : ''
+                    , strOrigen : ''
                     , fltMaxG : 1
                     , step1 : true
                     , step2 : false
@@ -904,6 +909,7 @@
                     , blnZP : false
                     , blnSameAddCost : false
                     , hasOverWBlocks : false
+                    , hasBlocksT7: false
                     , listFee : {
                         'TS': 'TARIFA SOBRE'
                         , 'T0': 'TARIFA T0'
@@ -1289,6 +1295,7 @@
                         }
                     }
                     else{
+                        $scope.EX.hasBlocksT7 = true;
                         $scope.EX.hasOverWBlocks = true;
                         key = 'T7';
                         strKey = fltMaxW.toString();
@@ -1299,6 +1306,7 @@
                             , fltVolW : 0
                             , fltVolWeight: 0
                             , blnSameCost : false
+                            , blnT7ZP : false
                             , ranges : {}
                         };
                         $scope.listBlocksByMaxW.push({key:key, value: fltMaxW});
@@ -2229,6 +2237,7 @@
                         , RangosKM__c: $scope.OnlineDocByRangeKM
                         , Destinos__c: $scope.OnlineDocByDestiny
                         , RecordTypeId : $scope.Wrapper.mapRecordType['EXC']
+                        , OriginCity__c : $scope.EX.strOrigen
                     };
                     if($scope.Wrapper.objQuote && $scope.Wrapper.objQuote.Id){
                         Quote.Id = $scope.Wrapper.objQuote.Id;
@@ -2395,6 +2404,76 @@
                                 quoteItem.Large__c = 1;
                                 quoteItem.High__c = 1;
                                 listQuoteItem.push(quoteItem);
+                            });
+                            j$.each($scope.EX.mapTender, function(strTender, map){
+                                if($scope.EX.mapQuotesT7ZP.Tender[strTender].intFrecuency > 0){
+                                    var QuoteItemT7ZP = {
+                                            SBQQ__Quantity__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].intFrecuency
+                                            , SBQQ__Discount__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltDiscount * 100
+                                            , SBQQ__CustomerPrice__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].flttarifaProp
+                                            , SBQQ__NetPrice__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltTotalQuote
+                                            , SBQQ__SpecialPrice__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltExc
+                                            , QuoteTotal__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltQuoteFee
+                                            , PackWeightAVG__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltPesoDom
+                                            , PackVolAVG__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltPesoVol
+                                            , ACK__c: 0
+                                            , EAD__c: 0
+                                            , RAD__c: 0
+                                            , SEG__c: 0
+                                            , Tarifa__c: 'TARIFA T7'
+                                            , Rango_KM__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].strRange
+                                            , ZonaPlus__c: true
+                                            , Pack_Seg__c: 0
+                                            , Id: $scope.EX.mapQuotesT7ZP.Tender[strTender].Id
+                                            , SBQQ__VolumeDiscount__c: 0
+                                            , SBQQ__Quote__c: Quote.Id
+                                            , Destiny__c : strTender
+                                            , Large__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltLargo
+                                            , Width__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltAncho
+                                            , High__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltAlto
+                                            , Weight__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltPeso
+                                            , Flete__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltFullFee
+                                            , GUIA__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltQuoteFull
+                                        };
+                                        listQuoteItem.push(QuoteItemT7ZP);
+                                }
+                            });
+                            j$.each($scope.EX.listRange, function(keyRange, strRange){
+                                if($scope.EX.mapBlock[keyFee.replace('_','')].blnT7ZP){
+                                    var QuoteItemT7ZPTotales = {
+                                        SBQQ__Quantity__c: 0
+                                        , SBQQ__Discount__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltDescuento * 100
+                                        , SBQQ__CustomerPrice__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta
+                                        , SBQQ__NetPrice__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena
+                                        , SBQQ__SpecialPrice__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltCost
+                                        , QuoteTotal__c: 0
+                                        , PackWeightAVG__c: $scope.EX.mapBlock[keyFee.replace('_','')].fltVolWeight
+                                        , PackVolAVG__c: 0
+                                        , ACK__c: 0
+                                        , EAD__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltZP
+                                        , RAD__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltRAD
+                                        , SEG__c: 0
+                                        , Tarifa__c: 'TARIFA T7'
+                                        //, Rango_KM__c: strRange
+                                        , ZonaPlus__c: true
+                                        , Pack_Seg__c: 0
+                                        , SBQQ__VolumeDiscount__c: 0
+                                        , SBQQ__Quote__c: Quote.Id
+                                        , Destiny__c : ''
+                                        , SBQQ__Description__c : 'Propuesta'
+                                        , Id : $scope.EX.mapPropuesta['PROP'].ranges[keyRange].Id
+                                        , Flete__c : $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
+                                        , Guia__c : $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
+                                    };
+                                    if($scope.OnlineDocByDestiny){
+                                        /*let rango = '';
+                                        rango = strRange.replace(keyRange + ' (');
+                                        rango = rango.replace(')');*/
+                                        QuoteItemT7ZPTotales.Rango_KM__c = $scope.EX.mapPropuesta['PROP'].ranges[keyRange].strRango;
+                                        QuoteItemT7ZPTotales.Destiny__c = keyRange;
+                                    } else QuoteItemT7ZPTotales.Rango_KM__c = strRange;
+                                    listQuoteItem.push(QuoteItemT7ZPTotales);
+                                }
                             });
                         }
                         
@@ -3019,8 +3098,14 @@
                                 $scope.EX.mapFrecc[keyX].ranges[key].fltAVGVol = getNumFromCurrency(cmp.target.textContent);
                                 $scope.calculateXY();
                                 break;
+                            
                         }
-
+                    if(name === 'blnT7ZP'){
+                        j$.each($scope.EX.mapBlock, function(key, map){
+                            if(keyX !== key)
+                                map.blnT7ZP = false;
+                        });
+                    }
                 };
                 
                  $scope.sumbit = function (){
@@ -3483,9 +3568,10 @@
                     j$('.tab-pane').removeClass('in active');
                     $scope.$parent.$parent.DocLineaTZP = true;
                     $scope.$parent.$parent.blnT7CostoBase = true;
+                    $scope.$parent.$parent.Quotes = 
                     j$('#OZP').addClass('in active');
                     j$('#OZP').addClass('active');
-                    //$scope.Quotes = $scope.OD.mapTender;
+                    //$scope.Quotes = $scope.EX.mapTender;
                     $scope.start();
                 };
                 /*
