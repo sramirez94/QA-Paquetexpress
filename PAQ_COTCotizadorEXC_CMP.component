@@ -2414,8 +2414,8 @@
                                             , SBQQ__NetPrice__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltTotalQuote
                                             , SBQQ__SpecialPrice__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltExc
                                             , QuoteTotal__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltQuoteFee
-                                            , PackWeightAVG__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltPesoDom
-                                            , PackVolAVG__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltPesoVol
+                                            , PackWeightAVG__c: $scope.EX.mapBlock[key].fltMaxW
+                                            , PackVolAVG__c: $scope.EX.mapBlock[key].fltMaxV
                                             , ACK__c: 0
                                             , EAD__c: 0
                                             , RAD__c: 0
@@ -2432,13 +2432,14 @@
                                             , Width__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltAncho
                                             , High__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltAlto
                                             , Weight__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltPeso
-                                            , Flete__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltFullFee
-                                            , GUIA__c : $scope.EX.mapQuotesT7ZP.Tender[strTender].fltQuoteFull
+                                            , Flete__c : quote.fltQuoteFee
+                                            , GUIA__c : quote.fltQuoteFee
                                         };
                                         listQuoteItem.push(QuoteItemT7ZP);
                                 }
                             });
                             j$.each($scope.EX.listRange, function(keyRange, strRange){
+                                quote = $scope.EX.mapQuotes[keyFee].ranges[keyRange];
                                 if($scope.EX.mapBlock[keyFee.replace('_','')].blnT7ZP){
                                     var QuoteItemT7ZPTotales = {
                                         SBQQ__Quantity__c: 0
@@ -2447,8 +2448,8 @@
                                         , SBQQ__NetPrice__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena
                                         , SBQQ__SpecialPrice__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltCost
                                         , QuoteTotal__c: 0
-                                        , PackWeightAVG__c: $scope.EX.mapBlock[keyFee.replace('_','')].fltVolWeight
-                                        , PackVolAVG__c: 0
+                                        , PackWeightAVG__c: $scope.EX.mapBlock[key].fltMaxW
+                                        , PackVolAVG__c: $scope.EX.mapBlock[key].fltMaxV
                                         , ACK__c: 0
                                         , EAD__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltZP
                                         , RAD__c: $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltRAD
@@ -2462,8 +2463,8 @@
                                         , Destiny__c : ''
                                         , SBQQ__Description__c : 'Propuesta'
                                         , Id : $scope.EX.mapPropuesta['PROP'].ranges[keyRange].Id
-                                        , Flete__c : $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
-                                        , Guia__c : $scope.EX.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
+                                        , Flete__c : quote.fltQuoteFee
+                                        , Guia__c : quote.fltQuoteFee
                                     };
                                     if($scope.OnlineDocByDestiny){
                                         /*let rango = '';
@@ -3563,6 +3564,7 @@
                 };
                 $scope.redireccionar = function(){
                     debugger;
+                    var blnRedirec = false;
                     $scope.DocLineaTZP = true;
                     j$('.tabPill').removeClass('active');
                     j$('.tab-pane').removeClass('in active');
@@ -3571,8 +3573,15 @@
                     $scope.$parent.$parent.Quotes = 
                     j$('#OZP').addClass('in active');
                     j$('#OZP').addClass('active');
-                    //$scope.Quotes = $scope.EX.mapTender;
-                    $scope.start();
+                    j$.each($scope.EX.mapBlock, function(key, map){
+                        if(map.blnT7ZP)
+                            blnRedirec = true;
+                    });
+                    if(!blnRedirec){
+                        alert('No puede cotizar en zona plus si no ha seleccionado un bloque para ello.');
+                        xhrInstance.abort();
+                    } else
+                        $scope.start();
                 };
                 /*
                 * initial Call
@@ -3586,6 +3595,7 @@
                     $scope.EX.strAck = $scope.Wrapper.objQuote.Acuse__c;
                     $scope.OnlineDocByRangeKM = $scope.Wrapper.objQuote.RangosKM__c;
                     $scope.OnlineDocByDestiny = $scope.Wrapper.objQuote.Destinos__c;
+                    $scope.EX.strOrigen = $scope.Wrapper.objQuote.OriginCity__c;
                     $scope.fillRanges();
                     if ($scope.Wrapper.objQuote.Destinos__c)
                         $scope.EX.listRange = {};
@@ -3649,31 +3659,53 @@
                             var key = $scope.getKey(quoteItem.PackWeightAVG__c);
                             var keyFee = getId(quoteItem.Tarifa__c, $scope.EX.listFee);
                         }
-                        if ($scope.Wrapper.objQuote.Destinos__c){
-                            var keyr = '';
-                            var destino = '';
-                            var destinyok = '';
-                            if(quoteItem.Destiny__c.includes('Más'))
-                                destinyok = quoteItem.Destiny__c.replace('Más de ', '+')
-                            else destinyok = quoteItem.Destiny__c;
-                            if (quoteItem.Rango_KM__c === 'Más de 2400')
-                                keyr = '+2400';
-                            else keyr = quoteItem.Rango_KM__c;
-                            destino = quoteItem.Destiny__c.replace(' (' + quoteItem.Rango_KM__c+')', '');
-                            var keyRange = destino;
-                            if(!getLabel(destino, $scope.EX.mapService)){
-                                $scope.EX.mapService['Add'].ranges[destino] = { fltCostWeight : 0, fltCostVol : 0};
-                                $scope.EX.mapService['ACK'].ranges[destino] = { fltCost : 0 };
-                                $scope.EX.mapService['ZP'].ranges[destino] = { fltCost : 0 };
+                        if(quoteItem.Tarifa__c === 'TARIFA T7' && quoteItem.ZonaPlus__c){
+                            let rango = '';
+                            if($scope.OnlineDocByDestiny){
+                                $scope.EX.mapQuotesT7ZP.Tender = {};
+                                rango = quoteItem.Destiny__c;
+                                $scope.EX.mapTender[quoteItem.Destiny__c] = {
+                                    strName : quoteItem.Destiny__c
+                                    , keyName : quoteItem.Destiny__c
+                                    , fltLarge : 0//Tender.Largo__c
+                                    , fltWidth : 0//Tender.Peso__c
+                                    , fltHigh : 0//Tender.Alto__c
+                                    , fltWeight : 0//Tender.Peso__c
+                                    , fltVol : 0//Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
+                                    , fltCost : 0//Tender.Costo__c
+                                    , fltExc : 0//Tender.Costo__c
+                                    , id : ''
+                                };
+                                LlenaMapaTenders($scope);
+                            } else {
+                                if(quoteItem.Rango_KM__c === 'Más de 2400')
+                                    rango = '+2400';
+                                else rango = quoteItem.Rango_KM__c;
                             }
-                            $scope.insertRange(destino, quoteItem.Rango_KM__c);
-                            if (quoteItem.PackWeightAVG__c > 60){
-                                $scope.listFee['T7_'+ quoteItem.PackWeightAVG__c] = 'TARIFA T7_'+ quoteItem.PackWeightAVG__c;
-                                if(!getLabel('T7_'+ quoteItem.PackWeightAVG__c, $scope.EX.mapQuotes))
-                                    $scope.EX.mapQuotes['T7_' + quoteItem.PackWeightAVG__c] = {};
-                                $scope.EX.listDestiny[destino] = {
-                                    range: keyr
-                                    , name: quoteItem.Destiny__c
+                            if(!quoteItem.SBQQ__Description__c)
+                                $scope.EX.mapQuotesT7ZP.Tender[quoteItem.Destiny__c] = {
+                                    Id : quoteItem.Id
+                                    , strName : quoteItem.Destiny__c.replace('70', '')
+                                    , keyName : quoteItem.Destiny__c
+                                    , fltLargo : quoteItem.Large__c
+                                    , fltAncho : quoteItem.Width__c
+                                    , fltAlto : quoteItem.High__c
+                                    , fltPeso : quoteItem.Weight__c
+                                    , fltVol : quoteItem.VolWeight__c
+                                    , fltCost : quoteItem.SBQQ__SpecialPrice__c
+                                    , fltExc : quoteItem.SBQQ__SpecialPrice__c
+                                    , intFrecuency : quoteItem.SBQQ__Quantity__c
+                                    , strRange : quoteItem.Rango_KM__c
+                                    , strOrigen : $scope.EX.strOrigen
+                                    , fltFullFee : quoteItem.Flete__c
+                                }
+                            else{
+                                $scope.EX.mapPropuesta['PROP'].ranges[rango] = {
+                                    fltDescuento : quoteItem.SBQQ__Discount__c
+                                    , fltTotalPropuesta : quoteItem.SBQQ__CustomerPrice__c
+                                    , fltTotalTarifaLlena : quoteItem.SBQQ__NetPrice__c
+                                    , fltCost : quoteItem.SBQQ__SpecialPrice__c
+                                    , Id : quoteItem.Id
                                 };
                                 if(!getLabel('T7'+ quoteItem.PackWeightAVG__c, $scope.EX.mapBlock))
                                     $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c] = {
@@ -3682,150 +3714,19 @@
                                         , fltVolW : quoteItem.PackVolAVG__c
                                         , fltVolWeight: 0
                                         , blnSameCost : false
+                                        , blnT7ZP : true
                                         , ranges : {}
                                     };
                                 $scope.listBlocksByMaxW.push({key:key, value: quoteItem.PackWeightAVG__c});
-                                if(!getLabel(destino, $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[destino]))
-                                    $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[destino] = {
+                                if(!getLabel(rango, $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[rango]))
+                                    $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[rango] = {
                                         fltCost : 0
                                     };
-                                if(!getLabel('T7_'+ quoteItem.PackWeightAVG__c, $scope.EX.OWFrecc))
-                                    $scope.EX.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c] = {
-                                        ranges:{}
-                                        , fltFrecc: 0
-                                        , intQTotal:0
-                                        , strName: quoteItem.PackWeightAVG__c + 'kg'
-                                        , blnSameFrecc :false
-                                        , blnSameWeight :false
-                                        , blnSameVol :false
-                                    };
-                                if(!getLabel(destino, $scope.EX.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino])){
-                                    $scope.EX.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino] = {
-                                        intFrecuency : 0
-                                        , fltAVGWeight : quoteItem.PackWeightAVG__c
-                                        , fltAVGVol : quoteItem.PackVolAVG__c
-                                        , fltBaseFee : 0
-                                        , fltFullFee : 0
-                                        , fltRAD : 0
-                                        , fltEAD : 0
-                                        , fltACK : 0
-                                        , fltSEG : 0
-                                        , fltTotalNormal : 0
-                                    };
-                                    $scope.EX.mapQuotes['T7_'+ quoteItem.PackWeightAVG__c][destino] = {};
-                                }
-
-                                if(!keyFee.includes('TARIFA T7_')){
-                                    if(!getLabel(destino, $scope.EX.mapFrecc[keyFee].ranges))
-                                        $scope.EX.mapFrecc[keyFee].ranges[destino] = {
-                                            intFrecuency : 0
-                                            , fltBaseFee : 0
-                                            , fltBaseFeeP : 0
-                                            , fltFullFee : 0
-                                            , fltFullFeeP : 0
-                                            , fltRAD : 0
-                                            , fltRADP : 0
-                                            , fltEAD : 0
-                                            , fltEADP : 0
-                                            , fltACK : 0
-                                            , fltACKP : 0
-                                            , fltSEG : 0
-                                            , fltTotalNormal : 0
-                                            , fltTotalNormalP : 0
-                                            , fltAVGVol : $scope.EX.mapBlock[key].fltMaxV
-                                            , fltAVGWeight : $scope.EX.mapBlock[key].fltMaxW
-                                        };
-                                    if(keyFee !== 'T7'){
-                                        if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges))
-                                            $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
-                                                intFrecuency : 0
-                                                , fltBaseFee : 0
-                                                , fltFullFee : 0
-                                                , fltRAD : 0
-                                                , fltEAD : 0
-                                                , fltACK : 0
-                                                , fltSEG : 0
-                                                , fltTotalNormal : 0
-                                            };
-                                    }
-                                    $scope.EX.mapFrecc['T7V'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
-                                    $scope.EX.mapFrecc['T7P'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
-                                    $scope.EX.mapRanges[destino] = {
-                                        'PAQ': {fltFrecc: 0, intQTotal:0}
-                                        , 'ZP' :{fltFrecc: 0, intQTotal:0}
-                                        , 'T7' :{fltFrecc: 0, intQTotal:0}
-                                    }
-                                    //$scope.EX.mapQuotes[keyFee][destino] = {};
-                                    if(keyFee !== 'T7' && !keyFee.includes('T7_'))
-                                        $scope.EX.mapQuotesZP[keyFee][destino] = {};
-                                }
-                                
-
-
-
-                            } else {
-                                if(!getLabel(key, $scope.EX.mapBlock))
-                                    $scope.EX.mapBlock[key] = {
-                                        strLabel : key
-                                        , fltMaxW : quoteItem.PackWeightAVG__c
-                                        , fltMaxV : quoteItem.PackVolAVG__c
-                                        , fltVolW : quoteItem.PackVolAVG__c
-                                        , fltVolWeight: 0
-                                        , blnSameCost : false
-                                        , ranges : {}
-                                    };
-                                $scope.listBlocksByMaxW.push({key:key, value: quoteItem.PackWeightAVG__c});
-                                j$.each($scope.EX.listFee, function(keyFee, strFee){
-                                    $scope.EX.mapBlock[key].ranges[destino] = {
-                                        fltCost : 0
-                                    }
-                                    if(!getLabel(destino, $scope.EX.mapFrecc[keyFee].ranges))
-                                        $scope.EX.mapFrecc[keyFee].ranges[destino] = {
-                                            intFrecuency : 0
-                                            , fltBaseFee : 0
-                                            , fltBaseFeeP : 0
-                                            , fltFullFee : 0
-                                            , fltFullFeeP : 0
-                                            , fltRAD : 0
-                                            , fltRADP : 0
-                                            , fltEAD : 0
-                                            , fltEADP : 0
-                                            , fltACK : 0
-                                            , fltACKP : 0
-                                            , fltSEG : 0
-                                            , fltTotalNormal : 0
-                                            , fltTotalNormalP : 0
-                                            , fltAVGVol : $scope.EX.mapBlock[key].fltMaxV
-                                            , fltAVGWeight : $scope.EX.mapBlock[key].fltMaxW
-                                        };
-                                    if(keyFee !== 'T7'){
-                                        if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges))
-                                            $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
-                                                intFrecuency : 0
-                                                , fltBaseFee : 0
-                                                , fltFullFee : 0
-                                                , fltRAD : 0
-                                                , fltEAD : 0
-                                                , fltACK : 0
-                                                , fltSEG : 0
-                                                , fltTotalNormal : 0
-                                            };
-                                    }
-                                    $scope.EX.mapFrecc['T7V'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
-                                    $scope.EX.mapFrecc['T7P'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
-                                    $scope.EX.mapRanges[destino] = {
-                                        'PAQ': {fltFrecc: 0, intQTotal:0}
-                                        , 'ZP' :{fltFrecc: 0, intQTotal:0}
-                                        , 'T7' :{fltFrecc: 0, intQTotal:0}
-                                    }
-                                    //$scope.EX.mapQuotes[keyFee][destino] = {};
-                                    if(keyFee !== 'T7' && !keyFee.includes('T7_'))
-                                        $scope.EX.mapQuotesZP[keyFee][destino] = {};
-                                });
+                                $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[rango].fltCost = quoteItem.GUIA__c;
+                                $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].blnT7ZP = true;
                             }
                         } else {
-
-                            if(quoteItem.Destiny__c){
+                            if ($scope.Wrapper.objQuote.Destinos__c){
                                 var keyr = '';
                                 var destino = '';
                                 var destinyok = '';
@@ -3837,11 +3738,6 @@
                                 else keyr = quoteItem.Rango_KM__c;
                                 destino = quoteItem.Destiny__c.replace(' (' + quoteItem.Rango_KM__c+')', '');
                                 var keyRange = destino;
-                                if(!getLabel(destino, $scope.EX.listDestiny))
-                                    $scope.EX.listDestiny[destino] = {
-                                        range: keyr
-                                        , name: quoteItem.Destiny__c
-                                    };
                                 if(!getLabel(destino, $scope.EX.mapService)){
                                     $scope.EX.mapService['Add'].ranges[destino] = { fltCostWeight : 0, fltCostVol : 0};
                                     $scope.EX.mapService['ACK'].ranges[destino] = { fltCost : 0 };
@@ -3894,6 +3790,51 @@
                                             , fltTotalNormal : 0
                                         };
                                         $scope.EX.mapQuotes['T7_'+ quoteItem.PackWeightAVG__c][destino] = {};
+                                    }
+
+                                    if(!keyFee.includes('TARIFA T7_')){
+                                        if(!getLabel(destino, $scope.EX.mapFrecc[keyFee].ranges))
+                                            $scope.EX.mapFrecc[keyFee].ranges[destino] = {
+                                                intFrecuency : 0
+                                                , fltBaseFee : 0
+                                                , fltBaseFeeP : 0
+                                                , fltFullFee : 0
+                                                , fltFullFeeP : 0
+                                                , fltRAD : 0
+                                                , fltRADP : 0
+                                                , fltEAD : 0
+                                                , fltEADP : 0
+                                                , fltACK : 0
+                                                , fltACKP : 0
+                                                , fltSEG : 0
+                                                , fltTotalNormal : 0
+                                                , fltTotalNormalP : 0
+                                                , fltAVGVol : $scope.EX.mapBlock[key].fltMaxV
+                                                , fltAVGWeight : $scope.EX.mapBlock[key].fltMaxW
+                                            };
+                                        if(keyFee !== 'T7'){
+                                            if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges))
+                                                $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
+                                                    intFrecuency : 0
+                                                    , fltBaseFee : 0
+                                                    , fltFullFee : 0
+                                                    , fltRAD : 0
+                                                    , fltEAD : 0
+                                                    , fltACK : 0
+                                                    , fltSEG : 0
+                                                    , fltTotalNormal : 0
+                                                };
+                                        }
+                                        $scope.EX.mapFrecc['T7V'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
+                                        $scope.EX.mapFrecc['T7P'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
+                                        $scope.EX.mapRanges[destino] = {
+                                            'PAQ': {fltFrecc: 0, intQTotal:0}
+                                            , 'ZP' :{fltFrecc: 0, intQTotal:0}
+                                            , 'T7' :{fltFrecc: 0, intQTotal:0}
+                                        }
+                                        //$scope.EX.mapQuotes[keyFee][destino] = {};
+                                        if(keyFee !== 'T7' && !keyFee.includes('T7_'))
+                                            $scope.EX.mapQuotesZP[keyFee][destino] = {};
                                     }
                                 } else {
                                     if(!getLabel(key, $scope.EX.mapBlock))
@@ -3955,88 +3896,221 @@
                                             $scope.EX.mapQuotesZP[keyFee][destino] = {};
                                     });
                                 }
-                            }
-
-                            var keyRange = getId(quoteItem.Rango_KM__c, $scope.EX.listRange);
-                            if(!getLabel(key, $scope.EX.mapBlock)){
-                                $scope.addBlock(quoteItem.PackWeightAVG__c);
-                                j$.each($scope.listBlocksByMaxW, function (k, val) {
-                                        if(val.value === $scope.EX.mapBlock[key].fltMaxW)
-                                            val.vol = quoteItem.PackVolAVG__c;
-                                });
-                            }
-                        }
-                        if(getLabel(key, $scope.EX.mapBlock) && quoteItem.PackVolAVG__c && quoteItem.GUIA__c ){
-                            $scope.EX.mapBlock[key].fltVolW = quoteItem.PackVolAVG__c;
-                            $scope.EX.mapBlock[key].fltMaxV = quoteItem.PackVolAVG__c;
-                            $scope.EX.mapBlock[key].fltVolWeight = quoteItem.PackVolAVG__c * 200;
-                            if (notEmpty(quoteItem.Destiny__c))
-                                $scope.EX.mapBlock[key].ranges[destino].fltCost = quoteItem.GUIA__c;
-                            else $scope.EX.mapBlock[key].ranges[keyRange].fltCost = quoteItem.GUIA__c;
-                        }
-                        if(getLabel('T7'+ quoteItem.PackWeightAVG__c, $scope.EX.mapBlock) && quoteItem.PackVolAVG__c && quoteItem.GUIA__c ){
-                            $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].fltVolW = quoteItem.PackVolAVG__c;
-                            $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].fltVolWeight = quoteItem.PackVolAVG__c * 200;
-                            if (notEmpty(quoteItem.Destiny__c))
-                                $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].ranges[destino].fltCost = quoteItem.GUIA__c;
-                            else $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].ranges[keyRange].fltCost = quoteItem.GUIA__c;
-                        }
-                        if (notEmpty(quoteItem.Destiny__c)){
-                            $scope.EX.mapService['Add'].ranges[destino].fltCostWeight = quoteItem.KG_ADICIONAL__c;
-                            $scope.EX.mapService['Add'].ranges[destino].fltCostVol = quoteItem.KG_ADICIONAL__c * 200;
-                        } else {
-                            $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight = quoteItem.KG_ADICIONAL__c;
-                            $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol = quoteItem.KG_ADICIONAL__c * 200;
-                        }
-                        
-                        if (quoteItem.ZonaPlus__c) {
-                            if (notEmpty(quoteItem.Destiny__c)){
-                                $scope.EX.mapService['ZP'].ranges[destino].fltCost = quoteItem.EAD__c;
-                                $scope.EX.mapFreccZP[keyFee].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                                $scope.EX.mapFreccZP[keyFee].ranges[destino].Id = quoteItem.Id;
-                                $scope.EX.mapFreccZP[keyFee].ranges[destino].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
                             } else {
-                                $scope.EX.mapService['ZP'].ranges[keyRange].fltCost = quoteItem.EAD__c;
-                                $scope.EX.mapFreccZP[keyFee].ranges[keyRange].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                                $scope.EX.mapFreccZP[keyFee].ranges[keyRange].Id = quoteItem.Id;
-                                $scope.EX.mapFreccZP[keyFee].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
-                            }
 
-                        } else {
-                            if (keyFee.includes('T7_')/*quoteItem.PackWeightAVG__c > 60*/) {
-                                if (notEmpty(quoteItem.Destiny__c)){
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].Id = quoteItem.Id;
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
-                                    $scope.fillRangesByDestiny();
-                                } else {
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].Id = quoteItem.Id;
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
-                                    $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].fltAVGVol = quoteItem.PackVolAVG__c;
-                                }
-                            } else {
                                 if(quoteItem.Destiny__c){
-                                    $scope.EX.mapFrecc[keyFee].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                                    $scope.EX.mapFrecc[keyFee].ranges[destino].Id = quoteItem.Id;
-                                    $scope.EX.mapFrecc[keyFee].ranges[destino].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
-                                    if(keyFee === 'T7'){
-                                        $scope.EX.mapFrecc['T7'].ranges[destino].fltAVGWeight = quoteItem.Weight__c;
-                                        $scope.EX.mapFrecc['T7'].ranges[destino].fltAVGVol = quoteItem.Width__c;
+                                    var keyr = '';
+                                    var destino = '';
+                                    var destinyok = '';
+                                    if(quoteItem.Destiny__c.includes('Más'))
+                                        destinyok = quoteItem.Destiny__c.replace('Más de ', '+')
+                                    else destinyok = quoteItem.Destiny__c;
+                                    if (quoteItem.Rango_KM__c === 'Más de 2400')
+                                        keyr = '+2400';
+                                    else keyr = quoteItem.Rango_KM__c;
+                                    destino = quoteItem.Destiny__c.replace(' (' + quoteItem.Rango_KM__c+')', '');
+                                    var keyRange = destino;
+                                    if(!getLabel(destino, $scope.EX.listDestiny))
+                                        $scope.EX.listDestiny[destino] = {
+                                            range: keyr
+                                            , name: quoteItem.Destiny__c
+                                        };
+                                    if(!getLabel(destino, $scope.EX.mapService)){
+                                        $scope.EX.mapService['Add'].ranges[destino] = { fltCostWeight : 0, fltCostVol : 0};
+                                        $scope.EX.mapService['ACK'].ranges[destino] = { fltCost : 0 };
+                                        $scope.EX.mapService['ZP'].ranges[destino] = { fltCost : 0 };
                                     }
-                                }else {
-                                    $scope.EX.mapFrecc[keyFee].ranges[keyRange].intFrecuency = quoteItem.SBQQ__Quantity__c;
-                                    $scope.EX.mapFrecc[keyFee].ranges[keyRange].Id = quoteItem.Id;
-                                    $scope.EX.mapFrecc[keyFee].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
-                                    if(keyFee === 'T7'){
-                                        $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight = quoteItem.Weight__c;
-                                        $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol = quoteItem.Width__c;
+                                    $scope.insertRange(destino, quoteItem.Rango_KM__c);
+                                    if (quoteItem.PackWeightAVG__c > 60){
+                                        $scope.listFee['T7_'+ quoteItem.PackWeightAVG__c] = 'TARIFA T7_'+ quoteItem.PackWeightAVG__c;
+                                        if(!getLabel('T7_'+ quoteItem.PackWeightAVG__c, $scope.EX.mapQuotes))
+                                            $scope.EX.mapQuotes['T7_' + quoteItem.PackWeightAVG__c] = {};
+                                        $scope.EX.listDestiny[destino] = {
+                                            range: keyr
+                                            , name: quoteItem.Destiny__c
+                                        };
+                                        if(!getLabel('T7'+ quoteItem.PackWeightAVG__c, $scope.EX.mapBlock))
+                                            $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c] = {
+                                                strLabel : 'T7'
+                                                , fltMaxW : quoteItem.PackWeightAVG__c
+                                                , fltVolW : quoteItem.PackVolAVG__c
+                                                , fltVolWeight: 0
+                                                , blnSameCost : false
+                                                , ranges : {}
+                                            };
+                                        $scope.listBlocksByMaxW.push({key:key, value: quoteItem.PackWeightAVG__c});
+                                        if(!getLabel(destino, $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[destino]))
+                                            $scope.EX.mapBlock['T7' + quoteItem.PackWeightAVG__c].ranges[destino] = {
+                                                fltCost : 0
+                                            };
+                                        if(!getLabel('T7_'+ quoteItem.PackWeightAVG__c, $scope.EX.OWFrecc))
+                                            $scope.EX.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c] = {
+                                                ranges:{}
+                                                , fltFrecc: 0
+                                                , intQTotal:0
+                                                , strName: quoteItem.PackWeightAVG__c + 'kg'
+                                                , blnSameFrecc :false
+                                                , blnSameWeight :false
+                                                , blnSameVol :false
+                                            };
+                                        if(!getLabel(destino, $scope.EX.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino])){
+                                            $scope.EX.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino] = {
+                                                intFrecuency : 0
+                                                , fltAVGWeight : quoteItem.PackWeightAVG__c
+                                                , fltAVGVol : quoteItem.PackVolAVG__c
+                                                , fltBaseFee : 0
+                                                , fltFullFee : 0
+                                                , fltRAD : 0
+                                                , fltEAD : 0
+                                                , fltACK : 0
+                                                , fltSEG : 0
+                                                , fltTotalNormal : 0
+                                            };
+                                            $scope.EX.mapQuotes['T7_'+ quoteItem.PackWeightAVG__c][destino] = {};
+                                        }
+                                    } else {
+                                        if(!getLabel(key, $scope.EX.mapBlock))
+                                            $scope.EX.mapBlock[key] = {
+                                                strLabel : key
+                                                , fltMaxW : quoteItem.PackWeightAVG__c
+                                                , fltMaxV : quoteItem.PackVolAVG__c
+                                                , fltVolW : quoteItem.PackVolAVG__c
+                                                , fltVolWeight: 0
+                                                , blnSameCost : false
+                                                , ranges : {}
+                                            };
+                                        $scope.listBlocksByMaxW.push({key:key, value: quoteItem.PackWeightAVG__c});
+                                        j$.each($scope.EX.listFee, function(keyFee, strFee){
+                                            $scope.EX.mapBlock[key].ranges[destino] = {
+                                                fltCost : 0
+                                            }
+                                            if(!getLabel(destino, $scope.EX.mapFrecc[keyFee].ranges))
+                                                $scope.EX.mapFrecc[keyFee].ranges[destino] = {
+                                                    intFrecuency : 0
+                                                    , fltBaseFee : 0
+                                                    , fltBaseFeeP : 0
+                                                    , fltFullFee : 0
+                                                    , fltFullFeeP : 0
+                                                    , fltRAD : 0
+                                                    , fltRADP : 0
+                                                    , fltEAD : 0
+                                                    , fltEADP : 0
+                                                    , fltACK : 0
+                                                    , fltACKP : 0
+                                                    , fltSEG : 0
+                                                    , fltTotalNormal : 0
+                                                    , fltTotalNormalP : 0
+                                                    , fltAVGVol : $scope.EX.mapBlock[key].fltMaxV
+                                                    , fltAVGWeight : $scope.EX.mapBlock[key].fltMaxW
+                                                };
+                                            if(keyFee !== 'T7'){
+                                                if(!getLabel(destino, $scope.EX.mapFreccZP[keyFee].ranges))
+                                                    $scope.EX.mapFreccZP[keyFee].ranges[destino] = {
+                                                        intFrecuency : 0
+                                                        , fltBaseFee : 0
+                                                        , fltFullFee : 0
+                                                        , fltRAD : 0
+                                                        , fltEAD : 0
+                                                        , fltACK : 0
+                                                        , fltSEG : 0
+                                                        , fltTotalNormal : 0
+                                                    };
+                                            }
+                                            $scope.EX.mapFrecc['T7V'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
+                                            $scope.EX.mapFrecc['T7P'].ranges[destino] = $scope.EX.mapFrecc[keyFee].ranges[destino];
+                                            $scope.EX.mapRanges[destino] = {
+                                                'PAQ': {fltFrecc: 0, intQTotal:0}
+                                                , 'ZP' :{fltFrecc: 0, intQTotal:0}
+                                                , 'T7' :{fltFrecc: 0, intQTotal:0}
+                                            }
+                                            //$scope.EX.mapQuotes[keyFee][destino] = {};
+                                            if(keyFee !== 'T7' && !keyFee.includes('T7_'))
+                                                $scope.EX.mapQuotesZP[keyFee][destino] = {};
+                                        });
+                                    }
+                                }
+
+                                var keyRange = getId(quoteItem.Rango_KM__c, $scope.EX.listRange);
+                                if(!getLabel(key, $scope.EX.mapBlock)){
+                                    $scope.addBlock(quoteItem.PackWeightAVG__c);
+                                    j$.each($scope.listBlocksByMaxW, function (k, val) {
+                                            if(val.value === $scope.EX.mapBlock[key].fltMaxW)
+                                                val.vol = quoteItem.PackVolAVG__c;
+                                    });
+                                }
+                            }
+                            if(getLabel(key, $scope.EX.mapBlock) && quoteItem.PackVolAVG__c && quoteItem.GUIA__c ){
+                                $scope.EX.mapBlock[key].fltVolW = quoteItem.PackVolAVG__c;
+                                $scope.EX.mapBlock[key].fltMaxV = quoteItem.PackVolAVG__c;
+                                $scope.EX.mapBlock[key].fltVolWeight = quoteItem.PackVolAVG__c * 200;
+                                if (notEmpty(quoteItem.Destiny__c))
+                                    $scope.EX.mapBlock[key].ranges[destino].fltCost = quoteItem.GUIA__c;
+                                else $scope.EX.mapBlock[key].ranges[keyRange].fltCost = quoteItem.GUIA__c;
+                            }
+                            if(getLabel('T7'+ quoteItem.PackWeightAVG__c, $scope.EX.mapBlock) && quoteItem.PackVolAVG__c && quoteItem.GUIA__c ){
+                                $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].fltVolW = quoteItem.PackVolAVG__c;
+                                $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].fltVolWeight = quoteItem.PackVolAVG__c * 200;
+                                if (notEmpty(quoteItem.Destiny__c))
+                                    $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].ranges[destino].fltCost = quoteItem.GUIA__c;
+                                else $scope.EX.mapBlock['T7'+ quoteItem.PackWeightAVG__c].ranges[keyRange].fltCost = quoteItem.GUIA__c;
+                            }
+                            if (notEmpty(quoteItem.Destiny__c)){
+                                $scope.EX.mapService['Add'].ranges[destino].fltCostWeight = quoteItem.KG_ADICIONAL__c;
+                                $scope.EX.mapService['Add'].ranges[destino].fltCostVol = quoteItem.KG_ADICIONAL__c * 200;
+                            } else {
+                                $scope.EX.mapService['Add'].ranges[keyRange].fltCostWeight = quoteItem.KG_ADICIONAL__c;
+                                $scope.EX.mapService['Add'].ranges[keyRange].fltCostVol = quoteItem.KG_ADICIONAL__c * 200;
+                            }
+                            
+                            if (quoteItem.ZonaPlus__c) {
+                                if (notEmpty(quoteItem.Destiny__c)){
+                                    $scope.EX.mapService['ZP'].ranges[destino].fltCost = quoteItem.EAD__c;
+                                    $scope.EX.mapFreccZP[keyFee].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                                    $scope.EX.mapFreccZP[keyFee].ranges[destino].Id = quoteItem.Id;
+                                    $scope.EX.mapFreccZP[keyFee].ranges[destino].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
+                                } else {
+                                    $scope.EX.mapService['ZP'].ranges[keyRange].fltCost = quoteItem.EAD__c;
+                                    $scope.EX.mapFreccZP[keyFee].ranges[keyRange].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                                    $scope.EX.mapFreccZP[keyFee].ranges[keyRange].Id = quoteItem.Id;
+                                    $scope.EX.mapFreccZP[keyFee].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
+                                }
+
+                            } else {
+                                if (keyFee.includes('T7_')/*quoteItem.PackWeightAVG__c > 60*/) {
+                                    if (notEmpty(quoteItem.Destiny__c)){
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].Id = quoteItem.Id;
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[destino].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
+                                        $scope.fillRangesByDestiny();
+                                    } else {
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].Id = quoteItem.Id;
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
+                                        $scope.EX.OWFrecc['T7_' + quoteItem.PackWeightAVG__c].ranges[keyRange].fltAVGVol = quoteItem.PackVolAVG__c;
+                                    }
+                                } else {
+                                    if(quoteItem.Destiny__c){
+                                        $scope.EX.mapFrecc[keyFee].ranges[destino].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                                        $scope.EX.mapFrecc[keyFee].ranges[destino].Id = quoteItem.Id;
+                                        $scope.EX.mapFrecc[keyFee].ranges[destino].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
+                                        if(keyFee === 'T7'){
+                                            $scope.EX.mapFrecc['T7'].ranges[destino].fltAVGWeight = quoteItem.Weight__c;
+                                            $scope.EX.mapFrecc['T7'].ranges[destino].fltAVGVol = quoteItem.Width__c;
+                                        }
+                                    }else {
+                                        $scope.EX.mapFrecc[keyFee].ranges[keyRange].intFrecuency = quoteItem.SBQQ__Quantity__c;
+                                        $scope.EX.mapFrecc[keyFee].ranges[keyRange].Id = quoteItem.Id;
+                                        $scope.EX.mapFrecc[keyFee].ranges[keyRange].SBQQ__Quote__c = quoteItem.SBQQ__Quote__c;
+                                        if(keyFee === 'T7'){
+                                            $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight = quoteItem.Weight__c;
+                                            $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol = quoteItem.Width__c;
+                                        }
                                     }
                                 }
                             }
+                            if(notEmpty($scope.EX.strACK))
+                                $scope.EX.mapService['ACK'].ranges[keyRange].fltCost = quoteItem.ACK__c;
                         }
-                        if(notEmpty($scope.EX.strACK))
-                            $scope.EX.mapService['ACK'].ranges[keyRange].fltCost = quoteItem.ACK__c;
                     });
                     $scope.calculateXY();
                     $scope.updateFees('add', 'service');
