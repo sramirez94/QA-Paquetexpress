@@ -4149,6 +4149,7 @@
                                                 , fltVol : 0//Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
                                                 , fltCost : 0//Tender.Costo__c
                                                 , fltExc : 0//Tender.Costo__c
+                                                , blnDestino : true
                                                 , id : ''
                                             };
                                             LlenaMapaTenders($scope);
@@ -4198,7 +4199,7 @@
                                                 , Id : quoteItem.Id
                                             };
                                         }
-                                        if(notEmpty(quoteItem.Destiny__c)) {
+                                        if($scope.OnlineDocByDestiny) {
                                             if(!getId(
                                                     quoteItem.Destiny__c +' ('+ quoteItem.Rango_KM__c +')'
                                                     , $scope.OD.listRange
@@ -5596,6 +5597,7 @@
                                         , fltVol : 0//Tender.Alto__c * Tender.Peso__c * Tender.Largo__c
                                         , fltCost : 0//Tender.Costo__c
                                         , fltExc : 0//Tender.Costo__c
+                                        , blnDestino : true
                                         , id : ''
                                     };
                                     LlenaMapaTenders($scope);
@@ -5825,7 +5827,13 @@
                                 , fltCost : Tender.Costo__c
                                 , fltExc : Tender.Costo__c
                                 , id : ''
+                                , blnDestino : false
                             };
+                        j$.each($scope.OD.listDestiny, function(keyDest, strDest){
+                            if(Name.replace('70', '') === keyDest)
+                                $scope.OD.mapTender[Name.replace('70', '')].blnDestino = true;
+                        })
+                        
                     });
                     j$.each($scope.OD.mapTender, function(keyName, strName){
                         $scope.OD.mapQuotesT7ZP.Tender[keyName] = {
@@ -5875,6 +5883,7 @@
                                 $scope.OD.mapTender[strTender].fltCost      = Tender.Costo__c;
                                 $scope.OD.mapTender[strTender].fltExc       = Tender.Costo__c;
                                 $scope.OD.mapTender[strTender].id           = ''
+                                $scope.OD.mapTender[strTender].blnDestino   = true;
                             }
                         });
                     });
