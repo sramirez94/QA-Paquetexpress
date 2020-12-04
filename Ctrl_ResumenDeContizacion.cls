@@ -40,6 +40,7 @@ public class Ctrl_ResumenDeContizacion {
     public Map<String, Decimal> mapTotalDiscFeeZP {get; set;}
     public Map<String, Decimal> mapTotalDiscEXP {get; set;}
     public Map<String, Decimal> mapTotalesT7ZP {get; set;}
+    public Map<String, Decimal> mapDescT7ZP {get;set;}
     public Map<String, Map<String, Decimal>> mapFrecc {get; set;}
     public Map<String, Map<String, Map<String, Decimal>>> mapFreccOD {get; set;}
     public Boolean blnRAD {get; set;}
@@ -61,6 +62,10 @@ public class Ctrl_ResumenDeContizacion {
     public boolean CBME {get;set;}
     public boolean T7ZP{get;set;}
     public String strOrigen {get;set;}
+    public Decimal descGral {get; set;}
+    public Decimal totalPaq {get; set;}
+    public Decimal porcFrec {get; set;}
+    public Decimal decMontoTotalT7ZP {get; set;}
 
 
     public Ctrl_ResumenDeContizacion (ApexPages.StandardController sc){
@@ -91,7 +96,10 @@ public class Ctrl_ResumenDeContizacion {
         this.CBME = false;
         this.strId = '';
         this.strOrigen = '';
-
+        this.descGral = 0;
+        this.totalPaq = 0;
+        this.porcFrec = 0;
+        this.decMontoTotalT7ZP = 0;
 		this.listFee = new List<String> {
 			'TARIFA SOBRE'
 			, 'TARIFA T0'
@@ -178,6 +186,7 @@ public class Ctrl_ResumenDeContizacion {
         this.listRangeT7             = new List<String>();
         this.listRangeProp           = new List<String>();
         this.mapTotalesT7ZP          = new Map<String, Decimal>();
+        this.mapDescT7ZP             = new Map<String, Decimal>();
 
         this.mapTotalZP.put('Disc', 0);
         this.mapTotal.put('Disc', 0);
@@ -332,18 +341,28 @@ public class Ctrl_ResumenDeContizacion {
         }
         Set<String> setRange = new Set<String>();
         Integer indexOD = 0;
+        Decimal decTotNormal = 0;
+        Decimal decTotProp = 0;
+        Decimal descuento = 0;
         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
+            descuento = 0;
             if(String.isNotBlank(quoteItem.Destiny__c) && quoteItem.Tarifa__c != 'TARIFA T7' && quoteItem.ZonaPlus__c == false)
                 quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
             setRange.add(quoteItem.Rango_KM__c);
             if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c){
-                if(quoteItem.Destiny__c != null){
+                if(/*quoteItem.Destiny__c != null*/quoteItem.SBQQ__Description__c == null){
                     this.mapQuotesT7ZP.put(quoteItem.Destiny__c, quoteItem);
                     this.mapQuotesT7ZPByRange.put(quoteItem.Rango_KM__c, quoteItem);
                     this.listRangeT7.add(quoteItem.Destiny__c);
+                    this.totalPaq +=quoteItem.SBQQ__Quantity__c;
+                    this.decMontoTotalT7ZP += quoteItem.SBQQ__SpecialPrice__c;
                 } else{
                     this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
                     this.listRangeProp.add(quoteItem.Rango_KM__c);
+                    decTotNormal += quoteItem.FLETE__c;
+                    decTotProp += quoteItem.GUIA__c;
+                    descuento = ((quoteItem.GUIA__c / quoteItem.FLETE__c) - 1) * 100;
+                    this.mapDescT7ZP.put(quoteItem.Rango_KM__c, descuento);
                 } 
                 listRangeT7.sort();
                 if(this.mapQuotesT7ZP != null)
@@ -465,7 +484,9 @@ public class Ctrl_ResumenDeContizacion {
             
 
         }
-        System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
+        
+        System.debug('descuento general: ' + descGral);
+        //System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
         this.listRangeDestiny.addAll(setRange);
 
         for(String keyRange: this.listRangeDestiny){
@@ -526,7 +547,11 @@ public class Ctrl_ResumenDeContizacion {
             }
 
 		}
-
+        descGral = ((decTotProp / decTotNormal) - 1) * 100;
+        if(decTotNormal > 0)
+            totalAmountZP += decTotNormal;
+        if(decTotProp > 0)
+            totalAmountQZP += decTotProp;
         this.totalSTD = total;
         this.totalSTDZP = totalZP;
 
@@ -577,10 +602,29 @@ public class Ctrl_ResumenDeContizacion {
                         this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( tempRangeCountZP + this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
                     }
                 }
-
             }
 
         }
+        Decimal paquetes = 0;
+        for(String keyRange: this.listRangeDestiny){
+            if(this.mapTotalesT7ZP != null){
+                if(this.mapTotalesT7ZP.get(keyRange) > 0){
+                    if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
+                        this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapTotalesT7ZP.get(keyRange), totalZP, 0));
+                    else if (!this.mapTotalByRangeZP.containsKey(keyRange))
+                        this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
+                    else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
+                        Decimal RespaldoConteo = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
+                        this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( RespaldoConteo + this.mapTotalesT7ZP.get(keyRange), totalZP, 0));
+                    }
+                    paquetes += this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
+                }
+                
+            }
+        }
+        if(paquetes > 0)
+            porcFrec = totalPaq / paquetes * 100;
+        
         // System.debug(LoggingLevel.DEBUG, 'totalAmount:BEFORE ' + totalAmount);
         // System.debug(LoggingLevel.DEBUG, 'totalAmountQ:BEFORE ' + totalAmountQ);
 		for(String keyFee : this.listEXP ) {
@@ -861,6 +905,7 @@ public class Ctrl_ResumenDeContizacion {
         , KG_ADICIONAL__c
         , FLETE__c
         , DiscKgAditional__c
+        , SBQQ__Description__c
         FROM SBQQ__QuoteLine__c
         WHERE SBQQ__Quote__c =: strQuoteId
         ORDER BY Tarifa__c, Rango_KM__c];
