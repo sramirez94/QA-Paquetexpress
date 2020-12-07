@@ -1,13 +1,3 @@
-/**
- * @description       : 
- * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
- * @group             : 
- * @last modified on  : 09-24-2020
- * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
- * Modifications Log 
- * Ver   Date         Author                               Modification
- * 1.0   09-24-2020   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
-**/
 public class PAQ_CotizadorNacional_CTR {
     public String   strQuoteId      {get; set;}
     public String   strLeadId       {get; set;}
@@ -45,11 +35,10 @@ public class PAQ_CotizadorNacional_CTR {
                     strYear = String.valueOf(wp.objQuote.Fecha_de_creacion_sugar__c.year());
             }
         }
-        for(CapacidadSucursal__c tender : queryTender())
-			wp.mapTender.put(tender.Name, tender);
         if(String.isBlank(strYear))
             for (AcusePorGuia__mdt objACK : queryACK())
                 wp.mapACK.put(objACK.Label, objACK.Amount__c);
+
         if(String.isBlank(strYear))
         for(ServicioDomicilio__c objService : queryDomesticService()){
             if(!wp.mapDomesticService.containsKey(objService.Servicio__c))
@@ -109,7 +98,6 @@ public class PAQ_CotizadorNacional_CTR {
             /*when else {
 			}*/
         }
-
 
         if(String.isBlank(strYear))
             wp.mapCS = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
@@ -556,8 +544,6 @@ public class PAQ_CotizadorNacional_CTR {
         if(objManager.UserRole.Name.Contains('EJECUTIVOS TELEMARKETING (18)') || objManager.UserRole.Name.Contains('SUPERVISOR TELEMARKETING') || objManager.UserRole.Name.Contains('GERENCIA MARKETING Y PDV')){
             wp.mapHierarchy = functionUsers();
         }    
-        for(CapacidadSucursal__c tender : queryTender())
-			wp.mapTender.put(tender.Name, tender);
         return wp;
     }
 
@@ -565,15 +551,15 @@ public class PAQ_CotizadorNacional_CTR {
     public static DmlWrapper updateStatusQuote(SBQQ__Quote__c objQuote, String strAccount){
         DmlWrapper wp = new DmlWrapper();
         Database.SaveResult quoteInsResult = Database.update(objQuote, false);
-        System.debug(LoggingLevel.DEBUG, 'quoteInsResult' + JSON.serialize(quoteInsResult));
-        if(quoteInsResult.isSuccess())
+        System.debug(LoggingLevel.DEBUG, 'quoteSTATUS_update' + JSON.serialize(quoteInsResult));
+        if(quoteInsResult.isSuccess()){
             wp.blnSuccess = true;
+            System.debug(LoggingLevel.DEBUG, 'Call Sent Email Alert');
+            sentAlert(strAccount, objQuote.SBQQ__PaymentTerms__c, objQuote.Name, objQuote.Id, objQuote.Owner.Email);
+        }
         else
             for(Database.Error errorInsQuote: quoteInsResult.getErrors())
                 wp.listErrors.add(errorInsQuote.getMessage());
-
-        if(wp.blnSuccess)
-            sentAlert(strAccount, objQuote.SBQQ__PaymentTerms__c, objQuote.Name, objQuote.Id, objQuote.Owner.Email);
 
         return wp;
     }
@@ -589,23 +575,6 @@ public class PAQ_CotizadorNacional_CTR {
             System.debug(Ex.getMessage());
         }
 
-        return wp;
-    }
-    @RemoteAction
-    public static DmlWrapper checkCostoTender(String strOrigin, String strTender){
-        System.debug('Entra a función');
-        DmlWrapper wp = new DmlWrapper();
-        try{
-            System.debug('va a hacer consulta');
-            CapacidadSucursal__C Tender = [SELECT Costo__C FROM CapacidadSucursal__C WHERE Name = :strTender LIMIT 1];
-            System.debug('Hace consulta');
-            wp.fltCosto = Tender.Costo__C;
-            System.debug('Asigna valor');
-            wp.blnSuccess = true;
-            System.debug('activa bandera');
-        } catch (Exception Ex){
-            System.System.debug(Ex.getMessage());
-        }
         return wp;
     }
 
@@ -653,13 +622,13 @@ public class PAQ_CotizadorNacional_CTR {
     }*/
 
     public static void sentAlert(String strAccount, String strPaymentTerms, String strQuoteName, String strIdQuote, String strOwner){
-        String strLink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/SBQQ__Quote__c/'+ strIdQuote +'/view';
+        String strLink = 'https://paquetexpress.lightning.force.com/lightning/r/SBQQ__Quote__c/'+ strIdQuote +'/view';
+        //String strLink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/SBQQ__Quote__c/'+ strIdQuote +'/view';
         String strTemplate  = '<table cellpadding="0" width="500" cellspacing="0" id="topTable" height="450"><tbody><tr valign="top"><td style=" background-color:#FFFFFF; bEditID:r1st1; bLabel:header; vertical-align:top; height:30px; text-align:left;"><img border="0" beditid="r1sp1" blabel="headerImage" id="r1sp1" src="https://paquetexpress--desarrollo.my.salesforce.com/servlet/servlet.ImageServer?id=0152f00000050H0&amp;oid=00D2f0000000OkA"></td></tr><tr valign="top"><td style=" background-color:#AAAAFF; bEditID:r2st1; bLabel:accent1; height:5;"></td></tr><tr valign="top"><td styleinsert="1" height="300" style=" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;"><table border="0" cellpadding="5" width="600" cellspacing="5" height="400"><tbody><tr valign="top" height="50"><td teditid="c1r1" style=" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;" aeditid="c1r1" locked="0"></td></tr><tr valign="top" height="300"><td teditid="c1r2" style=" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;" aeditid="c1r2" locked="0"><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="font-size:10.0pt" wfd-id="15">Se le notifica que su cotización para el cliente&nbsp;</span><b style="font-size: 12pt; background-color: rgb(255, 255, 255);"><span wfd-id="14" style="color: rgb(8, 7, 7); font-family: &quot;Salesforce Sans&quot;, Arial, sans-serif; font-size: 13px; white-space: pre-line;">'+ strAccount +'</span></b><span wfd-id="13" style="font-size: 10pt;">&nbsp;</span><b style="font-size: 12pt;"><span style="color: rgb(8, 7, 7); font-family: &quot;Salesforce Sans&quot;, Arial, sans-serif; font-size: 13px; white-space: pre-line;" wfd-id="12"></span></b><span wfd-id="11" style="font-size: 10pt;">&nbsp;ya se encuentra autorizada por todos los facultados.</span></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="font-size:10.0pt" wfd-id="10"><o:p>&nbsp;</o:p></span></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="font-size: 10pt;" wfd-id="9"><br>Favor de considerar que se añadieron lassiguientes condiciones especiales:</span></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="font-size:10.0pt;color:gray;mso-themecolor:background1;mso-themeshade:128" wfd-id="8"><br></span></p><p class="MsoNormal" style="margin: 0cm 0cm 0.0001pt 18pt;"><font color="#808080" face="arial"><span style="font-size: 13.3333px;" wfd-id="7"><i>'+ strPaymentTerms +'</i></span></font></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin: 0cm 0cm 0.0001pt 18pt;"><span style="font-size:10.0pt;color:gray;mso-themecolor:background1;mso-themeshade:128" wfd-id="6"><br></span></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin: 0cm 0cm 0.0001pt 18pt;"><br></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="font-size:10.0pt" wfd-id="5"><o:p>&nbsp;</o:p></span></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="color: rgb(0, 0, 0); font-family: arial; font-size: 10pt;" wfd-id="4">Folio de la cotización:&nbsp;</span><font face="arial"><span style="font-size: 13.3333px;" wfd-id="3">'+ strQuoteName +'.</span></font></p><p class="MsoNormal" style="color: rgb(0, 0, 0); font-family: arial; font-size: 12pt; margin-bottom: 0.0001pt;"><span style="font-size:10.0pt" wfd-id="1">Para más detalles <a href="'+ strLink +'"><span style="color:#0066FF" wfd-id="2">click aquí</span>.</a><o:p></o:p></span></p></td></tr><tr valign="top" height="50"><td teditid="c1r3" style=" background-color:#FFFFFF; bEditID:r3st1; color:#000000; bLabel:main; font-size:12pt; font-family:arial;" aeditid="c1r3" locked="0"></td></tr></tbody></table></td></tr><tr valign="top"><td style=" background-color:#AAAAFF; bEditID:r4st1; bLabel:accent2; height:5;"></td></tr><tr valign="top"><td style=" background-color:#FFFFFF; bEditID:r5st1; bLabel:footer; vertical-align:top; height:100; text-align:left;"></td></tr><tr valign="top"><td style=" background-color:#AAAAFF; bEditID:r6st1; bLabel:accent3; height:5;"></td></tr></tbody></table>';
         //EmailTemplate et = [SELECT Id,Subject, Body FROM EmailTemplate WHERE DeveloperName =:emailTemplateName];
         List<string> toAddress = new List<string>{
                 'lzavala@paquetexpress.com.mx'
                 , 'ktorres@paquetexpress.com.mx'
-                , 'frojas@paquetexpress.com.mx'
                 , strOwner
         };
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
@@ -676,9 +645,10 @@ public class PAQ_CotizadorNacional_CTR {
 
         try {
             Messaging.sendEmail(allmsg,false);
-            return;
+            System.debug(LoggingLevel.DEBUG, 'Email Alert Sent');
         } catch (Exception e) {
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, 'Email Alert Not Sent');
+            System.debug(LoggingLevel.ERROR,  e.getMessage() +' caused by: '+ e.getCause() + ' in line: ' + e.getLineNumber());
         }
     }
 
@@ -797,8 +767,6 @@ public class PAQ_CotizadorNacional_CTR {
         , Plaza__c
         , RangosKM__c
         , Destinos__c
-        ,Nombre_Prospecto__c
-        ,Nombre_oportunidad__c
         FROM SBQQ__Quote__c
         WHERE Id =: strQuoteId];
     }
@@ -870,8 +838,6 @@ public class PAQ_CotizadorNacional_CTR {
         , ZonaPlus__c
         , Destiny__c
         , PAQ_QGuides__c
-        , SBQQ__SpecialPrice__c
-        , SBQQ__Description__c
         FROM SBQQ__QuoteLine__c
         WHERE SBQQ__Quote__c =: strQuoteId
         ORDER BY CreatedDate ASC];
@@ -1037,10 +1003,6 @@ public class PAQ_CotizadorNacional_CTR {
     public static List<RecordType> queryRecordType(){
         return [SELECT Id, DeveloperName FROM RecordType WHERE SobjectType = 'SBQQ__Quote__c'];
     }
-
-    public static List<CapacidadSucursal__c> queryTender(){
-		return [SELECT Name, Costo__c, Nivel__c, OP__c, Largo__c, Ancho__c, Alto__c, Peso__c FROM CapacidadSucursal__c ORDER BY Name];
-	}
     /*
 	*  Data Structure for calls
 	*/
@@ -1067,7 +1029,6 @@ public class PAQ_CotizadorNacional_CTR {
         public List<PAQ_SpecialService__c>                              listSS              {get; set;}
         public Map<String, String>                                      mapUs               {get; set;}
         public Estructura__c                                            objEstructura       {get; set;}
-        public Map<String, CapacidadSucursal__c> 		                mapTender			{get; set;}
 
         public Wrapper (){
             this.mapSursalByZipCode = new Map<String,Map<String, CoberturaPorCodigoPostal__c>>();
@@ -1086,7 +1047,6 @@ public class PAQ_CotizadorNacional_CTR {
             this.mapDestiny         = new Map<String, String>();
             this.mapRecordType      = new Map<String, String>();
             this.mapUs              = new map<String, String>();
-            this.mapTender			= new Map<String, CapacidadSucursal__c>();
         }
     }
 
@@ -1096,12 +1056,10 @@ public class PAQ_CotizadorNacional_CTR {
         public SBQQ__Quote__c 			objQuote  		{get; set;}
         public List<SBQQ__QuoteLine__c> listQuoteItems  {get; set;}
         public String                   strDestinyKM    {get; set;}
-        public Decimal                  fltCosto        {get; set;}
         public DmlWrapper (){
             this.listErrors 	= new List<String>();
             this.blnSuccess 	= false;
             this.listQuoteItems = new List<SBQQ__QuoteLine__c>();
-            this.fltCosto       = 0;
         }
     }
 }
