@@ -251,6 +251,10 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
             setRange.add(quoteItem.Rango_KM__c);
             if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c){
                 if(/*quoteItem.Destiny__c != null*/quoteItem.SBQQ__Description__c == null){
+                    quoteItem.PackVolAVG__c = (quoteItem.Large__c * quoteItem.Width__c * quoteItem.High__c) / 5000;
+                    if(quoteItem.PackVolAVG__c > quoteItem.Weight__c)
+                        quoteItem.PackWeightAVG__c = quoteItem.PackVolAVG__c;
+                    else quoteItem.PackWeightAVG__c = quoteItem.Weight__c;
                     this.mapQuotesT7ZP.put(quoteItem.Destiny__c, quoteItem);
                     this.mapQuotesT7ZPByRange.put(quoteItem.Rango_KM__c, quoteItem);
                     this.listRangeT7.add(quoteItem.Destiny__c);
@@ -258,7 +262,7 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                     this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
                     this.listRangeProp.add(quoteItem.Rango_KM__c);
                     Descuento = 0;
-                    Descuento = (quoteItem.GUIA__c / quoteItem.FLETE__c) - 1;
+                    Descuento = quoteItem.SBQQ__Discount__c;//(quoteItem.GUIA__c / quoteItem.FLETE__c) - 1;
                     this.mapDescT7ZP.put(quoteItem.Rango_KM__c, Descuento/*(quoteItem.GUIA__c /* quoteItem.FLETE__c) - 1*/);
                 } 
                 listRangeT7.sort();
