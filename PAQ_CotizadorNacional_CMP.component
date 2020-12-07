@@ -25,10 +25,10 @@
             </li>
             <!--<li role="presentation" class="tabPill" id="GMP-Tab" ng-show="GMP">
                 <a data-toggle="pill" class="tabPill" href="#GMP" >Documentación en Linea</a>
-            </li>
+            </li>-->
             <li role="presentation" class="tabPill" id="EXC-Tab" ng-show="EXC">
                 <a data-toggle="pill" class="tabPill" href="#EXC" >Documentación en Linea</a>
-            </li>-->
+            </li>
         </ul>
         <br/><br/>
         <div class="tab-content padding-top-10">
@@ -57,12 +57,12 @@
                 <div ng-if="GMP">
                     <c:PAQ_COTCotizadorGMP_CMP />
                 </div>
-            </div>
+            </div>-->
             <div id="EXC" class="tab-pane fade" ng-show="EXC">
                 <div ng-if="EXC">
                     <c:PAQ_COTCotizadorEXC_CMP />
                 </div>
-            </div>-->
+            </div>
             <div id="7ZP" class="tab-pane fade" ng-show="TZP">
                 <div ng-if="TZP">
                     <c:PAQ_CotizadorZonaPlus_CMP LeadId="{!strLeadId}" QuoteId="{!strQuoteId}" OppId="{!strOppId}"/>
@@ -111,8 +111,8 @@
                     model : undefined,
                     aviableOptions :[
                         {id: 'floor' , label : 'Tarifario abierto de Piso'},
-                        {id: 'fix' , label : 'Costos fijos por Tarifas'}/*,
-                        {id: 'exd' , label : 'Costo base más excedente'},
+                        {id: 'fix' , label : 'Costos fijos por Tarifas'},
+                        {id: 'exd' , label : 'Costo base más excedente'}/*,
                         {id: 'multi' , label : 'Guía multipieza'}*/
                     ]
                 };
@@ -127,6 +127,7 @@
                 $scope.PPG = false;
                 $scope.sent = false;
                 $scope.SPW = false;
+                $scope.EXC = false;
                 $scope.TZP = false;
                 $scope.StrSTDCotiType = '';
                 $scope.Wrapper = {};
@@ -238,6 +239,7 @@
                     $scope.SPW = false;
                     $scope.PPG = false;
                     $scope.ODC = false;
+                    $scope.EXC = false;
                     $scope.TZP = false;
                     $scope.sent = false;
                 };
