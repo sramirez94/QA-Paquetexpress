@@ -2328,7 +2328,8 @@
                                         , Pack_Seg__c : $scope.GM.fltSEG
                                         , Id : frecc.Id
                                         , SBQQ__Quote__c : Quote.Id
-
+                                        , PaqPorGuia__c : $scope.GM.mapFreccPorc[keyFee].ranges[keyRange].intFrecuency
+                                        , PaqPromPorGuia__c : $scope.GM.mapFreccPorc[keyFee].fltCantidad
                                     };
                                     if(labelRange.includes(' (')){
                                         quoteItem.Destiny__c = labelRange;
