@@ -620,9 +620,6 @@
                         }
                         
                     }else if($scope.blnT7CostoBase || $scope.blnT7GuiaMult){
-                        /*$scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltPesoDom;
-                        $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima;
-                        $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima;*/
                         $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost + fltACK;
                         $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost + fltACK;
                     }
