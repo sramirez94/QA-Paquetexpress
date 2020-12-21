@@ -29,6 +29,9 @@
             <li role="presentation" class="tabPill" id="EXC-Tab" ng-show="EXC">
                 <a data-toggle="pill" class="tabPill" href="#EXC" >Documentación en Linea</a>
             </li>
+            <li role="presentation" class="tabPill" id="OZP-Tab" ng-show="OZP">
+                <a data-toggle="pill" class="tabPill" href="#OZP" >Doc. Linea zona plus</a>
+            </li>
         </ul>
         <br/><br/>
         <div class="tab-content padding-top-10">
@@ -53,7 +56,7 @@
                     <c:PAQ_COTCotizadorODC_CMP />
                 </div>
             </div>
-           <!-- <div id="GMP" class="tab-pane fade" ng-show="GMP">
+           <!--<div id="GMP" class="tab-pane fade" ng-show="GMP">
                 <div ng-if="GMP">
                     <c:PAQ_COTCotizadorGMP_CMP />
                 </div>
@@ -66,6 +69,11 @@
             <div id="7ZP" class="tab-pane fade" ng-show="TZP">
                 <div ng-if="TZP">
                     <c:PAQ_CotizadorZonaPlus_CMP LeadId="{!strLeadId}" QuoteId="{!strQuoteId}" OppId="{!strOppId}"/>
+                </div>
+            </div>
+            <div id="OZP" class="tab-pane fade" ng-show="OZP">
+                <div ng-if="OZP">
+                    <c:PAQ_COTApartadoT7ZP />
                 </div>
             </div>
         </div>
@@ -117,18 +125,24 @@
                     ]
                 };
                 $scope.OnlineDocByRangeKM = false;
+                $scope.DocLineaTZP = false;
                 $scope.OnlineDocByDestiny = false;
                 $scope.BlnElectricGuide = false;
                 $scope.BlnPrintedGuide = false;
                 $scope.BlnPrintedGuide = false;
+                $scope.blnT7CostoBase = false;
+                $scope.blnT7CostosFijos = false;
+                $scope.blnT7GuiaMult = false;
                 $scope.ListSucursales = [];
                 $scope.Managers = {};
                 $scope.MapQuotesId = {};
+                $scope.Quotes = {};
                 $scope.PPG = false;
                 $scope.sent = false;
                 $scope.SPW = false;
                 $scope.EXC = false;
                 $scope.TZP = false;
+                $scope.OZP = false;
                 $scope.StrSTDCotiType = '';
                 $scope.Wrapper = {};
 
@@ -164,7 +178,7 @@
                 };
 
                 $scope.start = function(){
-
+                    debugger;
                     switch ($scope.FeeType.model.id) {
                         case 'SPW':
                             j$('.tabPill').removeClass('active');
@@ -185,44 +199,52 @@
                             j$('#PPG-Tab').addClass('active');
                             break;
                         case 'ODC':
-                            if($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'fix'
+                            if($scope.DocLineaTZP){
+                                j$('.tabPill').removeClass('active');
+                                j$('.tab-pane').removeClass('in active');
+                                $scope.OZP = true;
+                                j$('#OZP').addClass('in active');
+                                j$('#OZP-Tab').addClass('active');
+                            } else {
+                                if($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'fix'
                                     && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
-                            ){
-                                j$('.tabPill').removeClass('active');
-                                j$('.tab-pane').removeClass('in active');
-                                $scope.ODC = true;
-                                j$('#ODC').addClass('in active');
-                                j$('#ODC-Tab').addClass('active');
-                            }
-                            else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'floor'
-                            ){
-                                j$('.tabPill').removeClass('active');
-                                j$('.tab-pane').removeClass('in active');
-                                $scope.SPW = true;
-                                j$('#SPW').addClass('in active');
-                                j$('#SPW-Tab').addClass('active');
-                                $scope.StrSTDCotiType = 'Convenio';
-                                //if($scope.StrSTDCotiType === 'Convenio'){
-                                $scope.step1 = true;
-                                //}
-                            }
-                            else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'exd'
-                                    && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
-                            ){
-                                j$('.tabPill').removeClass('active');
-                                j$('.tab-pane').removeClass('in active');
-                                $scope.EXC = true;
-                                j$('#EXC').addClass('in active');
-                                j$('#EXC-Tab').addClass('active');
-                            }
-                            else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'multi'
-                                    && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
-                            ){
-                                j$('.tabPill').removeClass('active');
-                                j$('.tab-pane').removeClass('in active');
-                                $scope.GMP = true;
-                                j$('#GMP').addClass('in active');
-                                j$('#GMP-Tab').addClass('active');
+                                ){
+                                    j$('.tabPill').removeClass('active');
+                                    j$('.tab-pane').removeClass('in active');
+                                    $scope.ODC = true;
+                                    j$('#ODC').addClass('in active');
+                                    j$('#ODC-Tab').addClass('active');
+                                }
+                                else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'floor'
+                                ){
+                                    j$('.tabPill').removeClass('active');
+                                    j$('.tab-pane').removeClass('in active');
+                                    $scope.SPW = true;
+                                    j$('#SPW').addClass('in active');
+                                    j$('#SPW-Tab').addClass('active');
+                                    $scope.StrSTDCotiType = 'Convenio';
+                                    //if($scope.StrSTDCotiType === 'Convenio'){
+                                    $scope.step1 = true;
+                                    //}
+                                }
+                                else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'exd'
+                                        && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
+                                ){
+                                    j$('.tabPill').removeClass('active');
+                                    j$('.tab-pane').removeClass('in active');
+                                    $scope.EXC = true;
+                                    j$('#EXC').addClass('in active');
+                                    j$('#EXC-Tab').addClass('active');
+                                }
+                                else if ($scope.OnlineDoc.model && $scope.OnlineDoc.model.id === 'multi'
+                                        && ($scope.OnlineDocByRangeKM || $scope.OnlineDocByDestiny)
+                                ){
+                                    j$('.tabPill').removeClass('active');
+                                    j$('.tab-pane').removeClass('in active');
+                                    $scope.GMP = true;
+                                    j$('#GMP').addClass('in active');
+                                    j$('#GMP-Tab').addClass('active');
+                                }
                             }
                             break;
                         case '7ZP':
@@ -293,9 +315,10 @@
                         , "{!strQuoteId}"
                         , "{!strOppId}"
                         , function (result, event) {
-                            //debugger;
+                            debugger;
                             if (event.status) {
                                 $scope.Wrapper = result;
+                                $scope.Wrapper.mapTender = result.mapTender;
                                 if(result.objQuote) {
                                     $scope.Wrapper.objAccountId = "{!strAccId}";
                                     j$('.tabPill').removeClass('active');
