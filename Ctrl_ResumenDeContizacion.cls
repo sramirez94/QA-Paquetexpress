@@ -345,6 +345,7 @@ public class Ctrl_ResumenDeContizacion {
         Integer indexOD = 0;
         Decimal decTotNormal = 0;
         Decimal descuento = 0;
+        Boolean blnCotizaT7 = false;
         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
             descuento = 0;
             if(String.isNotBlank(quoteItem.Destiny__c)){
@@ -364,6 +365,8 @@ public class Ctrl_ResumenDeContizacion {
                     this.listRangeT7.add(quoteItem.Destiny__c);
                     this.totalPaq +=quoteItem.SBQQ__Quantity__c;
                     this.decMontoTotalT7ZP += quoteItem.SBQQ__SpecialPrice__c;
+                    blnCotizaT7 = true;
+                    this.T7ZP = true;
                 } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
                     decTotNormal += quoteItem.FLETE__c;
                     decTotProp += quoteItem.GUIA__c;
@@ -372,9 +375,11 @@ public class Ctrl_ResumenDeContizacion {
                     descuento = ((quoteItem.GUIA__c / quoteItem.FLETE__c) - 1) * 100;
                     this.mapDescT7ZP.put(quoteItem.Rango_KM__c, descuento);
                 } 
-                listRangeT7.sort();
-                if(this.mapQuotesT7ZP != null)
-                    this.T7ZP = true;
+                if(this.mapQuotesT7ZP != null){
+                    listRangeT7.sort();
+                    
+                }
+                    
             } else {
                 if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
                     if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
