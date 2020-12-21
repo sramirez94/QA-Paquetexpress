@@ -189,6 +189,14 @@
                                 </apex:outputText>
                             </b></td>
                         </tr>
+                        <tr >
+                            <td  width="50%" align="left"  style="font-size:9px; padding-left: 10px; background-color:rgb(220, 230, 241);"> TOTAL GUIAS </td>
+                            <td  align="Center"  style="font-size:9px;  padding-left: 10px; background-color:rgb(220, 230, 241);"><b>
+                                <apex:outputText value="{0, number, ###,###,##0}">
+                                    <apex:param value="{!wp.objQuote.Total_de_guias__c}" />
+                                </apex:outputText>
+                            </b></td>
+                        </tr>
 
                         <tr >
                             <td  width="50%" align="left"  style="font-size:9px; padding-left: 10px; background-color:rgb(220, 230, 241);"> TOTAL PROPUESTO </td>
@@ -663,7 +671,26 @@
                                 </td>
                             </tr>
                         </apex:repeat>
-    
+                        <apex:outputText rendered="{!blnT7}">
+                            <apex:repeat value="{!listKgT7}" var="decBlockW">
+                                <tr>
+                                    <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!mapTarifasName[decBlockW]}</td>
+                                    <td  align="Center"   style="font-size:9px; background-color:white; color: black;">{!decBlockW}</td>
+                                    <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                        <img style="background-color: #fff" src="{!IF(mapCircleClass['MAX'][decBlockW] == 'red', $Resource.red_circle , IF(mapCircleClass['MAX'][decBlockW] == 'yellow', $Resource.yellow_circle , IF(mapCircleClass['MAX'][decBlockW] == 'green', $Resource.green_circle , $Resource.gray_circle) ) )}" height="7px"></img>
+                                        <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                            <apex:param value="{!mapDiscounts[decBlockW]['MaxDisc']}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td  align="Center"   style="font-size:9px; background-color:white; color: black;">
+                                        <img style="background-color: #fff" src="{!IF(mapCircleClass['AVG'][decBlockW] == 'red', $Resource.red_circle, IF(mapCircleClass['AVG'][decBlockW] == 'yellow', $Resource.yellow_circle, IF(mapCircleClass['AVG'][decBlockW] == 'green', $Resource.green_circle, $Resource.gray_circle)))}" height="7px"></img>
+                                        <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                            <apex:param value="{!mapDiscounts[decBlockW]['AVGDisc']}" />
+                                        </apex:outputText>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </apex:outputText>
     
                         <apex:repeat value="{!listKg70}" var="decBlockW">
                             <tr>
@@ -868,7 +895,7 @@
                                 </apex:outputText>
                             </td>
                             <td align="Center" style="border: 1px solid black; font-size:9px; ">
-                                <apex:outputText value="{0, number, ###,###,##0}">
+                                $ <apex:outputText value="{0, number, ###,###,##0.00}" >
                                     <apex:param value="{!mapQuotesT7ZP[keyRange].Flete__c}" />
                                 </apex:outputText>
                             </td>
@@ -879,15 +906,15 @@
                             </td>
                             <td align="Center" style="border: 1px solid black; font-size:9px; ">
                                 $ <apex:outputText value="{0, number, ###,###,##0.00}" >
-                                    <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
+                                    <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
                                 </apex:outputText>
                             </td>
                             <td align="Center" style="border: 1px solid black; font-size:9px; ">
                                 $ <apex:outputText value="{0, number, ###,###,##0.00}" >
-                                    <apex:param value="{!mapQuotesT7ZP[keyRange].Guia__c}" />
+                                    <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
                                 </apex:outputText>
                             </td>
-                            <td align="Center" style="border: 1px solid black; font-size:9px; ">
+                            <td align="Center"  style="border: 1px solid black; font-size:9px;  ">
                                 <apex:outputText value="{0, number, ###,###,##0.00}">
                                     <apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__Discount__c}" />
                                 </apex:outputText>%
