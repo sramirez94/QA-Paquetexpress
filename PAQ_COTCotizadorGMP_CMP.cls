@@ -523,7 +523,7 @@
                                             <th class="center"> Kilómetros  </th>
                                             <th class="center" ng-repeat="(keyFee, frecc) in GM.mapFreccPorc" ng-bind="keyFee" ng-show="isFrecc(keyFee)" ></th>
                                             <th class="center">GUIAS</th>
-                                            <th class="center">FRECUENCIA</th>
+                                            <!--<th class="center">FRECUENCIA</th>-->
                                         </tr>
                                         <tr>
                                             <th class="center">Paquetes promedio</th>
@@ -533,25 +533,25 @@
                                             <th class="center">Calcular</th>
                                             <th class="center" ng-repeat="(keyFee, frecc) in GM.mapFreccPorc" ng-show="isFrecc(keyFee)"><input type="checkbox" ng-model="GM.mapFreccPorc[keyFee].blnCalcular" ng-click="replicate('frecPaqGuias', GM.mapFreccPorc[keyFee].blnCalcular, keyFee)"/></th>
                                             <th></th>
-                                            <th></th>
+                                            <!--<th></th>-->
                                         </tr>
                                         <tr ng-repeat="(keyRange, strRange) in GM.listRange">
                                             <td class="verticalTH" ng-bind="strRange"></td>
                                             <td class="center" width="7%" contenteditable="true" ng-repeat="(keyFee, frecc) in GM.mapFreccPorc"  ng-bind="frecc.ranges[keyRange].intFrecuency | number" ng-blur="setValue('intPaqGuias', keyRange, $event, keyFee)" ng-show="isFrecc(keyFee)"></td>
                                             <td class="center thead-light" width="7%" ng-bind="GM.mapRanges[keyRange]['POR'].intQTotal | number"></td>
-                                            <td class="center thead-light" width="7%" contenteditable="true" ng-bind="GM.mapRanges[keyRange]['POR'].fltFrecc | percentage:2" ng-blur="setValue('fltFreccRangeZP', keyRange, $event, keyFee)"></td>
+                                            <!--<td class="center thead-light" width="7%" contenteditable="true" ng-bind="GM.mapRanges[keyRange]['POR'].fltFrecc | percentage:2" ng-blur="setValue('fltFreccRangeZP', keyRange, $event, keyFee)"></td>-->
                                         </tr>
                                         <tr>
                                             <td class="thead-light">Total</td>
                                             <td class="center thead-light" ng-repeat="(keyFee, frecc) in GM.mapFreccPorc"  ng-bind="frecc.intQTotal | number" ng-show="isFrecc(keyFee)"></td>
                                             <td class="center thead-light" contenteditable="true" ng-bind="GM.mapFreccPorc.intQTotal | number" ng-blur="setValue('intQTotalZP', keyRange, $event, keyFee)"></td>
-                                            <td class="center" ng-bind="GM.mapFreccPorc.fltFTotal | percentage:2" ></td>
+                                            <!--<td class="center" ng-bind="GM.mapFreccPorc.fltFTotal | percentage:2" ></td>-->
                                         </tr>
-                                        <tr>
+                                        <!--<tr>
                                             <td/>
                                             <td class="center thead-light" contenteditable="true" ng-repeat="(keyFee, frecc) in GM.mapFreccPorc" ng-bind="GM.mapFreccPorc[keyFee].fltFrecc | percentage:2" ng-show="isFrecc(keyFee)" ng-blur="setValue('fltFreccFeeZP', keyRange, $event, keyFee)"></td>
                                             <td class="center" ng-bind="GM.mapFreccPorc.fltFEETotal | percentage:2" ></td>
-                                        </tr>
+                                        </tr>-->
                                         </tbody>
                                     </table>
                                 </div>
@@ -569,39 +569,39 @@
                                             <th class="center" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP" ng-bind="keyFee" ng-show="isFrecc(keyFee)" ></th>
                                             <th></th>
                                             <th class="center">PAQUETES</th>
-                                            <th class="center">FRECUENCIA</th>
+                                            <!--<th class="center">FRECUENCIA</th>-->
                                         </tr>
                                         <tr>
                                             <th class="center">Paquetes promedio</th>
-                                            <th class="center" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP" ng-bind="GM.mapFreccPorcZP[keyFee].fltCantidad" contenteditable="true" ng-blur="setValue('intFrecuencyPorcZP', keyFee, $event, keyFee)"></th>
+                                            <th class="center" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP" ng-bind="GM.mapFreccPorcZP[keyFee].fltCantidad" contenteditable="true" ng-blur="setValue('intFrecuencyPorcZP', keyFee, $event, keyFee)" ng-show="isFrecc(keyFee)"></th>
                                         </tr>
                                         <tr>
                                             <th class="center">Calcular</th>
                                             <th class="center" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP" ng-show="isFrecc(keyFee)"><input type="checkbox" ng-model="GM.mapFreccPorcZP[keyFee].blnCalcular" ng-click="replicate('frecPaqGuiasZP', GM.mapFreccPorcZP[keyFee].blnCalcular, keyFee)"/></th>
                                             <th></th>
                                             <th></th>
-                                            <th></th>
+                                            <!--<th></th>-->
                                         </tr>
                                         <tr ng-repeat="(keyRange, strRange) in GM.listRange">
                                             <td class="verticalTH" ng-bind="strRange"></td>
                                             <td class="center" width="7%" contenteditable="true" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP"  ng-bind="frecc.ranges[keyRange].intFrecuency | number" ng-blur="setValue('intPaqGuiasZP', keyRange, $event, keyFee)" ng-show="isFrecc(keyFee)"></td>
                                             <td width="7%"/>
                                             <td class="center thead-light" width="7%" ng-bind="GM.mapRanges[keyRange]['PORZP'].intQTotal | number"></td>
-                                            <td class="center thead-light" width="7%" contenteditable="true" ng-bind="GM.mapRanges[keyRange]['PORZP'].fltFrecc | percentage:2" ng-blur="setValue('fltFreccRangeZP', keyRange, $event, keyFee)"></td>
+                                            <!--<td class="center thead-light" width="7%" contenteditable="true" ng-bind="GM.mapRanges[keyRange]['PORZP'].fltFrecc | percentage:2" ng-blur="setValue('fltFreccRangeZP', keyRange, $event, keyFee)"></td>-->
                                         </tr>
                                         <tr>
                                             <td class="thead-light">Total</td>
                                             <td class="center thead-light" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP"  ng-bind="frecc.intQTotal | number" ng-show="isFrecc(keyFee)"></td>
                                             <td/>
                                             <td class="center thead-light" contenteditable="true" ng-bind="GM.mapFreccPorcZP.intQTotal | number" ng-blur="setValue('intQTotalZP', keyRange, $event, keyFee)"></td>
-                                            <td class="center" ng-bind="GM.mapFreccPorcZP.fltFTotal | percentage:2" ></td>
+                                            <!--<td class="center" ng-bind="GM.mapFreccPorcZP.fltFTotal | percentage:2" ></td>-->
                                         </tr>
-                                        <tr>
+                                        <!--<tr>
                                             <td/>
                                             <td class="center thead-light" contenteditable="true" ng-repeat="(keyFee, frecc) in GM.mapFreccPorcZP" ng-bind="GM.mapFreccZP[keyFee].fltFrecc | percentage:2" ng-show="isFrecc(keyFee)" ng-blur="setValue('fltFreccFeeZP', keyRange, $event, keyFee)"></td>
                                             <td/>
                                             <td class="center" ng-bind="GM.mapFreccPorcZP.fltFEETotal | percentage:2" ></td>
-                                        </tr>
+                                        </tr>-->
                                         </tbody>
                                     </table>
                                 </div>
@@ -2387,6 +2387,7 @@
                     $scope.GM.mapFreccZP.fltFEETotal = 0;
                     $scope.GM.mapFreccPorc.fltFTotal = 0;
                     $scope.GM.mapFreccPorcZP.fltFEETotal = 0;
+                    $scope.GM.mapFreccPorc.fltFEETotal = 0;
                     j$.each($scope.GM.listRange, function (keyRange, strRange) {
                         $scope.GM.mapRanges[keyRange]['PAQ'].intQTotal = Math.round($scope.GM.mapFrecc.intQTotal *  $scope.GM.mapRanges[keyRange]['PAQ'].fltFrecc);
                         $scope.GM.mapRanges[keyRange]['ZP'].intQTotal = Math.round($scope.GM.mapFreccZP.intQTotal *  $scope.GM.mapRanges[keyRange]['ZP'].fltFrecc);
@@ -2410,8 +2411,10 @@
                             }
                         });
                         $scope.GM.mapFrecc.fltFEETotal += $scope.GM.mapFrecc[keyFee].fltFrecc;
-                        if(keyFee !== 'T7')
+                        if(keyFee !== 'T7'){
                             $scope.GM.mapFreccZP.fltFEETotal += $scope.GM.mapFreccZP[keyFee].fltFrecc;
+                        }
+                            
                     });
                     if($scope.GM.mapFreccZP.intQTotal > 0)
                         $scope.GM.blnZP = true;
@@ -2481,6 +2484,17 @@
                             if((keyFee !== 'T7' && !keyFee.includes('T7_')) && $scope.GM.mapFreccZP.intQTotal > 0)
                                 $scope.GM.mapFreccZP[keyFee].fltFrecc = $scope.GM.mapFreccZP[keyFee].intQTotal / $scope.GM.mapFreccZP.intQTotal;
                         }
+                    });
+                    j$.each($scope.listFee, function (keyFee, strFee){
+                        if($scope.GM.mapFreccPorc[keyFee].intQTotal > 0)
+                            $scope.GM.mapFreccPorc[keyFee].fltFrecc = $scope.GM.mapFreccPorc[keyFee].intQTotal / $scope.GM.mapFreccPorc.intQTotal;
+                        if(!keyFee.includes('T7_') && keyFee !== 'T7')
+                            $scope.GM.mapFreccPorcZP[keyFee].fltFrecc = $scope.GM.mapFreccPorcZP[keyFee].intQTotal / $scope.GM.mapFreccPorcZP.intQTotal;
+                    });
+                    j$.each($scope.listFee, function (keyFee, strFee){
+                        $scope.GM.mapFreccPorc.fltFEETotal += $scope.GM.mapFreccPorc[keyFee].fltFrecc;
+                        if(!keyFee.includes('T7_') && keyFee !== 'T7')
+                            $scope.GM.mapFreccPorcZP.fltFEETotal += $scope.GM.mapFreccPorcZP[keyFee].fltFrecc;
                     });
                     j$.each($scope.GM.listRange, function (keyRange, strRange) {
                         $scope.GM.mapRanges[keyRange]['PAQ'].intQTotal = 0;
@@ -2563,6 +2577,7 @@
                         , Destinos__c: $scope.OnlineDocByDestiny
                         , RecordTypeId : $scope.Wrapper.mapRecordType['GMP']
                         , OriginCity__c : $scope.GM.strOrigen
+                        , Total_de_guias__c : $scope.GM.TOTAL['GUIAS']
                     };
                     if($scope.Wrapper.objQuote && $scope.Wrapper.objQuote.Id){
                         Quote.Id = $scope.Wrapper.objQuote.Id;
@@ -3668,6 +3683,347 @@
                     $scope.GM.mapService['Add'].ranges['+2400'].fltCostVol =  6 * 200;
                     $scope.calculateQ();
                 };
+                $scope.sumbit = function (){
+                    var strNameProcess = '';
+                    var strProfile = "{!profileObj}";
+                    var objQuote;
+                    var gerenteSucursal = null;
+                    if($scope.GM.blnCotizaT7ZP){
+                        alert('No puede ejecutar el flujo de aprobación desde este punto habiendo cotizado T7 zona plus. Favor de ejecutarlo desde fuera de la cotización.');
+                        xhrInstance.abort();
+                    }
+                    if(strProfile === 'Ejecutivo de telemarketing'
+                            || strProfile === 'Supervisor Telemarketing'
+                            || strProfile === 'Gerente comercial nacional')
+                        gerenteSucursal = $scope.Managers['GSU'];
+
+                    if(strProfile === 'Ejecutivo de telemarketing' || 'Ejecutivo de telemarketing y CC')
+                        strProfile = 'Ejecutivo de venta';
+
+                    if(strProfile === 'Supervisor Telemarketing' )
+                        strProfile = 'KAM Regional';
+
+                    if(strProfile === 'Gerente comercial nacional' )
+                        strProfile = 'Gerentes de desarrollo de Negocios';
+
+                    if(notEmpty($scope.DML.objQuote))
+                        objQuote = $scope.DML.objQuote;
+                    else
+                        objQuote = $scope.Wrapper.objQuote;
+
+                    $scope.DML.listErrors = [];
+
+                    if($scope.isException(objQuote, strProfile)){
+                        if(objQuote.SBQQ__Opportunity2__c){
+                            objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'Gerente de sucursal'){
+                        objQuote.SBQQ__Status__c = 'preauthorized';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'KAM Regional'){
+                        objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'Gerentes de desarrollo de Negocios'){
+                        objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        else if(objQuote.Lead__c && strProfile === 'Director comercial'){
+                        objQuote.SBQQ__Status__c = 'Approved';
+                        }
+                        if(objQuote.Lead__c)
+                            callUpdateStatus($scope, objQuote, objQuote.Lead__r.Name);
+                        if(objQuote.SBQQ__Account__c)
+                            callUpdateStatus($scope, objQuote, objQuote.SBQQ__Account__r.Name);
+                    }
+                    else if(objQuote.Lead__c){
+                        if(objQuote.SBQQ__Status__c === 'Draft')
+                         {
+                            if(objQuote.Descuento_por_linea_o_rangokm__c < 60.01 ){
+                                if(objQuote.Descuento_Global__c > 0
+                                        && objQuote.Descuento_Global__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_Global__c >= 10.01
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_por_linea_o_rango_km_Express__c < 25 ){
+                                    if( objQuote.Descuento_Global_Express__c > 0
+                                            && objQuote.Descuento_Global_Express__c < 10.01
+                                            && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                            && strProfile === 'Ejecutivo de venta'
+                                    )
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_por_linea_o_rango_km_Express__c < 25.00 ){
+                                    if( objQuote.Descuento_Global_Express__c >= 10.01
+                                            && objQuote.Descuento_Global_Express__c < 25.01
+                                            && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                            && strProfile === 'Ejecutivo de venta'
+                                    )
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                }
+                                if(objQuote.Descuento_Global__c >= 25.01
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                }
+                                if(objQuote.Descuento_Global__c >= 40.01
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_Km_menor_a_60_KAM_Regio';
+                                }
+                                if(objQuote.Descuento_Global__c >= 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+                                }
+                            }
+                            if(objQuote.Descuento_por_linea_o_rango_km_Express__c >= 25.01 ){
+                                if( objQuote.Descuento_Global_Express__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                        && (strProfile === 'Ejecutivo de venta'
+                                        )
+                                )
+                                    strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                if( objQuote.Descuento_Global_Express__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                        && (strProfile === 'KAM Regional'
+                                        )
+                                )
+                                    strNameProcess = 'AEREO_0_A_10_GBAL_25_O_MAS_KM';
+                                if( objQuote.Descuento_Global_Express__c >= 10.01
+                                        && objQuote.Descuento_Global_Express__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                )
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                if(strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_10_1_A_25_GBAL_MAYOR_25_KM_GE_SUC';
+                            }
+                            if(objQuote.Descuento_por_linea_o_rangokm__c >= 60.01 ){
+                                if(objQuote.Descuento_Global__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c >= 10.01
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'SipWeb_global_10_1_a_25_preau';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c >= 25.01
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas_KAM_Regiona';
+                                }
+                                if(objQuote.Descuento_Global__c >= 40.01
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60_KAM_Regi';
+                                }
+                                if(objQuote.Descuento_Global__c >= 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+
+                                }
+
+                            }
+                            if(objQuote.Descuento_Global_Express__c >= 25.01
+                                    && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')) {
+                                if(strProfile === 'Ejecutivo de venta')
+                                    strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                if(strProfile === 'Gerente de sucursal')
+                                    strNameProcess = 'preautorizacion_mayor_25_gerente';
+                                if(strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL_KAM';
+                                if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GERENTE_DESARROLLO';
+                            }
+                        }
+                        if(notEmpty(strNameProcess))
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.GM.strApprovalComment);
+                        else
+                            $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
+                    }
+                    else if(objQuote.SBQQ__Opportunity2__c){
+                        if(objQuote.SBQQ__Status__c === 'Draft')
+                         {
+                            if(objQuote.Descuento_por_linea_o_rangokm__c < 60.01 ){
+                                if(objQuote.Descuento_Global__c > 10
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_10_1_a_25_y_km_menor_a_60';
+                                }
+                                if(objQuote.Descuento_por_linea_o_rango_km_Express__c < 25 ){
+                                    if( objQuote.Descuento_Global_Express__c > 10
+                                            && objQuote.Descuento_Global_Express__c < 25.01
+                                            && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                            && strProfile === 'Ejecutivo de venta'
+                                    )
+                                        strNameProcess = 'AEREO_10_1_A_25_GBAL_MENOR_25_KM';
+                                }
+                                if(objQuote.Descuento_Global__c > 25
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_25_a_40_y_km_menor_que_60';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_25_a_40_y_km_menor_que_60_GE_SUCU';
+                                }
+                                if(objQuote.Descuento_Global__c > 40
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_40_1_a_60_km_menor_a_60_V2';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_40_1_a_60_km_menor_a_60_GE_SUCURS';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_Km_menor_a_60_KAM_Regio';
+                                }
+                                if(objQuote.Descuento_Global__c > 60
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_60_o_mas_GE_SUCURSAL';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+                                }
+                            }
+                            if(objQuote.Descuento_por_linea_o_rango_km_Express__c > 25 ){
+
+                                if( objQuote.Descuento_Global_Express__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                        && (strProfile === 'Ejecutivo de venta'
+                                                || strProfile === 'Gerente de sucursal'
+                                                || strProfile === 'KAM Regional'
+                                        )
+                                )
+                                    strNameProcess = 'AEREO_0_A_10_GBAL_25_O_MAS_KM';
+                                if( objQuote.Descuento_Global_Express__c > 10
+                                        && objQuote.Descuento_Global_Express__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')
+                                )
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'AEREO_10_1_A_25_GBAL_MAYOR_25_KM';
+                                if(strProfile === 'Gerente de sucursal' || strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_10_1_A_25_GBAL_MAYOR_25_KM_GE_SUC';
+                            }
+                            if(objQuote.Descuento_por_linea_o_rangokm__c > 60 ){
+                                if(objQuote.Descuento_Global__c < 10.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60_GE_SUCURSA';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_0_a_10_y_km_mayor_a_60_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c > 10
+                                        && objQuote.Descuento_Global__c < 25.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas_GE_SUCURS';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_10_1_a_25_y_km_60_o_mas_KAM';
+                                }
+                                if(objQuote.Descuento_Global__c > 25
+                                        && objQuote.Descuento_Global__c < 40.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas_GE_SUCURSAL';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_25_a_40_y_km_60_o_mas_KAM_Regiona';
+                                }
+                                if(objQuote.Descuento_Global__c > 40
+                                        && objQuote.Descuento_Global__c < 60.01
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60_GE_SUCU';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_40_1_a_60_km_mayor_a_60_KAM_Regi';
+                                }
+                                if(objQuote.Descuento_Global__c > 60
+                                        && objQuote.PAQ_TipoServicio__c.includes('Estándar terrestre (STD)')){
+                                    if(strProfile === 'Ejecutivo de venta')
+                                        strNameProcess = 'global_60_o_mas';
+                                    if(strProfile === 'Gerente de sucursal')
+                                        strNameProcess = 'global_60_o_mas_GE_SUCURSAL';
+                                    if(strProfile === 'KAM Regional')
+                                        strNameProcess = 'global_60_O_mas_KAM_Regional';
+                                    if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                        strNameProcess = 'global_60_O_mas_GE_DESARROLLO';
+
+                                }
+
+                            }
+                            if(objQuote.Descuento_Global_Express__c > 25
+                                    && objQuote.PAQ_TipoServicio__c.includes('Servicio Express Garantizado (SEG)')) {
+                                if(strProfile === 'Ejecutivo de venta')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL';
+                                if(strProfile === 'Gerente de sucursal')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL_G_SUC';
+                                if(strProfile === 'KAM Regional')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GLOBAL_KAM';
+                                if(strProfile === 'Gerentes de desarrollo de Negocios')
+                                    strNameProcess = 'AEREO_MAYOR_DE_25_GERENTE_DESARROLLO';
+                            }
+                        }
+                        if(notEmpty(strNameProcess))
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.GM.strApprovalComment);
+                        else
+                            $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
+                    }
+                };
                 $scope.redireccionar = function(){
                     debugger;
                     var blnRedirec = false;
@@ -3769,7 +4125,7 @@
                             var key = 'T7' + quoteItem.PackWeightAVG__c;
                             var keyFee = '';
                             if(quoteItem.Tarifa__c.includes('TARIFA T7_'))
-                                keyFee = quoteItem.Tarifa__c
+                                keyFee = 'T7_'+ quoteItem.PackWeightAVG__c;//quoteItem.Tarifa__c
                             else keyFee = getId(quoteItem.Tarifa__c, $scope.GM.listFee);
                             $scope.GM.hasOverWBlocks = true;
                             if(!getLabel('T7_'+ quoteItem.PackWeightAVG__c, $scope.GM.mapFreccPorcT7ZP))
@@ -4003,7 +4359,7 @@
                                             , fltSEG : 0
                                             , fltTotalNormal : 0
                                         };
-                                    if(!getLabel(destino, $scope.GM.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino])){
+                                    if(!getLabel(destino, $scope.GM.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges)){
                                         $scope.GM.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino] = {
                                             intFrecuency : 0
                                             , fltAVGWeight : quoteItem.PackWeightAVG__c
@@ -4019,7 +4375,7 @@
                                         $scope.GM.mapQuotes['T7_'+ quoteItem.PackWeightAVG__c][destino] = {};
                                     }
 
-                                    if(!keyFee.includes('TARIFA T7_')){
+                                    if(!keyFee.includes('T7_')){
                                         if(!getLabel(destino, $scope.GM.mapFrecc[keyFee].ranges))
                                             $scope.GM.mapFrecc[keyFee].ranges[destino] = {
                                                 intFrecuency : 0
@@ -4065,7 +4421,7 @@
                                                 , fltSEG : 0
                                                 , fltTotalNormal : 0
                                             };
-                                        if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P') && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
+                                        if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P' && !keyFee.includes('T7_')) && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
                                             $scope.GM.mapFreccPorcZP[keyFee].ranges[destino] = {
                                                 intFrecuency : 0
                                                 , fltBaseFee : 0
@@ -4133,7 +4489,7 @@
                                                     , fltSEG : 0
                                                     , fltTotalNormal : 0
                                                 };
-                                            if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P') && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
+                                            if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P' && !keyFee.includes('T7_')) && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
                                                 $scope.GM.mapFreccPorcZP[keyFee].ranges[destino] = {
                                                     intFrecuency : 0
                                                     , fltBaseFee : 0
@@ -4267,7 +4623,7 @@
                                                 , fltSEG : 0
                                                 , fltTotalNormal : 0
                                             };
-                                        if(!getLabel(destino, $scope.GM.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino])){
+                                        if(!getLabel(destino, $scope.GM.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges)){
                                             $scope.GM.OWFrecc['T7_'+ quoteItem.PackWeightAVG__c].ranges[destino] = {
                                                 intFrecuency : 0
                                                 , fltAVGWeight : quoteItem.PackWeightAVG__c
@@ -4333,7 +4689,7 @@
                                                 , fltSEG : 0
                                                 , fltTotalNormal : 0
                                             };
-                                        if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P') && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
+                                        if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P' && !keyFee.includes('T7_')) && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
                                             $scope.GM.mapFreccPorcZP[keyFee].ranges[destino] = {
                                                 intFrecuency : 0
                                                 , fltBaseFee : 0
@@ -4416,7 +4772,7 @@
                                                     , fltSEG : 0
                                                     , fltTotalNormal : 0
                                                 };
-                                            if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P') && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
+                                            if((keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P' && !keyFee.includes('T7_')) && (!getLabel(destino, $scope.GM.mapFreccPorcZP[keyFee].ranges)))
                                                 $scope.GM.mapFreccPorcZP[keyFee].ranges[destino] = {
                                                     intFrecuency : 0
                                                     , fltBaseFee : 0
@@ -4883,7 +5239,7 @@
                                             , fltSEG : 0
                                             , fltTotalNormal : 0
                                         };
-                                        if(keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P')
+                                        if(keyFee != 'T7' && keyFee != 'T7V' && keyFee != 'T7P' && !keyFee.includes('T7_'))
                                             $scope.GM.mapFreccPorcZP[keyFee].ranges[strDestiny] = {
                                                 intFrecuency : 0
                                                 , fltBaseFee : 0
