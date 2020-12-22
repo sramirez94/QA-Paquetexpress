@@ -1,0 +1,1419 @@
+<apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_pantalla_ww" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
+    <html> 
+        <head> 
+             
+            <style type="text/css"> 
+                @page { size: Letter; margin: 15mm; margin-bottom: 20mm;
+                <!--@top-center { content: " "; font-family: sans-serif; font-size: 90pt;}-->
+                @bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); } }
+                <!--table,td,th {border:0.5px solid black;}-->
+                
+                .page-break2 { display:block; page-break-inside: avoid; }
+                
+
+            </style>
+        </head>
+        <!--COStos fijos por tarifa y destinos -->
+    <apex:outputPanel rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'}">       
+            <div class="page-break2">
+        <div align="center">
+            <img src="{!URLFOR($Resource.LogoPaquetePDF)}" width="300px" height="auto" />
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            <apex:outputText value="{0,date,dd/MM/yyyy}">
+                  <apex:param value="{!today()}" />
+            </apex:outputText>
+        </div>
+        <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            CONVENIO DE SERVICIO DOCUMENTACIÓN EN LINEA<br/><br/>
+            No. Convenio:
+            <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c)),'true','false')}">
+                  {!SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c}
+            </apex:outputText>
+            <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c),'true','false')}">
+                 
+            </apex:outputText>
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            {!SBQQ__Quote__c.SBQQ__Account__r.Name}<br/><br/>
+        </div>
+        <div align="justify" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            Por este medio presentamos la propuesta integral de logística para la distribución de
+            su Mensajería, Paquetería y/o Carga, la cual podrá efectuar a través de su documentador
+            en línea, bajo las siguientes características:
+        </div>
+                 <br/>
+                                
+        <div class="col-md-12">
+          
+            <apex:repeat value="{!mapLines}" var="tarifa">
+			<apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">                
+                <div class="panel panel-default" > 
+                  <div class="panel-body">
+                <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                      <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
+                    <tr>
+                        <th colspan="1" style="border:0.5px solid black; width: 100%">
+                            Tarifa:   
+                            <apex:outputText style="width: 10%">         
+                            
+                            </apex:outputText>
+                        <apex:outputText value="    {!mapTarifas[tarifa].strtarifa}"/>
+                        </th>
+                    </tr>
+                          <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-V'),'true','false')}">
+                    <tr>
+                        <th colspan="1" style="border:0.5px solid black; width: 100%">
+                            Peso Maximo:  
+                        
+                        
+                            <apex:outputText value="{0, number, ###,##0.##}">
+                                        <apex:param value="{!mapTarifas[tarifa].decPesoMaximo}" />   
+                                </apex:outputText>
+                            kg
+                        </th>
+                    </tr>
+                          </apex:outputText>
+                          <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12' || mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                    <tr>
+                        <th colspan="1" style="border:0.5px solid black; width: 100%">
+                            Volumen maximo: 
+                       
+                           <apex:outputText value="{0, number, ###,###.0000}">
+                                <apex:param value="{!mapTarifas[tarifa].decVolMaximo}"/>                                   
+                                </apex:outputText>
+                            m3
+                        </th>
+                    </tr>
+                          </apex:outputText>
+                    </apex:outputText>
+                   
+                   </table>
+                      
+                  <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                       <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
+                       
+                        <tr >
+                              <th  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 20%">RANGO KM</th>
+                            <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
+                            <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 18%">Guia de arranque ($)</th>
+                            <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 22%">Guia de arranque (kg)</th>
+                            <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 18%">KG adicional</th>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                              <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">FLETE</th>
+                            
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">RAD</th>
+                              </apex:outputText>
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">EAD</th>                               
+                              </apex:outputText>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText>
+                                  </th>
+                              </apex:outputText>
+                            </apex:outputText>
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SEGURO</th>
+                              </apex:outputText>
+                             <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                              <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SUBTOTAL</th>
+                            </apex:outputText>
+                            </tr>
+                        <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
+                      <tr>
+                        <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLine.Rango_Km__C}</td>
+                          <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
+                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.fleteE__c}"></apex:outputField></td>
+                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.Guia__c}"></apex:outputField></td>
+                               <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.KG_ADICIONAL__c}"></apex:outputField></td>
+                             
+                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACKES__c}"></apex:outputField></td>
+                           
+                          </apex:outputText>  
+                          <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                        </td>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                           </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                             </td>
+                        </apex:outputText>
+                          
+                          <apex:outputText rendered="{!objTLine.ACK__c != null}">
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACK__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                          </td>
+                            </apex:outputText>
+                        </apex:outputText>
+                          </apex:outputText>
+                               </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.SEG__c}" /> </td>
+                        </apex:outputText>
+                           <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.CustomerPrice__c}" /></td>
+                     </apex:outputText>
+                          </tr>
+                    </apex:repeat>
+                        <br/>
+                      </apex:outputText>
+                      
+              </table> 
+                    </div>
+                </div>
+                	        
+     <br/>         
+
+                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
+                <div>       
+        <div>            
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td style="border:0.5px solid black; color: white">.</td>
+                <td></td>    
+                <td>Marque la casilla en caso de requerir Seguro.</td>
+                </tr>
+            </table>
+        </div>
+        <div><br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                    
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Empresa')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Interno')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse XT')=true}">
+                         -Servicio de Acuse se cobra por Pieza
+                         </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> 
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD')=true}">
+                        -Servicio de EAD ampara las Entregas en domicilios Cobertura Paquetexpress.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        -Servicio de Zona Plus ampara las Entregas en domicilios Cobertura Zona Plus (última milla).
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
+                        -Costo de Seguro ampara daños por mercancía con valor declarado $ 
+                        <apex:outputText value="{0, number, ###,##0.00}"> 
+                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                        </apex:outputText>
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>              
+                    <td><apex:outputText >
+                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                        </apex:outputText>
+                       <apex:outputText value="{0, number, ###,##0.00}">
+                                        <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />   
+                       </apex:outputText>
+                    </td>                   	
+                        </tr>
+                    <tr>
+                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
+                    </tr>
+                    <tr>
+                    <td> -Los costos de Flete, Recolección y Entrega a domicilio se cobran por Pieza.</td>
+                    </tr>
+                    <tr>
+                    <td> -Las tarifas no incluyen I.V.A.</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicios, tarifas y destinos no cotizados, serán cobrados al costo de tarifario de piso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Tarifas sujetas a cambio sin previo aviso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Vigencia del: 
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                        </apex:outputText>
+                        al 31/12/2020.</td>
+                    </tr>
+                </table>
+        </div>
+        <div><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Cliente</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Ejecutivo</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>
+        <div><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma Gerente de Sucursal</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma KAM Regional</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>       
+    </div>  
+               
+                
+                <div style="page-break-before: always;"/>
+                     </apex:outputText>
+                </apex:outputText>
+                </apex:repeat>
+            
+                
+             <apex:repeat value="{!mapLinesZP}" rendered="{!blnZP == true}" var="tarifa">
+                 
+                <div class="panel panel-default" > 
+                  <div class="panel-body">
+                <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                     <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != 'TARIFA T7' && (SBQQ__Quote__c.TipoCotizacion__c == 'byDimension' || SBQQ__Quote__c.TipoCotizacion__c == 'byDelivery' || SBQQ__Quote__c.TipoCotizacion__c == null)}">
+                   <tr>
+                        <th colspan="1" style="border:0.5px solid black; width: 20%">
+                            Tarifa:   
+                        </th>
+                        <th colspan="1" style="border:0.5px solid black; width: 80%"><apex:outputText value="    {!mapTarifas[tarifa].strtarifa}"/></th>
+                        
+                    </tr>
+                    <tr>
+                        <th colspan="1" style="border:0.5px solid black; width: 20%">
+                            Peso Maximo:  
+                        </th>
+                        <th colspan="1" style="border:0.5px solid black; width: 80%">
+                            <apex:outputText value="{0, number, ###,##0.##}">
+                                        <apex:param value="{!mapTarifas[tarifa].decPesoMaximo}" />   
+                                </apex:outputText>
+                            kg
+                        </th>
+                       
+                    </tr>
+                    <tr>
+                        <th colspan="1" style="border:0.5px solid black; width: 20%">
+                            Volumen maximo: 
+                        </th>
+                        <th colspan="1" style="border:0.5px solid black; width: 80%">
+                           <apex:outputText value="{0, number, ###,###.0000}">
+                                <apex:param value="{!mapTarifas[tarifa].decVolMaximo}"/>                                   
+                                </apex:outputText>
+                            m3
+                        </th>
+                        
+                    </tr>
+                    </apex:outputText>
+                    </table>
+                    <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                        <tr>
+                              <th style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 20% ">RANGO KM</th>
+                              <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">FLETE</th>
+                              <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD')}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">RAD</th>
+                              </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD ZONA PLUS')}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">ZONA PLUS</th>                               
+                              </apex:outputText>
+                              <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse')}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText></th>
+                              </apex:outputText>
+                              <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro')}">
+                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">SEGURO</th>
+                              </apex:outputText>
+                              <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">SUBTOTAL</th>
+                        </tr>
+                        <apex:repeat value="{!mapLinesZP[tarifa]}" rendered="{!blnZP == true}" var="objTLineZP">
+                      <tr>
+                        <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLineZP.Rango_Km__C}</td>
+                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.FLETE__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                         </td>
+                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD')}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.RAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                           </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD ZONA PLUS')}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.EAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                       </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse')}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.ACK__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                       </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro')}">
+                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.SEG__c}" /> </td>
+                        </apex:outputText>
+                          <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.CustomerPrice__c}" /></td>
+                      </tr>
+                    </apex:repeat>             
+              </table>
+                      <br/>
+                    </div>
+                </div>
+                 <div> 
+       
+        <div>
+            
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td style="border:0.5px solid black; color: white">.</td>
+                <td></td>    
+                <td>Marque la casilla en caso de requerir Seguro.</td>
+                </tr>
+            </table>
+        </div>
+        <div><br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                    
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Empresa')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Interno')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse XT')=true}">
+                         -Servicio de Acuse se cobra por Pieza
+                         </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> 
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD')=true}">
+                        -Servicio de EAD ampara las Entregas en domicilios Cobertura Paquetexpress.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        -Servicio de Zona Plus ampara las Entregas en domicilios Cobertura Zona Plus (última milla).
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
+                        -Costo de Seguro ampara daños por mercancía con valor declarado $ 
+                        <apex:outputText value="{0, number, ###,##0.00}"> 
+                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                        </apex:outputText>
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>              
+                    <td><apex:outputText >
+                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                        </apex:outputText>
+                       <apex:outputText value="{0, number, ###,##0.00}">
+                                        <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />   
+                       </apex:outputText>
+                    </td>                   	
+                        </tr>
+                    <tr>
+                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
+                    </tr>
+                    <tr>
+                    <td> -Los costos de Flete, Recolección y Entrega a domicilio se cobran por Pieza.</td>
+                    </tr>
+                    <tr>
+                    <td> -Las tarifas no incluyen I.V.A.</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicios, tarifas y destinos no cotizados, serán cobrados al costo de tarifario de piso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Tarifas sujetas a cambio sin previo aviso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Vigencia del: 
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                        </apex:outputText>
+                        al 31/12/2020.</td>
+                    </tr>
+                </table>
+        </div>
+        <div><br/><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Cliente</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Ejecutivo</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>
+        <div><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma Gerente de Sucursal</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma KAM Regional</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>       
+    </div>  
+                 <div style="page-break-before: always;"/>
+        <br/>
+            </apex:repeat>   
+                        
+            <apex:outputPanel rendered="{!IF(ServicioExpress && wp.objQuote.Tipo_de_documentacion__c='Documentación Remota','true','false')}">
+                <div>
+            	<apex:repeat value="{!lEXP}" var="keyFee">
+                    <apex:variable var="count" value="{!1}" />
+                    <apex:outputPanel > <br />
+                    <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                    <tr>
+                        <apex:outputText rendered="{!keyFee=='SEG-DS'}">
+                        	<th colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">ONE DAY</th>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!keyFee=='SEG-2D'}">
+                        	<th colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">TWO DAYS</th>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!keyFee=='SEG-A12'}">
+                        	<th colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">MID DAY</th>
+                        </apex:outputText>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;" width="20%">Rango KM</th>
+                        <apex:repeat value="{!mapQuotesOD[keyFee]}" var="guide">
+                            <th colspan="2" align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Guía de Arranque ({!count})</th>
+                            <apex:outputText rendered="{!lastGuide[keyFee] == guide}">
+                            <th rowspan="2" align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Kg adicional</th>
+                            <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                            <th rowspan="2" align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Acuse adicional</th>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!blnSEG}">
+                            <th rowspan="2" align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Seguro adicional (millar)</th>
+                            </apex:outputText>
+                            </apex:outputText>
+                            <apex:variable var="count" value="{!count+1}" />
+                        </apex:repeat>                    </tr>
+                    <tr>
+                        <apex:repeat value="{!mapQuotesOD[keyFee]}" var="guide">
+                            <th align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Peso (kg-vol)</th>
+                            <th align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Tarifa propuesta</th>
+                        </apex:repeat>
+                    </tr>
+
+                    <apex:repeat value="{!listRangeInfo}" var="keyRange">
+                        <tr>
+                            <td align="left"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                            <apex:repeat value="{!mapQuotesOD[keyFee]}" var="guide">
+                                <td align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                                    <apex:outputText value="{0, number, ###,###,##0.000}">
+                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].GUIA__c}" />
+                                    </apex:outputText>
+                                </td>
+                                <td align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].FLETE__c}" />
+                                    </apex:outputText>
+                                </td>
+                                <apex:outputText rendered="{!lastGuide[keyFee] == guide}">
+                                <td align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].KG_ADICIONAL__c}" />
+                                    </apex:outputText>
+                                </td>
+                                <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                <td align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].ACK__c}" />
+                                    </apex:outputText>
+                                </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!blnSEG}">
+                                <td align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif;">
+                                    <apex:outputText value="{0, number,$###,###,##0.00}" >
+                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].SEG__c}" />
+                                    </apex:outputText>
+                                </td>
+                                </apex:outputText>        
+                            </apex:outputText>
+                            </apex:repeat>
+                        </tr>
+                    </apex:repeat>
+                </table>
+                </apex:outputPanel>
+                    <br/>
+                             <div>      
+        <div>         
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td style="border:0.5px solid black; color: white">.</td>
+                <td></td>    
+                <td>Marque la casilla en caso de requerir Seguro.</td>
+                </tr>
+            </table>
+        </div>
+        <div><br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                    
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Empresa')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Interno')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse XT')=true}">
+                         -Servicio de Acuse se cobra por Pieza
+                         </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> 
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD')=true}">
+                        -Servicio de EAD ampara las Entregas en domicilios Cobertura Paquetexpress.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        -Servicio de Zona Plus ampara las Entregas en domicilios Cobertura Zona Plus (última milla).
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
+                        -Costo de Seguro ampara daños por mercancía con valor declarado $ 
+                        <apex:outputText value="{0, number, ###,##0.00}"> 
+                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                        </apex:outputText>
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>              
+                    <td><apex:outputText >
+                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                        </apex:outputText>
+                       <apex:outputText value="{0, number, ###,##0.00}">
+                                        <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />   
+                       </apex:outputText>
+                    </td>                   	
+                        </tr>
+                    <tr>
+                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
+                    </tr>
+                    <tr>
+                    <td> -Los costos de Flete, Recolección y Entrega a domicilio se cobran por Pieza.</td>
+                    </tr>
+                    <tr>
+                    <td> -Las tarifas no incluyen I.V.A.</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicios, tarifas y destinos no cotizados, serán cobrados al costo de tarifario de piso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Tarifas sujetas a cambio sin previo aviso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Vigencia del: 
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                        </apex:outputText>
+                        al 31/12/2020.</td>
+                    </tr>
+                </table>
+        </div>
+        <div><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Cliente</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Ejecutivo</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>
+        <div><br/><br/><br/><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma Gerente de Sucursal</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma KAM Regional</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>       
+    </div> 
+                    <div style="page-break-before: always;"/>
+            </apex:repeat>
+            </div>
+          </apex:outputPanel>   
+        </div>
+    </div>          
+        </apex:outputPanel>        
+        
+   <!--COSTO BASE -->	
+    <apex:outputPanel rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'}">       
+         <div align="center">
+            <img src="{!URLFOR($Resource.LogoPaquetePDF)}" width="300px" height="auto" />
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            <apex:outputText value="{0,date,dd/MM/yyyy}">
+                  <apex:param value="{!today()}" />
+            </apex:outputText>
+        </div>
+        <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            CONVENIO DE SERVICIO DOCUMENTACIÓN EN LINEA<br/><br/>
+            No. Convenio:
+            <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c)),'true','false')}">
+                  {!SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c}
+            </apex:outputText>
+            <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c),'true','false')}">
+                 
+            </apex:outputText>
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            {!SBQQ__Quote__c.SBQQ__Account__r.Name}<br/><br/>
+        </div>
+        <div align="justify" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            Por este medio presentamos la propuesta integral de logística para la distribución de
+            su Mensajería, Paquetería y/o Carga, la cual podrá efectuar a través de su documentador
+            en línea, bajo las siguientes características:
+        </div>
+         
+        <div class="col-md-12">
+          <apex:outputPanel >
+            <div class="tarifa">
+                <div>
+                    <br />
+                    <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                		<tr style="height: 2px"></tr>
+                			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%"></td>
+                				<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                    				<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!nameBlock}</td>
+                				</apex:repeat>
+                			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Kilogramo adicional</td>
+                        	<apex:outputText rendered="{!T7ZP}">
+                        		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Zona Plus T7</td>
+                        	</apex:outputText>
+                		<tr>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Peso báscula Kg</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapBlocks[nameBlock].decWeight}</td>
+                    			</apex:repeat>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">1.000</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapPropuestaT7ZP['0-400'].PackWeightAVG__c}</td>
+                        	</apex:outputText>
+                		</tr>
+                		<tr>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Volumen m3</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapBlocks[nameBlock].decVol}</td>
+                    			</apex:repeat>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">0.005</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapPropuestaT7ZP['0-400'].PackVolAVG__c}</td>
+                        	</apex:outputText>
+                		</tr>
+                		
+            		</table>
+                   
+                  <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                 <tr>
+                	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">Rango Km</td>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">{!nameBlock}</td>
+                    </apex:repeat>
+                	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">SUBTOTAL</td>
+                    <apex:outputText rendered="{!blnACK}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">Acuse</td>
+                	</apex:outputText>
+                	<apex:outputText rendered="{!blnZP}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">EAD Zona plus</td>
+                	</apex:outputText>
+                    <apex:outputText rendered="{!T7ZP}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">Zona plus T7</td>
+                	</apex:outputText>
+                </tr>
+                <tr>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">SUBTOTAL</td>
+                    </apex:repeat>
+                </tr>
+                <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                    <tr>
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 25px 0px 25px;">{!strRange}</td>
+                        <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                            <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                    <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <apex:outputText rendered="{!blnACK}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
+                                        <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!blnZP}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
+                                        <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        	<apex:outputText rendered="{!T7ZP}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!T7ZP}">
+                                        <apex:param value="{!mapPropuestaT7ZP[strRange].SBQQ__SpecialPrice__c}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                    </tr>
+                </apex:repeat>
+            </table>
+            
+            	</div>
+                </div>
+            </apex:outputPanel>  
+            
+             <div>
+            <br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td style="border:0.5px solid black; color: white">.</td>
+                <td></td>    
+                <td>Marque la casilla en caso de requerir Seguro.</td>
+                </tr>
+            </table>
+          <div>       
+        </div>
+        <div><br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                     <tr>
+                    <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicio estándar.</td>
+                    </tr>
+                     <tr>
+                    <td> -Los costos de Flete, Recolección y Entrega a domicilio se cobran por Guía.</td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Empresa')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Interno')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse XT')=true}">
+                         -Servicio de Acuse se cobra por Pieza
+                         </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> 
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD')=true}">
+                        -Servicio de EAD ampara las Entregas en domicilios Cobertura Paquetexpress.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        -Servicio de Zona Plus ampara las Entregas en domicilios Cobertura Zona Plus (última milla)por Pieza de hasta 60kg y 0.32m3.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
+                        -Costo de Seguro ampara daños por mercancía con valor declarado $ 
+                        <apex:outputText value="{0, number, ###,##0.00}"> 
+                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                        </apex:outputText>
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>              
+                    <td><apex:outputText >
+                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                        </apex:outputText>
+                       <apex:outputText value="{0, number, ###,##0.00}">
+                                        <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />   
+                       </apex:outputText>
+                    </td>                   	
+                        </tr>
+                    <tr>
+                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> -Las tarifas no incluyen I.V.A.</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicios, tarifas y destinos no cotizados, serán cobrados al costo de tarifario de piso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Tarifas sujetas a cambio sin previo aviso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Vigencia del: 
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                        </apex:outputText>
+                        al 31/12/2020.</td>
+                    </tr>
+                </table>
+        </div>
+        <div><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Cliente</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Ejecutivo</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>
+        <div><br/><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma Gerente de Sucursal</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma KAM Regional</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>       
+    </div>             
+    </div>          
+        </apex:outputPanel> 
+        
+  <!--GUIA MULTIPIEZA -->	
+    <apex:outputPanel rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por Rangos de km'}">       
+         <div align="center">
+            <img src="{!URLFOR($Resource.LogoPaquetePDF)}" width="300px" height="auto" />
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            <apex:outputText value="{0,date,dd/MM/yyyy}">
+                  <apex:param value="{!today()}" />
+            </apex:outputText>
+        </div>
+        <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            CONVENIO DE SERVICIO DOCUMENTACIÓN EN LINEA<br/><br/>
+            No. Convenio:
+            <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c)),'true','false')}">
+                  {!SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c}
+            </apex:outputText>
+            <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c),'true','false')}">
+                 
+            </apex:outputText>
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            {!SBQQ__Quote__c.SBQQ__Account__r.Name}<br/><br/>
+        </div>
+        <div align="justify" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            Por este medio presentamos la propuesta integral de logística para la distribución de
+            su Mensajería, Paquetería y/o Carga, la cual podrá efectuar a través de su documentador
+            en línea, bajo las siguientes características:
+        </div>
+         
+        <div class="col-md-12">
+          <apex:outputPanel >
+            <div class="tarifa">
+                <div>
+                    <br />
+                    <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                		<tr style="height: 2px"></tr>
+                			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%"></td>
+                				<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                    				<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!nameBlock}</td>
+                				</apex:repeat>
+                			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Kilogramo adicional</td>
+                        	<apex:outputText rendered="{!T7ZP}">
+                        		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Zona Plus T7</td>
+                        	</apex:outputText>
+                		<tr>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Peso báscula Kg</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapBlocks[nameBlock].decWeight}</td>
+                    			</apex:repeat>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">1.000</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapPropuestaT7ZP['0-400'].PackWeightAVG__c}</td>
+                        	</apex:outputText>
+                		</tr>
+                		<tr>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">Volumen m3</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapBlocks[nameBlock].decVol}</td>
+                    			</apex:repeat>
+                    		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">0.005</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 10%">{!mapPropuestaT7ZP['0-400'].PackVolAVG__c}</td>
+                        	</apex:outputText>
+                		</tr>
+                		
+            		</table>
+                   
+                  <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                 <tr>
+                	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">Rango Km</td>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">{!nameBlock}</td>
+                    </apex:repeat>
+                	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">SUBTOTAL</td>
+                    <apex:outputText rendered="{!blnACK}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">Acuse</td>
+                	</apex:outputText>
+                	<apex:outputText rendered="{!blnZP}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">EAD Zona plus</td>
+                	</apex:outputText>
+                    <apex:outputText rendered="{!T7ZP}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">Zona plus T7</td>
+                	</apex:outputText>
+                </tr>
+                <tr>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">SUBTOTAL</td>
+                    </apex:repeat>
+                </tr>
+                <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                    <tr>
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 25px 0px 25px;">{!strRange}</td>
+                        <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                            <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                    <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <apex:outputText rendered="{!blnACK}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
+                                        <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!blnZP}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
+                                        <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        	<apex:outputText rendered="{!T7ZP}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!T7ZP}">
+                                        <apex:param value="{!mapPropuestaT7ZP[strRange].SBQQ__SpecialPrice__c}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                    </tr>
+                </apex:repeat>
+            </table>
+            
+            	</div>
+                </div>
+            </apex:outputPanel>  
+            
+             <div>
+            <br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td style="border:0.5px solid black; color: white">.</td>
+                <td></td>    
+                <td>Marque la casilla en caso de requerir Seguro.</td>
+                </tr>
+            </table>
+          <div>       
+        </div>
+        <div><br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                     <tr>
+                    <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicio estándar.</td>
+                    </tr>
+                     <tr>
+                    <td> -Los costos de Flete, Recolección y Entrega a domicilio se cobran por Guia.</td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Empresa')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Interno')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse XT')=true}">
+                         -Servicio de Acuse se cobra por Pieza
+                         </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> 
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD')=true}">
+                        -Servicio de EAD ampara las Entregas en domicilios Cobertura Paquetexpress.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        -Servicio de Zona Plus ampara las Entregas en domicilios Cobertura Zona Plus (última milla)por Pieza de hasta 60kg y 0.32m3.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
+                        -Costo de Seguro ampara daños por mercancía con valor declarado $ 
+                        <apex:outputText value="{0, number, ###,##0.00}"> 
+                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                        </apex:outputText>
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>              
+                    <td><apex:outputText >
+                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                        </apex:outputText>
+                       <apex:outputText value="{0, number, ###,##0.00}">
+                                        <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />   
+                       </apex:outputText>
+                    </td>                   	
+                        </tr>
+                    <tr>
+                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> -Las tarifas no incluyen I.V.A.</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicios, tarifas y destinos no cotizados, serán cobrados al costo de tarifario de piso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Tarifas sujetas a cambio sin previo aviso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Vigencia del: 
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                        </apex:outputText>
+                        al 31/12/2020.</td>
+                    </tr>
+                </table>
+        </div>
+        <div><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Cliente</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Ejecutivo</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>
+        <div><br/><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma Gerente de Sucursal</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma KAM Regional</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>       
+    </div>             
+    </div>          
+        </apex:outputPanel> 
+        		   
+        
+        
+        
+        
+         <!--SERVICIOS ESPECIALES -->
+        <apex:outputPanel rendered="{!ServiciosEspeciales}">
+         <div align="center">
+            <img src="{!URLFOR($Resource.LogoPaquetePDF)}" width="300px" height="auto" />
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            <apex:outputText value="{0,date,dd/MM/yyyy}">
+                  <apex:param value="{!today()}" />
+            </apex:outputText>
+        </div>
+        <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            CONVENIO DE SERVICIO DOCUMENTACIÓN EN LINEA<br/><br/>
+            No. Convenio:
+            <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c)),'true','false')}">
+                  {!SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c}
+            </apex:outputText>
+            <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c),'true','false')}">
+                 
+            </apex:outputText>
+        </div>
+        <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            {!SBQQ__Quote__c.SBQQ__Account__r.Name}<br/><br/>
+        </div>
+        <div align="justify" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+            Por este medio presentamos la propuesta integral de logística para la distribución de
+            su Mensajería, Paquetería y/o Carga, la cual podrá efectuar a través de su documentador
+            en línea, bajo las siguientes características:
+        </div>
+                 <br/>
+         <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+                       </div>           
+        <!--SERVICIOS ESPECIALES -->
+            <apex:outputPanel rendered="{!ServiciosEspeciales}">
+                <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+				<tr style="height: 25px"></tr>
+            	<tr>
+                	<td colspan="35" align="Center"  style="font-size:12px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIOS ESPECIALES</b></td>
+            	</tr>
+                <tr>
+                    <th align="left" rowspan="2" style="font-size:12px; font-family: Arial, Helvetica, sans-serif;  background-color:rgb(31, 73, 125); padding-left: 10px; padding-right: 10px; color: white;">Rango de KM </th>
+                    <apex:repeat value="{!listServ}" var="keySS">
+                        <th align="center" colspan="2" style=" font-size:12px; font-family: Arial, Helvetica, sans-serif;  background-color:rgb(31, 73, 125); color: white;">{!keySS}</th>
+                    </apex:repeat>
+                </tr>
+                <tr>
+                	<apex:repeat value="{!listServ}" var="keySS">
+                        <th align="center" style=" font-size:12px; font-family: Arial, Helvetica, sans-serif;  padding-left: 10px; padding-right: 10px; background-color:rgb(31, 73, 125); color: white;">Forma</th>
+                        <th align="center" style=" font-size:12px; font-family: Arial, Helvetica, sans-serif;  padding-left: 10px; padding-right: 10px; background-color:rgb(31, 73, 125); color: white;">Tarifa Propuesta</th>
+                    </apex:repeat>
+                </tr>
+                <apex:repeat value="{!listRangeD}" var="keyRange">
+                    <tr>
+                        <td align="left" style="font-size:12px; font-family: Arial, Helvetica, sans-serif;  background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                        <apex:outputText rendered="{!wp.mapSS['Maniobras'].mapRanges[keyRange].Amount__c != 0}">
+                        <td align="center"  style="border-bottom: 1px solid black; font-size:12px;  font-family: Arial, Helvetica, sans-serif; ">{!wp.mapSS['Maniobras'].mapRanges[keyRange].Option__c} </td>
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif;  ">
+                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                <apex:param value="{!wp.mapSS['Maniobras'].mapRanges[keyRange].Amount__c}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!wp.mapSS['EAD con cita'].mapRanges[keyRange].Amount__c != 0}">
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">{!wp.mapSS['EAD con cita'].mapRanges[keyRange].Option__c} </td>
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                <apex:param value="{!wp.mapSS['EAD con cita'].mapRanges[keyRange].Amount__c}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!wp.mapSS['EAD a Detalle'].mapRanges[keyRange].Amount__c != 0}">
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">{!wp.mapSS['EAD a Detalle'].mapRanges[keyRange].Option__c} </td>
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                <apex:param value="{!wp.mapSS['EAD a Detalle'].mapRanges[keyRange].Amount__c}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!wp.mapSS['Special Packing'].mapRanges[keyRange].Amount__c != 0}">
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">{!wp.mapSS['Special Packing'].mapRanges[keyRange].Option__c} </td>
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                <apex:param value="{!wp.mapSS['Special Packing'].mapRanges[keyRange].Amount__c}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!wp.mapSS['Pick&Pack'].mapRanges[keyRange].Amount__c != 0}">
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">{!wp.mapSS['Pick&Pack'].mapRanges[keyRange].Option__c} </td>
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                <apex:param value="{!wp.mapSS['Pick&Pack'].mapRanges[keyRange].Amount__c}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!wp.mapSS['Cruce Fronterizo'].mapRanges[keyRange].Amount__c != 0}">
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">{!wp.mapSS['Cruce Fronterizo'].mapRanges[keyRange].Option__c} </td>
+                        <td align="center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; ">
+                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                <apex:param value="{!wp.mapSS['Cruce Fronterizo'].mapRanges[keyRange].Amount__c}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                    </tr>
+                </apex:repeat>
+            </table>
+            </apex:outputPanel>
+			<br/>        
+        <div>
+            
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td style="border:0.5px solid black; color: white">.</td>
+                <td></td>    
+                <td>Marque la casilla en caso de requerir Seguro.</td>
+                </tr>
+            </table>
+          <div>       
+        </div>
+        <div><br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                    
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Empresa')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse Interno')=true} || {!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Acuse XT')=true}">
+                         -Servicio de Acuse se cobra por Pieza
+                         </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> 
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD')=true}">
+                        -Servicio de EAD ampara las Entregas en domicilios Cobertura Paquetexpress.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        -Servicio de Zona Plus ampara las Entregas en domicilios Cobertura Zona Plus (última milla).
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
+                        -Costo de Seguro ampara daños por mercancía con valor declarado $ 
+                        <apex:outputText value="{0, number, ###,##0.00}"> 
+                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                        </apex:outputText>
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>              
+                    <td><apex:outputText >
+                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                        </apex:outputText>
+                       <apex:outputText value="{0, number, ###,##0.00}">
+                                        <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />   
+                       </apex:outputText>
+                    </td>                   	
+                        </tr>
+                    <tr>
+                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
+                    </tr>
+                    <tr>
+                    <td> -Los costos de Flete, Recolección y Entrega a domicilio se cobran por Pieza.</td>
+                    </tr>
+                    <tr>
+                    <td> -Las tarifas no incluyen I.V.A.</td>
+                    </tr>
+                    <tr>
+                    <td> -Servicios, tarifas y destinos no cotizados, serán cobrados al costo de tarifario de piso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Tarifas sujetas a cambio sin previo aviso.</td>
+                    </tr>
+                    <tr>
+                    <td> -Vigencia del: 
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                        </apex:outputText>
+                        al 31/12/2020.</td>
+                    </tr>
+                </table>
+        </div>
+        <div><br/><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Cliente</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma del Ejecutivo</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>
+        <div><br/><br/><br/><br/><br/><br/>
+            <table style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%">
+                <tr>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma Gerente de Sucursal</td>
+                <td width="70px"> </td>
+                <td align= "center" style="border-top: 0.5px solid black">Nombre y Firma KAM Regional</td>
+                <td width="70px"> </td>
+                </tr>
+            </table>
+        </div>       
+    </div>  
+        </apex:outputPanel>
+    </html>
+</apex:page>
