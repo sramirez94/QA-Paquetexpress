@@ -1725,13 +1725,13 @@
                         }else if(i >= lastBlock.value){
                             key = lastBlock.key;
                         }else{
-                            if(listBlocksReverse.length === 2){
+                            /*if(listBlocksReverse.length === 2){
                                 if(i < lastBlock.value)
                                     key = firstBlock.key;
                                 else key = lastBlock.value;
-                            }else 
+                            }else */
                                 j$.each(listBlocksReverse, function (index, b) {
-                                    if(i < b.value)
+                                    if(i <= b.value)
                                         key = b.key;
                                     
                                 });
@@ -2036,13 +2036,9 @@
                                 fltRADP = fltTarifaLlenaP * 0.11;
                                 fltRADV = fltTarifaLlenaV * 0.11;
                             }
-                            /*item.fltQuoteFullFeeP = item.fltQuoteFee + item.fltQuoteAdKG + item.fltRAD + item.fltEAD + fltAcuseT7 + item.fltSEG;
-                            item.fltQuoteFullFeeV = item.fltQuoteFee + item.fltQuoteAdM3 + item.fltRAD + item.fltEAD + fltAcuseT7 + item.fltSEG;*/
                             item.fltQuoteFullFeeP = fltTarifaLlenaP + fltRADP + fltEADP + fltAcuseT7 + item.fltSEG;
                             item.fltQuoteFullFeeV = fltTarifaLlenaV + fltRADV + fltEADV + fltAcuseT7 + item.fltSEG;
 
-                            //if($scope.EX.mapFrecc['T7P'].ranges[keyRange].fltFullFee > 0)
-                            //discP = item.fltQuoteFullFeeP / $scope.EX.mapFrecc['T7P'].ranges[keyRange].fltFullFee -1;
                             discP = fltTotPropP / item.fltQuoteFullFeeP - 1; 
                             //if($scope.EX.mapFrecc['T7V'].ranges[keyRange].fltFullFee > 0)
                             //discV = item.fltQuoteFullFeeV / $scope.EX.mapFrecc['T7V'].ranges[keyRange].fltFullFee -1;
@@ -2148,6 +2144,7 @@
                     });
                     if($scope.EX.mapFreccZP.intQTotal > 0)
                         $scope.EX.blnZP = true;
+                    else $scope.EX.blnZP = false;
                     $scope.calculateEX();
                 };
 
@@ -2211,6 +2208,7 @@
                     });
                     if($scope.EX.mapFreccZP.intQTotal > 0)
                         $scope.EX.blnZP = true;
+                    else $scope.EX.blnZP = false;
                     $scope.calculateEX();
                 };
 
@@ -2422,7 +2420,7 @@
                             });
                             j$.each($scope.EX.mapTender, function(strTender, map){
                                 if($scope.EX.mapQuotesT7ZP.Tender[strTender].intFrecuency > 0){
-                                    $scope.EX.blnZP = true;
+                                    //$scope.EX.blnZP = true;
                                     var QuoteItemT7ZP = {
                                         SBQQ__Quantity__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].intFrecuency
                                         , SBQQ__Discount__c: $scope.EX.mapQuotesT7ZP.Tender[strTender].fltDiscount * 100
