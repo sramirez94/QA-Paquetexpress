@@ -1,5 +1,101 @@
 public class GrabadoDocEnLinea {
+    public Id owner {get; set;}
+    public Id Id { get; set; }
+    public SBQQ__Quote__c cas { get; set; }
+    public string tipoDocumentacion {get;set;}
+    public Id cuenta {get;set;}
+    public string idSipWeb{get;set;}
+    public date fechaVigencia{get;set;}
+    public Boolean grabadoUnico{get;set;}
+    public Boolean confirmacionGrabadoUnico{get;set;}
+    public GrabadoDocEnLinea (ApexPages.StandardController controller){
+        try{
+            this.cas                    = (SBQQ__Quote__c) controller.getRecord();
+            this.Id                     = cas.Id;
+            idSipWeb                    = cas.SBQQ__Account__r.Id_SIpWeb__c;
+            owner                       = cas.OwnerId;
+            cuenta                      = cas.SBQQ__Account__c;
+            tipoDocumentacion           = cas.Tipo_de_documentacion__c;
+            fechaVigencia               = cas.Flujo_del_mes__c;
+            grabadoUnico                = cas.Descuento_prepago_unico__c;
+            confirmacionGrabadoUnico    = cas.Confirmacion_de_Grabado_Unico__c;
+            if(ObtieneInfoResponse(cas))
+                System.debug('ejecutó correctamente');
+        }catch (Exception ex){
+            System.debug('Error en el constructor ' +ex.getLineNumber()+' '+EX.getMessage());
+        }
+    }
+    public Boolean ObtieneInfoResponse(SBQQ__Quote__c cotizacion){
+        Boolean resultado = false;
+        try{
+            if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
+                String endpoint = Label.Grabado_DocLinea;
+                String userSipweb = '';
+                User u = [SELECT Id_Sipweb__c, FederationIdentifier FROM User WHERE Id=:System.UserInfo.getUserId()];
+                if(!System.isScheduled()){
+                    if(!String.isEmpty(u.Id_Sipweb__c))
+                        userSipweb = u.Id_Sipweb__c;
+                    else
+                        userSipweb = u.FederationIdentifier;
+                }
+                DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
+                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
+                DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
+                DefinicionesServiciosGrabado.requestDataODC ddP = new DefinicionesServiciosGrabado.requestDataODC();
+                DefinicionesServiciosGrabado.requestODC req = new DefinicionesServiciosGrabado.requestODC();
+                DefinicionesServiciosGrabado.bodyRequestODC bdp = new DefinicionesServiciosGrabado.bodyRequestODC();
+                sec.user = 'SALESFORCE';
+                sec.token = '325746796331582000000';
+                rdpH.security = sec;    
+                rdp.header= rdpH;
+                ddP.clntId = '1145777';
+                req.data = ddP;
+                bdp.request = req;
+                rdp.body = bdp;
+                if(ObtieneInfoSipweb(JSON.serialize(rdp), endpoint, cotizacion)){
+                    System.debug('obtuvo info sipweb');
+                }
+                resultado = true;
+            }
+        }catch (Exception ex){
+            System.debug('Error al obtener response '+ex.getLineNumber()+' '+EX.getMessage());
+        }
+        return resultado;
+    }
+    public Boolean ObtieneInfoSipweb(String body, String endpoint,SBQQ__Quote__c cotizacion){
+        try{
+            Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
+            GrabadoBtnController grab = new GrabadoBtnController(sc);
+            //System.debug('cuerpo: ' + body);
+            //System.debug('endpoint: ' + endpoint);
+            HttpResponse res = grab.consultaAPIPOST(body,endpoint);
+            String respuesta = res.getBody().replace('time','timeR');
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON Deserializado: ' + JSON.deserialize(respuesta, DefinicionesServiciosGrabado.responseODC.class)));
+            //System.debug('respuesta obtenida: ' + JSON.deserialize(respuesta, DefinicionesServiciosGrabado.responseODC.class));
+            return ProcesaResponse(res,cotizacion);
+        }catch (Exception ex){
+            System.debug('ObtieneInfoSipweb: '+ex.getLineNumber()+' '+ex.getMessage());
+            return false;
+        }
+    }
+    public Boolean ProcesaResponse(HTTPResponse res,SBQQ__Quote__c cotizacion){
+        try{
+            String Respuesta = res.getBody();
+            System.debug('Respalda json en string');
+            respuesta = respuesta.replace('time', 'timeR');
+            system.debug('Reemplaza timer por time');
+            DefinicionesServiciosGrabado.responseODC rg = (DefinicionesServiciosGrabado.responseODC)JSON.deserializeStrict(respuesta, DefinicionesServiciosGrabado.responseODC.class);
+            DefinicionesServiciosGrabado.dataDRemota data;
+            System.debug('Asigna el response');
+            System.debug('ClntIid: ' + data.clntId);
+            return true;
+        }catch (Exception ex){
+            System.debug('ProcesaResponse ' + ex.getLineNumber() + ' ' + ex.getMessage());
+            return false;
+        }
+    }
     public static void procesarDL(SBQQ__Quote__c cotizacion){
+        //System.debug('ejecuta constructor');
 		Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
         Boolean cotizacionVigente = true;
         GrabadoBtnController gbc = new GrabadoBtnController(sc);
@@ -20,6 +116,7 @@ public class GrabadoDocEnLinea {
             gbc.publicarEvento(false,'Vigencia para cotización '+ cotizacion.Name +' expirada.');
     }
     public static void grabadoTarifarioAbierto(SBQQ__Quote__c cotizacion){
+        //System.debug('ejecuta grabadoTarifarioAbierto');
         ObjDocEnLinea ode = new ObjDocEnLinea();
         ObjDocEnLinea.security s = new ObjDocEnLinea.security();
         s.user = '';
@@ -77,6 +174,7 @@ public class GrabadoDocEnLinea {
         System.debug(JSON.serialize(dr));
     }
     public static void grabadoTarifarioC(SBQQ__Quote__c cotizacion){    
+        //System.debug('ejecuta grabadoTarifarioC');
 		List<ObjDocEnLinea.serviceTrif> lstServiceTrif = new List<ObjDocEnLinea.serviceTrif>();
         for(Integer x=0;x<x;x++){
 			ObjDocEnLinea.serviceTrif nodoServiceTrif = new ObjDocEnLinea.serviceTrif(); 
@@ -90,6 +188,23 @@ public class GrabadoDocEnLinea {
 			nodoServiceTrif.servicesCant =null;
             lstServiceTrif.add(nodoServiceTrif);
         }
+    }
+    public void iniciarGrabado(SBQQ__Quote__c cotizacion){
+        try{
+            if((cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c))|| Test.isRunningTest()){
+                if(cotizacion.SBQQ__Status__c=='Approved'){
+                    if(cotizacion.SBQQ__Opportunity2__r.StageName=='Cerrada/Ganada' || Test.isRunningTest()){
+                        ValidacionDocLinea(cotizacion);
+                    }
+                }
+            }
+        }catch(Exception ex){
+            System.debug('validacionEnPiso: '+ex.getLineNumber()+' '+ex.getMessage());
+            //publicarEvento(false,'No se pudo realizar el grabado');            
+        }
+    }
+    public void ValidacionDocLinea(SBQQ__Quote__c cotizacion){
+        System.debug('entra');
     }
 
 }
