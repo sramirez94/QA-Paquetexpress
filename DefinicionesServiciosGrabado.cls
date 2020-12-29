@@ -23,12 +23,24 @@ public class DefinicionesServiciosGrabado {
         public request request;
         public string response;        
     }
+    public class bodyRequest{
+        public request request;
+    }
     public class security{
         public string user;
         public string token;
     }
     public class header{
         public security security;
+    }
+    public class bodyRequestODC {
+        public requestODC request;
+    }
+    public class requestODC {
+        public requestDataODC data;
+    }
+    public class requestDataODC {
+        public String clntId;
     }
     public class requestTarifaDcto{
         public header header;
@@ -178,6 +190,8 @@ public class DefinicionesServiciosGrabado {
         public string trifAmntBase;
         public string discount;
         public string factorValue;
+        public string factor;
+        public string servicesCant;
     }
     public class servicesTrifDtl{
         public List<serviceTrif> serviceTrif;
@@ -186,8 +200,11 @@ public class DefinicionesServiciosGrabado {
     public class ptpServicesTrif{
 		public string orgnSite;
         public string destSite;
-        public string serviceTrif;
-        public List<servicesTrifDtl> servicesTrifDtl;
+        public List<serviceTrif> serviceTrif;
+        //public string serviceTrif;
+        public servicesTrifDtl servicesTrifDtl;
+        public List<servicesTrifCbe> servicesTrifCbe;
+        public String otherServiceTrif;
     }
     
     public class dataDRemota{
@@ -196,9 +213,12 @@ public class DefinicionesServiciosGrabado {
         public string trifType;
         public string pieceMulti;
         public List<ptpServicesTrif> ptpConfig;
+        public List<kmConfig> kmConfig;
     }
     public class requestDRemota{
-        public dataDRemota data;
+        //public requestDataODC data;
+        public header header;
+        public bodyRequestODC body;
     }
     public class bodyDRemota{
         public requestDRemota request;
@@ -206,5 +226,42 @@ public class DefinicionesServiciosGrabado {
     public class documentacionRemota{
         public bodyDRemota body;
         public header header;
+    }
+    public class responseODC {
+        public header header;
+        public bodyODC body;
+        public string objectDTO = null;
+        public string timeR;
+    }
+    public class bodyODC {
+        public request request;
+        public responseDOC response;
+
+    }
+    public class responseDOC {
+        public Boolean success;
+        public List<message> messages;
+        public dataDRemota data;
+        public string objectDTO = null;
+        public string timeR;
+    }
+    public class servicesTrifCbe {
+        public String trifAmountExce;
+        public String factor;
+        public string serviceId;
+        public String refrServiceId;
+        public list<serviceTrif> serviceTrif;
+        public String otherServiceTrif;
+    }
+    public class kmConfig {
+        public List<kmServicesTrif> kmServicesTrif;
+    }
+    public class kmServicesTrif {
+        public String fromKm;
+        public String toKm;
+        public List<serviceTrif> serviceTrif;
+        public servicesTrifDtl servicesTrifDtl;
+        public list<servicesTrifCbe> servicesTrifCbe;
+        public String otherServiceTrif;
     }
 }
