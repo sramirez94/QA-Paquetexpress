@@ -212,7 +212,7 @@ public class DefinicionesServiciosGrabado {
         public string aprvUser;
         public string trifType;
         public string pieceMulti;
-        public List<ptpServicesTrif> ptpConfig;
+        public List<ptpConfig> ptpConfig;
         public List<kmConfig> kmConfig;
     }
     public class requestDRemota{
@@ -239,7 +239,7 @@ public class DefinicionesServiciosGrabado {
 
     }
     public class responseDOC {
-        public Boolean success;
+        public String success;
         public List<message> messages;
         public dataDRemota data;
         public string objectDTO = null;
@@ -263,5 +263,8 @@ public class DefinicionesServiciosGrabado {
         public servicesTrifDtl servicesTrifDtl;
         public list<servicesTrifCbe> servicesTrifCbe;
         public String otherServiceTrif;
+    }
+    public class ptpConfig {
+        public List<ptpServicesTrif> ptpServicesTrif;
     }
 }
