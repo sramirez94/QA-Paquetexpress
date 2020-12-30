@@ -1,14 +1,30 @@
 public class GrabadoDocEnLinea {
-    public Id owner {get; set;}
-    public Id Id { get; set; }
-    public SBQQ__Quote__c cas { get; set; }
-    public string tipoDocumentacion {get;set;}
-    public Id cuenta {get;set;}
-    public string idSipWeb{get;set;}
-    public date fechaVigencia{get;set;}
-    public Boolean grabadoUnico{get;set;}
-    public Boolean confirmacionGrabadoUnico{get;set;}
+    public Id owner                         {get;set;}
+    public Id Id                            {get;set;}
+    public SBQQ__Quote__c cas               {get;set;}
+    public string tipoDocumentacion         {get;set;}
+    public Id cuenta                        {get;set;}
+    public string idSipWeb                  {get;set;}
+    public date fechaVigencia               {get;set;}
+    public Boolean grabadoUnico             {get;set;}
+    public Boolean confirmacionGrabadoUnico {get;set;}
+    public String aprvUser                  {get;set;}
+    public String orgnSite                  {get;set;}
+    public String destSite                  {get;set;}
+    public String factor                    {get;set;}
+    public String serviceId                 {get;set;}
+    public String refrServiceId             {get;set;}
+    public String trifType                  {get;set;}
+    public String pieceMulti                {get;set;}
     public GrabadoDocEnLinea (ApexPages.StandardController controller){
+        this.aprvUser       = '';
+        this.destSite       = '';
+        this.orgnSite       = '';
+        this.factor         = '';
+        this.serviceId      = '';
+        this.refrServiceId  = '';
+        this.trifType       = '';
+        this.pieceMulti     = '';
         try{
             this.cas                    = (SBQQ__Quote__c) controller.getRecord();
             this.Id                     = cas.Id;
@@ -21,6 +37,7 @@ public class GrabadoDocEnLinea {
             confirmacionGrabadoUnico    = cas.Confirmacion_de_Grabado_Unico__c;
             if(ObtieneInfoResponse(cas))
                 System.debug('ejecutó correctamente');
+            else System.debug('error al obtener response');
         }catch (Exception ex){
             System.debug('Error en el constructor ' +ex.getLineNumber()+' '+EX.getMessage());
         }
@@ -66,12 +83,8 @@ public class GrabadoDocEnLinea {
         try{
             Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
             GrabadoBtnController grab = new GrabadoBtnController(sc);
-            //System.debug('cuerpo: ' + body);
-            //System.debug('endpoint: ' + endpoint);
             HttpResponse res = grab.consultaAPIPOST(body,endpoint);
             String respuesta = res.getBody().replace('time','timeR');
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON Deserializado: ' + JSON.deserialize(respuesta, DefinicionesServiciosGrabado.responseODC.class)));
-            //System.debug('respuesta obtenida: ' + JSON.deserialize(respuesta, DefinicionesServiciosGrabado.responseODC.class));
             return ProcesaResponse(res,cotizacion);
         }catch (Exception ex){
             System.debug('ObtieneInfoSipweb: '+ex.getLineNumber()+' '+ex.getMessage());
@@ -81,13 +94,11 @@ public class GrabadoDocEnLinea {
     public Boolean ProcesaResponse(HTTPResponse res,SBQQ__Quote__c cotizacion){
         try{
             String Respuesta = res.getBody();
-            System.debug('Respalda json en string');
             respuesta = respuesta.replace('time', 'timeR');
-            system.debug('Reemplaza timer por time');
             DefinicionesServiciosGrabado.responseODC rg = (DefinicionesServiciosGrabado.responseODC)JSON.deserializeStrict(respuesta, DefinicionesServiciosGrabado.responseODC.class);
-            DefinicionesServiciosGrabado.dataDRemota data;
-            System.debug('Asigna el response');
-            System.debug('ClntIid: ' + data.clntId);
+            this.aprvUser   = rg.body.response.data.aprvUser;
+            this.trifType   = rg.body.response.data.trifType;
+            this.pieceMulti = rg.body.response.data.pieceMulti;
             return true;
         }catch (Exception ex){
             System.debug('ProcesaResponse ' + ex.getLineNumber() + ' ' + ex.getMessage());
