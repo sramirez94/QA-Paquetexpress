@@ -1,0 +1,54 @@
+<apex:page standardcontroller="SBQQ__Quote__c" extensions="GrabadoDocEnLinea">
+    <apex:form >
+        <apex:inputHidden value="{!SBQQ__Quote__c.OwnerId}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Tipo_de_documentacion__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Account__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Account__r.Plaza_Envio__r.Name}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Account__r.Plaza_Facturacion__r.Name}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Account__r.Servicios_nacionales__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.PAQ_DescuentoGlobal__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Opportunity2__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Status__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Electronicas__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Opportunity2__r.StageName}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.SBQQ__Opportunity2__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Servicios_adicionales__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Name}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Flujo_del_mes__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Confirmacion_de_Grabado_Unico__c}"/>
+        <apex:inputHidden value="{!SBQQ__Quote__c.Descuento_prepago_unico__c}"/>
+        <apex:pageBlock title="Información de la cuenta">
+            <apex:pageMessages />
+            <td>Aprobador: {!aprvUser}</td>
+            <td>Tipo: {!trifType}</td>
+            <td>Multipieza: {!pieceMulti}</td>
+            <table style="border-collapse: collapse; margin-left: 0%;" width="100%" align="Center">
+                <tr>
+                    <td colspan="6" align="Center"  style="font-size:15px; padding-top: 5px; padding-bottom: 5px"><b>Detalle de cuenta para grabado de tarifas</b></td>
+                </tr>
+                <tr>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">ID Cotización</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">ID Sipweb</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">Owner id</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">Cuenta</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">Tipo de documentación</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">Fecha de vigencia</td>
+                </tr>
+                <tr>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">{!Id}</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">{!idSipWeb}</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">{!owner}</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">{!cuenta}</td>
+                    <td align="Center" style="border: 1px solid black; font-size:12px; ">{!tipoDocumentacion}</td>
+                    <apex:outputText value="{0,date,dd/MM/yyyy}">
+                        <apex:param value="{!fechaVigencia}" />
+                    </apex:outputText>
+                </tr>
+            </table>
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!save}" value="Realizar grabado"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
