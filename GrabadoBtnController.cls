@@ -25,7 +25,6 @@ global class GrabadoBtnController {
     
     public PageReference procesar(){
         try{
-        System.debug('Procesar.');
         PageReference pageRef = new PageReference('/'+Id);
         pageRef.setRedirect(true);
         if(tipoDocumentacion=='Tarifario abierto de piso'){    
@@ -301,49 +300,6 @@ global class GrabadoBtnController {
             publicarEvento(false,'No se pudo realizar el grabado');
         }
     }
-    public void ValidacionDocLinea(SBQQ__Quote__c cotizacion){
-        try{
-            if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
-                String endpoint = Label.Grabado_DocLinea;
-                String userSipweb = '';
-                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
-                DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
-                DefinicionesServiciosGrabado.body bdp = new DefinicionesServiciosGrabado.body();
-                DefinicionesServiciosGrabado.request req = new DefinicionesServiciosGrabado.request();
-                DefinicionesServiciosGrabado.requestTarifaDcto rdp = new DefinicionesServiciosGrabado.requestTarifaDcto();
-                User u = [SELECT Id_Sipweb__c, FederationIdentifier FROM User WHERE Id=:System.UserInfo.getUserId()];
-                if(!System.isScheduled()){
-                    if(!String.isEmpty(u.Id_Sipweb__c))
-                        userSipweb = u.Id_Sipweb__c;
-                    else
-                        userSipweb = u.FederationIdentifier;
-                }
-                sec.user = 'SALESFORCE';
-                sec.token = '325746796331582000000';
-                ddP.clntId = cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
-                rdpH.security = sec;
-                req.data = ddP;
-                rdp.header= rdpH;
-                bdp.request = req;
-                rdp.body = bdp;
-                if(!System.isScheduled()){
-                    if(!cotizacion.Electronicas__c){
-                        if(envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion))
-                            publicarEvento(true,null);}
-                    else if(cotizacion.Electronicas__c){
-                        if(crearUsuarioWeb(cotizacion)){
-                            if(envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion))
-                                publicarEvento(true,null);
-                        }
-                    }
-                    else
-                        publicarEvento(false,'No se pudo realizar el grabado');
-                }
-                else
-                    envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion);
-            }
-        }
-    }
     @future(callout=true)    
     public static void actualizarCotizacionExpirada(String cot){
         try{
@@ -561,8 +517,6 @@ global class GrabadoBtnController {
         request.setHeader('Content-Type', 'application/json');
         request.setTimeout(60000);      
         HttpResponse res = h.send(request);
-        System.debug('envioGrabado Request: '+request);
-        System.debug('envioGrabado Response: Status: ' + res.getStatus()+' Body: '+res.getBody());
         return res;        
     }
     public boolean procesarRespuestaGrabado(HTTPResponse res,SBQQ__Quote__c cotizacion){
