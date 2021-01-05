@@ -215,7 +215,39 @@ public class GrabadoDocEnLinea {
         }
     }
     public void ValidacionDocLinea(SBQQ__Quote__c cotizacion){
-        System.debug('entra');
-    }
+        GrabadoBtnController gr;
+        try{
+            if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
+                ObjDocEnLinea.documentacionRemota odc       = new ObjDocEnLinea.documentacionRemota();
+                ObjDocEnLinea.header header                 = new ObjDocEnLinea.header();
+                ObjDocEnLinea.security sec                  = new ObjDocEnLinea.security();
+                ObjDocEnLinea.bodyDRemota body              = new ObjDocEnLinea.bodyDRemota();
+                ObjDocEnLinea.requestDRemota rq             = new ObjDocEnLinea.requestDRemota();
+                ObjDocEnLinea.dataDRemota data              = new ObjDocEnLinea.dataDRemota();
 
+                //30/12/2020 Salvador: Header y data
+                sec.user    = 'USERSALESFORCE';
+                sec.token   = '325746796331582000000';
+                //30/12/2020 Salvador: Comienza creación del body
+                data.quotation  = cotizacion.Name; //30/12/2020 Salvador: Nombre de la cotización, ej: Q-0245
+                data.clntId     = cotizacion.SBQQ__Account__r.Id_SIpWeb__c; //30/12/2020 Salvador: Id de sipweb del cliente
+                data.aprvUser   = this.aprvUser;
+                data.trifType   = this.trifType;
+                data.pieceMulti = this.pieceMulti;
+                
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Se puede continuar con el proceso'));
+            }else  gr.publicarEvento(false, 'Imposible continuar con el grabado, no cuenta con los datos necesarios.');
+
+        } catch (Exception ex){
+            System.debug('ValidacionDocLinea: '+ex.getLineNumber()+' '+ex.getMessage());
+        }
+    }
+    public void GrabarTarifaDocLinea(){
+        try{
+            ValidacionDocLinea(this.cas);
+        } catch (Exception ex){
+            System.debug('GrabarTarifaDocLinea ' + ex.getLineNumber() + ' ' + ex.getMessage());
+        }
+
+    }
 }
