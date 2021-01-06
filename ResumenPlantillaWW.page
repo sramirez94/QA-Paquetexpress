@@ -59,7 +59,7 @@
                             <apex:outputText style="width: 10%">         
                             
                             </apex:outputText>
-                        <apex:outputText value="    {!mapTarifas[tarifa].strtarifa}"/>
+                        <apex:outputText value="{!mapTarifas[tarifa].strtarifa}"/>
                         </th>
                     </tr>
                           <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-V'),'true','false')}">
@@ -739,9 +739,14 @@
                     				<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock}</td>
                 				</apex:repeat>
                 			<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">Kilogramo adicional</td>
+                       
                         <apex:outputText rendered="{!blnACK}">
-                    	<td rowspan ="4" align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">Acuse</td>
+                    	 <td rowspan ="4" align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText></td>
                 	</apex:outputText>
+                        
                 	<apex:outputText rendered="{!blnServZP}">
                     	<td rowspan ="4"  align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white; " width="5%">EAD Zona plus</td>
                 	</apex:outputText>
@@ -768,13 +773,21 @@
                     <td align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="9%">Rango Km</td>
                     <apex:repeat value="{!mapBlocks}" var="nameBlock">
                         <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
                         <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
                         <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
+                        </apex:outputText>
                         <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>                       
                     </apex:repeat>          
                       <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
+                     <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
                       <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
+                     </apex:outputText>
+                       <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
                       <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
+                     </apex:outputText>
                      <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>
              
                     
@@ -794,28 +807,48 @@
                                     <apex:param value="{!mapBlocksServ[nameBlock]['FLT'][strRange]}" />
                                 </apex:outputText>
                             </td>
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
                             <td align="Center" style="font-size:12px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocksServ[nameBlock]['RAD'][strRange]}" />
                                 </apex:outputText>
                             </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
                             <td align="Center" style="font-size:12px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocksServ[nameBlock]['EAD'][strRange]}" />
                                 </apex:outputText>
                             </td>
+                            </apex:outputText>
                             <td align="Center" style="font-size:12px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
                                 </apex:outputText>
                             </td>
                         </apex:repeat>
-                        
-                        
-
                         <td align="Center" style="font-size:12px;" width="5%">
                             <apex:outputText value="{0, number, $ ###,###,##0.00}" >
-                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                                <apex:param value="{!mapBlockAdic['ADD'][strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                        <td align="Center" style="font-size:12px;" width="5%">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}" >
+                                <apex:param value="{!mapBlockAdic['RAD'][strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                        <td align="Center" style="font-size:12px;" width="5%">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}" >
+                                <apex:param value="{!mapBlockAdic['EAD'][strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <td align="Center" style="font-size:12px;" width="5%">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}" >
+                                <apex:param value="{!mapBlockAdic['TOT'][strRange]}" />
                             </apex:outputText>
                         </td>
                         <apex:outputText rendered="{!blnACK}">
@@ -959,6 +992,7 @@
         </div>       
     </div>             
     </div>          
+         <div style="page-break-before: always;"/>
         </apex:outputPanel> 
         
   <!--GUIA MULTIPIEZA -->	
@@ -991,53 +1025,68 @@
         </div>
          
         <div class="col-md-20">
-          <apex:outputPanel >
+        <apex:outputPanel >
             <div class="tarifa">
                 <div>
                     <br />
                     <table align="center" style="border-collapse: collapse;" border="solid 0.5px" width="100%">
                         
                 		<tr style="height: 2px"></tr>
-                			<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
+                			<td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="7%"></td>
                 				<apex:repeat value="{!mapBlocks}" var="nameBlock">
-                    				<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock}</td>
+                    				<td colspan ="4" align="Center" style="font-size:8px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock}</td>
                 				</apex:repeat>
-                			<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">Kilogramo adicional</td>
+                			<td colspan ="4" align="Center" style="font-size:8px;  background-color:rgb(31, 73, 125); color: white;" width="32%">Kilogramo adicional</td>
+                        <apex:outputText rendered="{!blnACK}">
+                    	 <td rowspan ="4" align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText></td>
+                	</apex:outputText>
+                	<apex:outputText rendered="{!blnServZP}">
+                    	<td rowspan ="4"  align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white; " width="5%">EAD Zona plus</td>
+                	</apex:outputText>
+                      <apex:outputText rendered="{!T7ZP}">
+                    	<td rowspan ="4"  align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white; " width="5%">Zona plus T7</td>
+                	</apex:outputText>
                         	
                 		<tr>
-                    		<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="12%">Peso báscula Kg</td>
+                    		<td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="12%">Peso báscula Kg</td>
                     			<apex:repeat value="{!mapBlocks}" var="nameBlock">
-                        			<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decWeight}</td>
+                        			<td colspan ="4" align="Center" style="font-size:5px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decWeight}</td>
                     			</apex:repeat>
-                    		<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">1.000</td>
+                    		<td colspan ="4" align="Center" style="font-size:8px;  background-color:rgb(31, 73, 125); color: white;" width="32%">1.000</td>
                 		</tr>
                 		<tr>
-                    		<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Volumen m3</td>
+                    		<td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="9%">Volumen m3</td>
                     			<apex:repeat value="{!mapBlocks}" var="nameBlock">
-                        			<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decVol}</td>
+                        			<td colspan ="4" align="Center" style="font-size:8px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decVol}</td>
                     			</apex:repeat>
-                    		<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">0.005</td>
+                    		<td colspan ="4" align="Center" style="font-size:8px;  background-color:rgb(31, 73, 125); color: white;" width="32%">0.005</td>
                 		</tr>
                       
                  <tr>  
-                    <td align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="9%">Rango Km</td>
+                    <td align="Center" style="font-size:8px;  background-color:rgb(31, 73, 125); color: white;" width="9%">Rango Km</td>
                     <apex:repeat value="{!mapBlocks}" var="nameBlock">
-                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
-                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
-                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
-                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>                       
+                        <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
+                       <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                        <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                        <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
+                        </apex:outputText>
+                        <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>                       
                     </apex:repeat>          
-                      <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
-                      <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
-                      <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
-                     <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>
+                      <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
+                    <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                      <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
+                     </apex:outputText>
+                      <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                      <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
+                     </apex:outputText>
+                     <td align="Center" style="font-size:8px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>
              
-                    <apex:outputText rendered="{!blnACK}">
-                    	<td  align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">Acuse</td>
-                	</apex:outputText>
-                	<apex:outputText rendered="{!blnServZP}">
-                    	<td rowspan ="1"  align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white; " width="5%">EAD Zona plus</td>
-                	</apex:outputText>
+                    
                    
                 </tr>
                 <!--<tr>
@@ -1047,48 +1096,75 @@
                 </tr>-->
                 <apex:repeat value="{!listRangeDestiny}" var="strRange">
                     <tr>
-                        <td align="Center" style="font-size:12px; " width="5%">{!strRange}</td>
+                        <td align="Center" style="font-size:8px; " width="5%">{!strRange}</td>
                         <apex:repeat value="{!mapBlocks}" var="nameBlock">
-                            <td align="Center" style="font-size:12px;" width="5%">
+                            <td align="Center" style="font-size:8px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocksServ[nameBlock]['FLT'][strRange]}" />
                                 </apex:outputText>
                             </td>
-                            <td align="Center" style="font-size:12px;" width="5%">
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                            <td align="Center" style="font-size:8px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocksServ[nameBlock]['RAD'][strRange]}" />
                                 </apex:outputText>
                             </td>
-                            <td align="Center" style="font-size:12px;" width="5%">
+                            </apex:outputText>
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                            <td align="Center" style="font-size:8px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocksServ[nameBlock]['EAD'][strRange]}" />
                                 </apex:outputText>
                             </td>
-                            <td align="Center" style="font-size:12px;" width="5%">
+                            </apex:outputText>
+                            <td align="Center" style="font-size:8px;" width="5%">
                                 <apex:outputText value="{0, number, $ ###,###,##0.00}">
                                     <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
                                 </apex:outputText>
                             </td>
                         </apex:repeat>
-                        
-                        
-
-                        <td align="Center" style="font-size:12px;" width="5%">
+                        <td align="Center" style="font-size:8px;" width="5%">
                             <apex:outputText value="{0, number, $ ###,###,##0.00}" >
-                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                                <apex:param value="{!mapBlockAdic['ADD'][strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                        <td align="Center" style="font-size:8px;" width="5%">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}" >
+                                <apex:param value="{!mapBlockAdic['RAD'][strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                        <td align="Center" style="font-size:8px;" width="5%">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}" >
+                                <apex:param value="{!mapBlockAdic['EAD'][strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        </apex:outputText>
+                        <td align="Center" style="font-size:8px;" width="5%">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}" >
+                                <apex:param value="{!mapBlockAdic['TOT'][strRange]}" />
                             </apex:outputText>
                         </td>
                         <apex:outputText rendered="{!blnACK}">
-                                <td align="Center" style="font-size:12px;" width="5%">
+                                <td align="Center" style="font-size:8px;" width="5%">
                                     <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
                                         <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
                                     </apex:outputText>
                                 </td>
                             </apex:outputText>
                             <apex:outputText rendered="{!blnServZP}">
-                                <td align="Center" style="font-size:12px;" width="5%">
+                                <td align="Center" style="font-size:8px;" width="5%">
                                     <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
                                         <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        <apex:outputText rendered="{!T7ZP}">
+                                <td align="Center" style="font-size:8px;" width="5%">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!T7ZP}">
+                                        <apex:param value="{!mapPropuestaT7ZP[strRange].SBQQ__SpecialPrice__c}" />
                                     </apex:outputText>
                                 </td>
                             </apex:outputText>
@@ -1212,6 +1288,7 @@
         </div>       
     </div>             
     </div>           
+         <div style="page-break-before: always;"/>
         </apex:outputPanel> 
         		   
         
@@ -1442,20 +1519,19 @@
          <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
                        </div>           
            <apex:outputPanel id="PropuestaT7ZP" rendered="{!T7ZP}">
-                <br/> <br/>
             <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
                 <tr>
-                    <td colspan="100" align="left"  style="font-size:10px;border-top: .5px solid black;border-bottom: .5px solid black; padding-top: 5px; padding-bottom: 5px"><b>Detalle de EAD zona plus tarimas</b></td>
+                    <td colspan="100" align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;"><b>Detalle de EAD zona plus tarimas</b></td>
                 </tr>
             </table>
             <br/>
             <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
                 <tr>
-                    <td colspan="3" align="Center"  style="font-size:10px; padding-top: 5px; padding-bottom: 5px"><b>Tarifa T7 zona plus</b></td>
+                    <td colspan="3" align="center" style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;"><b>Tarifa T7 zona plus</b></td>
                 </tr>
                 <tr>
-                    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Rango km</td>
-                    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>
+                    <td align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Rango km</td>
+                    <td align="Center"  style="font-size:12px; font-family: Arial, Helvetica, sans-serif; background-color:rgb(31, 73, 125); color: white;">Costo propuesto</td>
                     
                 </tr>
                 <apex:outputText rendered="{!T7ZP}">
