@@ -94,6 +94,7 @@ public class Ctrl_pantalla_ww {
     public Decimal totalZP                                                  {get; set;}
     public Map<String, Block> mapBlocks                                     {get; set;}
     public Map<String,  Map<String, map<String, Decimal>>> mapBlocksServ    {get; set;}
+    public map<String, map<String, Decimal>> mapBlockAdic                   {get; set;}
     public Map<String, Block> mapService                                    {get; set;}
     public Map<Decimal, Map<String, Decimal>> mapDiscounts                  {get; set;}
     public Map<Decimal, Map<String, Decimal>> mapDiscountsT7ZP              {get; set;}
@@ -262,6 +263,7 @@ public class Ctrl_pantalla_ww {
         this.listRangeInfo2			 = new Set<String>();
         this.listRangeDestiny        = new List<String>();
         this.mapBlocks              = new Map<String, Block>();
+        this.mapBlockAdic           = new map<String, map<String, Decimal>>();
         this.mapBlocksServ          = new Map<String, Map<String, map<String, Decimal>>>();
         this.mapService             = new Map<String, Block>{
                                         'ADD' => new Block('ADD',0,0,0)
@@ -576,28 +578,16 @@ public class Ctrl_pantalla_ww {
                 switch on strKeyService {
                     when 'RAD' {
                         this.blnRAD = true;
-                        //System.debug(LoggingLevel.DEBUG, 'this.blnRAD: ' + this.blnRAD);
+                        
                     }
                     when 'EAD' {
                         this.blnEAD = true;
-                       // System.debug(LoggingLevel.DEBUG, 'this.blnEAD: ' + this.blnEAD);
+                       
                     }
                     when 'Seguro' {
                         this.blnSEG = true;
-                       // System.debug(LoggingLevel.DEBUG, 'this.blnSEG: ' + this.blnSEG);
+                      
                     }
-                    /*when 'Acuse Interno' {
-                        this.blnACK = true;
-                       // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }
-                    when 'Acuse Empresa' {
-                        this.blnACK = true;
-                        // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }
-                    when 'Acuse XT' {
-                        this.blnACK = true;
-                       // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }*/
                 }
         }
         
@@ -951,8 +941,7 @@ public class Ctrl_pantalla_ww {
             }
         }
         
-        // System.debug(LoggingLevel.DEBUG, 'totalAmount:BEFORE ' + totalAmount);
-        // System.debug(LoggingLevel.DEBUG, 'totalAmountQ:BEFORE ' + totalAmountQ);
+        
 		for(String keyFee : this.listEXP ){
 			for(String keyRange: this.listRange){
 				if(this.mapQuotesEXP.containsKey(keyFee)
@@ -1224,8 +1213,6 @@ public class Ctrl_pantalla_ww {
                 else
                     this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
             }
-            
-
         }
         
         //System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
@@ -1238,6 +1225,7 @@ public class Ctrl_pantalla_ww {
             this.mapT7V.put(keyRange, 0);
             this.mapTotalesT7ZP.put(keyRange, 0);
         }
+             
         for(String keyRange: this.listRangeT7){
             if (this.mapTotalesT7ZP.containsKey(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) && this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) == 0)
                 this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c,  this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
@@ -1370,8 +1358,7 @@ public class Ctrl_pantalla_ww {
         if(paquetes > 0)
             porcFrec = totalPaq / paquetes * 100;
         
-        // System.debug(LoggingLevel.DEBUG, 'totalAmount:BEFORE ' + totalAmount);
-        // System.debug(LoggingLevel.DEBUG, 'totalAmountQ:BEFORE ' + totalAmountQ);
+
 		for(String keyFee : this.listEXP ) {
             if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
                 for (String keyRange : this.listRangeDestiny) {
@@ -1511,12 +1498,9 @@ public class Ctrl_pantalla_ww {
 		Decimal disc = 0;
         this.mapTotal.put('Full', totalAmount);
         this.mapTotal.put('Quote', totalAmountQ);
-        /*System.debug(LoggingLevel.DEBUG, 'totalAmount :' + totalAmount);
-        System.debug(LoggingLevel.DEBUG, 'totalAmountQ :' + totalAmountQ);
-        System.debug(LoggingLevel.DEBUG, 'totalAmountSeg :' + totalAmountSeg);*/
+
         if(totalAmount > 0 )
 			disc = ((totalAmountQ - totalAmountSeg) / (totalAmount - totalAmountSeg) - 1);
-        //System.debug(LoggingLevel.DEBUG, 'disc :' + disc);
 
 		this.mapTotal.put('Disc', disc);
 
@@ -1532,10 +1516,10 @@ public class Ctrl_pantalla_ww {
         }
     /*codigo nuevo termino---------------------------------------------------------------------------------------------------------*/     
         
-   //CALCULOS PARACosto base mas excedente
+   //CALCULOS PARACosto base mas excedente   
  /*codigo nuevo inicio---------------------------------------------------------------------------------------------------------*/  
         
-        if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'){
+        if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km' || this.wp.objQuote.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por Rangos de km'){
         
         if(wp.objQuote.OriginCity__c != null)
             this.strOrigen = wp.objQuote.OriginCity__c;
@@ -1558,33 +1542,17 @@ public class Ctrl_pantalla_ww {
             for (String strKeyService : this.wp.objQuote.Servicios_adicionales__c.split(';')){
                 switch on strKeyService {
                     when 'RAD' {
-                        this.blnRAD = true;
-                        //System.debug(LoggingLevel.DEBUG, 'this.blnRAD: ' + this.blnRAD);
+                        this.blnRAD = true;                    
                     }
                     when 'EAD' {
-                        this.blnEAD = true;
-                        // System.debug(LoggingLevel.DEBUG, 'this.blnEAD: ' + this.blnEAD);
+                        this.blnEAD = true;                      
                     }
                     when 'Seguro' {
-                        this.blnSEG = true;
-                        // System.debug(LoggingLevel.DEBUG, 'this.blnSEG: ' + this.blnSEG);
+                        this.blnSEG = true;                       
                     }
                     when 'EAD Zona plus'{
-                        //this.blnZP = true;
                         this.blnServZP = true;
                     }
-                    /*when 'Acuse Interno' {
-                        this.blnACK = true;
-                    // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }
-                    when 'Acuse Empresa' {
-                        this.blnACK = true;
-                        // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }
-                    when 'Acuse XT' {
-                        this.blnACK = true;
-                    // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }*/
                 }
             }           
         }
@@ -1598,11 +1566,6 @@ public class Ctrl_pantalla_ww {
         Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
       
         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
-            /*if(String.isNotBlank(quoteItem.Destiny__c) && quoteItem.Tarifa__c != 'TARIFA T7' && quoteItem.ZonaPlus__c == false){
-                this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
-                quoteItem.Rango_KM__c = quoteItem.Destiny__c;
-                
-            }*/
             tarifa = quoteItem.Tarifa__c;
             if(String.isNotBlank(quoteItem.Destiny__c)){
                 if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c && (quoteItem.SBQQ__Description__c == 'Destino' || quoteItem.SBQQ__Description__c == 'Propuesta')){
@@ -1644,8 +1607,6 @@ public class Ctrl_pantalla_ww {
                     this.mapDescT7ZP.put(quoteItem.Rango_KM__c, Descuento/*(quoteItem.GUIA__c /* quoteItem.FLETE__c) - 1*/);
                 } 
                 listRangeT7.sort();
-                /*if(this.mapQuotesT7ZP != null)
-                    this.T7ZP = true;*/
             } else {
                 if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
                     if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
@@ -1674,13 +1635,11 @@ public class Ctrl_pantalla_ww {
                         wp.perACK = quoteItem.DiscountAcuse__c;
                     if(wp.perSEG == 0)
                         wp.perSEG = quoteItem.DiscountSEG__c;
-    
                     if(quoteItem.ZonaPlus__c){
                         if(this.mapTotalDiscFeeZP.containsKey(quoteItem.Tarifa__c))
                             this.mapTotalDiscFeeZP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
     
                     }
-    
                     if(!this.mapGuide.containsKey(quoteItem.PackWeightAVG__c))
                         this.mapGuide.put(quoteItem.PackWeightAVG__c, quoteItem.PackVolAVG__c);
     
@@ -1688,23 +1647,6 @@ public class Ctrl_pantalla_ww {
                         mapRangesByBlock.put(quoteItem.PackWeightAVG__c, new Map<String, Decimal>{quoteItem.Rango_KM__c => quoteItem.FLETE__c});
                     else if(!mapRangesByBlock.get(quoteItem.PackWeightAVG__c).containsKey(quoteItem.Rango_KM__c))
                         mapRangesByBlock.get(quoteItem.PackWeightAVG__c).put(quoteItem.Rango_KM__c , quoteItem.FLETE__c);
-                    //System.debug('rango: ' + quoteItem.Rango_KM__c);
-                    /*if(quoteItem.FLETE__c != null){
-                        if(!this.mapService.get('FLT').mapRanges.containsKey(quoteItem.Rango_KM__c)){
-                            this.mapService.get('FLT').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.FLETE__c);
-                        }
-                    }
-                    if(quoteItem.RAD__c != null){
-                        if(!this.mapService.get('RAD').mapRanges.containsKey(quoteItem.Rango_KM__c)){
-                            this.mapService.get('RAD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.RAD__c);
-                        }
-                    }
-                    if(quoteItem.EAD__c != null){
-                        if(!this.mapService.get('EAD').mapRanges.containsKey(quoteItem.Rango_KM__c)){
-                            this.mapService.get('EAD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);
-                        }
-                    }*/
-                    
                     if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
                         this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
     
@@ -1718,9 +1660,7 @@ public class Ctrl_pantalla_ww {
                     this.decSEG = quoteItem.SEG__c;
             }
         }
-        
         this.listRangeDestiny.addAll(setRange);
-       
         for(String keyFee: this.listFee){
             this.mapTotalByFee.put(keyFee, new QuoteWP());
             this.mapTotalByFeeZP.put(keyFee, new QuoteWP());
@@ -1741,14 +1681,11 @@ public class Ctrl_pantalla_ww {
                         this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
             }
         }
-       
         String strTarifa = '';
-      
         for(String keyRange: this.listRangeDestiny){
             this.mapTotalByRangeT7.put(keyRange, 0);
             this.mapTotalesT7ZP.put(keyRange, 0);
         }
-        
         for(String keyRange: this.listRangeT7){
             if (this.mapTotalesT7ZP.containsKey(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) && this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) == 0)
                 this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c,  this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
@@ -1758,7 +1695,7 @@ public class Ctrl_pantalla_ww {
                 this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, tempRangeCount + this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
             }
         }
-        
+            
         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
             if(quoteItem.Tarifa__c != 'TARIFA T7' && !quoteItem.ZonaPlus__c){
                 if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
@@ -1780,7 +1717,7 @@ public class Ctrl_pantalla_ww {
                 }
             }
         }
-        
+            
         for(String strkeyfee : this.listFeeT7){
             strTarifa = strkeyfee;
             if(strTarifa.contains('TARIFA T7_')){
@@ -1797,6 +1734,7 @@ public class Ctrl_pantalla_ww {
                 }
             }
         }
+            
         Integer blockCounter = 1;
         for(Decimal decW : this.mapGuide.keySet()){
             this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
@@ -1816,23 +1754,29 @@ public class Ctrl_pantalla_ww {
                 if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
                     this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').put(keyRange, (decFlete * 0.11));
                 }
-                    /*this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('EAD', new map<String, Decimal>());*/
                 if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').containsKey(keyRange)){
                     this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').put(keyRange, (decFlete * 0.11));
                 }
-                //}
             }
             blockCounter++;
         }
-            
-           
-            
-        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'range: ' + this.mapBlocksServ));
+        this.mapBlockAdic.put('ADD', new map<String, Decimal>());
+        this.mapBlockAdic.put('EAD', new map<String, Decimal>());
+        this.mapBlockAdic.put('RAD', new map<String, Decimal>());
+        this.mapBlockAdic.put('TOT', new map<String, Decimal>());
         for(String keyRange: this.listRangeDestiny){
             this.mapTotalByRange.put(keyRange, new QuoteWP());
             this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
             this.mapT7W.put(keyRange, 0);
             this.mapT7V.put(keyRange, 0);
+            Decimal decFlete = 0;
+            if(!this.mapBlockAdic.containsKey(keyRange)){
+                decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.22);
+                this.mapBlockAdic.get('ADD').put(keyRange, decFlete);
+                this.mapBlockAdic.get('EAD').put(keyRange, decFlete * 0.11);
+                this.mapBlockAdic.get('RAD').put(keyRange, decFlete * 0.11);
+                this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange) + this.mapBlockAdic.get('EAD').get(keyRange)));
+            }
         }
         for(String keyFee: this.listFee){
             for(String keyRange: this.listRangeDestiny){
@@ -1894,8 +1838,6 @@ public class Ctrl_pantalla_ww {
                 }
 
             }
-            
-            
             this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
             if(keyFee != 'TARIFA T7')
                 this.mapTotalByFeeZP.put(keyFee, new QuoteWP(countFeeZP, totalZP, amountZP));
@@ -1959,13 +1901,7 @@ public class Ctrl_pantalla_ww {
         calculateProjection();
         }
  /*codigo nuevo termino---------------------------------------------------------------------------------------------------------*/
-        
-        
- 
-       
-         
-    
-        
+                
         List<Tarifario_general_terrestre__c> listTarifas = [SELECT Id, Tarifa__c, PesoMaximo__c, VolumenMaximo__c
         FROM Tarifario_general_terrestre__c WHERE Year__c = null AND RangoKM__c = '0-400' AND Tarifa__c IN: setTarifas];
         mapTarifas = new Map<String, Tarifas>();
@@ -2133,6 +2069,8 @@ public class Ctrl_pantalla_ww {
         }
         return objPlantilla;
     }
+    
+    //metodos involucrados en el problema que presentamos a soporte tecnico.
      
     public static Decimal getFlete(Decimal decCustomerPrice, String strServiciosAdd, TempleateLine__c objtempleateItem){
         Decimal decFlete = 0;
@@ -2235,6 +2173,8 @@ public class Ctrl_pantalla_ww {
          decEad = (objtempleateItem.CustomerPrice__c - objtempleateItem.ACK__c - objtempleateItem.SEG__c) * 0.09;
          return decEad; //5.82
     }
+    
+    //fin de los metodos
     
     public void editTemplate(){
         for	(TempleateLine__c item: this.listPlantillaLineItems){
