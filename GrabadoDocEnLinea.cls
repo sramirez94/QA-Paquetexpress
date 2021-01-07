@@ -1,4 +1,5 @@
 public class GrabadoDocEnLinea {
+    public Wrapper wp                       {get;set;}
     public Id owner                         {get;set;}
     public Id Id                            {get;set;}
     public SBQQ__Quote__c cas               {get;set;}
@@ -16,6 +17,7 @@ public class GrabadoDocEnLinea {
     public String refrServiceId             {get;set;}
     public String trifType                  {get;set;}
     public String pieceMulti                {get;set;}
+    public List<String> listTarifas          {get;set;}
     public GrabadoDocEnLinea (ApexPages.StandardController controller){
         this.aprvUser       = '';
         this.destSite       = '';
@@ -25,6 +27,8 @@ public class GrabadoDocEnLinea {
         this.refrServiceId  = '';
         this.trifType       = '';
         this.pieceMulti     = '';
+        this.listTarifas    = new List<String>();
+        this.wp             = new Wrapper();
         try{
             this.cas                    = (SBQQ__Quote__c) controller.getRecord();
             this.Id                     = cas.Id;
@@ -218,13 +222,23 @@ public class GrabadoDocEnLinea {
         GrabadoBtnController gr;
         try{
             if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
-                ObjDocEnLinea.documentacionRemota odc       = new ObjDocEnLinea.documentacionRemota();
-                ObjDocEnLinea.header header                 = new ObjDocEnLinea.header();
-                ObjDocEnLinea.security sec                  = new ObjDocEnLinea.security();
-                ObjDocEnLinea.bodyDRemota body              = new ObjDocEnLinea.bodyDRemota();
-                ObjDocEnLinea.requestDRemota rq             = new ObjDocEnLinea.requestDRemota();
-                ObjDocEnLinea.dataDRemota data              = new ObjDocEnLinea.dataDRemota();
-
+                this.wp.listQuoteItem                                           = queryquoteitem(cotizacion.id);
+                ObjDocEnLinea.documentacionRemota odc                           = new ObjDocEnLinea.documentacionRemota();
+                ObjDocEnLinea.header header                                     = new ObjDocEnLinea.header();
+                ObjDocEnLinea.security sec                                      = new ObjDocEnLinea.security();
+                ObjDocEnLinea.bodyDRemota body                                  = new ObjDocEnLinea.bodyDRemota();
+                ObjDocEnLinea.requestDRemota rq                                 = new ObjDocEnLinea.requestDRemota();
+                ObjDocEnLinea.dataDRemota data                                  = new ObjDocEnLinea.dataDRemota();
+                ObjDocEnLinea.kmServicesTrifList kmServicesTrif                 = new ObjDocEnLinea.kmServicesTrifList();
+                ObjDocEnLinea.servicesTrifDtl servicesTrifDtl                   = new ObjDocEnLinea.servicesTrifDtl();
+                ObjDocEnLinea.serviceTrif serviceTrif                           = new ObjDocEnLinea.serviceTrif();
+                ObjDocEnLinea.kmServicesTrif kmServicesTrif1                    = new ObjDocEnLinea.kmServicesTrif();
+                List<ObjDocEnLinea.serviceTrif> listserviceTrif                 = new List<ObjDocEnLinea.serviceTrif>();
+                ObjDocEnLinea.servicesTrifDtlSub servicesTrifDtlSub             = new ObjDocEnLinea.servicesTrifDtlSub();
+                list<ObjDocEnLinea.kmServicesTrifList> listkmServicesTrif       = new List<ObjDocEnLinea.kmServicesTrifList>();
+                List<ObjDocEnLinea.servicesTrifDtlSub> listServicesTrifDtlS     = new List<ObjDocEnLinea.servicesTrifDtlSub>();
+                List<ObjDocEnLinea.kmServicesTrif> listkmServicesTrif1          = new List<ObjDocEnLinea.kmServicesTrif>();
+                List<ObjDocEnLinea.servicesTrifDtl> servicesTrifDtlList         = new List<ObjDocEnLinea.servicesTrifDtl>();
                 //30/12/2020 Salvador: Header y data
                 sec.user    = 'USERSALESFORCE';
                 sec.token   = '325746796331582000000';
@@ -234,20 +248,118 @@ public class GrabadoDocEnLinea {
                 data.aprvUser   = this.aprvUser;
                 data.trifType   = this.trifType;
                 data.pieceMulti = this.pieceMulti;
+
+                for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
+                    if(!this.listTarifas.contains(cot.Tarifa__c))
+                        this.listTarifas.add(cot.Tarifa__c);
+                }    
+                kmServicesTrif.fromKm                   = '0';
+                kmServicesTrif.toKm                     = '400';
+                for(String strTarifa : this.listTarifas){
+                    servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
+                    servicesTrifDtlSub.slabNo               = obtieneTarifa(strTarifa);
+                    for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
+                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                        serviceTrif.serviceId                   = 'SHP-E';
+                        serviceTrif.refServiceId                = 'ENVELOPES';
+                        serviceTrif.trifAmount                  = cot.SBQQ__CustomerPrice__c;
+                        serviceTrif.discount                    = cot.SBQQ__Discount__c;
+                        listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
+                        if(cot.EAD__C != null){
+                            serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                            serviceTrif.serviceId                   = 'EAD-1';
+                            serviceTrif.refServiceId                = 'EAD';
+                            serviceTrif.trifAmount                  = cot.EAD__c;
+                            serviceTrif.trifAmntBase                = 0;
+                            serviceTrif.discount                    = 0;
+                            listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
+                        }
+                        if(cot.RAD__C != null){
+                            serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                            serviceTrif.serviceId                   = 'RAD-1';
+                            serviceTrif.refServiceId                = 'RAD';
+                            serviceTrif.trifAmount                  = cot.RAD__c;
+                            serviceTrif.trifAmntBase                = 0;
+                            serviceTrif.discount                    = 0;
+                            listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
+                        }
+                    }
+                    servicesTrifDtlSub.serviceTrif          = listserviceTrif;
+                    listServicesTrifDtlS                    = new List<ObjDocEnLinea.servicesTrifDtlSub>{servicesTrifDtlSub};
+                }
+                listkmServicesTrif                      = new List<ObjDocEnLinea.kmServicesTrifList>{kmServicesTrif};
+                kmServicesTrif1.kmServicesTrif          = listkmServicesTrif;
+                listkmServicesTrif1                     = new List<ObjDocEnLinea.kmServicesTrif>{kmServicesTrif1};
+                data.kmConfig                           = listkmServicesTrif1;
+                servicesTrifDtl.servicesTrifDtl         = listServicesTrifDtlS;
+                servicesTrifDtlList                     = new List<ObjDocEnLinea.servicesTrifDtl>{servicesTrifDtl};
+                kmServicesTrif.servicesTrifDtl          = servicesTrifDtlList;
+                rq.data                                 = data;
+                body.request                            = rq;
+                odc.body                                = body;
+                /*for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
+                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                    servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
+                    kmServicesTrif.fromKm                   = '0';
+                    kmServicesTrif.toKm                     = '400';
+                    servicesTrifDtlSub.slabNo               = obtieneTarifa(cot.Tarifa__c);
+                    serviceTrif.serviceId                   = 'SHP-E';
+                    serviceTrif.refServiceId                = 'ENVELOPES';
+                    serviceTrif.trifAmount                  = cot.SBQQ__CustomerPrice__c;
+                    serviceTrif.discount                    = cot.SBQQ__Discount__c;
+                    listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
+                    servicesTrifDtlSub.serviceTrif          = listserviceTrif;
+                    kmServicesTrif.servicesTrifDtl          = listservicesTrifDtl;
+                    listServicesTrifDtlS                    = new List<ObjDocEnLinea.servicesTrifDtlSub>{servicesTrifDtlSub};
+                    listkmServicesTrif                      = new List<ObjDocEnLinea.kmServicesTrifList>{kmServicesTrif};
+                }*/
                 
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Se puede continuar con el proceso'));
+                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Serializado: ' + JSON.serialize(odc)));
             }else  gr.publicarEvento(false, 'Imposible continuar con el grabado, no cuenta con los datos necesarios.');
 
         } catch (Exception ex){
             System.debug('ValidacionDocLinea: '+ex.getLineNumber()+' '+ex.getMessage());
         }
     }
+    public static String obtieneTarifa(String tarifa){
+        if(tarifa == 'TARIFA SOBRE')
+            return 'S';
+        else if(tarifa == 'TARIFA T0')
+            return 'T0';
+        else if(tarifa == 'TARIFA T1')
+            return 'T1';
+        else if(tarifa == 'TARIFA T2')
+            return 'T2';
+        else if(tarifa == 'TARIFA T3')
+            return 'T3';
+        else if(tarifa == 'TARIFA T4')
+            return 'T4';
+        else if(tarifa == 'TARIFA T5')
+            return 'T5';
+        else if(tarifa == 'TARIFA T6')
+            return 'T6';
+        else if(tarifa == 'TARIFA T7V')
+            return 'T7V';
+        else if(tarifa == 'TARIFA T7P')
+            return 'T7P';
+        else if(tarifa == 'TARIFA T7')
+            return 'T7';
+        else return '';
+    }
     public void GrabarTarifaDocLinea(){
         try{
-            ValidacionDocLinea(this.cas);
+            iniciarGrabado(this.cas);
         } catch (Exception ex){
             System.debug('GrabarTarifaDocLinea ' + ex.getLineNumber() + ' ' + ex.getMessage());
         }
-
+    }
+    public static List<SBQQ__QuoteLine__c> queryquoteitem(String Id){
+        return[SELECT Id, Rango_KM__c, Destiny__c, ACK__c, RAD__c, EAD__c, SBQQ__CustomerPrice__c, SBQQ__Discount__c,Tarifa__c FROM SBQQ__QuoteLine__c WHERE SBQQ__QUOTE__C = : Id AND Rango_KM__c = '0-400'];
+    }
+    public class Wrapper{
+        public List<SBQQ__QuoteLine__c> listQuoteItem   {get; set;}
+        public Wrapper(){
+            this.listQuoteItem  = new List<SBQQ__QuoteLine__c>();
+        }
     }
 }
