@@ -1,23 +1,24 @@
 public class GrabadoDocEnLinea {
-    public Wrapper wp                       {get;set;}
-    public Id owner                         {get;set;}
-    public Id Id                            {get;set;}
-    public SBQQ__Quote__c cas               {get;set;}
-    public string tipoDocumentacion         {get;set;}
-    public Id cuenta                        {get;set;}
-    public string idSipWeb                  {get;set;}
-    public date fechaVigencia               {get;set;}
-    public Boolean grabadoUnico             {get;set;}
-    public Boolean confirmacionGrabadoUnico {get;set;}
-    public String aprvUser                  {get;set;}
-    public String orgnSite                  {get;set;}
-    public String destSite                  {get;set;}
-    public String factor                    {get;set;}
-    public String serviceId                 {get;set;}
-    public String refrServiceId             {get;set;}
-    public String trifType                  {get;set;}
-    public String pieceMulti                {get;set;}
-    public List<String> listTarifas          {get;set;}
+    public Wrapper wp                                   {get;set;}
+    public Id owner                                     {get;set;}
+    public Id Id                                        {get;set;}
+    public SBQQ__Quote__c cas                           {get;set;}
+    public string tipoDocumentacion                     {get;set;}
+    public Id cuenta                                    {get;set;}
+    public string idSipWeb                              {get;set;}
+    public date fechaVigencia                           {get;set;}
+    public Boolean grabadoUnico                         {get;set;}
+    public Boolean confirmacionGrabadoUnico             {get;set;}
+    public String aprvUser                              {get;set;}
+    public String orgnSite                              {get;set;}
+    public String destSite                              {get;set;}
+    public String factor                                {get;set;}
+    public String serviceId                             {get;set;}
+    public String refrServiceId                         {get;set;}
+    public String trifType                              {get;set;}
+    public String pieceMulti                            {get;set;}
+    public List<String> listTarifas                     {get;set;}
+    public Map<String, SBQQ__QuoteLine__c> mapQuotes    {get;set;}
     public GrabadoDocEnLinea (ApexPages.StandardController controller){
         this.aprvUser       = '';
         this.destSite       = '';
@@ -29,6 +30,7 @@ public class GrabadoDocEnLinea {
         this.pieceMulti     = '';
         this.listTarifas    = new List<String>();
         this.wp             = new Wrapper();
+        this.mapQuotes      = new Map<String,SBQQ__QuoteLine__c>();
         try{
             this.cas                    = (SBQQ__Quote__c) controller.getRecord();
             this.Id                     = cas.Id;
@@ -252,68 +254,58 @@ public class GrabadoDocEnLinea {
                 for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
                     if(!this.listTarifas.contains(cot.Tarifa__c))
                         this.listTarifas.add(cot.Tarifa__c);
+                    if(!this.mapQuotes.containsKey(cot.Tarifa__c)){
+                        this.mapQuotes.put(cot.Tarifa__c, cot);
+                    }
                 }    
                 kmServicesTrif.fromKm                   = '0';
                 kmServicesTrif.toKm                     = '400';
                 for(String strTarifa : this.listTarifas){
+                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                     servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
+                    listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
                     servicesTrifDtlSub.slabNo               = obtieneTarifa(strTarifa);
-                    for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
-                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                        serviceTrif.serviceId                   = 'SHP-E';
+                    serviceTrif.serviceId                   = 'SHP-E';
+                    if(strTarifa == 'TARIFA SOBRE')
                         serviceTrif.refServiceId                = 'ENVELOPES';
-                        serviceTrif.trifAmount                  = cot.SBQQ__CustomerPrice__c;
-                        serviceTrif.discount                    = cot.SBQQ__Discount__c;
-                        listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
-                        if(cot.EAD__C != null){
-                            serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                            serviceTrif.serviceId                   = 'EAD-1';
-                            serviceTrif.refServiceId                = 'EAD';
-                            serviceTrif.trifAmount                  = cot.EAD__c;
-                            serviceTrif.trifAmntBase                = 0;
-                            serviceTrif.discount                    = 0;
-                            listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
-                        }
-                        if(cot.RAD__C != null){
-                            serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                            serviceTrif.serviceId                   = 'RAD-1';
-                            serviceTrif.refServiceId                = 'RAD';
-                            serviceTrif.trifAmount                  = cot.RAD__c;
-                            serviceTrif.trifAmntBase                = 0;
-                            serviceTrif.discount                    = 0;
-                            listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
-                        }
+                    else
+                        serviceTrif.refServiceId                = 'PACKETS';
+                    serviceTrif.trifAmount                  = this.mapQuotes.get(strTarifa).SBQQ__CustomerPrice__c;
+                    serviceTrif.discount                    = this.mapQuotes.get(strTarifa).SBQQ__Discount__c;
+                    serviceTrif.trifAmntBase                = 0;
+                    listserviceTrif.add(serviceTrif);
+                    if(this.mapQuotes.get(strTarifa).EAD__C != null){
+                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                        serviceTrif.serviceId                   = 'EAD-1';
+                        serviceTrif.refServiceId                = 'EAD';
+                        serviceTrif.trifAmount                  = this.mapQuotes.get(strTarifa).EAD__c;
+                        serviceTrif.trifAmntBase                = 0;
+                        serviceTrif.discount                    = 0;
+                        listserviceTrif.add(serviceTrif);
+                    }
+                    if(this.mapQuotes.get(strTarifa).RAD__C != null){
+                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                        serviceTrif.serviceId                   = 'RAD-1';
+                        serviceTrif.refServiceId                = 'RAD';
+                        serviceTrif.trifAmount                  = this.mapQuotes.get(strTarifa).RAD__c;
+                        serviceTrif.trifAmntBase                = 0;
+                        serviceTrif.discount                    = 0;
+                        listserviceTrif.add(serviceTrif);
                     }
                     servicesTrifDtlSub.serviceTrif          = listserviceTrif;
-                    listServicesTrifDtlS                    = new List<ObjDocEnLinea.servicesTrifDtlSub>{servicesTrifDtlSub};
-                }
+                    listServicesTrifDtlS.add(servicesTrifDtlSub);
+                }                
                 listkmServicesTrif                      = new List<ObjDocEnLinea.kmServicesTrifList>{kmServicesTrif};
                 kmServicesTrif1.kmServicesTrif          = listkmServicesTrif;
                 listkmServicesTrif1                     = new List<ObjDocEnLinea.kmServicesTrif>{kmServicesTrif1};
                 data.kmConfig                           = listkmServicesTrif1;
-                servicesTrifDtl.servicesTrifDtl         = listServicesTrifDtlS;
                 servicesTrifDtlList                     = new List<ObjDocEnLinea.servicesTrifDtl>{servicesTrifDtl};
-                kmServicesTrif.servicesTrifDtl          = servicesTrifDtlList;
+                kmServicesTrif.servicesTrifDtl          = listServicesTrifDtlS;
                 rq.data                                 = data;
                 body.request                            = rq;
                 odc.body                                = body;
-                /*for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
-                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                    servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
-                    kmServicesTrif.fromKm                   = '0';
-                    kmServicesTrif.toKm                     = '400';
-                    servicesTrifDtlSub.slabNo               = obtieneTarifa(cot.Tarifa__c);
-                    serviceTrif.serviceId                   = 'SHP-E';
-                    serviceTrif.refServiceId                = 'ENVELOPES';
-                    serviceTrif.trifAmount                  = cot.SBQQ__CustomerPrice__c;
-                    serviceTrif.discount                    = cot.SBQQ__Discount__c;
-                    listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>{serviceTrif};
-                    servicesTrifDtlSub.serviceTrif          = listserviceTrif;
-                    kmServicesTrif.servicesTrifDtl          = listservicesTrifDtl;
-                    listServicesTrifDtlS                    = new List<ObjDocEnLinea.servicesTrifDtlSub>{servicesTrifDtlSub};
-                    listkmServicesTrif                      = new List<ObjDocEnLinea.kmServicesTrifList>{kmServicesTrif};
-                }*/
-                
+                header.security                         = sec;
+                odc.header                              = header;
                 ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Serializado: ' + JSON.serialize(odc)));
             }else  gr.publicarEvento(false, 'Imposible continuar con el grabado, no cuenta con los datos necesarios.');
 
