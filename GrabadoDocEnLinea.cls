@@ -222,6 +222,7 @@ public class GrabadoDocEnLinea {
     }
     public void ValidacionDocLinea(SBQQ__Quote__c cotizacion){
         GrabadoBtnController gr;
+        String strOrigen = '';
         try{
             if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
                 this.wp.listQuoteItem                                           = queryquoteitem(cotizacion.id);
@@ -241,6 +242,7 @@ public class GrabadoDocEnLinea {
                 List<ObjDocEnLinea.servicesTrifDtlSub> listServicesTrifDtlS     = new List<ObjDocEnLinea.servicesTrifDtlSub>();
                 List<ObjDocEnLinea.kmServicesTrif> listkmServicesTrif1          = new List<ObjDocEnLinea.kmServicesTrif>();
                 List<ObjDocEnLinea.servicesTrifDtl> servicesTrifDtlList         = new List<ObjDocEnLinea.servicesTrifDtl>();
+                strOrigen = queryObtieneOrigen(cotizacion.id);
                 //30/12/2020 Salvador: Header y data
                 sec.user    = 'USERSALESFORCE';
                 sec.token   = '325746796331582000000';
@@ -347,6 +349,12 @@ public class GrabadoDocEnLinea {
     }
     public static List<SBQQ__QuoteLine__c> queryquoteitem(String Id){
         return[SELECT Id, Rango_KM__c, Destiny__c, ACK__c, RAD__c, EAD__c, SBQQ__CustomerPrice__c, SBQQ__Discount__c,Tarifa__c FROM SBQQ__QuoteLine__c WHERE SBQQ__QUOTE__C = : Id AND Rango_KM__c = '0-400'];
+    }
+    public static String queryObtieneOrigen(String Id){
+        SBQQ__Quote__c cot = [SELECT Plaza__c FROM SBQQ__QUOTE__C WHERE ID = : Id];
+        if(cot.Plaza__c != null)
+            return cot.Plaza__c;
+        else return '';
     }
     public class Wrapper{
         public List<SBQQ__QuoteLine__c> listQuoteItem   {get; set;}
