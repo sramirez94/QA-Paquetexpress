@@ -24,15 +24,18 @@ public class ObjDocEnLinea {
         public string slabNo;
     }
     public class ptpServicesTrif{
-		public string orgnSite;
+		public List<ptpServicesTrifSub> ptpServicesTrif;
+    }
+    public class ptpServicesTrifSub{
+        public string orgnSite;
         public string destSite;
         public string serviceTrif;
-        public List<servicesTrifDtl> servicesTrifDtl;
+        public List<servicesTrifDtlSub> servicesTrifDtl;
     }
     
     public class dataDRemota{
         public string clntId;
-        public string quotation;
+        //public string quotation;
         public string aprvUser;
         public string trifType;
         public string pieceMulti;
@@ -40,13 +43,13 @@ public class ObjDocEnLinea {
         public List<kmServicesTrif> kmConfig;
     }
     public class kmServicesTrif{
-        public List<kmServicesTrifList> servicesTrifDtl;
+        public List<kmServicesTrifList> kmServicesTrif;
     }
 	public class kmServicesTrifList{
         public string fromKm;
         public string toKm;
         public List<serviceTrif> serviceTrif;
-        public List<servicesTrifDtl> servicesTrifDtl;
+        public List<servicesTrifDtlSub> servicesTrifDtl;
         public List<serviceTrifCbe> servicesTrifCbe;
     }    
     public class serviceTrifCbe{
