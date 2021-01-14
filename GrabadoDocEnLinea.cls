@@ -589,7 +589,7 @@ public class GrabadoDocEnLinea {
                         serviceTrif.trifAmntBase                    = 0;
                         serviceTrif.discount                        = 0;
                         serviceTrif.factor                          = 'NON';
-                        serviceTrif.servicesCant                    = this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Option__c;
+                        serviceTrif.servicesCant                    = obtieneservicesCant(this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Option__c);
                         listotherServiceTrif.add(serviceTrif);
                     }
                     ptpServicesTrifSub.servicesTrifDtl      = listServicesTrifDtlS;
@@ -698,6 +698,11 @@ public class GrabadoDocEnLinea {
             return 'EAD-CITA-1';
         else if (nombre == 'EAD-CITA-1')
             return 'EAD-CITA';
+        else return '';
+    }
+    public static String obtieneservicesCant(String servicesCant){
+        if(servicesCant == 'Guía')
+            return 'G';
         else return '';
     }
     public void GrabarTarifaDocLinea(){
