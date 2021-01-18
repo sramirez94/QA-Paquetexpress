@@ -535,18 +535,22 @@ public class GrabadoDocEnLinea {
                         serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                         serviceTrif.serviceId                   = 'EXT-1';
                         serviceTrif.refServiceId                = 'EXT';
-                        serviceTrif.trifAmount                  = decEADZP;
+                        if(decEADZP != 0)
+                            serviceTrif.trifAmount              = decEADZP;
+                        else serviceTrif.trifAmount             = 1;
                         serviceTrif.discount                    = 0;
                         serviceTrif.trifAmntBase                = 0;
                         serviceTrif.factor                      = 'NON';
                         listserviceTrif.add(serviceTrif);
                     }
-                    if(blnRango){
-                        if(!listserviceTrif.isEmpty())
-                            kmServicesTrif.serviceTrif = listserviceTrif;
-                    }else{
-                        if(!listserviceTrif.isEmpty())
-                            ptpServicesTrifSub.serviceTrif = listserviceTrif;
+                    if(this.blnACK || this.blnZP){
+                        if(blnRango){
+                            if(!listserviceTrif.isEmpty())
+                                kmServicesTrif.serviceTrif = listserviceTrif;
+                        }else{
+                            if(!listserviceTrif.isEmpty())
+                                ptpServicesTrifSub.serviceTrif = listserviceTrif;
+                        }
                     }
                     if(this.blnTarifasExp){
                         for(String strTarifa: this.listTarifasExp){
@@ -559,7 +563,9 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.factor                       = 'KG';
                             serviceTrifCbe.serviceId                    = strTarifa;
                             serviceTrifCbe.refServiceId                 = obtieneTarifaExpress(strTarifa);
-                            serviceTrif.trifAmount                      = this.mapQuotesExp.get(strTarifa).get(strRange).SBQQ__CustomerPrice__c;
+                            if(this.mapQuotesExp.get(strTarifa).get(strRange).SBQQ__CustomerPrice__c != 0)
+                                serviceTrif.trifAmount                  = this.mapQuotesExp.get(strTarifa).get(strRange).SBQQ__CustomerPrice__c;
+                            else serviceTrif.trifAmount                 = 1;
                             serviceTrif.trifAmntBase                    = 0;
                             serviceTrif.discount                        = this.mapQuotesExp.get(strTarifa).get(strRange).SBQQ__Discount__c;
                             serviceTrif.factor                          = 'KG';
@@ -574,7 +580,9 @@ public class GrabadoDocEnLinea {
                             serviceTrif                                 = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.serviceId                       = obtieneNombreServAdic(strTarifa);
                             serviceTrif.refServiceId                    = obtieneNombreServAdic(serviceTrif.serviceId);
-                            serviceTrif.trifAmount                      = this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Amount__c;
+                            if(this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Amount__c != 0)
+                                serviceTrif.trifAmount                  = this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Amount__c;
+                            else serviceTrif.trifAmount                 = 1;
                             serviceTrif.trifAmntBase                    = 0;
                             serviceTrif.discount                        = 0;
                             serviceTrif.factor                          = 'NON';
@@ -612,7 +620,7 @@ public class GrabadoDocEnLinea {
                 odc.header                              = header;
                 ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
                 //if(!System.isScheduled()){
-                    /*if(!cotizacion.Electronicas__c){
+                    if(!cotizacion.Electronicas__c){
                         if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion))
                             grab.publicarEvento(true,null);
                     }else if(cotizacion.Electronicas__c){
