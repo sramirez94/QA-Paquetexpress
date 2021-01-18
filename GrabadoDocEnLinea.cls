@@ -251,6 +251,7 @@ public class GrabadoDocEnLinea {
                 //30/12/2020 Salvador: Comienza creación del body
                 data.quotation  = cotizacion.Name; //30/12/2020 Salvador: Nombre de la cotización, ej: Q-0245
                 data.clntId     = cotizacion.SBQQ__Account__r.Id_SIpWeb__c; //30/12/2020 Salvador: Id de sipweb del cliente
+                System.debug('aprvUser (ValidaGrabado): ' + this.aprvUser);
                 data.aprvUser   = this.aprvUser;
                 if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km')
                     data.trifType = 'A';
@@ -302,7 +303,7 @@ public class GrabadoDocEnLinea {
                 mapSSOption = getPicklistValues('PAQ_SpecialService__c', 'Option__c');
                 for(PAQ_SpecialService__c itemSS : querySS(Cotizacion.id)){
                     if(String.isNotBlank(itemSS.Destiny__c))
-                        itemSS.RangoKM__c = itemSS.Destiny__c + ' ('+ itemSS.RangoKM__c +')';
+                        itemSS.RangoKM__c = itemSS.Destiny__c;
                     this.ServiciosEspeciales = true;
                     itemSS.Option__c = mapSSOption.get(itemSS.Option__c);
                     SS service = new SS(itemSS.MainDesinations__c, itemSS.Potencial__c);
@@ -557,7 +558,7 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe                              = new ObjDocEnLinea.serviceTrifCbe();
                             serviceTrif                                 = new ObjDocEnLinea.serviceTrif();
                             listserviceTrif                             = new List<ObjDocEnLinea.serviceTrif>();
-                            if(this.mapQuotesExp.get(strTarifa).get(strRange).KG_Adicional__c != null)
+                            if(this.mapQuotesExp.get(strTarifa).get(strRange).KG_Adicional__c != 0)
                                 serviceTrifCbe.trifAmountExce               = this.mapQuotesExp.get(strTarifa).get(strRange).KG_Adicional__c;
                             else serviceTrifCbe.trifAmountExce              = 1;
                             serviceTrifCbe.factor                       = 'KG';
@@ -577,6 +578,7 @@ public class GrabadoDocEnLinea {
                     }
                     if(this.ServiciosEspeciales){
                         for(String strTarifa : this.listSS){
+                            System.debug('servicesCant: ' + this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Option__c);
                             serviceTrif                                 = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.serviceId                       = obtieneNombreServAdic(strTarifa);
                             serviceTrif.refServiceId                    = obtieneNombreServAdic(serviceTrif.serviceId);
@@ -594,25 +596,34 @@ public class GrabadoDocEnLinea {
                         kmServicesTrif.servicesTrifDtl          = listServicesTrifDtlS;
                     else ptpServicesTrifSub.servicesTrifDtl     = listServicesTrifDtlS;
                     if(!listserviceTrifCbe.isEmpty()){
-                        kmServicesTrif.servicesTrifCbe          = listserviceTrifCbe;
-                        ptpServicesTrifSub.servicesTrifCbe      = listserviceTrifCbe;
+                        if(blnRango)
+                            kmServicesTrif.servicesTrifCbe          = listserviceTrifCbe;
+                        else ptpServicesTrifSub.servicesTrifCbe      = listserviceTrifCbe;
                     }
                     if(!listotherServiceTrif.isEmpty()){
-                        kmServicesTrif.otherServiceTrif         = listotherServiceTrif;
-                        ptpServicesTrifSub.otherServiceTrif     = listotherServiceTrif;
+                        if(blnRango)
+                            kmServicesTrif.otherServiceTrif         = listotherServiceTrif;
+                        else ptpServicesTrifSub.otherServiceTrif     = listotherServiceTrif;
                     }
                     if(blnDest)
                         listptpServicesTrifS.add(ptpServicesTrifSub);
-                    if(blnRango)
-                        listkmServicesTrif.add(kmServicesTrif);
+                    if(blnRango){
+                        if(kmServicesTrif != null)
+                            listkmServicesTrif.add(kmServicesTrif);
+                    }
                 }
                 servicesTrifDtlList                     = new List<ObjDocEnLinea.servicesTrifDtl>{servicesTrifDtl};
-                kmServicesTrif1.kmServicesTrif          = listkmServicesTrif;
-                listkmServicesTrif1                     = new List<ObjDocEnLinea.kmServicesTrif>{kmServicesTrif1};
-                data.kmConfig                           = listkmServicesTrif1;
-                ptpServicesTrif.ptpServicesTrif         = listptpServicesTrifS;
+                if(listkmServicesTrif != null && listkmServicesTrif.size() != 0)
+                    kmServicesTrif1.kmServicesTrif          = listkmServicesTrif;
+                if(kmServicesTrif1 != null && kmServicesTrif1.kmServicesTrif != null)
+                    listkmServicesTrif1.add(kmServicesTrif1);
+                if(listkmServicesTrif1.size() != 0 && listkmServicesTrif1 != null)
+                    data.kmConfig                           = listkmServicesTrif1;
+                if(!listptpServicesTrifS.isEmpty() && listptpServicesTrifS != null)
+                    ptpServicesTrif.ptpServicesTrif         = listptpServicesTrifS;
                 listptpServicesTrif                     = new list<ObjDocEnLinea.ptpServicesTrif>{ptpServicesTrif};
-                data.ptpConfig                          = listptpServicesTrif;
+                if(!listptpServicesTrif.isEmpty())
+                    data.ptpConfig                          = listptpServicesTrif;
                 rq.data                                 = data;
                 body.request                            = rq;
                 odc.body                                = body;
@@ -629,9 +640,9 @@ public class GrabadoDocEnLinea {
                                 grab.publicarEvento(true,null);
                         }
                     }
-                    /*else
+                    else
                         grab.publicarEvento(false,'No se pudo realizar el grabado');
-                }
+                /*}
                 else
                     grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion);*/
             }else {
