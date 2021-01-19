@@ -578,7 +578,6 @@ public class GrabadoDocEnLinea {
                     }
                     if(this.ServiciosEspeciales){
                         for(String strTarifa : this.listSS){
-                            System.debug('servicesCant: ' + this.wp.mapSS.get(strTarifa).mapRanges.get(strRange).Option__c);
                             serviceTrif                                 = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.serviceId                       = obtieneNombreServAdic(strTarifa);
                             serviceTrif.refServiceId                    = obtieneNombreServAdic(serviceTrif.serviceId);
@@ -631,7 +630,7 @@ public class GrabadoDocEnLinea {
                 odc.header                              = header;
                 ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
                 //if(!System.isScheduled()){
-                    if(!cotizacion.Electronicas__c){
+                    /*if(!cotizacion.Electronicas__c){
                         if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion))
                             grab.publicarEvento(true,null);
                     }else if(cotizacion.Electronicas__c){
