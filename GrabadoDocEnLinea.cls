@@ -58,14 +58,8 @@ public class GrabadoDocEnLinea {
         this.listTarifas                    = new List<String>();
         this.listTarifasExp                 = new List<String>();
         this.listRangeDestiny               = new List<String>();
-        this.listSS                         = new List<String>(); /*{
-                                                    'Maniobras'
-                                                    , 'EAD con cita'
-                                                    , 'EAD a Detalle'
-                                                    , 'Special Packing'
-                                                    , 'Pick&Pack'
-                                                    , 'Cruce Fronterizo'
-                                            };*/
+        this.listSS                         = new List<String>();
+        this.listPlantillaLineItems         = new List<TempleateLine__c>();
         this.wp                             = new Wrapper();
         this.mapQuotes                      = new Map<String,SBQQ__QuoteLine__c>();
         this.mapQuotesExp                   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
@@ -251,19 +245,18 @@ public class GrabadoDocEnLinea {
                 //30/12/2020 Salvador: Comienza creación del body
                 data.quotation  = cotizacion.Name; //30/12/2020 Salvador: Nombre de la cotización, ej: Q-0245
                 data.clntId     = cotizacion.SBQQ__Account__r.Id_SIpWeb__c; //30/12/2020 Salvador: Id de sipweb del cliente
-                System.debug('aprvUser (ValidaGrabado): ' + this.aprvUser);
                 data.aprvUser   = this.aprvUser;
                 if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km')
                     data.trifType = 'A';
                 else data.trifType   = 'C';
                 data.pieceMulti = this.pieceMulti;
-                /*for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
+                for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
                     if(line.Zona_Plus__c )
                         this.blnZP = true;
                     if(String.isNotBlank(line.Destiny__c))
                         line.Rango_KM__c = line.Destiny__c;
                     this.listPlantillaLineItems.add(line);          
-                }*/
+                }
                 for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
                     if(cot.Tarifa__c != 'SEG-DS' && cot.Tarifa__c != 'SEG-2D'){
                         if(!this.listTarifas.contains(cot.Tarifa__c))
@@ -630,7 +623,7 @@ public class GrabadoDocEnLinea {
                 odc.header                              = header;
                 ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
                 //if(!System.isScheduled()){
-                    /*if(!cotizacion.Electronicas__c){
+                    if(!cotizacion.Electronicas__c){
                         if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion))
                             grab.publicarEvento(true,null);
                     }else if(cotizacion.Electronicas__c){
