@@ -112,7 +112,7 @@ public class GrabadoDocEnLinea {
                 sec.token = '325746796331582000000';
                 rdpH.security = sec;    
                 rdp.header= rdpH;
-                ddP.clntId = '1145777';
+                ddP.clntId = cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
                 req.data = ddP;
                 bdp.request = req;
                 rdp.body = bdp;
@@ -143,9 +143,22 @@ public class GrabadoDocEnLinea {
     public Boolean ProcesaResponse(HTTPResponse res,SBQQ__Quote__c cotizacion){
         try{
             String Respuesta = res.getBody();
+            String strRange = '';
             respuesta = respuesta.replace('time', 'timeR');
-            DefinicionesServiciosGrabado.responseODC rg = (DefinicionesServiciosGrabado.responseODC)JSON.deserializeStrict(respuesta, DefinicionesServiciosGrabado.responseODC.class);
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(rg)));
+            List<String> rangos = new List<String>();
+            list<String> tarifas = new List<String>();
+            ObjDocEnLinea.documentacionRemota rg = (ObjDocEnLinea.documentacionRemota)JSON.deserialize(respuesta, ObjDocEnLinea.documentacionRemota.class);
+            for(Integer x = 0; x < rg.body.response.data.kmConfig[0].kmServicesTrif.size();x++){
+                strRange = '';
+                strRange = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + '-' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
+                if(!rangos.contains(strRange))
+                    rangos.add(strRange);
+                for(Integer i = 0; i < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl.size(); i ++){
+                    if(!tarifas.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo))
+                        tarifas.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo);
+                }
+            }
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + tarifas));
             this.aprvUser   = rg.body.response.data.aprvUser;
             this.trifType   = rg.body.response.data.trifType;
             this.pieceMulti = rg.body.response.data.pieceMulti;
@@ -460,6 +473,13 @@ public class GrabadoDocEnLinea {
                                 serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
                                 serviceTrif.discount                    = 0;//this.mapQuotes.get(strTarifa).SBQQ__Discount__c;
                                 serviceTrif.trifAmntBase                = 0;
+                                if(strTarifa == 'TARIFA T7-V'){
+                                    serviceTrif.factor                  = 'CUM';
+                                    serviceTrif.factorValue             = this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                } else if(strTarifa == 'TARIFA T7-P'){
+                                    serviceTrif.factor                  = 'KG';
+                                    serviceTrif.factorValue             = this.mapTLines.get(strTarifa).get(strRange).Weight__c;
+                                }
                                 listserviceTrif.add(serviceTrif);
                                 if(this.blnEAD){
                                     serviceTrif                             = new ObjDocEnLinea.serviceTrif();
@@ -499,28 +519,28 @@ public class GrabadoDocEnLinea {
                                 serviceTrif.serviceId                   = 'SHP-G';
                                 serviceTrif.refServiceId                = 'PACKETS';
                                 if(this.mapTLines.get(strTarifa).get(strRange).FLETE__c != 0)
-                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
+                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
                                 else serviceTrif.trifAmount                 = 1;
                                 serviceTrif.discount                    = 0;//this.mapTLines.get(strTarifa).get(strRange).SBQQ__Discount__c;
                                 serviceTrif.trifAmntBase                = 0;
                                 listserviceTrif.add(serviceTrif);
-                                if(this.mapTLines.get(strTarifa).get(strRange).EAD__C != null){
+                                if(this.blnEAD){
                                     serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                                     serviceTrif.serviceId                   = 'EAD-1';
                                     serviceTrif.refServiceId                = 'EAD';
                                     if(this.mapTLines.get(strTarifa).get(strRange).EAD__c != 0)
-                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).EAD__c;
+                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
                                     else serviceTrif.trifAmount             = 1;
                                     serviceTrif.trifAmntBase                = 0;
                                     serviceTrif.discount                    = 0;
                                     listserviceTrif.add(serviceTrif);
                                 }
-                                if(this.mapTLines.get(strTarifa).get(strRange).RAD__C != null){
+                                if(this.blnRAD){
                                     serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                                     serviceTrif.serviceId                   = 'RAD-1';
                                     serviceTrif.refServiceId                = 'RAD';
                                     if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0)
-                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c;
+                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
                                     else serviceTrif.trifAmount             = 1;
                                     serviceTrif.trifAmntBase                = 0;
                                     serviceTrif.discount                    = 0;
@@ -535,25 +555,28 @@ public class GrabadoDocEnLinea {
                                 servicesTrifDtlSub.slabNo               = 'T7V';
                                 serviceTrif.serviceId                   = 'SHP-G';
                                 serviceTrif.refServiceId                = 'PACKETS';
-                                serviceTrif.trifAmount                  = 1;
+                                serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
                                 serviceTrif.discount                    = 0;
                                 serviceTrif.trifAmntBase                = 0;
                                 listserviceTrif.add(serviceTrif);
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif.serviceId                   = 'EAD-1';
-                                serviceTrif.refServiceId                = 'EAD';
-                                serviceTrif.trifAmount                  = 0.10;
-                                serviceTrif.discount                    = 0;
-                                serviceTrif.trifAmntBase                = 0;
-                                listserviceTrif.add(serviceTrif);
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif.serviceId                   = 'RAD-1';
-                                serviceTrif.refServiceId                = 'RAD';
-                                serviceTrif.trifAmount                  = 0.10;
-                                serviceTrif.discount                    = 0;
-                                serviceTrif.trifAmntBase                = 0;
-                                listserviceTrif.add(serviceTrif);
-    
+                                if(this.blnEAD){
+                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                    serviceTrif.serviceId                   = 'EAD-1';
+                                    serviceTrif.refServiceId                = 'EAD';
+                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                    serviceTrif.discount                    = 0;
+                                    serviceTrif.trifAmntBase                = 0;
+                                    listserviceTrif.add(serviceTrif);
+                                }
+                                if(this.blnRAD){
+                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                    serviceTrif.serviceId                   = 'RAD-1';
+                                    serviceTrif.refServiceId                = 'RAD';
+                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                    serviceTrif.discount                    = 0;
+                                    serviceTrif.trifAmntBase                = 0;
+                                    listserviceTrif.add(serviceTrif);
+                                }
                                 servicesTrifDtlSub.serviceTrif          = listserviceTrif;
                                 listServicesTrifDtlS.add(servicesTrifDtlSub);
                             }
