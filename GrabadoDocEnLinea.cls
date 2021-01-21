@@ -17,6 +17,7 @@ public class GrabadoDocEnLinea {
     public Boolean blnZP                                                {get;set;}
     public Boolean ServiciosEspeciales                                  {get;set;}
     public Boolean blnTarifasExp                                        {get;set;}
+    public Boolean blnTieneTarifasRegistradas                           {get;set;}
     public String aprvUser                                              {get;set;}
     public String orgnSite                                              {get;set;}
     public String destSite                                              {get;set;}
@@ -31,11 +32,12 @@ public class GrabadoDocEnLinea {
     public List<TempleateLine__c> listPlantillaLineItems                {get;set;}
     public List<String> listRangeDestiny                                {get;set;}
     public List<String> listSS                                          {get;set;}
-    public Map<String, SBQQ__QuoteLine__c> mapQuotes                    {get;set;}
+    public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotes       {get;set;}
     public Map<String, Map<String, TempleateLine__c>> mapTLines         {get;set;}
     public Map<String, Map<String, TempleateLine__c>> mapTLinesExp      {get;set;}
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotesExp    {get;set;}
     public Map<String, Decimal> mapAcuse                                {get;set;}
+    public Map<String, String> mapTarifasRegistradas                    {get;set;}
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapPlantillas   {get;set;}
     public Map<String, Map<String, PAQ_SpecialService__c>> mapRanges    {get;set;}
     public Templeate__c objtempleate                                    {get;set;}
@@ -57,6 +59,7 @@ public class GrabadoDocEnLinea {
         this.blnZP                          = false;
         this.ServiciosEspeciales            = false;
         this.blnTarifasExp                  = false;
+        this.blnTieneTarifasRegistradas     = false;
         this.listTarifas                    = new List<String>();
         this.listTarifasExp                 = new List<String>();
         this.listRangeDestiny               = new List<String>();
@@ -66,6 +69,7 @@ public class GrabadoDocEnLinea {
         this.mapQuotes                      = new Map<String,SBQQ__QuoteLine__c>();
         this.mapQuotesExp                   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
         this.mapAcuse                       = new Map<String,Decimal>();
+        this.mapTarifasRegistradas          = new Map<String, String>();
         this.mapRanges                      = new Map<String, Map<String, PAQ_SpecialService__c>>();
         this.mapTLines                      = new Map<String, Map<String, TempleateLine__c>>();
         this.mapTLinesExp                   = new Map<String, Map<String, TempleateLine__c>>();
@@ -79,9 +83,9 @@ public class GrabadoDocEnLinea {
             fechaVigencia                   = cas.Flujo_del_mes__c;
             grabadoUnico                    = cas.Descuento_prepago_unico__c;
             confirmacionGrabadoUnico        = cas.Confirmacion_de_Grabado_Unico__c;
-            if(ObtieneInfoResponse(cas))
+            /*if(ObtieneInfoResponse(cas))
                 System.debug('ejecutó correctamente');
-            else System.debug('error al obtener response');
+            else System.debug('error al obtener response');*/
         }catch (Exception ex){
             System.debug('Error en el constructor ' +ex.getLineNumber()+' '+EX.getMessage());
             strMensajeError = 'Error al iniciar. Contacte a un consultor de salesforce';
@@ -91,6 +95,8 @@ public class GrabadoDocEnLinea {
         Boolean resultado   = false;
         strMensajeError     = '';
         blnMostrarMensaje   = false;
+        Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
+        GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
                 String endpoint = Label.Grabado_DocLinea;
@@ -119,51 +125,59 @@ public class GrabadoDocEnLinea {
                 if(ObtieneInfoSipweb(JSON.serialize(rdp), endpoint, cotizacion)){
                     System.debug('obtuvo info sipweb');
                 }
+                iniciarGrabado(cotizacion);
                 resultado = true;
             }
         }catch (Exception ex){
             System.debug('Error al obtener response '+ex.getLineNumber()+' '+EX.getMessage());
-            strMensajeError = 'Error al obtener información de sipweb';
-            blnMostrarMensaje = true;
+            /*strMensajeError = 'Error al obtener información de sipweb';
+            blnMostrarMensaje = true;*/
+            gr.publicarEvento(false, 'Error al obtener response: ' + ex.getLineNumber() + ' ' + ex.getMessage());
         }
         return resultado;
     }
     public Boolean ObtieneInfoSipweb(String body, String endpoint,SBQQ__Quote__c cotizacion){
+        Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
+        GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
-            Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-            GrabadoBtnController grab = new GrabadoBtnController(sc);
-            HttpResponse res = grab.consultaAPIPOST(body,endpoint);
+            HttpResponse res = gr.consultaAPIPOST(body,endpoint);
             String respuesta = res.getBody().replace('time','timeR');
             return ProcesaResponse(res,cotizacion);
         }catch (Exception ex){
             System.debug('ObtieneInfoSipweb: '+ex.getLineNumber()+' '+ex.getMessage());
+            gr.publicarEvento(false, 'Error al obtener info sipweb');
             return false;
         }
     }
     public Boolean ProcesaResponse(HTTPResponse res,SBQQ__Quote__c cotizacion){
+        Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
+        GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             String Respuesta = res.getBody();
             String strRange = '';
+            String strTarifas = '';
             respuesta = respuesta.replace('time', 'timeR');
-            List<String> rangos = new List<String>();
-            list<String> tarifas = new List<String>();
             ObjDocEnLinea.documentacionRemota rg = (ObjDocEnLinea.documentacionRemota)JSON.deserialize(respuesta, ObjDocEnLinea.documentacionRemota.class);
             for(Integer x = 0; x < rg.body.response.data.kmConfig[0].kmServicesTrif.size();x++){
                 strRange = '';
+                strTarifas = '';
                 strRange = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + '-' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
-                if(!rangos.contains(strRange))
-                    rangos.add(strRange);
                 for(Integer i = 0; i < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl.size(); i ++){
-                    if(!tarifas.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo))
-                        tarifas.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo);
+                    if(!strTarifas.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo)){
+                        strTarifas +=';'+rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo;
+                        if(!this.blnTieneTarifasRegistradas)
+                            this.blnTieneTarifasRegistradas = true;
+                    }
                 }
+                mapTarifasRegistradas.put(strRange, strTarifas);
             }
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + tarifas));
+            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + mapTarifasRegistradas));
             this.aprvUser   = rg.body.response.data.aprvUser;
             this.trifType   = rg.body.response.data.trifType;
             this.pieceMulti = rg.body.response.data.pieceMulti;
             return true;
         }catch (Exception ex){
+            gr.publicarEvento(false, 'Error al procesar información obtenida de sipweb.');
             System.debug('ProcesaResponse ' + ex.getLineNumber() + ' ' + ex.getMessage());
             return false;
         }
@@ -185,41 +199,47 @@ public class GrabadoDocEnLinea {
         }
     }
     public void iniciarGrabado(SBQQ__Quote__c cotizacion){
+        Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
+        GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             blnMostrarMensaje   = false;
             strMensajeError     = '';
-            Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-            GrabadoBtnController gr = new GrabadoBtnController(sc);
             if((cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c))|| Test.isRunningTest()){
                 if(cotizacion.SBQQ__Status__c=='Approved'){
                     if(cotizacion.SBQQ__Opportunity2__r.StageName=='Cerrada/Ganada' || Test.isRunningTest()){
                         ValidacionDocLinea(cotizacion);
                     } else {
-                        strMensajeError = 'Imposible continuar, la oportunidad debe tener un status "Cerrada/Ganada".';
-                        blnMostrarMensaje = true;
+                        /*strMensajeError = 'Imposible continuar, la oportunidad debe tener un status "Cerrada/Ganada".';
+                        blnMostrarMensaje = true;*/
+                        gr.publicarEvento(false, 'Imposible continuar, la oportunidad debe tener un status "Cerrada/Ganada');
                     }
                 }else{
-                    strMensajeError = 'Imposible continuar, la cotización no se encuentra aprobada.';
-                    blnMostrarMensaje = true;
+                    /*strMensajeError = 'Imposible continuar, la cotización no se encuentra aprobada.';
+                    blnMostrarMensaje = true;*/
+                    gr.publicarEvento(false, 'Imposible continuar, la cotización no se encuentra aprobada');
                 }
             } else {
-                strMensajeError = 'Imposible continuar, es necesario un ID se sipweb';
-                blnMostrarMensaje = true;
+                gr.publicarEvento(false, 'Imposible continuar, la cuenta no tiene un ID de sipweb');
+                /*strMensajeError = 'Imposible continuar, es necesario un ID se sipweb';
+                blnMostrarMensaje = true;*/
             }
         }catch(Exception ex){
             System.debug('IniciarGrabado: '+ex.getLineNumber()+' '+ex.getMessage());
-            strMensajeError = 'Error al iniciar el grabado de tarifas';
-            blnMostrarMensaje = true;
+            /*strMensajeError = 'Error al iniciar el grabado de tarifas';
+            blnMostrarMensaje = true;*/
+            gr.publicarEvento(false, 'Error al iniciar grabado de tarifas. ' +ex.getLineNumber()+' '+ex.getMessage());
         }
     }
     public void ValidacionDocLinea(SBQQ__Quote__c cotizacion){
-        GrabadoBtnController gr;
+        Apexpages.StandardController scr    = new Apexpages.StandardController(cotizacion);
+        GrabadoBtnController gr             = new GrabadoBtnController(scr);
         String strOrigen                    = '';
         blnMostrarMensaje                   = false;
         Boolean blnRango                    = false;   
         Boolean blnDest                     = false;
         strMensajeError                     = '';
         String endpoint                     = Label.Grabar_DocLinea;
+        String strRangos                    = '';
         Decimal decEADZP                    = 0;
         Map<String, String> mapSSOption     = new Map<String, String>();
         try{
@@ -458,127 +478,132 @@ public class GrabadoDocEnLinea {
                         blnDest                     = true;
                     }
                     for(String strTarifa : this.listTarifas){
-                        if(strTarifa != 'SEG-DS' && strTarifa != 'SEG-2D'){
-                            if(strTarifa != 'TARIFA T7'){
-                                servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
-                                servicesTrifDtlSub.slabNo               = obtieneTarifa(strTarifa);
-                                if(strTarifa == 'TARIFA SOBRE')
-                                    serviceTrif.serviceId                   = 'SHP-E';
-                                else serviceTrif.serviceId                  = 'SHP-G';
-                                if(strTarifa == 'TARIFA SOBRE')
-                                    serviceTrif.refServiceId                = 'ENVELOPES';
-                                else serviceTrif.refServiceId                = 'PACKETS';
-                                serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
-                                serviceTrif.discount                    = 0;//this.mapQuotes.get(strTarifa).SBQQ__Discount__c;
-                                serviceTrif.trifAmntBase                = 0;
-                                if(strTarifa == 'TARIFA T7-V'){
-                                    serviceTrif.factor                  = 'CUM';
-                                    serviceTrif.factorValue             = this.mapTLines.get(strTarifa).get(strRange).Vol__c;
-                                } else if(strTarifa == 'TARIFA T7-P'){
-                                    serviceTrif.factor                  = 'KG';
-                                    serviceTrif.factorValue             = this.mapTLines.get(strTarifa).get(strRange).Weight__c;
-                                }
-                                listserviceTrif.add(serviceTrif);
-                                if(this.blnEAD){
+                        if(strRange != 'Más de 2400')
+                            strRangos = this.mapTarifasRegistradas.get(strRange);
+                        else strRangos = this.mapTarifasRegistradas.get('2401-9999');
+                        if(!strRangos.contains(strTarifa)){
+                            if(strTarifa != 'SEG-DS' && strTarifa != 'SEG-2D'){
+                                if(strTarifa != 'TARIFA T7'){
+                                    servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
                                     serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'EAD-1';
-                                    serviceTrif.refServiceId                = 'EAD';
-                                    if(strTarifa != 'TARIFA SOBRE'){
+                                    listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
+                                    servicesTrifDtlSub.slabNo               = obtieneTarifa(strTarifa);
+                                    if(strTarifa == 'TARIFA SOBRE')
+                                        serviceTrif.serviceId                   = 'SHP-E';
+                                    else serviceTrif.serviceId                  = 'SHP-G';
+                                    if(strTarifa == 'TARIFA SOBRE')
+                                        serviceTrif.refServiceId                = 'ENVELOPES';
+                                    else serviceTrif.refServiceId                = 'PACKETS';
+                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
+                                    serviceTrif.discount                    = 0;//this.mapQuotes.get(strTarifa).SBQQ__Discount__c;
+                                    serviceTrif.trifAmntBase                = 0;
+                                    if(strTarifa == 'TARIFA T7-V'){
+                                        serviceTrif.factor                  = 'CUM';
+                                        serviceTrif.factorValue             = this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                    } else if(strTarifa == 'TARIFA T7-P'){
+                                        serviceTrif.factor                  = 'KG';
+                                        serviceTrif.factorValue             = this.mapTLines.get(strTarifa).get(strRange).Weight__c;
+                                    }
+                                    listserviceTrif.add(serviceTrif);
+                                    if(this.blnEAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'EAD-1';
+                                        serviceTrif.refServiceId                = 'EAD';
+                                        if(strTarifa != 'TARIFA SOBRE'){
+                                            if(this.mapTLines.get(strTarifa).get(strRange).EAD__c != 0)
+                                                serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).EAD__c;
+                                            else serviceTrif.trifAmount             = 1;
+                                        } else serviceTrif.trifAmount             = 1;
+                                        serviceTrif.trifAmntBase                = 0;
+                                        serviceTrif.discount                    = 0;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
+                                    if(this.blnRAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'RAD-1';
+                                        serviceTrif.refServiceId                = 'RAD';
+                                        if(strTarifa != 'TARIFA SOBRE'){
+                                            if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0)
+                                                serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c;
+                                            else serviceTrif.trifAmount             = 1;
+                                        } else serviceTrif.trifAmount             = 1;
+                                        serviceTrif.trifAmntBase                = 0;
+                                        serviceTrif.discount                    = 0;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
+                                    servicesTrifDtlSub.serviceTrif          = listserviceTrif;
+                                    listServicesTrifDtlS.add(servicesTrifDtlSub);
+                                } else if(strTarifa == 'TARIFA T7' && !listTarifas.contains('TARIFA T7-P')){
+                                    //11/01/2021 Salvador: Este bloque se usa únicamente cuando el T7 se cotizó por tarimas
+                                    servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
+                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                    listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
+                                    servicesTrifDtlSub.slabNo               = 'T7P';
+                                    serviceTrif.serviceId                   = 'SHP-G';
+                                    serviceTrif.refServiceId                = 'PACKETS';
+                                    if(this.mapTLines.get(strTarifa).get(strRange).FLETE__c != 0)
+                                        serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
+                                    else serviceTrif.trifAmount                 = 1;
+                                    serviceTrif.discount                    = 0;//this.mapTLines.get(strTarifa).get(strRange).SBQQ__Discount__c;
+                                    serviceTrif.trifAmntBase                = 0;
+                                    listserviceTrif.add(serviceTrif);
+                                    if(this.blnEAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'EAD-1';
+                                        serviceTrif.refServiceId                = 'EAD';
                                         if(this.mapTLines.get(strTarifa).get(strRange).EAD__c != 0)
-                                            serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).EAD__c;
+                                            serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
                                         else serviceTrif.trifAmount             = 1;
-                                    } else serviceTrif.trifAmount             = 1;
-                                    serviceTrif.trifAmntBase                = 0;
-                                    serviceTrif.discount                    = 0;
-                                    listserviceTrif.add(serviceTrif);
-                                }
-                                if(this.blnRAD){
-                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'RAD-1';
-                                    serviceTrif.refServiceId                = 'RAD';
-                                    if(strTarifa != 'TARIFA SOBRE'){
+                                        serviceTrif.trifAmntBase                = 0;
+                                        serviceTrif.discount                    = 0;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
+                                    if(this.blnRAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'RAD-1';
+                                        serviceTrif.refServiceId                = 'RAD';
                                         if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0)
-                                            serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c;
+                                            serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
                                         else serviceTrif.trifAmount             = 1;
-                                    } else serviceTrif.trifAmount             = 1;
-                                    serviceTrif.trifAmntBase                = 0;
-                                    serviceTrif.discount                    = 0;
-                                    listserviceTrif.add(serviceTrif);
-                                }
-                                servicesTrifDtlSub.serviceTrif          = listserviceTrif;
-                                listServicesTrifDtlS.add(servicesTrifDtlSub);
-                            } else if(strTarifa == 'TARIFA T7' && !listTarifas.contains('TARIFA T7-P')){
-                                //11/01/2021 Salvador: Este bloque se usa únicamente cuando el T7 se cotizó por tarimas
-                                servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
-                                servicesTrifDtlSub.slabNo               = 'T7P';
-                                serviceTrif.serviceId                   = 'SHP-G';
-                                serviceTrif.refServiceId                = 'PACKETS';
-                                if(this.mapTLines.get(strTarifa).get(strRange).FLETE__c != 0)
-                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
-                                else serviceTrif.trifAmount                 = 1;
-                                serviceTrif.discount                    = 0;//this.mapTLines.get(strTarifa).get(strRange).SBQQ__Discount__c;
-                                serviceTrif.trifAmntBase                = 0;
-                                listserviceTrif.add(serviceTrif);
-                                if(this.blnEAD){
+                                        serviceTrif.trifAmntBase                = 0;
+                                        serviceTrif.discount                    = 0;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
+                                    servicesTrifDtlSub.serviceTrif          = listserviceTrif;
+                                    listServicesTrifDtlS.add(servicesTrifDtlSub);
+                                    servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
                                     serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'EAD-1';
-                                    serviceTrif.refServiceId                = 'EAD';
-                                    if(this.mapTLines.get(strTarifa).get(strRange).EAD__c != 0)
-                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
-                                    else serviceTrif.trifAmount             = 1;
-                                    serviceTrif.trifAmntBase                = 0;
-                                    serviceTrif.discount                    = 0;
-                                    listserviceTrif.add(serviceTrif);
-                                }
-                                if(this.blnRAD){
                                     serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'RAD-1';
-                                    serviceTrif.refServiceId                = 'RAD';
-                                    if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0)
-                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c;
-                                    else serviceTrif.trifAmount             = 1;
-                                    serviceTrif.trifAmntBase                = 0;
-                                    serviceTrif.discount                    = 0;
-                                    listserviceTrif.add(serviceTrif);
-                                }
-                                servicesTrifDtlSub.serviceTrif          = listserviceTrif;
-                                listServicesTrifDtlS.add(servicesTrifDtlSub);
-                                servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
-                                servicesTrifDtlSub.slabNo               = 'T7V';
-                                serviceTrif.serviceId                   = 'SHP-G';
-                                serviceTrif.refServiceId                = 'PACKETS';
-                                serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
-                                serviceTrif.discount                    = 0;
-                                serviceTrif.trifAmntBase                = 0;
-                                listserviceTrif.add(serviceTrif);
-                                if(this.blnEAD){
-                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'EAD-1';
-                                    serviceTrif.refServiceId                = 'EAD';
-                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                    listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
+                                    servicesTrifDtlSub.slabNo               = 'T7V';
+                                    serviceTrif.serviceId                   = 'SHP-G';
+                                    serviceTrif.refServiceId                = 'PACKETS';
+                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
                                     serviceTrif.discount                    = 0;
                                     serviceTrif.trifAmntBase                = 0;
                                     listserviceTrif.add(serviceTrif);
+                                    if(this.blnEAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'EAD-1';
+                                        serviceTrif.refServiceId                = 'EAD';
+                                        serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                        serviceTrif.discount                    = 0;
+                                        serviceTrif.trifAmntBase                = 0;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
+                                    if(this.blnRAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'RAD-1';
+                                        serviceTrif.refServiceId                = 'RAD';
+                                        serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
+                                        serviceTrif.discount                    = 0;
+                                        serviceTrif.trifAmntBase                = 0;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
+                                    servicesTrifDtlSub.serviceTrif          = listserviceTrif;
+                                    listServicesTrifDtlS.add(servicesTrifDtlSub);
                                 }
-                                if(this.blnRAD){
-                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'RAD-1';
-                                    serviceTrif.refServiceId                = 'RAD';
-                                    serviceTrif.trifAmount                  = this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c;
-                                    serviceTrif.discount                    = 0;
-                                    serviceTrif.trifAmntBase                = 0;
-                                    listserviceTrif.add(serviceTrif);
-                                }
-                                servicesTrifDtlSub.serviceTrif          = listserviceTrif;
-                                listServicesTrifDtlS.add(servicesTrifDtlSub);
                             }
                         }
                     }
@@ -622,8 +647,8 @@ public class GrabadoDocEnLinea {
                             serviceTrif                                 = new ObjDocEnLinea.serviceTrif();
                             listserviceTrif                             = new List<ObjDocEnLinea.serviceTrif>();
                             if(this.mapTLinesExp.get(strTarifa).get(strRange).KG_Adicional__c != 0)
-                                serviceTrifCbe.trifAmountExce               = this.mapTLinesExp.get(strTarifa).get(strRange).KG_Adicional__c;
-                            else serviceTrifCbe.trifAmountExce              = 1;
+                                serviceTrifCbe.trifAmountExce           = this.mapTLinesExp.get(strTarifa).get(strRange).KG_Adicional__c;
+                            else serviceTrifCbe.trifAmountExce          = 1;
                             serviceTrifCbe.factor                       = 'KG';
                             serviceTrifCbe.serviceId                    = strTarifa;
                             serviceTrifCbe.refServiceId                 = obtieneTarifaExpress(strTarifa);
@@ -691,9 +716,9 @@ public class GrabadoDocEnLinea {
                 odc.body                                = body;
                 header.security                         = sec;
                 odc.header                              = header;
-                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
-                //if(!System.isScheduled()){
-                    /*if(!cotizacion.Electronicas__c){
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
+                if(!System.isScheduled()){
+                    if(!cotizacion.Electronicas__c){
                         if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion))
                             grab.publicarEvento(true,null);
                     }else if(cotizacion.Electronicas__c){
@@ -704,16 +729,18 @@ public class GrabadoDocEnLinea {
                     }
                     else
                         grab.publicarEvento(false,'No se pudo realizar el grabado');
-                /*}
+                }
                 else
-                    grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion);*/
+                    grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion);
             }else {
-                strMensajeError     = 'Imposible continuar, datos insuficientes.';
-                blnMostrarMensaje   = true;
+                /*strMensajeError     = 'Imposible continuar, datos insuficientes.';
+                blnMostrarMensaje   = true;*/
+                gr.publicarEvento(false, 'Imposible continuar, datos insuficientes');
             }
 
         } catch (Exception ex){
             System.debug('ValidacionDocLinea: '+ex.getLineNumber()+' '+ex.getMessage());
+            gr.publicarEvento(false, 'Error al generar conexión con sipweb. ' +ex.getLineNumber()+' '+ex.getMessage());
         }
     }
     public static String obtieneTarifa(String tarifa){
@@ -781,6 +808,24 @@ public class GrabadoDocEnLinea {
             iniciarGrabado(this.cas);
         } catch (Exception ex){
             System.debug('GrabarTarifaDocLinea ' + ex.getLineNumber() + ' ' + ex.getMessage());
+        }
+    }
+    public PageReference procesar(){
+        Apexpages.StandardController sc = new Apexpages.StandardController(this.cas);
+        GrabadoBtnController gr = new GrabadoBtnController(sc);
+        try{
+            PageReference pageRef = new PageReference('/'+Id);
+            pageRef.setRedirect(true);
+            if(ObtieneInfoResponse(this.cas)){
+                System.debug('OK');
+            }else{
+                gr.publicarEvento(false, 'Error general');
+            }
+            return pageRef;
+        }catch(Exception ex){
+            PageReference pageRef = new PageReference('/'+Id);
+            gr.publicarEvento(false, 'procesar: ' + ex.getLineNumber() + ' ' + ex.getMessage());
+            return pageRef;
         }
     }
     public static List<SBQQ__QuoteLine__c> queryquoteitem(String Id){
