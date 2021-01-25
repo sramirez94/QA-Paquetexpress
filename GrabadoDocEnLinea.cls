@@ -15,6 +15,7 @@ public class GrabadoDocEnLinea {
     public Boolean blnACK                                               {get;set;}
     public Boolean blnSEG                                               {get;set;}
     public Boolean blnZP                                                {get;set;}
+    public Boolean blnClienteNuevo                                      {get;set;}
     public Boolean ServiciosEspeciales                                  {get;set;}
     public Boolean blnTarifasExp                                        {get;set;}
     public Boolean blnTieneTarifasRegistradas                           {get;set;}
@@ -33,6 +34,7 @@ public class GrabadoDocEnLinea {
     public List<TempleateLine__c> listPlantillaLineItems                {get;set;}
     public List<String> listRangeDestiny                                {get;set;}
     public List<String> listSS                                          {get;set;}
+    public List<Decimal> listDecTarifas                                 {get;set;}
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotes       {get;set;}
     public Map<String, SBQQ__QuoteLine__c> mapQuotesT7ZP                {get;set;}
     public Map<String, Map<String, TempleateLine__c>> mapTLines         {get;set;}
@@ -41,6 +43,7 @@ public class GrabadoDocEnLinea {
     public Map<String, Decimal> mapAcuse                                {get;set;}
     public Map<String, String> mapTarifasRegistradas                    {get;set;}
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapPlantillas   {get;set;}
+    public Map<Decimal, Map<String, SBQQ__QuoteLine__c>> mapTarifas     {get;set;}
     public Map<String, Map<String, PAQ_SpecialService__c>> mapRanges    {get;set;}
     public Templeate__c objtempleate                                    {get;set;}
     public GrabadoDocEnLinea (ApexPages.StandardController controller){
@@ -63,10 +66,12 @@ public class GrabadoDocEnLinea {
         this.blnTarifasExp                  = false;
         this.blnTieneTarifasRegistradas     = false;
         this.blnT7ZP                        = false;
-        this.listTarifas                    = new List<String>();
+        this.blnClienteNuevo                = false;
+        this.listTarifas                    = new List<String>{'TARIFA SOBRE', 'TARIFA T0', 'TARIFA T1', 'TARIFA T2', 'TARIFA T3', 'TARIFA T4', 'TARIFA T5', 'TARIFA T6', 'TARIFA T7-V', 'TARIFA T7-P'};
         this.listTarifasExp                 = new List<String>();
         this.listRangeDestiny               = new List<String>();
         this.listSS                         = new List<String>();
+        this.listDecTarifas                 = new List<Decimal>();
         this.listPlantillaLineItems         = new List<TempleateLine__c>();
         this.wp                             = new Wrapper();
         this.mapQuotes                      = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
@@ -77,6 +82,7 @@ public class GrabadoDocEnLinea {
         this.mapRanges                      = new Map<String, Map<String, PAQ_SpecialService__c>>();
         this.mapTLines                      = new Map<String, Map<String, TempleateLine__c>>();
         this.mapTLinesExp                   = new Map<String, Map<String, TempleateLine__c>>();
+        this.mapTarifas                     = new Map<Decimal, Map<String, SBQQ__QuoteLine__c>>();
         try{
             this.cas                        = (SBQQ__Quote__c) controller.getRecord();
             this.Id                         = cas.Id;
@@ -196,6 +202,8 @@ public class GrabadoDocEnLinea {
                     mapTarifasRegistradas.put(strDest, strTarifas);
                 }
             }
+            if(rg.body.response.data.ptpConfig == null && rg.body.response.data.kmConfig == null)
+                this.blnClienteNuevo = true;
             //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + mapTarifasRegistradas));
             this.aprvUser   = rg.body.response.data.aprvUser;
             this.trifType   = rg.body.response.data.trifType;
@@ -377,6 +385,10 @@ public class GrabadoDocEnLinea {
                             else strRangeDest = cot.Rango_KM__c;
                             if(!this.mapQuotes.get(cot.Tarifa__c).containsKey(strRangeDest))
                                 this.mapQuotes.get(cot.Tarifa__c).put(strRangeDest, cot);
+                            if(!this.mapTarifas.containsKey(obtieneNumeroTarifa(cot.Tarifa__c)))
+                                this.mapTarifas.put(obtieneNumeroTarifa(cot.Tarifa__c), new Map<String, SBQQ__QuoteLine__c>());
+                            if(!this.mapTarifas.get(obtieneNumeroTarifa(cot.Tarifa__c)).containsKey(strRangeDest))
+                                this.mapTarifas.get(obtieneNumeroTarifa(cot.Tarifa__c)).put(strRangeDest, cot);
                         } else {
                             if(!this.listTarifasExp.contains(cot.Tarifa__c))
                                 this.listTarifasExp.add(cot.Tarifa__c);
@@ -459,6 +471,13 @@ public class GrabadoDocEnLinea {
                         }
                     }
                     
+                }
+                if(!this.blnClienteNuevo){
+                    for(String strTarifa : this.listTarifas){
+                        if(!this.mapPlantillas.containsKey(strTarifa)){
+                            this.mapPlantillas.put(strTarifa, new Map<String, TempleateLine__c>());
+                        }
+                    }
                 }
                 decEADZP = queryCostoZonaPlus(objtempleate.Id);
                 for(String strRange : this.listRangeDestiny){
@@ -897,6 +916,31 @@ public class GrabadoDocEnLinea {
         if(servicesCant == 'Guía')
             return 'G';
         else return '';
+    }
+    public static Decimal obtieneNumeroTarifa(String Tarifa){
+        if(Tarifa == 'TARIFA SOBRE')
+            return 0.0;
+        else if(tarifa == 'TARIFA T0')
+            return 0.1;
+        else if(Tarifa == 'TARIFA T1')
+            return 1.0;
+        else if(Tarifa == 'TARIFA T2')
+            return 2.0;
+        else if(Tarifa == 'TARIFA T3')
+            return 3.0;
+        else if(Tarifa == 'TARIFA T4')
+            return 4.0;
+        else if(Tarifa == 'TARIFA T5')
+            return 5.0;
+        else if(Tarifa == 'TARIFA T6')
+            return 6.0;
+        else if(Tarifa == 'TARIFA T7-P')
+            return 7.1;
+        else if(Tarifa == 'TARIFA T7-V')
+            return 7.2;
+        else if(Tarifa == 'TARIFA T7')
+            return 7.0;
+        else return 0.0;
     }
     public void GrabarTarifaDocLinea(){
         try{
