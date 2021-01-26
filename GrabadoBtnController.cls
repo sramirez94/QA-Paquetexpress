@@ -67,9 +67,9 @@ global class GrabadoBtnController {
                             when 'Guías prepagadas'{
                                 validacionGuiasPrepagadas(cotizacion);
                             }
-                            when 'Documentación Remota'{
+                            /*when 'Documentación Remota'{
 								GrabadoDocEnLinea.procesarDL(cotizacion);
-							}
+							}*/
                             when else{
                                 publicarEvento(false,'El tipo de documentación no es válido');
                             }
@@ -485,6 +485,7 @@ global class GrabadoBtnController {
             vu.header = hv;
             vu.body = bv;
             String jsonFormateado = JSON.serialize(vu);
+            System.debug('json pet:' + jsonFormateado);
             jsonFormateado = jsonFormateado.replace('typeR','type');
             HTTPResponse res = consultaAPIPOST(jsonFormateado,endpoint);
             DefinicionesServiciosGrabado.verificarUsuarioR vuR = (DefinicionesServiciosGrabado.verificarUsuarioR)JSON.deserialize(res.getBody().replace('time','timeR'), DefinicionesServiciosGrabado.verificarUsuarioR.class);
@@ -522,11 +523,12 @@ global class GrabadoBtnController {
     public boolean procesarRespuestaGrabado(HTTPResponse res,SBQQ__Quote__c cotizacion){
         try{
             String respuesta = res.getBody();
-            System.debug('Cotizacion Id: '+cotizacion.Id);
             respuesta = respuesta.replace('time', 'timeR');
             SBQQ__Quote__c cot = null;
+            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Respuesta: ' + respuesta));
             DefinicionesServiciosGrabado.responseGrabado rg = (DefinicionesServiciosGrabado.responseGrabado)JSON.deserializeStrict(respuesta, DefinicionesServiciosGrabado.responseGrabado.class);
-            System.debug('procesarRespuestaGrabado: ¿Procesado correctamente?: '+rg.body.response.success);
+            //System.debug('procesarRespuestaGrabado: ¿Procesado correctamente?: '+rg.body.response.success);
+            //System.debug('mensajes: ' + rg.body.response.messages);
             if(cotizacion!=null && Boolean.valueOf(rg.body.response.success))
                 cot = [SELECT Id, Grabado_exitoso__c,ProcesadoTareaGrabado__c FROM SBQQ__Quote__c WHERE Id=:cotizacion.Id LIMIT 1];
             if(null!=cot){
