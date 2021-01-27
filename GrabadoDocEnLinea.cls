@@ -399,8 +399,10 @@ public class GrabadoDocEnLinea {
                                     this.mapTLines.get(line.Tarifa__c).put(line.Rango_KM__c, line);
                             }
                         }
-                        if(!this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).containsKey(strRangeDest))
-                            this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).put(strRangeDest, line);
+                        if(line.Tarifa__c != 'SEG-DS' && line.Tarifa__c != 'SEG-2D'){
+                            if(!this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).containsKey(strRangeDest))
+                                this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).put(strRangeDest, line);
+                        }
                     } else {
                         if(line.Destiny__c != null)
                             strRangeDest = line.Destiny__c;
@@ -605,6 +607,7 @@ public class GrabadoDocEnLinea {
                             if(!blnTarifasCargadas){
                                 for(String strRange : this.listRanges){
                                     String rango = '';
+                                    String Tarifa = '';
                                     if(strRange.contains('('))
                                         rango = this.mapRangeByDest.get(strRange);
                                     else rango = strRange;
@@ -625,12 +628,15 @@ public class GrabadoDocEnLinea {
                                             TLine.EAD__c    = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
                                         QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
                                     } else {
+                                        if(strTarifa == 'TARIFA SOBRE')
+                                            Tarifa = 'TARIFA TS';
+                                        else Tarifa = strTarifa;
                                         if(this.blnRAD)
-                                            TLine.RAD__C = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(strTarifa).get(rango).Flete__c);
+                                            TLine.RAD__C = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
                                         if(this.blnEAD)
-                                            TLine.EAD__c    = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(strTarifa).get(rango).Flete__c);
-                                        TLine.Flete__c  = this.wp.mapTarifarioT.get(strTarifa).get(rango).Flete__c;
-                                        QL.Flete__c     = this.wp.mapTarifarioT.get(strTarifa).get(rango).Flete__c;
+                                            TLine.EAD__c    = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
+                                        TLine.Flete__c  = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
+                                        QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
                                     }
                                     TLine.Weight__c = 0;
                                     TLine.Vol__c    = 0;
@@ -654,7 +660,7 @@ public class GrabadoDocEnLinea {
                     if(!this.listRangeDestiny.contains(strRange))
                         this.listRangeDestiny.add(strRange);
                 }*/
-                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Rangos: ' + this.mapTLines));
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Rangos: ' + this.mapTLines));
                 for(String strRange : this.listRangeDestiny){
                     blnRango                                = false;
                     blnDest                                 = false;
