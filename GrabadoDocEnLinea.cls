@@ -225,9 +225,9 @@ public class GrabadoDocEnLinea {
                     mapTarifasRegistradas.put(strDest, strTarifas);
                 }
             }*/
-            //if(rg.body.response.data.ptpConfig == null && rg.body.response.data.kmConfig == null)
+            if(rg.body.response.data.ptpConfig == null && rg.body.response.data.kmConfig == null)
                 this.blnClienteNuevo = true;
-            //else this.listTarifas = new List<String>();
+            else this.listTarifas = new List<String>();
             //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + mapTarifasRegistradas));
             this.aprvUser   = rg.body.response.data.aprvUser;
             this.trifType   = rg.body.response.data.trifType;
@@ -399,10 +399,8 @@ public class GrabadoDocEnLinea {
                                     this.mapTLines.get(line.Tarifa__c).put(line.Rango_KM__c, line);
                             }
                         }
-                        if(line.Tarifa__c != 'SEG-DS' && line.Tarifa__c != 'SEG-2D'){
-                            if(!this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).containsKey(strRangeDest))
-                                this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).put(strRangeDest, line);
-                        }
+                        if(!this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).containsKey(strRangeDest))
+                            this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).put(strRangeDest, line);
                     } else {
                         if(line.Destiny__c != null)
                             strRangeDest = line.Destiny__c;
@@ -539,65 +537,13 @@ public class GrabadoDocEnLinea {
                                 this.mapQuotes.put(strTarifa, new Map<String, SBQQ__QuoteLine__c>());
                             for(Decimal decTarifa: this.listDecTarifas){
                                 if(obtieneNumeroTarifa(strTarifa) <= decTarifa){
-                                    for(String strRange : this.listRanges){
+                                    for(String strRange : this.listRangeDestiny){
                                         if(this.mapdecTLines.containsKey(decTarifa) && !this.mapTLines.get(strTarifa).containsKey(strRange)){
-                                            if(this.mapdecTLines.get(decTarifa).containsKey(strRange))
-                                                this.mapdecTLines.get(decTarifa).get(strRange).Tarifa__c = strTarifa;
-                                            else {
-                                                TempleateLine__c TL     = new TempleateLine__c();
-                                                String rango            = '';
-                                                String Tarifa           = '';
-                                                if(strTarifa == 'TARIFA SOBRE')
-                                                    Tarifa = 'TARIFA TS';
-                                                else Tarifa = strTarifa;
-                                                if(strRange.contains('('))
-                                                    rango = this.mapRangeByDest.get(strRange);
-                                                else rango = strRange;
-                                                if(strTarifa == 'TARIFA T7' || strTarifa == 'TARIFA T7-P'){
-                                                    TL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                                    if(this.blnRAD)
-                                                        TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                                    if(this.blnEAD)
-                                                        TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                                } else if(strTarifa == 'TARIFA T7-V'){
-                                                    TL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                                    if(this.blnRAD)
-                                                        TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                                    if(this.blnEAD)
-                                                        TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                                } else {
-                                                    TL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
-                                                    if(this.blnRAD)
-                                                        TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                                    if(this.blnEAD)
-                                                        TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                                }
-                                                this.mapdecTLines.get(decTarifa).put(strRange, TL);
-                                            }
+                                            this.mapdecTLines.get(decTarifa).get(strRange).Tarifa__c = strTarifa;
                                             this.mapTLines.get(strTarifa).put(strRange, this.mapdecTLines.get(decTarifa).get(strRange));
                                         }
                                         if(this.mapTarifas.containsKey(decTarifa) && !this.mapQuotes.get(strTarifa).containsKey(strRange)){
-                                            if(this.mapTarifas.get(decTarifa).containsKey(strRange))
-                                                this.mapTarifas.get(decTarifa).get(strRange).Tarifa__c = strTarifa;
-                                            else{
-                                                SBQQ__QuoteLine__c QL   = new SBQQ__QuoteLine__c();
-                                                String rango            = '';
-                                                String Tarifa           = '';
-                                                if(strTarifa == 'TARIFA SOBRE')
-                                                    Tarifa = 'TARIFA TS';
-                                                else Tarifa = strTarifa;
-                                                if(strRange.contains('('))
-                                                    rango = this.mapRangeByDest.get(strRange);
-                                                else rango = strRange;
-                                                if(strTarifa == 'TARIFA T7' || strTarifa == 'TARIFA T7-P'){
-                                                    QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                                } else if(strTarifa == 'TARIFA T7-V'){
-                                                    QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                                } else {
-                                                    QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
-                                                }
-                                                this.mapTarifas.get(decTarifa).put(strRange, QL);
-                                            }
+                                            this.mapTarifas.get(decTarifa).get(strRange).Tarifa__c = strTarifa;
                                             this.mapQuotes.get(strTarifa).put(strRange, this.mapTarifas.get(decTarifa).get(strRange));
                                         }
                                     }
@@ -605,9 +551,8 @@ public class GrabadoDocEnLinea {
                                 }
                             }
                             if(!blnTarifasCargadas){
-                                for(String strRange : this.listRanges){
+                                for(String strRange : this.listRangeDestiny){
                                     String rango = '';
-                                    String Tarifa = '';
                                     if(strRange.contains('('))
                                         rango = this.mapRangeByDest.get(strRange);
                                     else rango = strRange;
@@ -615,29 +560,18 @@ public class GrabadoDocEnLinea {
                                     SBQQ__QuoteLine__c QL = new SBQQ__QuoteLine__c();
                                     if(strTarifa == 'TARIFA T7' || strTarifa == 'TARIFA T7-P'){
                                         TLine.Flete__c  = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                        if(this.blnRAD)
-                                            TLine.RAD__C= dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                        if(this.blnEAD)
-                                            TLine.EAD__c= dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
                                         QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
                                     } else if(strTarifa == 'TARIFA T7-V'){
                                         TLine.Flete__c  = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                        if(this.blnRAD)
-                                            TLine.RAD__C = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                        if(this.blnEAD)
-                                            TLine.EAD__c    = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
                                         QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
                                     } else {
-                                        if(strTarifa == 'TARIFA SOBRE')
-                                            Tarifa = 'TARIFA TS';
-                                        else Tarifa = strTarifa;
-                                        if(this.blnRAD)
-                                            TLine.RAD__C = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                        if(this.blnEAD)
-                                            TLine.EAD__c    = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                        TLine.Flete__c  = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
-                                        QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
+                                        TLine.Flete__c  = this.wp.mapTarifarioT.get(strTarifa).get(rango).Flete__c;
+                                        QL.Flete__c     = this.wp.mapTarifarioT.get(strTarifa).get(rango).Flete__c;
                                     }
+                                    if(this.blnRAD)
+                                        TLine.RAD__C    = TLine.Flete__c * 0.11;
+                                    if(this.blnEAD)
+                                        TLine.EAD__c    = TLine.Flete__c * 0.11;
                                     TLine.Weight__c = 0;
                                     TLine.Vol__c    = 0;
                                     TLine.Tarifa__c = strTarifa;
@@ -651,16 +585,12 @@ public class GrabadoDocEnLinea {
                             }
                         }
                     }
-                    for(String strRange : this.listRanges){
-                        if(!this.listRangeDestiny.contains(strRange))
-                            this.listRangeDestiny.add(strRange);
-                    }
                 }
                 /*for(String strRange : this.listRanges){
                     if(!this.listRangeDestiny.contains(strRange))
                         this.listRangeDestiny.add(strRange);
-                }*/
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Rangos: ' + this.mapTLines));
+                }
+                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Rangos: ' + this.mapTLines));*/
                 for(String strRange : this.listRangeDestiny){
                     blnRango                                = false;
                     blnDest                                 = false;
@@ -761,17 +691,21 @@ public class GrabadoDocEnLinea {
                                             serviceTrif.factorValue             = 1;
                                         listserviceTrif.add(serviceTrif);
                                     }
-                                    serviceTrif                             = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.serviceId                   = 'RAD-1';
-                                    serviceTrif.refServiceId                = 'RAD';
-                                    if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0 && this.blnRAD)
-                                        serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c.setScale(2);
-                                    else serviceTrif.trifAmount             = 0.001;
-                                    serviceTrif.trifAmntBase                = 0;
-                                    serviceTrif.discount                    = 0;
-                                    if(strTarifa == 'TARIFA T7-V' || strTarifa == 'TARIFA T7-P')
-                                        serviceTrif.factorValue             = 1;
-                                    listserviceTrif.add(serviceTrif);
+                                    if(this.blnRAD){
+                                        serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                                        serviceTrif.serviceId                   = 'RAD-1';
+                                        serviceTrif.refServiceId                = 'RAD';
+                                        //if(strTarifa != 'TARIFA SOBRE'){
+                                            if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0)
+                                                serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).RAD__c.setScale(2);
+                                            else serviceTrif.trifAmount             = 1;
+                                        //} else serviceTrif.trifAmount             = 1;
+                                        serviceTrif.trifAmntBase                = 0;
+                                        serviceTrif.discount                    = 0;
+                                        if(strTarifa == 'TARIFA T7-V' || strTarifa == 'TARIFA T7-P')
+                                            serviceTrif.factorValue             = 1;
+                                        listserviceTrif.add(serviceTrif);
+                                    }
                                     if((strTarifa == 'TARIFA T7-V' || strTarifa == 'TARIFA T7-P') && this.blnT7ZP){
                                         serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                                         serviceTrif.serviceId                   = 'EXT-1';
@@ -1009,8 +943,8 @@ public class GrabadoDocEnLinea {
                 odc.body                                = body;
                 header.security                         = sec;
                 odc.header                              = header;
-                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
-                /*if(!System.isScheduled()){
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
+                if(!System.isScheduled()){
                     if(!cotizacion.Electronicas__c){
                         if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion))
                             grab.publicarEvento(true,null);
@@ -1025,7 +959,7 @@ public class GrabadoDocEnLinea {
                         grab.publicarEvento(false,'No se pudo realizar el grabado');
                 }
                 else
-                    grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion);*/
+                    grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion);
             }else {
                 gr.publicarEvento(false, 'Imposible continuar, datos insuficientes');
             }
@@ -1189,12 +1123,6 @@ public class GrabadoDocEnLinea {
 		}
 		return listSS;
     }
-    public static Map<String, Decimal> queryCustomSetting(String pid){
-        Map<String, Decimal> mapCS = new Map<String, Decimal>();
-        Cotizador__c CSObj = Cotizador__c.getInstance(pid);
-        mapCS.put('MinRAD', CSObj.MinRAD__c);
-        return mapCS;
-    }
     public static Map<String, String> getPicklistValues( String strSObject, String strFieldSelected ){
 		Schema.SObjectType objType                                  = Schema.getGlobalDescribe().get( strSObject );
 		Schema.DescribeSObjectResult objDescribe                    = objType.getDescribe();
@@ -1221,23 +1149,14 @@ public class GrabadoDocEnLinea {
         , RangoKM__c
         FROM Tarifario_general_terrestre__c WHERE Year__c = null];
     }
-    public static Decimal dominantFeeServiceDom(Decimal fltMinFee, decimal fltAmount){
-        Decimal fltFee = fltAmount * 0.11;
-        if(fltMinFee > fltFee)
-            return fltMinFee;
-        else
-            return fltFee;
-    }
     public class Wrapper{
         public List<SBQQ__QuoteLine__c> listQuoteItem                                   {get; set;}
         public Map<String,SS> mapSS          	                                        {get; set;}
         public Map<String, Map<String, Tarifario_general_terrestre__c>> mapTarifarioT   {get; set;}
-        public Map<String, Decimal> mapCS                                               {get; set;}
         public Wrapper(){
             this.listQuoteItem      = new List<SBQQ__QuoteLine__c>();
             this.mapSS				= new Map<String, SS>();
             this.mapTarifarioT      = new Map<String, Map<String, Tarifario_general_terrestre__c>>();
-            this.mapCS              = new Map<String, Decimal>();
         }
     }
     public class SS{
