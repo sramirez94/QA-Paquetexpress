@@ -1124,12 +1124,30 @@ public class GrabadoDocEnLinea {
             return 'EAD-CITA-1';
         else if (nombre == 'EAD-CITA-1')
             return 'EAD-CITA';
+        else if(nombre == 'EAD a detalle')
+            return 'EAD-DET-1';
+        else if(nombre == 'Cruce fronterizo')
+            return 'ITL-CRU-1';
+        else if(nombre == 'Pick&Pack')
+            return 'PICK-1';
+        else if(nombre == 'Special Packing')
+            return 'SPPAC-1';
+        else if(nombre == 'EAD-DET-1')
+            return 'EAD-DET';
+        else if(nombre == 'ITL-CRU-1')
+            return 'ITL-CRU';
+        else if(nombre == 'PICK-1')
+            return 'PICK';
+        else if(nombre == 'SPPAC-1')
+            return 'PICK';
         else return '';
     }
     public static String obtieneservicesCant(String servicesCant){
         if(servicesCant == 'Guía')
             return 'G';
-        else return '';
+        else if(servicesCant == 'Paquete')
+            return 'E';
+        else return 'K';
     }
     public static Decimal obtieneNumeroTarifa(String Tarifa){
         if(Tarifa == 'TARIFA SOBRE')
