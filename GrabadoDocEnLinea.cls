@@ -501,12 +501,18 @@ public class GrabadoDocEnLinea {
                             this.blnTarifasExp = true;
                         }
                         if(cot.Destiny__c != null){
-                            if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
-                                String Destino = '';
-                                if(cot.Destiny__c.contains('('))
-                                    Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                                else Destino = cot.Destiny__c;
-                                this.listRangeDestiny.add(Destino);
+                            if(this.blnCostoBaseGMP){
+                                if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
+                                    String Destino = '';
+                                    if(cot.Destiny__c.contains('('))
+                                        Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
+                                    else Destino = cot.Destiny__c;
+                                    this.listRangeDestiny.add(Destino);
+                                }
+                            } else {
+                                if(!this.listRangeDestiny.contains(cot.Destiny__c)){
+                                    this.listRangeDestiny.add(cot.Destiny__c);
+                                }
                             }
                             if(!this.mapAcuse.containsKey(cot.Destiny__c))
                                 this.mapAcuse.put(cot.Destiny__c, cot.ACK__c);
@@ -1057,28 +1063,12 @@ public class GrabadoDocEnLinea {
                             }
                         }
                     } else {
-                        /*for(Decimal decW : this.mapGuide.keySet()){
-                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                            serviceTrifCbe.factor               = 'KG';
-                            serviceTrifCbe.serviceId            = 'SHP-G';
-                            serviceTrifCbe.refServiceId         = 'PACKETS';
-                            for(String strBlock : this.mapBlocks.keySet()){
-                                serviceTrifCbe.trifAmountExce   = this.mapBlocksServ.get(strBlock).get('ADD').get(strRange);
-                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
-                                serviceTrif.trifAmntBase        = 0;
-                                serviceTrif.discount            = 0;
-                                serviceTrif.factorValue         = Decimal.valueOf(strBlock.replace('BLOQUE ', ''));
-                                listserviceTrif.add(serviceTrif);
-                            }
-                        }*/
                         listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
                         serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
                         serviceTrifCbe.factor               = 'KG';
                         serviceTrifCbe.serviceId            = 'SHP-G';
                         serviceTrifCbe.refServiceId         = 'PACKETS';
-                        serviceTrifCbe.trifAmountExce       = 25;//this.mapBlocksServ.get(strBlock).get('ADD').get(strRange);
+                        serviceTrifCbe.trifAmountExce       = this.mapService.get('ADD').mapRanges.get(strRange);
                         for(String strBlock : this.mapBlocks.keySet()){
                             serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
@@ -1089,104 +1079,94 @@ public class GrabadoDocEnLinea {
                         }
                         serviceTrifCbe.serviceTrif = listserviceTrif;
                         listserviceTrifCbe.add(serviceTrifCbe);
-                        /*if(this.blnEAD){
-                            for(Decimal decW : this.mapGuide.keySet()){
-                                listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                                serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                                serviceTrifCbe.factor               = 'KG';
-                                serviceTrifCbe.serviceId            = 'EAD-1';
-                                serviceTrifCbe.refServiceId         = 'EAD';
-                                for(String strBlock : this.mapBlocks.keySet()){
-                                    serviceTrifCbe.trifAmountExce   = this.mapBlocksServ.get(strBlock).get('ADD').get(strRange);
-                                    serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('EAD').get(strRange);
-                                    serviceTrif.trifAmntBase        = 0;
-                                    serviceTrif.discount            = 0;
-                                    serviceTrif.factorValue         = decW;
-                                    listserviceTrif.add(serviceTrif);
-                                }
+                        if(this.blnEAD){
+                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                            serviceTrifCbe.factor               = 'KG';
+                            serviceTrifCbe.serviceId            = 'EAD-1';
+                            serviceTrifCbe.refServiceId         = 'EAD';
+                            serviceTrifCbe.trifAmountExce   	= this.mapService.get('ADD').mapRanges.get(strRange);
+                            for(String strBlock : this.mapBlocks.keySet()){
+                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
+                                serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('EAD').get(strRange);
+                                serviceTrif.trifAmntBase        = 0;
+                                serviceTrif.discount            = 0;
+                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                                listserviceTrif.add(serviceTrif);
                             }
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
                         }
                         if(this.blnRAD){
-                            for(Decimal decW : this.mapGuide.keySet()){
-                                listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                                serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                                serviceTrifCbe.factor               = 'KG';
-                                serviceTrifCbe.serviceId            = 'RAD-1';
-                                serviceTrifCbe.refServiceId         = 'RAD';
-                                for(String strBlock : this.mapBlocks.keySet()){
-                                    serviceTrifCbe.trifAmountExce   = this.mapBlocksServ.get(strBlock).get('ADD').get(strRange);
-                                    serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange);
-                                    serviceTrif.trifAmntBase        = 0;
-                                    serviceTrif.discount            = 0;
-                                    serviceTrif.factorValue         = decW;
-                                    listserviceTrif.add(serviceTrif);
-                                }
+                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                            serviceTrifCbe.factor               = 'KG';
+                            serviceTrifCbe.serviceId            = 'RAD-1';
+                            serviceTrifCbe.refServiceId         = 'RAD';
+                            serviceTrifCbe.trifAmountExce       = this.mapService.get('ADD').mapRanges.get(strRange);
+                            for(String strBlock : this.mapBlocks.keySet()){
+                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
+                                serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange);
+                                serviceTrif.trifAmntBase        = 0;
+                                serviceTrif.discount            = 0;
+                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                                listserviceTrif.add(serviceTrif);
                             }
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
                         }
-                        for(Decimal decW : this.mapGuide.keySet()){
-                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                            serviceTrifCbe.factor               = 'CUM';
-                            serviceTrifCbe.serviceId            = 'SHP-G';
-                            serviceTrifCbe.refServiceId         = 'PACKETS';
-                            for(String strBlock : this.mapBlocks.keySet()){
-                                serviceTrifCbe.trifAmountExce   = (this.mapBlocksServ.get(strBlock).get('ADD').get(strRange) * 200).setScale(2);
-                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
-                                serviceTrif.trifAmntBase        = 0;
-                                serviceTrif.discount            = 0;
-                                serviceTrif.factorValue         = decW;
-                                listserviceTrif.add(serviceTrif);
-                            }
+                        listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                        serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                        serviceTrifCbe.factor               = 'CUM';
+                        serviceTrifCbe.serviceId            = 'SHP-G';
+                        serviceTrifCbe.refServiceId         = 'PACKETS';
+                        serviceTrifCbe.trifAmountExce       = (this.mapService.get('ADD').mapRanges.get(strRange) * 200).setScale(2);
+                        for(String strBlock : this.mapBlocks.keySet()){
+                            serviceTrif                     = new ObjDocEnLinea.serviceTrif();
+                            serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
+                            serviceTrif.trifAmntBase        = 0;
+                            serviceTrif.discount            = 0;
+                            serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                            listserviceTrif.add(serviceTrif);
                         }
                         serviceTrifCbe.serviceTrif = listserviceTrif;
                         listserviceTrifCbe.add(serviceTrifCbe);
                         if(this.blnEAD){
-                            for(Decimal decW : this.mapGuide.keySet()){
-                                listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                                serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                                serviceTrifCbe.factor               = 'CUM';
-                                serviceTrifCbe.serviceId            = 'EAD-1';
-                                serviceTrifCbe.refServiceId         = 'EAD';
-                                for(String strBlock : this.mapBlocks.keySet()){
-                                    serviceTrifCbe.trifAmountExce   = (this.mapBlocksServ.get(strBlock).get('ADD').get(strRange) * 200);
-                                    serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('EAD').get(strRange);
-                                    serviceTrif.trifAmntBase        = 0;
-                                    serviceTrif.discount            = 0;
-                                    serviceTrif.factorValue         = decW;
-                                    listserviceTrif.add(serviceTrif);
-                                }
+                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                            serviceTrifCbe.factor               = 'CUM';
+                            serviceTrifCbe.serviceId            = 'EAD-1';
+                            serviceTrifCbe.refServiceId         = 'EAD';
+                            serviceTrifCbe.trifAmountExce       = (this.mapService.get('ADD').mapRanges.get(strRange) * 200).setScale(2);
+                            for(String strBlock : this.mapBlocks.keySet()){
+                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
+                                serviceTrif.trifAmount          = (this.mapBlocksServ.get(strBlock).get('EAD').get(strRange) * 200).setScale(2);
+                                serviceTrif.trifAmntBase        = 0;
+                                serviceTrif.discount            = 0;
+                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                                listserviceTrif.add(serviceTrif);
                             }
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
                         }
                         if(this.blnRAD){
-                            for(Decimal decW : this.mapGuide.keySet()){
-                                listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                                serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                                serviceTrifCbe.factor               = 'CUM';
-                                serviceTrifCbe.serviceId            = 'RAD-1';
-                                serviceTrifCbe.refServiceId         = 'RAD';
-                                for(String strBlock : this.mapBlocks.keySet()){
-                                    serviceTrifCbe.trifAmountExce   = (this.mapBlocksServ.get(strBlock).get('ADD').get(strRange) * 200);
-                                    serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                    serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange);
-                                    serviceTrif.trifAmntBase        = 0;
-                                    serviceTrif.discount            = 0;
-                                    serviceTrif.factorValue         = decW;
-                                    listserviceTrif.add(serviceTrif);
-                                }
+                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                            serviceTrifCbe.factor               = 'CUM';
+                            serviceTrifCbe.serviceId            = 'RAD-1';
+                            serviceTrifCbe.refServiceId         = 'RAD';
+                            serviceTrifCbe.trifAmountExce       = (this.mapService.get('ADD').mapRanges.get(strRange) * 200).setScale(2);
+                            for(String strBlock : this.mapBlocks.keySet()){
+                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
+                                serviceTrif.trifAmount          = (this.mapBlocksServ.get(strBlock).get('RAD').get(strRange) * 200).setScale(2);
+                                serviceTrif.trifAmntBase        = 0;
+                                serviceTrif.discount            = 0;
+                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                                listserviceTrif.add(serviceTrif);
                             }
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
-                        }*/
+                        }
                     }
                     if(this.blnACK || this.blnZP)
                         listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
