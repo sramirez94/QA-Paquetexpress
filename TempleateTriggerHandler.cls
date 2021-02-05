@@ -33,22 +33,25 @@ public class TempleateTriggerHandler {
 			mapQuotes.put(objQuote.Id, objQuote);
 
 		for(SBQQ__QuoteLine__c objQLine : queryQuoteLines(setIdQuotes)) {
-			if (mapQLines.containsKey(objQLine.SBQQ__Quote__c))
-				mapQLines.get(objQLine.SBQQ__Quote__c).add(objQLine);
-			else
-				mapQLines.put(objQLine.SBQQ__Quote__c, new List<SBQQ__QuoteLine__c>{ objQLine });
-			if(!objQLine.ZonaPlus__c && !mapQLinesPAQ.containsKey(objQLine.Tarifa__c))
-				mapQLinesPAQ.put(objQLine.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>{objQLine.Rango_KM__c => objQLine});
-			else if(!objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c))
-				mapQLinesPAQ.get(objQLine.Tarifa__c).put(objQLine.Rango_KM__c , objQLine);
-			//T7 Quotes
-			if(objQLine.Tarifa__c.contains('TARIFA T7-')){
-				if(!mapQuotesT7.containsKey(objQLine.Tarifa__c))
-					mapQuotesT7.put(objQLine.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>{ objQLine.Rango_KM__c => objQLine} );
-				else if(!mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c))
-					mapQuotesT7.get(objQLine.Tarifa__c).put(objQLine.Rango_KM__c, objQLine);
-			}
+            if(!(objQLine.Tarifa__c == 'TARIFA T7' && objQLine.ZonaPlus__c)){
+                if (mapQLines.containsKey(objQLine.SBQQ__Quote__c))
+                    mapQLines.get(objQLine.SBQQ__Quote__c).add(objQLine);
+                else
+                    mapQLines.put(objQLine.SBQQ__Quote__c, new List<SBQQ__QuoteLine__c>{ objQLine });
+                if(!objQLine.ZonaPlus__c && !mapQLinesPAQ.containsKey(objQLine.Tarifa__c))
+                    mapQLinesPAQ.put(objQLine.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>{objQLine.Rango_KM__c => objQLine});
+                else if(!objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c))
+                    mapQLinesPAQ.get(objQLine.Tarifa__c).put(objQLine.Rango_KM__c , objQLine);
+                //T7 Quotes
+                if(objQLine.Tarifa__c.contains('TARIFA T7-')){
+                    if(!mapQuotesT7.containsKey(objQLine.Tarifa__c))
+                        mapQuotesT7.put(objQLine.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>{ objQLine.Rango_KM__c => objQLine} );
+                    else if(!mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c))
+                        mapQuotesT7.get(objQLine.Tarifa__c).put(objQLine.Rango_KM__c, objQLine);
+                }
+            }
 		}
+             
         
 		List<Incremento_Anual__c> listIncremento = queryIncremento(setIdincremento);
         List<Excepciones_de_incremento__c> listIncrementoExe = queryIncrementoExe();
@@ -115,51 +118,51 @@ public class TempleateTriggerHandler {
                }
                 
                if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota')){   
-                if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
-					for(Incremento_Anual__c IncYear : listIncremento){
-                        if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota') 
-                           && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c))
-                        {
-							for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
-                                if(incEXE.Incremento_Anual__c == incYear.id){
-                                 incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;                                    
+                    if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
+                        for(Incremento_Anual__c IncYear : listIncremento){
+                            if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota') 
+                            && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c))
+                            {
+                                for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
+                                    if(incEXE.Incremento_Anual__c == incYear.id){
+                                    incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;                                    
+                                    }
                                 }
-                            }
-                                if(IncYear.Incremento_anual_remota__c == NULL){
-                                IncYear.Incremento_anual_remota__c = 0;
-                            }
-							objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
-                            
-							if(objQLine.ZonaPlus__c)
-								decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
-                            
-                            if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c))
-								mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;
-                         }
-                    }                
-                else if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() <= System.today().year() && objTempleate.Fecha_sugar__c != null)            
-					for(Incremento_Anual__c IncYear : listIncremento){                       
-						if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota' && objTempleate.Fecha_sugar__c.year() < Integer.valueOf(IncYear.Anio__c))
-                        {                                          
-                            for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
-                                if(incEXE.Incremento_Anual__c == incYear.id){
-                                 incyear.Incremento_anual_remota__c= incEXE.Incremento_remota__c;                                    
+                                    if(IncYear.Incremento_anual_remota__c == NULL){
+                                    IncYear.Incremento_anual_remota__c = 0;
                                 }
+                                objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
+                                
+                                if(objQLine.ZonaPlus__c)
+                                    decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
+                                
+                                if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c))
+                                    mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;
                             }
-                                if(IncYear.Incremento_anual_remota__c == NULL){
-                                IncYear.Incremento_anual_remota__c = 0;
-                            }
+                        }                
+                    else if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() <= System.today().year() && objTempleate.Fecha_sugar__c != null)            
+                        for(Incremento_Anual__c IncYear : listIncremento){                       
+                            if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota' && objTempleate.Fecha_sugar__c.year() < Integer.valueOf(IncYear.Anio__c))
+                            {                                          
+                                for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
+                                    if(incEXE.Incremento_Anual__c == incYear.id){
+                                        incyear.Incremento_anual_remota__c= incEXE.Incremento_remota__c;                                    
+                                    }
+                                }
+                                    if(IncYear.Incremento_anual_remota__c == NULL){
+                                        IncYear.Incremento_anual_remota__c = 0;
+                                }
 
-							objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c /  100)) + objQline.SBQQ__CustomerPrice__c;							
-							
-                            if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
-								mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;	
-                    			
-							}
-							if(objQLine.ZonaPlus__c)
-							decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
+                                objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c /  100)) + objQline.SBQQ__CustomerPrice__c;							
+                                
+                                if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
+                                    mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;	
+                                    
+                                }
+                                if(objQLine.ZonaPlus__c)
+                                    decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
+                            } 
                         } 
-                    } 
                 }
 
 				objTempleateLine = new TempleateLine__c(
@@ -218,6 +221,7 @@ public class TempleateTriggerHandler {
                
                 
                  //TARIFA ESTARDAR SOLA            
+           
                if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){                 
                     objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
                     objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
@@ -225,17 +229,17 @@ public class TempleateTriggerHandler {
                    
                    objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);
                    decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                             system.debug('escala' + suma);     
+                           
                    if(suma > objTempleateLine.CustomerPrice__c.setScale(2)){
                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))
                          
                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                           system.debug('hola' + objTempleateLine.FLETE__c);
+                          
                        }
                        else if(suma < objTempleateLine.CustomerPrice__c.setScale(2)){
                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
                             objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
-                           system.debug('hola' + objTempleateLine.FLETE__c);
+                          
                        }
                        else{
                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
@@ -245,14 +249,14 @@ public class TempleateTriggerHandler {
                
                    	 if(suma2 < objTempleateLine.CustomerPrice__c.setScale(2)){
                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                           system.debug('escala' + suma.setScale(2));
+                          
                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
-                           system.debug('hola' + objTempleateLine.FLETE__c);
+                         
                        }
                        else if(suma2 > objTempleateLine.CustomerPrice__c.setScale(2)){
                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
                             objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                           system.debug('hola' + objTempleateLine.FLETE__c);
+                           
                        }
                         else{
                        objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
@@ -267,9 +271,9 @@ public class TempleateTriggerHandler {
                         objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
                         
                         objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);
-          			system.debug('SUBTOTAL' + objTempleateLine.CustomerPrice__c); 
+          			 
                     decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                   	system.debug('escala' + suma);     
+                   	
                    if(suma > objTempleateLine.CustomerPrice__c.setScale(2)){
                    if(mapResiduo.containsKey(objQLine.Rango_KM__c))
                        objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
@@ -310,7 +314,7 @@ public class TempleateTriggerHandler {
                     else
                     {
                         objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
-                        system.debug('RAD' + objTempleateLine.RAD__c );
+                       
                     }
 					if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD') && objTempleateLine.Tarifa__c != 'TARIFA T7-P')
                     {
@@ -332,33 +336,27 @@ public class TempleateTriggerHandler {
                     system.debug('SUMA sin escala ' + sumar);
                         
                         objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;                               
-                        system.debug('FLETE ' + objTempleateLine.FLETE__c);
-                        
+                       
                         objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);                        
-                        system.debug('FLETE ESCALADO ' + objTempleateLine.FLETE__c.setScale(2));
                         
                         objTempleateLine.RAD__c = objTempleateLine.RAD__c;
-                        system.debug('RAD ' + objTempleateLine.RAD__c);
+                       
                         
                         objTempleateLine.RAD__c = objTempleateLine.RAD__c.setScale(2);                        
-                        system.debug('RAD ESCALADO ' + objTempleateLine.RAD__c);
+                      
                         
                         objTempleateLine.EAD__c = objTempleateLine.EAD__c;
-                        system.debug('EAD ' + objTempleateLine.EAD__c);
-                        
+                       
                         objTempleateLine.EAD__c = objTempleateLine.EAD__c.setScale(2);                        
-                        system.debug('EAD ESCALADO ' + objTempleateLine.EAD__c);
+                  
                         
                         objTempleateLine.ACK__c = objTempleateLine.ACK__c;
-                        system.debug('ACK ' + objTempleateLine.ACK__c);
-                        
+                       
                         objTempleateLine.ACK__c = objTempleateLine.ACK__c.setScale(2);                        
-                        system.debug('ACK ESCALADO ' + objTempleateLine.ACK__c);
-                        
-          			system.debug('SUBTOTAL ' + objTempleateLine.CustomerPrice__c);
+                       
                    
                     decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                   	system.debug('SUMA PDF ' + suma);
+                 
                    
                         
                 if(suma > objTempleateLine.CustomerPrice__c){
@@ -374,7 +372,7 @@ public class TempleateTriggerHandler {
                    }
                    
                decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-               	system.debug('SUMA PDF 2 ' + suma2);
+               	
                    	 if(suma2 < objTempleateLine.CustomerPrice__c ){
                          if(mapResiduo.containsKey(objQLine.Rango_KM__c))
                              objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
@@ -511,7 +509,8 @@ public class TempleateTriggerHandler {
 		, PackVolAVG__c
         ,Guia__c
         ,KG_ADICIONAL__c
-		, Destiny__c
+        , Destiny__c
+        , SBQQ__Description__c
 		FROM SBQQ__QuoteLine__c
 		WHERE SBQQ__Quote__c IN: setIdQuotes];
 	}
