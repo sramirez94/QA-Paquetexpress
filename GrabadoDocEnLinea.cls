@@ -227,57 +227,23 @@ public class GrabadoDocEnLinea {
                     this.aprvUser = u.Id_Sipweb__c;
                 else if(u.FederationIdentifier != null)
                     this.aprvUser = u.FederationIdentifier;
+                else {
+                    gr.publicarEvento(false, 'Su usuario no cuenta con un id de sipweb o clave de federación. Consultar con el área de TI para configurar debidamente su usuario.');
+                    this.blnPuedeGrabar = false;
+                    return false;
+                }
                 this.blnPuedeGrabar = true;
             } else {
                 gr.publicarEvento(false, 'Su usuario no cuenta con un id de sipweb o clave de federación. Consultar con el área de TI para configurar debidamente su usuario.');
                 this.blnPuedeGrabar = false;
                 return false;
             }
+            System.debug('this.aprvUser1: ' + this.aprvUser);
             respuesta = respuesta.replace('time', 'timeR');
             ObjDocEnLinea.documentacionRemota rg = (ObjDocEnLinea.documentacionRemota)JSON.deserialize(respuesta, ObjDocEnLinea.documentacionRemota.class);
-            /*if(rg.body.response.data.kmConfig != null){
-                for(Integer x = 0; x < rg.body.response.data.kmConfig[0].kmServicesTrif.size();x++){
-                    strRange = '';
-                    strTarifas = '';
-                    strRange = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + '-' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
-                    for(Integer i = 0; i < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl.size(); i ++){
-                        if(!strTarifas.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo)){
-                            if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo == 'S')
-                                strTarifas += ';TARIFA SOBRE';
-                            else strTarifas +=';TARIFA '+rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifDtl[i].slabNo;
-                            if(!this.blnTieneTarifasRegistradas)
-                                this.blnTieneTarifasRegistradas = true;
-                        }
-                    }
-                    mapTarifasRegistradas.put(strRange, strTarifas);
-                }
-            }
-            if(rg.body.response.data.ptpConfig != null){
-                for(Integer x = 0; x < rg.body.response.data.ptpConfig[0].ptpServicesTrif.size(); x ++){
-                    strDest     = '';
-                    strTarifas  = '';
-                    strDest     = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
-                    for(Integer i = 0; i < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl.size(); i ++){
-                        if(!strTarifas.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].slabNo)){
-                            if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].slabNo == 'S')
-                                strTarifas += ';TARIFA SOBRE';
-                            else strTarifas += ';TARIFA ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].slabNo;
-                            if(!this.blnTieneTarifasRegistradas)
-                                this.blnTieneTarifasRegistradas = true;
-                        }
-                    }
-                    mapTarifasRegistradas.put(strDest, strTarifas);
-                }
-            }*/
             if(rg.body.response.data != null && rg.body.response.data.ptpConfig == null && rg.body.response.data.kmConfig == null)
                 this.blnClienteNuevo = true;
-            else this.listTarifas = new List<String>();
-            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + mapTarifasRegistradas));
-            /*if(rg.body.response.data != null){
-                this.aprvUser   = rg.body.response.data.aprvUser;
-            	this.trifType   = rg.body.response.data.trifType;
-            	this.pieceMulti = rg.body.response.data.pieceMulti;
-            }*/            
+            else this.listTarifas = new List<String>();         
             return true;
         }catch (Exception ex){
             System.debug('ProcesaResponse ' + ex.getLineNumber() + ' ' + ex.getMessage());
@@ -378,6 +344,7 @@ public class GrabadoDocEnLinea {
                 //30/12/2020 Salvador: Comienza creación del body
                 data.quotation  = cotizacion.Name; //30/12/2020 Salvador: Nombre de la cotización, ej: Q-0245
                 data.clntId     = cotizacion.SBQQ__Account__r.Id_SIpWeb__c; //30/12/2020 Salvador: Id de sipweb del cliente
+                System.debug('this.aprvUser2: ' + this.aprvUser);
                 data.aprvUser   = this.aprvUser;
                 if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){
                     data.trifType           = 'A';
@@ -505,18 +472,20 @@ public class GrabadoDocEnLinea {
                                 if(!this.listDecTarifas.contains(obtieneNumeroTarifa(cot.Tarifa__c)))
                                     this.listDecTarifas.add(obtieneNumeroTarifa(cot.Tarifa__c));
                             }
-                            if(!mapRangesByBlock.containsKey(cot.PackWeightAVG__c))
-                                mapRangesByBlock.put(cot.PackWeightAVG__c, new Map<String, Decimal>{strRangeDest => cot.FLETE__c});
-                            else if(!mapRangesByBlock.get(cot.PackWeightAVG__c).containsKey(strRangeDest))
-                                mapRangesByBlock.get(cot.PackWeightAVG__c).put(strRangeDest, cot.FLETE__c);
-                            if(!this.mapService.get('ADD').mapRanges.containsKey(strRangeDest))
-                                this.mapService.get('ADD').mapRanges.put(strRangeDest, cot.KG_ADICIONAL__c);
-            
-                            if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
-                                this.mapService.get('ACK').mapRanges.put(strRangeDest, cot.ACK__c);
-            
-                            if(cot.ZonaPlus__c)
-                                this.mapService.get('ZP').mapRanges.put(strRangeDest, cot.EAD__c);
+                            if(this.blnCostoBaseGMP){
+                                if(!mapRangesByBlock.containsKey(cot.PackWeightAVG__c))
+                                    mapRangesByBlock.put(cot.PackWeightAVG__c, new Map<String, Decimal>{strRangeDest => cot.FLETE__c});
+                                else if(!mapRangesByBlock.get(cot.PackWeightAVG__c).containsKey(strRangeDest))
+                                    mapRangesByBlock.get(cot.PackWeightAVG__c).put(strRangeDest, cot.FLETE__c);
+                                if(!this.mapService.get('ADD').mapRanges.containsKey(strRangeDest))
+                                    this.mapService.get('ADD').mapRanges.put(strRangeDest, cot.KG_ADICIONAL__c);
+                
+                                if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
+                                    this.mapService.get('ACK').mapRanges.put(strRangeDest, cot.ACK__c);
+                
+                                if(cot.ZonaPlus__c)
+                                    this.mapService.get('ZP').mapRanges.put(strRangeDest, cot.EAD__c);
+                            }
 
                         } else {
                             if(!this.listTarifasExp.contains(cot.Tarifa__c))
@@ -528,12 +497,14 @@ public class GrabadoDocEnLinea {
                         }
                         if(cot.Destiny__c != null){
                             if(this.blnCostoBaseGMP){
-                                if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
-                                    String Destino = '';
-                                    if(cot.Destiny__c.contains('('))
-                                        Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                                    else Destino = cot.Destiny__c;
-                                    this.listRangeDestiny.add(Destino);
+                                if(cot.Flete__c != 0){
+                                    if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
+                                        String Destino = '';
+                                        if(cot.Destiny__c.contains('('))
+                                            Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
+                                        else Destino = cot.Destiny__c;
+                                        this.listRangeDestiny.add(Destino);
+                                    }
                                 }
                             } else {
                                 if(!this.listRangeDestiny.contains(cot.Destiny__c)){
@@ -547,8 +518,15 @@ public class GrabadoDocEnLinea {
                                     this.mapQuotesExp.get(cot.Tarifa__c).put(cot.Destiny__c, cot);
                             }
                         } else {
-                            if(!this.listRangeDestiny.contains(cot.Rango_KM__c))
-                                this.listRangeDestiny.add(cot.Rango_KM__c);
+                            if(this.blnCostoBaseGMP){
+                                if(cot.Flete__c != 0){
+                                    if(!this.listRangeDestiny.contains(cot.Rango_KM__c))
+                                        this.listRangeDestiny.add(cot.Rango_KM__c);
+                                }
+                            } else {
+                                if(!this.listRangeDestiny.contains(cot.Rango_KM__c))
+                                    this.listRangeDestiny.add(cot.Rango_KM__c);
+                            }
                             if(!this.mapAcuse.containsKey(cot.Rango_KM__c))
                                 this.mapAcuse.put(cot.Rango_KM__c, cot.ACK__c);
                             if(cot.Tarifa__c == 'SEG-DS' || cot.Tarifa__c == 'SEG-2D'){
@@ -1185,7 +1163,7 @@ public class GrabadoDocEnLinea {
                         serviceTrifCbe.factor               = 'CUM';
                         serviceTrifCbe.serviceId            = 'SHP-G';
                         serviceTrifCbe.refServiceId         = 'PACKETS';
-                        serviceTrifCbe.trifAmountExce       = this.mapService.get('ADD').mapRanges.get(strRange).setScale(2);
+                        serviceTrifCbe.trifAmountExce       = (this.mapService.get('ADD').mapRanges.get(strRange) * 200).setScale(2);
                         for(String strBlock : this.mapBlocks.keySet()){
                             serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
@@ -1202,7 +1180,7 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.factor               = 'CUM';
                             serviceTrifCbe.serviceId            = 'EAD-1';
                             serviceTrifCbe.refServiceId         = 'EAD';
-                            serviceTrifCbe.trifAmountExce       = this.mapService.get('ADD').mapRanges.get(strRange).setScale(2);
+                            serviceTrifCbe.trifAmountExce       = (this.mapService.get('ADD').mapRanges.get(strRange) * 200).setScale(2);
                             for(String strBlock : this.mapBlocks.keySet()){
                                 serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                                 serviceTrif.trifAmount          = (this.mapBlocksServ.get(strBlock).get('EAD').get(strRange) * 200).setScale(2);
@@ -1358,7 +1336,13 @@ public class GrabadoDocEnLinea {
                 odc.body                                = body;
                 header.security                         = sec;
                 odc.header                              = header;
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Request: ' + JSON.serialize(odc)));
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc)));
+                /*ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc)));
+                grab.blnLlamadaDocLinea = true;
+                if(this.blnCostosFijos)
+                    grab.strTipoCliente = 'A';
+                else grab.strTipoCliente = 'C';
+                grab.crearUsuarioWeb(cotizacion);*/
                 //if(!System.isScheduled()){
                     /*if(!cotizacion.Electronicas__c){
                         if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion))
@@ -1368,17 +1352,8 @@ public class GrabadoDocEnLinea {
                         if(this.blnCostosFijos)
                             grab.strTipoCliente = 'A';
                         else grab.strTipoCliente = 'C';
-                		grab.crearUsuarioWeb(cotizacion);
-                		if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion)){
-                                grab.publicarEvento(true,null);
-                                /*SBQQ__Quote__c QT = null;
-                                QT = [SELECT id, Tarifas_grabadas_sipweb__c from SBQQ__QUOTE__C WHERE ID = :cotizacion.id LIMIT 1];
-                                if(QT != null){
-                                    QT.Tarifas_grabadas_sipweb__c = true;
-                                    update QT;
-                                }*/
-                            }
-                        /*if(grab.crearUsuarioWeb(cotizacion)){
+                        if(grab.crearUsuarioWeb(cotizacion)){
+                            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc)));
                             if(grab.envioGrabadoPOST(JSON.serialize(odc),endpoint,cotizacion)){
                                 grab.publicarEvento(true,null);
                                 SBQQ__Quote__c QT = null;
