@@ -1,0 +1,118 @@
+<apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_pantalla_ww"  sidebar="false"  docType="HTML-5.0" contentType="text/html;charset=utf-8">
+    <head>
+    <!-- estilos personalizados -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
+    <!-- jquery  -->
+    <apex:includeScript value="{!$Resource.PAQ_JQuery}"/>
+    <!-- Boostrap css -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Boostrap3, 'bootstrap-3.3.7-dist/css/bootstrap.min.css')}"/>
+    <!-- jquery UI 11.2.1 css-->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.css')}"/>
+    <!-- Boostrap js -->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_Boostrap3,'bootstrap-3.3.7-dist/js/bootstrap.min.js')}"/>
+    <!-- jquery UI 11.2.1 js-->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.js')}"/>
+    <!-- Recurso Sforce -->
+    <apex:includeScript value="/support/console/40.0/integration.js"/>         
+       <style>
+       table td2:hover {
+       color: #fff;
+       background-color: e7e7e7;
+       }
+       
+       p { font-size: 150% }
+           
+       </style> 
+                   
+    </head>
+   <div class="container-fluid">
+        <p align="Center"><strong>Plantillas de convenio WW</strong></p>
+<br/>
+    <apex:form id="ppTable" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota'}">
+        <div class="col-md-12">
+            <apex:pageMessages />
+            <apex:repeat value="{!mapLines}" var="tarifa">
+                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">   
+                <div class="panel panel-default" > 
+                  <div class="panel-body">
+                <table class="table table-hover table-striped" style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                    <thead>
+                        <apex:outputText >
+                       <!-- <tr>
+                            <th colspan="1" style="width: 20%">
+                                Tarifa:   
+                            </th>
+                            <th colspan="1" style="width: 14%"><apex:outputText value="{!mapTarifas[tarifa].strtarifa}"/></th>
+                            <th colspan="1"></th>
+                        </tr>-->
+               			  </apex:outputText>
+                    </thead>
+                    <tbody>
+                        <apex:outputText >
+                        <tr>
+                              <th colspan="1">RANGO KM</th>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                              <th>FLETE</th>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                  <th>RAD</th>
+                              </apex:outputText>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                              <apex:outputText rendered="{!blnEAD}">
+                                  <th>EAD</th> 
+                                </apex:outputText>
+                              </apex:outputText>
+                              <th>SUBTOTAL</th>
+                              <th align="center"  style="text-align: center" colspan="2">Accion</th>
+                        </tr>
+                        </apex:outputText>
+                        <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
+                           <apex:outputText >
+                      <tr>
+                        <td colspan="1" style="width: 10%">{!objTLine.Rango_KM__c}</td>
+                        <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                        <apex:inputField value="{!objTLine.FLETE__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                          </td>
+                          <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                            <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                            <apex:inputField value="{!objTLine.RAD__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                        </td>
+                            </apex:outputText>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!blnEAD}">
+                            <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                            <apex:inputField value="{!objTLine.EAD__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                       </td>
+                        </apex:outputText>
+                        <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLine.CustomerPrice__c}" /></td>
+                          <td align="center" colspan="1" style="width: 10%">
+                              <apex:commandButton value="Cancelar" action="{!editTemplate}" rendered="{!objTLine.EditMode__c}" reRender="ppTable">
+                                  <apex:param name="indexDeducItem" value="{!objTLine.Id}" assignTo="{!indexDeducItem}"/>
+                              </apex:commandButton>
+                              <apex:commandButton value="Editar" action="{!editTemplate}" rendered="{!NOT(objTLine.EditMode__c)}" reRender="ppTable">
+                                  <apex:param name="indexDeducItem" value="{!objTLine.Id}" assignTo="{!indexDeducItem}"/>
+                              </apex:commandButton>
+                          </td>
+                          <td align="center" colspan="1" style="width: 10%">
+                              <apex:commandButton value="Guardar" action="{!updateTemplate}" rendered="{!objTLine.EditMode__c}" reRender="ppTable">
+                                  <apex:param name="indexDeducItem" value="{!objTLine.Id}" assignTo="{!indexDeducItem}"/>
+                              </apex:commandButton>
+                          </td>
+                      </tr>
+                            </apex:outputText>
+                    </apex:repeat>
+                        <br/>
+                   </tbody>
+              </table>
+                    </div>
+                </div>
+                </apex:outputText>
+          </apex:repeat>
+        </div>
+        </apex:form>
+        </div>    
+   </apex:page>
