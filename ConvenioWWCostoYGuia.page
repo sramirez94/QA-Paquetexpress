@@ -25,9 +25,9 @@
        </style> 
                    
     </head>
-   <div class="container-fluid">
+    <div class="container-fluid">
         <p align="Center"><strong>Plantillas de convenio WW</strong></p>
-<br/>
+    <br/>
     <apex:form id="ppTable" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota'}">
         <div class="col-md-12">
             <apex:pageMessages />
