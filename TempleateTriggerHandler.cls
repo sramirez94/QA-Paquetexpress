@@ -213,7 +213,7 @@ public class TempleateTriggerHandler {
                     }
                 }
             }
-        
+        System.debug('va a entrar a grabar');
 		for(Templeate__c objTempleate : listNewTempleates){         
 			for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){                
                 if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
@@ -362,13 +362,13 @@ public class TempleateTriggerHandler {
                 }
                 
                 if(objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
-				if(!mapACK.containsKey(objQLine.Rango_KM__c))
-					mapACK.put(objQLine.Rango_KM__c, objTempleateLine.ACK__c);
-				else{
-					objTempleateLine.ACK__c = mapACK.get(objQLine.Rango_KM__c);
-                    objTempleateLine.ACK__c = objTempleateLine.ACK__c.setScale(2);
-				}
-               }
+                    if(!mapACK.containsKey(objQLine.Rango_KM__c))
+                        mapACK.put(objQLine.Rango_KM__c, objTempleateLine.ACK__c);
+                    else{
+                        objTempleateLine.ACK__c = mapACK.get(objQLine.Rango_KM__c);
+                        objTempleateLine.ACK__c = objTempleateLine.ACK__c.setScale(2);
+                    }
+                }
                 else{
                     objTempleateLine.ACK__c = 0;
                 }
@@ -376,15 +376,21 @@ public class TempleateTriggerHandler {
                
                 
                  //TARIFA ESTARDAR SOLA            
-           
-               if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
+                System.debug('antes validación');
+                System.debug('zona plus: ' + objTempleateLine.Zona_Plus__c);
+                System.debug('servicios adic: ' + mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c);
+                if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
+                   System.debug('entra primera validación');
                     if(this.blnCostoBaseGMP){
-                       
+                        System.debug('es costo base');
                         objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(objQLine.Rango_KM__c).setScale(2);
                         objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(objQLine.Rango_KM__c).setScale(2);
                         objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(objQLine.Rango_KM__c).setScale(2);
+                        System.debug('peso: ' + objQLine.PackWeightAVG__c);
+                        objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
                         objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
                     }else{
+                        System.debug('es costos fijos');
                         objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
                         objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
                         objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
@@ -424,39 +430,34 @@ public class TempleateTriggerHandler {
                 
                 //TARIFA ESTANDAR Y TARIFA ZONA PLUS JUNTAS
                 else if(!objTempleateLine.Zona_Plus__c){//ESTANDAR  
-                    if( objTempleateLine.Tarifa__c == 'TARIFA T7-P')
-                    {
+                    if( objTempleateLine.Tarifa__c == 'TARIFA T7-P') {
                         objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
-                        
                         objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);
-          			 
-                    decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
+                        decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
                    	
-                    if(suma > objTempleateLine.CustomerPrice__c.setScale(2)){
-                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                    }
-                    else if(suma < objTempleateLine.CustomerPrice__c.setScale(2)){
-                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
-                    }
-                    else{
-                        objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                    }
-                   
-                 decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-               
-                   	 if(suma2 < objTempleateLine.CustomerPrice__c.setScale(2)){
-                         if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                             objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
-                       }
-                       else if(suma2 > objTempleateLine.CustomerPrice__c.setScale(2)){
-                           if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                       }
-                       else{
-                           objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                       }                                     
+                        if(suma > objTempleateLine.CustomerPrice__c.setScale(2)){
+                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
+                        }
+                        else if(suma < objTempleateLine.CustomerPrice__c.setScale(2)){
+                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
+                        }
+                        else{
+                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
+                        }
+                        decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
+                   	    if(suma2 < objTempleateLine.CustomerPrice__c.setScale(2)){
+                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
+                        }
+                        else if(suma2 > objTempleateLine.CustomerPrice__c.setScale(2)){
+                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
+                        }
+                        else{
+                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
+                        }                                     
                     }
                     
                     if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('RAD') && objTempleateLine.Tarifa__c != 'TARIFA T7-P')
@@ -488,66 +489,63 @@ public class TempleateTriggerHandler {
                     }
                                       
                     if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
-                        objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c - objTempleateLine.RAD__c);                          
-						
-                    decimal sumar = objTempleateLine.FLETE__c + objTempleateLine.RAD__c + objTempleateLine.EAD__c + objTempleateLine.ACK__c + objTempleateLine.SEG__c; 
-                    system.debug('SUMA sin escala ' + sumar);
-                        
-                        objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;                               
+                        if(this.blnCostoBaseGMP){
+                            objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(objQLine.Rango_KM__c).setScale(2);
+                            objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(objQLine.Rango_KM__c).setScale(2);
+                            objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(objQLine.Rango_KM__c).setScale(2);
+                            System.debug('peso: ' + objQLine.PackWeightAVG__c);
+                            objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
+                            objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
+                        } else {
+                            objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c - objTempleateLine.RAD__c);
+                            decimal sumar = objTempleateLine.FLETE__c + objTempleateLine.RAD__c + objTempleateLine.EAD__c + objTempleateLine.ACK__c + objTempleateLine.SEG__c;
+                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;                               
                        
-                        objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);                        
+                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);                        
+                            
+                            objTempleateLine.RAD__c = objTempleateLine.RAD__c;
                         
-                        objTempleateLine.RAD__c = objTempleateLine.RAD__c;
-                       
+                            
+                            objTempleateLine.RAD__c = objTempleateLine.RAD__c.setScale(2);                        
                         
-                        objTempleateLine.RAD__c = objTempleateLine.RAD__c.setScale(2);                        
-                      
+                            
+                            objTempleateLine.EAD__c = objTempleateLine.EAD__c;
                         
-                        objTempleateLine.EAD__c = objTempleateLine.EAD__c;
-                       
-                        objTempleateLine.EAD__c = objTempleateLine.EAD__c.setScale(2);                        
-                  
+                            objTempleateLine.EAD__c = objTempleateLine.EAD__c.setScale(2);                        
+                    
+                            
+                            objTempleateLine.ACK__c = objTempleateLine.ACK__c;
                         
-                        objTempleateLine.ACK__c = objTempleateLine.ACK__c;
-                       
-                        objTempleateLine.ACK__c = objTempleateLine.ACK__c.setScale(2);                        
-                       
-                   
-                    decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                 
-                   
-                        
-                if(suma > objTempleateLine.CustomerPrice__c){
-                   if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;                     
-                   }
-                   else if(suma < objTempleateLine.CustomerPrice__c){
-                      if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                        objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;                      
-                   }
-                   else{
-                       objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                   }
-                   
-               decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-               	
-                   	 if(suma2 < objTempleateLine.CustomerPrice__c ){
-                         if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                             objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
-                       }
-                       else if(suma2 > objTempleateLine.CustomerPrice__c){
-                           if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                       }
-                       else{
-                           objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                       }                                     
-                    }
-                    if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c))
-                    {
-						mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).FLETE__c = objTempleateLine.FLETE__c;
-                    }
-                                        
+                            objTempleateLine.ACK__c = objTempleateLine.ACK__c.setScale(2);
+                            decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
+                            if(suma > objTempleateLine.CustomerPrice__c){
+                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;                     
+                            }
+                            else if(suma < objTempleateLine.CustomerPrice__c){
+                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;                      
+                            }
+                            else{
+                                objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
+                            }
+                            decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
+                            if(suma2 < objTempleateLine.CustomerPrice__c ){
+                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
+                            }
+                            else if(suma2 > objTempleateLine.CustomerPrice__c){
+                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
+                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
+                            }
+                            else{
+                                objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
+                            }
+                            if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
+                                mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).FLETE__c = objTempleateLine.FLETE__c;
+                            }
+                        }
+                    }                                        
                 }       
                 else if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){//ZONA PLUS
                     objTempleateLine.FLETE__c = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).FLETE__c;
