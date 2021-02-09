@@ -491,7 +491,8 @@ public class Ctrl_pantalla_ww {
     
  //CAALCULOS PARA Costos fijos por Tarifas: Por Destinos / Por rangos de km
  /*codigo nuevo inicio---------------------------------------------------------------------------------------------------------*/
-     this.wp.objQuote = queryQuote(sc.getId());       
+     this.wp.objQuote = queryQuote(sc.getId());  
+     this.wp.listQuoteItem = queryQuoteItem(sc.getId());     
         
         if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){        
         for(String keyFee: this.listFee){
@@ -575,8 +576,6 @@ public class Ctrl_pantalla_ww {
             this.wp.objOpp = queryOpp(wp.objQuote.SBQQ__Opportunity2__c);
         if(String.isNotBlank(wp.objQuote.Lead__c))
         	this.wp.objLead = queryLead(wp.objQuote.Lead__c);
-
-        this.wp.listQuoteItem = queryQuoteItem(sc.getId());
 
         if(String.isNotBlank(this.wp.objQuote.Servicios_adicionales__c))
             for (String strKeyService : this.wp.objQuote.Servicios_adicionales__c.split(';')){
@@ -1062,462 +1061,582 @@ public class Ctrl_pantalla_ww {
     /*codigo nuevo termino---------------------------------------------------------------------------------------------------------*/  
         
         //CALCULOS PARA Costos fijos por Tarifas: Por Destinos / Por rangos de km con t7 zona plus
-         if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){        
+        if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){
        
-		Set<String> setRange = new Set<String>();
-        Integer indexOD = 0;
-        Decimal decTotNormal = 0;
-        Decimal descuento = 0;
-        Boolean blnCotizaT7 = false;
-         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
-            descuento = 0;
-            if(String.isNotBlank(quoteItem.Destiny__c)){
-                if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c && (quoteItem.SBQQ__Description__c == 'Destino' || quoteItem.SBQQ__Description__c == 'Propuesta'))
-                    quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
-                else if(quoteItem.Tarifa__c == 'TARIFA T7' && !quoteItem.ZonaPlus__c)
-                    quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
-                else if(quoteItem.Tarifa__c == 'TARIFA SOBRE' || quoteItem.Tarifa__c == 'TARIFA T0' || quoteItem.Tarifa__c == 'TARIFA T1' || quoteItem.Tarifa__c == 'TARIFA T2' || quoteItem.Tarifa__c == 'TARIFA T3' || quoteItem.Tarifa__c == 'TARIFA T4' ||
-                        quoteItem.Tarifa__c == 'TARIFA T5' || quoteItem.Tarifa__c == 'TARIFA T6' ||quoteItem.Tarifa__c == 'TARIFA T7-P' || quoteItem.Tarifa__c == 'TARIFA T7-V')
-                    quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
-            }
-            setRange.add(quoteItem.Rango_KM__c);
-            if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c){
-                if(quoteItem.SBQQ__Description__c == null || quoteItem.SBQQ__Description__c == 'Destino'){
-                    this.mapQuotesT7ZP.put(quoteItem.Destiny__c, quoteItem);
-                    this.mapQuotesT7ZPByRange.put(quoteItem.Rango_KM__c, quoteItem);
-                    this.listRangeT7.add(quoteItem.Destiny__c);
-                    this.totalPaq +=quoteItem.SBQQ__Quantity__c;
-                    this.decMontoTotalT7ZP += quoteItem.SBQQ__SpecialPrice__c;
-                    blnCotizaT7 = true;
-                    this.T7ZP = true;
-                } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
-                    decTotNormal += quoteItem.FLETE__c;
-                    decTotProp += quoteItem.GUIA__c;
-                    this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
-                    this.listRangeProp.add(quoteItem.Rango_KM__c);
-                    if(quoteItem.GUIA__c > 0 && quoteItem.FLETE__c > 0)
-                        descuento = ((quoteItem.GUIA__c / quoteItem.FLETE__c) - 1) * 100;
-                    this.mapDescT7ZP.put(quoteItem.Rango_KM__c, descuento);
-                } 
-                if(this.mapQuotesT7ZP != null){
-                    listRangeT7.sort();
-                    
+            Set<String> setRange = new Set<String>();
+            Integer indexOD = 0;
+            Decimal decTotNormal = 0;
+            Decimal descuento = 0;
+            Boolean blnCotizaT7 = false;
+            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
+                descuento = 0;
+                if(String.isNotBlank(quoteItem.Destiny__c)){
+                    if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c && (quoteItem.SBQQ__Description__c == 'Destino' || quoteItem.SBQQ__Description__c == 'Propuesta'))
+                        quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
+                    else if(quoteItem.Tarifa__c == 'TARIFA T7' && !quoteItem.ZonaPlus__c)
+                        quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
+                    else if(quoteItem.Tarifa__c == 'TARIFA SOBRE' || quoteItem.Tarifa__c == 'TARIFA T0' || quoteItem.Tarifa__c == 'TARIFA T1' || quoteItem.Tarifa__c == 'TARIFA T2' || quoteItem.Tarifa__c == 'TARIFA T3' || quoteItem.Tarifa__c == 'TARIFA T4' ||
+                            quoteItem.Tarifa__c == 'TARIFA T5' || quoteItem.Tarifa__c == 'TARIFA T6' ||quoteItem.Tarifa__c == 'TARIFA T7-P' || quoteItem.Tarifa__c == 'TARIFA T7-V')
+                        quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
                 }
-                    
-            } else {
-                if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
-                    if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
-                        if(wp.perSob == 0)
-                            wp.perSob = quoteItem.DiscountFlete__c;
+                setRange.add(quoteItem.Rango_KM__c);
+                if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c){
+                    if(quoteItem.SBQQ__Description__c == null || quoteItem.SBQQ__Description__c == 'Destino'){
+                        this.mapQuotesT7ZP.put(quoteItem.Destiny__c, quoteItem);
+                        this.mapQuotesT7ZPByRange.put(quoteItem.Rango_KM__c, quoteItem);
+                        this.listRangeT7.add(quoteItem.Destiny__c);
+                        this.totalPaq +=quoteItem.SBQQ__Quantity__c;
+                        this.decMontoTotalT7ZP += quoteItem.SBQQ__SpecialPrice__c;
+                        blnCotizaT7 = true;
+                        this.T7ZP = true;
+                    } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
+                        decTotNormal += quoteItem.FLETE__c;
+                        decTotProp += quoteItem.GUIA__c;
+                        this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
+                        this.listRangeProp.add(quoteItem.Rango_KM__c);
+                        if(quoteItem.GUIA__c > 0 && quoteItem.FLETE__c > 0)
+                            descuento = ((quoteItem.GUIA__c / quoteItem.FLETE__c) - 1) * 100;
+                        this.mapDescT7ZP.put(quoteItem.Rango_KM__c, descuento);
+                    } 
+                    if(this.mapQuotesT7ZP != null){
+                        listRangeT7.sort();
+                        
                     }
-                    else if (quoteItem.Tarifa__c != 'SEG-DS' && quoteItem.Tarifa__c != 'SEG-2D' && quoteItem.Tarifa__c != 'SEG-A12'){
-                        if(wp.perPack == 0)
-                            wp.perPack = quoteItem.DiscountFlete__c;
-                    }
-                    if(quoteItem.ZonaPlus__c){
-                        if(wp.perZP == 0)
-                            wp.perZP = quoteItem.DiscountDelivery__c;
-                        if(this.blnEAD)
-                            this.blnZP = true;
-                        if(quoteItem.SEG__c != null)
-                            totalAmountSegZP += quoteItem.SEG__c * quoteItem.SBQQ__Quantity__c;
-                    }
-                    else{
-                        if(wp.perEAD == 0)
-                            wp.perEAD = quoteItem.DiscountDelivery__c;
-                        if(quoteItem.SEG__c != null)
-                            totalAmountSeg += quoteItem.SEG__c  * quoteItem.SBQQ__Quantity__c;
-                    }
-                    if(wp.perRAD == 0)
-                        wp.perRAD = quoteItem.DiscountRecolection__c;
-                    if(wp.perACK == 0)
-                        wp.perACK = quoteItem.DiscountAcuse__c;
-                    if(wp.perSEG == 0)
-                        wp.perSEG = quoteItem.DiscountSEG__c;
-                    //System.debug(LoggingLevel.DEBUG, 'quoteItem.GUIA__c : ' + quoteItem.GUIA__c);
-                    if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb' || (this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota' && quoteItem.Tarifa__c !='SEG-DS' && quoteItem.Tarifa__c !='SEG-2D' && quoteItem.Tarifa__c !='SEG-A12' )){
-                        if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) && !quoteItem.ZonaPlus__c) {
-                            this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                        
+                } else {
+                    if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
+                        if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
+                            if(wp.perSob == 0)
+                                wp.perSob = quoteItem.DiscountFlete__c;
                         }
-                        if(this.mapQuotesZP.containsKey(quoteItem.Tarifa__c) && quoteItem.ZonaPlus__c){
-                            this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                        else if (quoteItem.Tarifa__c != 'SEG-DS' && quoteItem.Tarifa__c != 'SEG-2D' && quoteItem.Tarifa__c != 'SEG-A12'){
+                            if(wp.perPack == 0)
+                                wp.perPack = quoteItem.DiscountFlete__c;
                         }
-                    } else if(this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota' && (quoteItem.Tarifa__c =='SEG-DS' || quoteItem.Tarifa__c =='SEG-2D' || quoteItem.Tarifa__c =='SEG-A12'  )){
-                        if(!this.mapQuotesOD.containsKey(quoteItem.Tarifa__c)){
-                            this.mapQuotesOD.put(quoteItem.Tarifa__c, new Map<String, Map<String, SBQQ__QuoteLine__c>>{ String.valueOf(quoteItem.GUIA__c) => new Map<String, SBQQ__QuoteLine__c>{quoteItem.Rango_KM__c => quoteItem } });
-                           // this.listRangeOD.put(quoteItem.Tarifa__c, new Map<String, List<String>>{ String.valueOf(quoteItem.GUIA__c) => new List<String>{quoteItem.Rango_KM__c} });
-                        }else if(!this.mapQuotesOD.get(quoteItem.Tarifa__c).containsKey(String.valueOf(quoteItem.GUIA__c))){
-                            this.mapQuotesOD.get(quoteItem.Tarifa__c).put(String.valueOf(quoteItem.GUIA__c), new Map<String, SBQQ__QuoteLine__c>{quoteItem.Rango_KM__c => quoteItem });
-                            //this.listRangeOD.get(quoteItem.Tarifa__c).put(String.valueOf(quoteItem.GUIA__c), new List<String>{quoteItem.Rango_KM__c});
-                        }else if (!this.mapQuotesOD.get(quoteItem.Tarifa__c).get(String.valueOf(quoteItem.GUIA__c)).containsKey(quoteItem.Rango_KM__c)){
-                            this.mapQuotesOD.get(quoteItem.Tarifa__c).get(String.valueOf(quoteItem.GUIA__c)).put(quoteItem.Rango_KM__c, quoteItem);
-                            //this.listRangeOD.get(quoteItem.Tarifa__c).get(String.valueOf(quoteItem.GUIA__c)).add(quoteItem.Rango_KM__c);
+                        if(quoteItem.ZonaPlus__c){
+                            if(wp.perZP == 0)
+                                wp.perZP = quoteItem.DiscountDelivery__c;
+                            if(this.blnEAD)
+                                this.blnZP = true;
+                            if(quoteItem.SEG__c != null)
+                                totalAmountSegZP += quoteItem.SEG__c * quoteItem.SBQQ__Quantity__c;
                         }
-    
-                    }
-    
-                    if(quoteItem.Tarifa__c == 'TARIFA T7'){
-                        if(quoteItem.PackWeightAVG__c != null)
-                            this.mapT7W.put(quoteItem.Rango_KM__c, quoteItem.PackWeightAVG__c);
-                        if(quoteItem.PackVolAVG__c != null)
-                            this.mapT7V.put(quoteItem.Rango_KM__c, quoteItem.PackVolAVG__c);
-                    }
-    
-                    if(quoteItem.ZonaPlus__c){
-                        if(this.mapTotalDiscFeeZP.containsKey(quoteItem.Tarifa__c))
-                            this.mapTotalDiscFeeZP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
-    
-                    }
-                    else if(quoteItem.Tarifa__c != 'SEG-DS' && quoteItem.Tarifa__c != 'SEG-2D' && quoteItem.Tarifa__c != 'SEG-A12') {
-                        if(this.mapTotalDiscFee.containsKey(quoteItem.Tarifa__c))
-                            this.mapTotalDiscFee.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
-    
-                    }
-    
-                    if(quoteItem.Tarifa__c == 'SEG-DS'){
-                        this.blnDS = true;
-                        this.discDS = quoteItem.SBQQ__Discount__c;
-                        if(quoteItem.SBQQ__VolumeDiscount__c != 0)
-                            mapTotalDiscEXP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
-                        lEXP.add(quoteItem.Tarifa__c);
-                        listGuide.add(String.valueOf(quoteItem.GUIA__c));
-                    }
-    
-                    if(quoteItem.Tarifa__c == 'SEG-2D'){
-                        this.bln2D = true;
-                        this.disc2D = quoteItem.SBQQ__Discount__c;
-                        if(quoteItem.SBQQ__VolumeDiscount__c != 0)
-                            mapTotalDiscEXP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
-                        lEXP.add(quoteItem.Tarifa__c);
-                        listGuide.add(String.valueOf(quoteItem.GUIA__c));
-                    }
-    
-                    if(quoteItem.Tarifa__c == 'SEG-A12'){
-                        this.blnA12 = true;
-                        this.discA12 = quoteItem.SBQQ__Discount__c;
-                        if(quoteItem.SBQQ__VolumeDiscount__c != 0)
-                            mapTotalDiscEXP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
-                        lEXP.add(quoteItem.Tarifa__c);
-                        listGuide.add(String.valueOf(quoteItem.GUIA__c));
-                    }
-    
-                    if(this.blnDS || this.bln2D || this.blnA12){
-                        if(Decimal.valueOf(lastGuide2) < quoteItem.GUIA__c)
-                            this.lastGuide2 = String.valueOf(quoteItem.GUIA__c);
-                        this.ServicioExpress = true;
-                        if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
-                            if(mapQuotesEXP.containsKey(quoteItem.Tarifa__c))
-                                this.mapQuotesEXP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
-                            else
-                                this.mapQuotesEXP.put(quoteItem.Tarifa__c, new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                        else{
+                            if(wp.perEAD == 0)
+                                wp.perEAD = quoteItem.DiscountDelivery__c;
+                            if(quoteItem.SEG__c != null)
+                                totalAmountSeg += quoteItem.SEG__c  * quoteItem.SBQQ__Quantity__c;
                         }
-                    }
-    
-                } else if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) && quoteItem.SBQQ__Quantity__c > 0)
-                    this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
-                else
-                    this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
-            }
-        }
+                        if(wp.perRAD == 0)
+                            wp.perRAD = quoteItem.DiscountRecolection__c;
+                        if(wp.perACK == 0)
+                            wp.perACK = quoteItem.DiscountAcuse__c;
+                        if(wp.perSEG == 0)
+                            wp.perSEG = quoteItem.DiscountSEG__c;
+                        //System.debug(LoggingLevel.DEBUG, 'quoteItem.GUIA__c : ' + quoteItem.GUIA__c);
+                        if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb' || (this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota' && quoteItem.Tarifa__c !='SEG-DS' && quoteItem.Tarifa__c !='SEG-2D' && quoteItem.Tarifa__c !='SEG-A12' )){
+                            if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) && !quoteItem.ZonaPlus__c) {
+                                this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                            }
+                            if(this.mapQuotesZP.containsKey(quoteItem.Tarifa__c) && quoteItem.ZonaPlus__c){
+                                this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                            }
+                        } else if(this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota' && (quoteItem.Tarifa__c =='SEG-DS' || quoteItem.Tarifa__c =='SEG-2D' || quoteItem.Tarifa__c =='SEG-A12'  )){
+                            if(!this.mapQuotesOD.containsKey(quoteItem.Tarifa__c)){
+                                this.mapQuotesOD.put(quoteItem.Tarifa__c, new Map<String, Map<String, SBQQ__QuoteLine__c>>{ String.valueOf(quoteItem.GUIA__c) => new Map<String, SBQQ__QuoteLine__c>{quoteItem.Rango_KM__c => quoteItem } });
+                            // this.listRangeOD.put(quoteItem.Tarifa__c, new Map<String, List<String>>{ String.valueOf(quoteItem.GUIA__c) => new List<String>{quoteItem.Rango_KM__c} });
+                            }else if(!this.mapQuotesOD.get(quoteItem.Tarifa__c).containsKey(String.valueOf(quoteItem.GUIA__c))){
+                                this.mapQuotesOD.get(quoteItem.Tarifa__c).put(String.valueOf(quoteItem.GUIA__c), new Map<String, SBQQ__QuoteLine__c>{quoteItem.Rango_KM__c => quoteItem });
+                                //this.listRangeOD.get(quoteItem.Tarifa__c).put(String.valueOf(quoteItem.GUIA__c), new List<String>{quoteItem.Rango_KM__c});
+                            }else if (!this.mapQuotesOD.get(quoteItem.Tarifa__c).get(String.valueOf(quoteItem.GUIA__c)).containsKey(quoteItem.Rango_KM__c)){
+                                this.mapQuotesOD.get(quoteItem.Tarifa__c).get(String.valueOf(quoteItem.GUIA__c)).put(quoteItem.Rango_KM__c, quoteItem);
+                                //this.listRangeOD.get(quoteItem.Tarifa__c).get(String.valueOf(quoteItem.GUIA__c)).add(quoteItem.Rango_KM__c);
+                            }
         
-        //System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
-        this.listRangeDestiny.addAll(setRange);
+                        }
+        
+                        if(quoteItem.Tarifa__c == 'TARIFA T7'){
+                            if(quoteItem.PackWeightAVG__c != null)
+                                this.mapT7W.put(quoteItem.Rango_KM__c, quoteItem.PackWeightAVG__c);
+                            if(quoteItem.PackVolAVG__c != null)
+                                this.mapT7V.put(quoteItem.Rango_KM__c, quoteItem.PackVolAVG__c);
+                        }
+        
+                        if(quoteItem.ZonaPlus__c){
+                            if(this.mapTotalDiscFeeZP.containsKey(quoteItem.Tarifa__c))
+                                this.mapTotalDiscFeeZP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
+        
+                        }
+                        else if(quoteItem.Tarifa__c != 'SEG-DS' && quoteItem.Tarifa__c != 'SEG-2D' && quoteItem.Tarifa__c != 'SEG-A12') {
+                            if(this.mapTotalDiscFee.containsKey(quoteItem.Tarifa__c))
+                                this.mapTotalDiscFee.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
+        
+                        }
+        
+                        if(quoteItem.Tarifa__c == 'SEG-DS'){
+                            this.blnDS = true;
+                            this.discDS = quoteItem.SBQQ__Discount__c;
+                            if(quoteItem.SBQQ__VolumeDiscount__c != 0)
+                                mapTotalDiscEXP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
+                            lEXP.add(quoteItem.Tarifa__c);
+                            listGuide.add(String.valueOf(quoteItem.GUIA__c));
+                        }
+        
+                        if(quoteItem.Tarifa__c == 'SEG-2D'){
+                            this.bln2D = true;
+                            this.disc2D = quoteItem.SBQQ__Discount__c;
+                            if(quoteItem.SBQQ__VolumeDiscount__c != 0)
+                                mapTotalDiscEXP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
+                            lEXP.add(quoteItem.Tarifa__c);
+                            listGuide.add(String.valueOf(quoteItem.GUIA__c));
+                        }
+        
+                        if(quoteItem.Tarifa__c == 'SEG-A12'){
+                            this.blnA12 = true;
+                            this.discA12 = quoteItem.SBQQ__Discount__c;
+                            if(quoteItem.SBQQ__VolumeDiscount__c != 0)
+                                mapTotalDiscEXP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
+                            lEXP.add(quoteItem.Tarifa__c);
+                            listGuide.add(String.valueOf(quoteItem.GUIA__c));
+                        }
+        
+                        if(this.blnDS || this.bln2D || this.blnA12){
+                            if(Decimal.valueOf(lastGuide2) < quoteItem.GUIA__c)
+                                this.lastGuide2 = String.valueOf(quoteItem.GUIA__c);
+                            this.ServicioExpress = true;
+                            if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
+                                if(mapQuotesEXP.containsKey(quoteItem.Tarifa__c))
+                                    this.mapQuotesEXP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                                else
+                                    this.mapQuotesEXP.put(quoteItem.Tarifa__c, new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                            }
+                        }
+        
+                    } else if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) && quoteItem.SBQQ__Quantity__c > 0)
+                        this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                    else
+                        this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                }
+            }
+        
+            //System.debug(LoggingLevel.DEBUG, 'mapQuotes :' + JSON.serialize(this.mapQuotes));
+            this.listRangeDestiny.addAll(setRange);
 
-        for(String keyRange: this.listRangeDestiny){
-            this.mapTotalByRange.put(keyRange, new QuoteWP());
-            this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
-            this.mapT7W.put(keyRange, 0);
-            this.mapT7V.put(keyRange, 0);
-            this.mapTotalesT7ZP.put(keyRange, 0);
-        }
+            for(String keyRange: this.listRangeDestiny){
+                this.mapTotalByRange.put(keyRange, new QuoteWP());
+                this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
+                this.mapT7W.put(keyRange, 0);
+                this.mapT7V.put(keyRange, 0);
+                this.mapTotalesT7ZP.put(keyRange, 0);
+            }
              
-        for(String keyRange: this.listRangeT7){
-            if (this.mapTotalesT7ZP.containsKey(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) && this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) == 0)
-                this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c,  this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
-            else if(this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) != 0){
-                Decimal tempRangeCount = this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c);
-                this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, 0);
-                this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, tempRangeCount + this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
-            }
-        }
-
-        for(String keyFee: this.listFee){
-            for(String keyRange: this.listRangeDestiny){
-                if(this.mapQuotes.get(keyFee).containsKey(keyRange) &&  this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
-                    total += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    if(this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange)){
-                        if(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null)
-                            totalAmount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                        if(keyFee != 'TARIFA T7' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                            totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                        else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                            totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                        else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                            totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-
-                    }
-                } else if(!this.mapQuotes.get(keyFee).containsKey(keyRange))
-                    this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
-
-                if(keyFee == 'TARIFA T7'){
-                    if(this.mapQuotes.get(keyFee).get(keyRange).PackWeightAVG__c != null)
-                        this.mapT7W.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).PackWeightAVG__c);
-
-                    if(this.mapQuotes.get(keyFee).get(keyRange).PackVolAVG__c != null)
-                        this.mapT7V.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).PackVolAVG__c);
-
-                }
-
-                if(keyFee != 'TARIFA T7' && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
-                    totalZP +=  this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange))
-                    if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null){
-                        totalAmountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                        if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                            totalAmountQZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                    }
-                } else if( keyFee != 'TARIFA T7' && !this.mapQuotesZP.get(keyFee).containsKey(keyRange))
-                    this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
-
-            }
-
-        }
-        if(decTotProp > 0 && decTotNormal > 0){
-            descGral = ((decTotProp / decTotNormal) - 1) * 100;
-            if(decTotNormal > 0)
-                totalAmountZP += decTotNormal;
-            if(decTotProp > 0)
-                totalAmountQZP += decTotProp;
-        }
-        this.totalSTD = total;
-        totalZP += totalPaq;
-        this.totalSTDZP = totalZP;
-
-        for(String keyFee: this.listFee){
-            coutFee = 0;
-            countFeeZP = 0;
-            amount = 0;
-            amountZP = 0;
-            for(String keyRange: this.listRangeDestiny) {
-                coutFee += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c ;
-                if(keyFee != 'TARIFA T7' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                    amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                    amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c != null)
-                    amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c;
-                if (keyFee != 'TARIFA T7'){
-                    countFeeZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                        amountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                }
-                
-            }
-            this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
-            if(keyFee != 'TARIFA T7')
-                this.mapTotalByFeeZP.put(keyFee, new QuoteWP(countFeeZP, totalZP, amountZP));
-        }
-
-        for(String keyFee: this.listFee){
-            //System.debug('keyFee : ' + keyFee);
-            for(String keyRange: this.listRangeDestiny){
-                //System.debug('keyRange : ' + keyRange);
-                if (this.mapTotalByRange.containsKey(keyRange) && this.mapTotalByRange.get(keyRange).totalPaquetes == 0)
-                    this.mapTotalByRange.put(keyRange, new QuoteWP(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
-                else if(!this.mapTotalByRange.containsKey(keyRange))
-                    this.mapTotalByRange.put(keyRange, new QuoteWP());
-                else if(this.mapTotalByRange.get(keyRange).totalPaquetes != 0){
-                    Decimal tempRangeCount = this.mapTotalByRange.get(keyRange).totalPaquetes;
-                    this.mapTotalByRange.put(keyRange, new QuoteWP(tempRangeCount + this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
-                }
-                if(keyFee != 'TARIFA T7'){
-                    if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
-                        this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
-                    else if (!this.mapTotalByRangeZP.containsKey(keyRange))
-                            this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
-                    else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
-                        Decimal tempRangeCountZP = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
-                        this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( tempRangeCountZP + this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
-                    }
+            for(String keyRange: this.listRangeT7){
+                if (this.mapTotalesT7ZP.containsKey(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) && this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) == 0)
+                    this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c,  this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
+                else if(this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) != 0){
+                    Decimal tempRangeCount = this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c);
+                    this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, 0);
+                    this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, tempRangeCount + this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
                 }
             }
 
-        }
-        Decimal paquetes = 0;
-        for(String keyRange: this.listRangeDestiny){
-            if(this.mapTotalesT7ZP != null){
-                if(this.mapTotalesT7ZP.get(keyRange) > 0){
-                    if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
-                        this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapTotalesT7ZP.get(keyRange), totalZP, 0));
-                    else if (!this.mapTotalByRangeZP.containsKey(keyRange))
-                        this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
-                    else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
-                        Decimal RespaldoConteo = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
-                        this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( RespaldoConteo + this.mapTotalesT7ZP.get(keyRange), totalZP, 0));
-                    }
-                    paquetes += this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
-                }
-                
-            }
-        }
-        if(paquetes > 0)
-            porcFrec = totalPaq / paquetes * 100;
-        
-
-		for(String keyFee : this.listEXP ) {
-            if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
-                for (String keyRange : this.listRangeDestiny) {
-                    if (this.mapQuotesEXP.containsKey(keyFee) &&
-                            this.mapQuotesEXP.get(keyFee).containsKey(keyRange) &&
-                            this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0
-                    ) {
-                        total += this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                        this.mapTotalByFeeEXP.get(keyFee).totalPaquetes +=
-                                this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                        if (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null) {
-                            totalAmount += this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                            this.mapTotalByFeeEXP.get(keyFee).totalNormal +=
-                                    this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                        }
-                        if (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) {
-                            totalAmountQ += this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                            this.mapTotalByFeeEXP.get(keyFee).totalAmount +=
-                                    this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                        }
-                        if (this.mapQuotesEXP.get(keyFee).get(keyRange).SEG__c != null) {
-                            // totalAmountSeg += this.mapQuotesEXP.get(keyFee).get(keyRange).SEG__c;
-                            // System.debug(LoggingLevel.DEBUG, 'totalAmountSeg :' + totalAmountSeg);
-                            this.mapTotalByFeeEXP.get(keyFee).totalSEG +=
-                                    this.mapQuotesEXP.get(keyFee).get(keyRange).SEG__c;
-                        }
-                    } else if (this.mapQuotesEXP.containsKey(keyFee) &&
-                            !this.mapQuotesEXP.get(keyFee).containsKey(keyRange))
-                        this.mapQuotesEXP.get(keyFee).put(keyRange,
-                                new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0,
-                                        SBQQ__Discount__c = 0));
-                }
-
-                for (String keyRange : this.listRangeDestiny)
-                    if (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0 &&
-                            this.mapTotalByFeeEXP.get(keyFee).totalPaquetes > 0 &&
-                            this.mapTotalByRangeEXP.get(keyFee).containsKey(keyRange))
-                        this.mapTotalByRangeEXP.get(keyFee).get(keyRange).frecPaquetes = (
-                        this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c /
-                        this.mapTotalByFeeEXP.get(keyFee).totalPaquetes) * 100 ;
-                    else if (!this.mapTotalByRangeEXP.get(keyFee).containsKey(keyRange))
-                        this.mapTotalByRangeEXP.get(keyFee).put(keyRange, new QuoteWP());
-
-                if (this.mapTotalByFeeEXP.get(keyFee).totalNormal > 0)
-                    this.mapTotalByFeeEXP.get(keyFee).totalDiscount = (
-                    (this.mapTotalByFeeEXP.get(keyFee).totalAmount - this.mapTotalByFeeEXP.get(keyFee).totalSEG) /
-                    (this.mapTotalByFeeEXP.get(keyFee).totalNormal - this.mapTotalByFeeEXP.get(keyFee).totalSEG) - 1) * 100;
-            }else if(this.mapQuotesOD.containsKey(keyFee)){
-                this.mapTotalByFeeOD.put(keyFee, new Map<String, QuoteWP>());
-                for(String guide: this.mapQuotesOD.get(keyFee).keySet()){
-                    this.mapTotalByFeeOD.get(keyFee).put(guide, new QuoteWP());
-                    for(String keyRange: this.mapQuotesOD.get(keyFee).get(guide).keySet()){
-                        if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c > 0){
-                            total += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c;
-                            this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c;
-                            if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__NetTotal__c != null){
-                                totalAmount += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__NetTotal__c;
-                                this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__NetTotal__c;
-                            }
-                            if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__CustomerTotal__c != null){
-                                totalAmountQ += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__CustomerTotal__c;
-                                this.mapTotalByFeeOD.get(keyFee).get(guide).totalAmount += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__CustomerTotal__c;
-                            }
-                            if (this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SEG__c != null) {
-                                this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SEG__c * this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c;
-                            }
-                        } else if(this.mapQuotesOD.containsKey(keyFee)
-                                && this.mapQuotesOD.get(keyFee).containsKey(guide)
-                                && !this.mapQuotesOD.get(keyFee).get(guide).containsKey(keyRange))
-
-                            this.mapQuotesOD.get(keyFee).get(guide).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__NetPrice__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
-                    }
-                }
-            }
-        }
-
-        Decimal fltFrecc = 0;
-        for(String keyFee : this.listEXP ){
-            if(this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota'){
+            for(String keyFee: this.listFee){
                 for(String keyRange: this.listRangeDestiny){
-                    fltFrecc = 0;
-                    if(this.mapQuotesEXP.containsKey(keyFee) && this.mapQuotesEXP.get(keyFee).containsKey(keyRange) && this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeEXP.containsKey(keyFee) && this.mapTotalByFeeEXP.get(keyFee).totalPaquetes > 0)
-                        fltFrecc = (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeEXP.get(keyFee).totalPaquetes) * 100;
-                    if(!this.mapFrecc.containsKey(keyFee))
-                        this.mapFrecc.put(keyFee, new Map<String, Decimal>{ keyRange =>  fltFrecc});
-                    else
-                        this.mapFrecc.get(keyFee).put(keyRange, fltFrecc);
-                }
-                if(this.mapQuotesOD.containsKey(keyFee))
-                for(String guide: this.mapQuotesOD.get(keyFee).keySet()){
-                    for(String keyRange: this.mapQuotesOD.get(keyFee).get(guide).keySet()){
-                        fltFrecc = 0;
-                        if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes > 0)
-                            fltFrecc = this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes * 100;
-                        if(!this.mapFreccOD.containsKey(keyFee))
-                            this.mapFreccOD.put(keyFee, new Map<String, Map<String, Decimal>> { guide => new Map<String, Decimal>{ keyRange => fltFrecc }});
-                        else if (this.mapFreccOD.containsKey(keyFee) && !this.mapFreccOD.get(keyFee).containsKey(guide))
-                            this.mapFreccOD.get(keyFee).put(guide, new Map<String, Decimal>{ keyRange => fltFrecc });
-                        else if(this.mapFreccOD.containsKey(keyFee) && this.mapFreccOD.get(keyFee).containsKey(guide) && !this.mapFreccOD.get(keyFee).get(guide).containsKey(keyRange))
-                            this.mapFreccOD.get(keyFee).get(guide).put(keyRange, fltFrecc);
+                    if(this.mapQuotes.get(keyFee).containsKey(keyRange) &&  this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
+                        total += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                        if(this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange)){
+                            if(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null)
+                                totalAmount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
+                            if(keyFee != 'TARIFA T7' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                                totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                            else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                                totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                            else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                                totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+
+                        }
+                    } else if(!this.mapQuotes.get(keyFee).containsKey(keyRange))
+                        this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
+
+                    if(keyFee == 'TARIFA T7'){
+                        if(this.mapQuotes.get(keyFee).get(keyRange).PackWeightAVG__c != null)
+                            this.mapT7W.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).PackWeightAVG__c);
+
+                        if(this.mapQuotes.get(keyFee).get(keyRange).PackVolAVG__c != null)
+                            this.mapT7V.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).PackVolAVG__c);
 
                     }
-                    if(this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal > 0)
-                        this.mapTotalByFeeOD.get(keyFee).get(guide).totalDiscount = ((this.mapTotalByFeeOD.get(keyFee).get(guide).totalAmount - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) / (this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) -1) * 100;
-                }
-            }
-            else {
-                for(String keyRange: this.listRange){
-                    fltFrecc = 0;
-                    if(this.mapQuotesEXP.containsKey(keyFee) && this.mapQuotesEXP.get(keyFee).containsKey(keyRange) && this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeEXP.containsKey(keyFee) && this.mapTotalByFeeEXP.get(keyFee).totalPaquetes > 0)
-                        fltFrecc = (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeEXP.get(keyFee).totalPaquetes) * 100;
-                    if(!this.mapFrecc.containsKey(keyFee))
-                        this.mapFrecc.put(keyFee, new Map<String, Decimal>{ keyRange =>  fltFrecc});
-                    else
-                        this.mapFrecc.get(keyFee).put(keyRange, fltFrecc);
-                }
-                if(this.mapQuotesOD.containsKey(keyFee))
-                for(String guide: this.mapQuotesOD.get(keyFee).keySet()){
-                    for(String keyRange: this.mapQuotesOD.get(keyFee).get(guide).keySet()){
-                        fltFrecc = 0;
-                        if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes > 0)
-                            fltFrecc = this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes * 100;
-                        if(!this.mapFreccOD.containsKey(keyFee))
-                            this.mapFreccOD.put(keyFee, new Map<String, Map<String, Decimal>> { guide => new Map<String, Decimal>{ keyRange => fltFrecc }});
-                        else if (this.mapFreccOD.containsKey(keyFee) && !this.mapFreccOD.get(keyFee).containsKey(guide))
-                            this.mapFreccOD.get(keyFee).put(guide, new Map<String, Decimal>{ keyRange => fltFrecc });
-                        else if(this.mapFreccOD.containsKey(keyFee) && this.mapFreccOD.get(keyFee).containsKey(guide) && !this.mapFreccOD.get(keyFee).get(guide).containsKey(keyRange))
-                            this.mapFreccOD.get(keyFee).get(guide).put(keyRange, fltFrecc);
 
+                    if(keyFee != 'TARIFA T7' && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
+                        totalZP +=  this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                        if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange))
+                        if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null){
+                            totalAmountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
+                            if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                                totalAmountQZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                        }
+                    } else if( keyFee != 'TARIFA T7' && !this.mapQuotesZP.get(keyFee).containsKey(keyRange))
+                        this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
+
+                }
+
+            }
+            if(decTotProp > 0 && decTotNormal > 0){
+                descGral = ((decTotProp / decTotNormal) - 1) * 100;
+                if(decTotNormal > 0)
+                    totalAmountZP += decTotNormal;
+                if(decTotProp > 0)
+                    totalAmountQZP += decTotProp;
+            }
+            this.totalSTD = total;
+            totalZP += totalPaq;
+            this.totalSTDZP = totalZP;
+
+            for(String keyFee: this.listFee){
+                coutFee = 0;
+                countFeeZP = 0;
+                amount = 0;
+                amountZP = 0;
+                for(String keyRange: this.listRangeDestiny) {
+                    coutFee += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c ;
+                    if(keyFee != 'TARIFA T7' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                        amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                    else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                        amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                    else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c != null)
+                        amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c;
+                    if (keyFee != 'TARIFA T7'){
+                        countFeeZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                        if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                            amountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
                     }
-                    if(this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal > 0)
-                        this.mapTotalByFeeOD.get(keyFee).get(guide).totalDiscount = ((this.mapTotalByFeeOD.get(keyFee).get(guide).totalAmount - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) / (this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) -1) * 100;
+                    
+                }
+                this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
+                if(keyFee != 'TARIFA T7')
+                    this.mapTotalByFeeZP.put(keyFee, new QuoteWP(countFeeZP, totalZP, amountZP));
+            }
+
+            for(String keyFee: this.listFee){
+                //System.debug('keyFee : ' + keyFee);
+                for(String keyRange: this.listRangeDestiny){
+                    //System.debug('keyRange : ' + keyRange);
+                    if (this.mapTotalByRange.containsKey(keyRange) && this.mapTotalByRange.get(keyRange).totalPaquetes == 0)
+                        this.mapTotalByRange.put(keyRange, new QuoteWP(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
+                    else if(!this.mapTotalByRange.containsKey(keyRange))
+                        this.mapTotalByRange.put(keyRange, new QuoteWP());
+                    else if(this.mapTotalByRange.get(keyRange).totalPaquetes != 0){
+                        Decimal tempRangeCount = this.mapTotalByRange.get(keyRange).totalPaquetes;
+                        this.mapTotalByRange.put(keyRange, new QuoteWP(tempRangeCount + this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
+                    }
+                    if(keyFee != 'TARIFA T7'){
+                        if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
+                            this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
+                        else if (!this.mapTotalByRangeZP.containsKey(keyRange))
+                                this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
+                        else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
+                            Decimal tempRangeCountZP = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
+                            this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( tempRangeCountZP + this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
+                        }
+                    }
+                }
+
+            }
+            Decimal paquetes = 0;
+            for(String keyRange: this.listRangeDestiny){
+                if(this.mapTotalesT7ZP != null){
+                    if(this.mapTotalesT7ZP.get(keyRange) > 0){
+                        if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
+                            this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapTotalesT7ZP.get(keyRange), totalZP, 0));
+                        else if (!this.mapTotalByRangeZP.containsKey(keyRange))
+                            this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
+                        else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
+                            Decimal RespaldoConteo = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
+                            this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( RespaldoConteo + this.mapTotalesT7ZP.get(keyRange), totalZP, 0));
+                        }
+                        paquetes += this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
+                    }
+                    
                 }
             }
-        }
+            if(paquetes > 0)
+                porcFrec = totalPaq / paquetes * 100;
+            
 
-		Decimal disc = 0;
-        this.mapTotal.put('Full', totalAmount);
-        this.mapTotal.put('Quote', totalAmountQ);
+            for(String keyFee : this.listEXP ) {
+                if(this.wp.objQuote.Tipo_de_documentacion__c == 'Guías prepagadas' || this.wp.objQuote.Tipo_de_documentacion__c == 'En Piso-Sipweb'){
+                    for (String keyRange : this.listRangeDestiny) {
+                        if (this.mapQuotesEXP.containsKey(keyFee) &&
+                                this.mapQuotesEXP.get(keyFee).containsKey(keyRange) &&
+                                this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0
+                        ) {
+                            total += this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                            this.mapTotalByFeeEXP.get(keyFee).totalPaquetes +=
+                                    this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                            if (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null) {
+                                totalAmount += this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
+                                this.mapTotalByFeeEXP.get(keyFee).totalNormal +=
+                                        this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
+                            }
+                            if (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) {
+                                totalAmountQ += this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                                this.mapTotalByFeeEXP.get(keyFee).totalAmount +=
+                                        this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                            }
+                            if (this.mapQuotesEXP.get(keyFee).get(keyRange).SEG__c != null) {
+                                // totalAmountSeg += this.mapQuotesEXP.get(keyFee).get(keyRange).SEG__c;
+                                // System.debug(LoggingLevel.DEBUG, 'totalAmountSeg :' + totalAmountSeg);
+                                this.mapTotalByFeeEXP.get(keyFee).totalSEG +=
+                                        this.mapQuotesEXP.get(keyFee).get(keyRange).SEG__c;
+                            }
+                        } else if (this.mapQuotesEXP.containsKey(keyFee) &&
+                                !this.mapQuotesEXP.get(keyFee).containsKey(keyRange))
+                            this.mapQuotesEXP.get(keyFee).put(keyRange,
+                                    new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0,
+                                            SBQQ__Discount__c = 0));
+                    }
 
-        if(totalAmount > 0 )
-			disc = ((totalAmountQ - totalAmountSeg) / (totalAmount - totalAmountSeg) - 1);
+                    for (String keyRange : this.listRangeDestiny)
+                        if (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0 &&
+                                this.mapTotalByFeeEXP.get(keyFee).totalPaquetes > 0 &&
+                                this.mapTotalByRangeEXP.get(keyFee).containsKey(keyRange))
+                            this.mapTotalByRangeEXP.get(keyFee).get(keyRange).frecPaquetes = (
+                            this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c /
+                            this.mapTotalByFeeEXP.get(keyFee).totalPaquetes) * 100 ;
+                        else if (!this.mapTotalByRangeEXP.get(keyFee).containsKey(keyRange))
+                            this.mapTotalByRangeEXP.get(keyFee).put(keyRange, new QuoteWP());
 
-		this.mapTotal.put('Disc', disc);
+                    if (this.mapTotalByFeeEXP.get(keyFee).totalNormal > 0)
+                        this.mapTotalByFeeEXP.get(keyFee).totalDiscount = (
+                        (this.mapTotalByFeeEXP.get(keyFee).totalAmount - this.mapTotalByFeeEXP.get(keyFee).totalSEG) /
+                        (this.mapTotalByFeeEXP.get(keyFee).totalNormal - this.mapTotalByFeeEXP.get(keyFee).totalSEG) - 1) * 100;
+                }else if(this.mapQuotesOD.containsKey(keyFee)){
+                    this.mapTotalByFeeOD.put(keyFee, new Map<String, QuoteWP>());
+                    for(String guide: this.mapQuotesOD.get(keyFee).keySet()){
+                        this.mapTotalByFeeOD.get(keyFee).put(guide, new QuoteWP());
+                        for(String keyRange: this.mapQuotesOD.get(keyFee).get(guide).keySet()){
+                            if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c > 0){
+                                total += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c;
+                                this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c;
+                                if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__NetTotal__c != null){
+                                    totalAmount += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__NetTotal__c;
+                                    this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__NetTotal__c;
+                                }
+                                if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__CustomerTotal__c != null){
+                                    totalAmountQ += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__CustomerTotal__c;
+                                    this.mapTotalByFeeOD.get(keyFee).get(guide).totalAmount += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__CustomerTotal__c;
+                                }
+                                if (this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SEG__c != null) {
+                                    this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG += this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SEG__c * this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c;
+                                }
+                            } else if(this.mapQuotesOD.containsKey(keyFee)
+                                    && this.mapQuotesOD.get(keyFee).containsKey(guide)
+                                    && !this.mapQuotesOD.get(keyFee).get(guide).containsKey(keyRange))
 
-		Decimal discZP = 0;
-        this.mapTotalZP.put('Full', totalAmountZP);
-        this.mapTotalZP.put('Quote', totalAmountQZP);
-		if(totalAmountZP > 0 )
-			discZP = ((totalAmountQZP - totalAmountSegZP)/ (totalAmountZP - totalAmountSegZP) - 1);
+                                this.mapQuotesOD.get(keyFee).get(guide).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__NetPrice__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
+                        }
+                    }
+                }
+            }
 
-		this.mapTotalZP.put('Disc', discZP);
+            Decimal fltFrecc = 0;
+            for(String keyFee : this.listEXP ){
+                if(this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota'){
+                    for(String keyRange: this.listRangeDestiny){
+                        fltFrecc = 0;
+                        if(this.mapQuotesEXP.containsKey(keyFee) && this.mapQuotesEXP.get(keyFee).containsKey(keyRange) && this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeEXP.containsKey(keyFee) && this.mapTotalByFeeEXP.get(keyFee).totalPaquetes > 0)
+                            fltFrecc = (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeEXP.get(keyFee).totalPaquetes) * 100;
+                        if(!this.mapFrecc.containsKey(keyFee))
+                            this.mapFrecc.put(keyFee, new Map<String, Decimal>{ keyRange =>  fltFrecc});
+                        else
+                            this.mapFrecc.get(keyFee).put(keyRange, fltFrecc);
+                    }
+                    if(this.mapQuotesOD.containsKey(keyFee))
+                    for(String guide: this.mapQuotesOD.get(keyFee).keySet()){
+                        for(String keyRange: this.mapQuotesOD.get(keyFee).get(guide).keySet()){
+                            fltFrecc = 0;
+                            if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes > 0)
+                                fltFrecc = this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes * 100;
+                            if(!this.mapFreccOD.containsKey(keyFee))
+                                this.mapFreccOD.put(keyFee, new Map<String, Map<String, Decimal>> { guide => new Map<String, Decimal>{ keyRange => fltFrecc }});
+                            else if (this.mapFreccOD.containsKey(keyFee) && !this.mapFreccOD.get(keyFee).containsKey(guide))
+                                this.mapFreccOD.get(keyFee).put(guide, new Map<String, Decimal>{ keyRange => fltFrecc });
+                            else if(this.mapFreccOD.containsKey(keyFee) && this.mapFreccOD.get(keyFee).containsKey(guide) && !this.mapFreccOD.get(keyFee).get(guide).containsKey(keyRange))
+                                this.mapFreccOD.get(keyFee).get(guide).put(keyRange, fltFrecc);
+
+                        }
+                        if(this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal > 0)
+                            this.mapTotalByFeeOD.get(keyFee).get(guide).totalDiscount = ((this.mapTotalByFeeOD.get(keyFee).get(guide).totalAmount - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) / (this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) -1) * 100;
+                    }
+                }
+                else {
+                    for(String keyRange: this.listRange){
+                        fltFrecc = 0;
+                        if(this.mapQuotesEXP.containsKey(keyFee) && this.mapQuotesEXP.get(keyFee).containsKey(keyRange) && this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeEXP.containsKey(keyFee) && this.mapTotalByFeeEXP.get(keyFee).totalPaquetes > 0)
+                            fltFrecc = (this.mapQuotesEXP.get(keyFee).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeEXP.get(keyFee).totalPaquetes) * 100;
+                        if(!this.mapFrecc.containsKey(keyFee))
+                            this.mapFrecc.put(keyFee, new Map<String, Decimal>{ keyRange =>  fltFrecc});
+                        else
+                            this.mapFrecc.get(keyFee).put(keyRange, fltFrecc);
+                    }
+                    if(this.mapQuotesOD.containsKey(keyFee))
+                    for(String guide: this.mapQuotesOD.get(keyFee).keySet()){
+                        for(String keyRange: this.mapQuotesOD.get(keyFee).get(guide).keySet()){
+                            fltFrecc = 0;
+                            if(this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c > 0 && this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes > 0)
+                                fltFrecc = this.mapQuotesOD.get(keyFee).get(guide).get(keyRange).SBQQ__Quantity__c / this.mapTotalByFeeOD.get(keyFee).get(guide).totalPaquetes * 100;
+                            if(!this.mapFreccOD.containsKey(keyFee))
+                                this.mapFreccOD.put(keyFee, new Map<String, Map<String, Decimal>> { guide => new Map<String, Decimal>{ keyRange => fltFrecc }});
+                            else if (this.mapFreccOD.containsKey(keyFee) && !this.mapFreccOD.get(keyFee).containsKey(guide))
+                                this.mapFreccOD.get(keyFee).put(guide, new Map<String, Decimal>{ keyRange => fltFrecc });
+                            else if(this.mapFreccOD.containsKey(keyFee) && this.mapFreccOD.get(keyFee).containsKey(guide) && !this.mapFreccOD.get(keyFee).get(guide).containsKey(keyRange))
+                                this.mapFreccOD.get(keyFee).get(guide).put(keyRange, fltFrecc);
+
+                        }
+                        if(this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal > 0)
+                            this.mapTotalByFeeOD.get(keyFee).get(guide).totalDiscount = ((this.mapTotalByFeeOD.get(keyFee).get(guide).totalAmount - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) / (this.mapTotalByFeeOD.get(keyFee).get(guide).totalNormal - this.mapTotalByFeeOD.get(keyFee).get(guide).totalSEG) -1) * 100;
+                    }
+                }
+            }
+
+            Decimal disc = 0;
+            this.mapTotal.put('Full', totalAmount);
+            this.mapTotal.put('Quote', totalAmountQ);
+
+            if(totalAmount > 0 )
+                disc = ((totalAmountQ - totalAmountSeg) / (totalAmount - totalAmountSeg) - 1);
+
+            this.mapTotal.put('Disc', disc);
+
+            Decimal discZP = 0;
+            this.mapTotalZP.put('Full', totalAmountZP);
+            this.mapTotalZP.put('Quote', totalAmountQZP);
+            if(totalAmountZP > 0 )
+                discZP = ((totalAmountQZP - totalAmountSegZP)/ (totalAmountZP - totalAmountSegZP) - 1);
+
+            this.mapTotalZP.put('Disc', discZP);
         
        
+        } else if (this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'){
+            String strRangeDest = '';
+            Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
+            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
+                strRangeDest = '';
+                if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)
+                    System.debug('datos para t7 zona plus');
+                else {
+                    if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
+                        if(!this.mapGuide.containsKey(quoteItem.PackWeightAVG__c))
+                            this.mapGuide.put(quoteItem.PackWeightAVG__c, quoteItem.PackVolAVG__c);
+                        if(quoteItem.Destiny__c != null)
+                            strRangeDest = quoteItem.Destiny__c;
+                        else strRangeDest = quoteItem.Rango_KM__c;
+                        if(!this.listRangeDestiny.contains(strRangeDest))
+                            this.listRangeDestiny.add(strRangeDest);
+                        if(!mapRangesByBlock.containsKey(quoteItem.PackWeightAVG__c))
+                            mapRangesByBlock.put(quoteItem.PackWeightAVG__c, new Map<String, Decimal>{quoteItem.Rango_KM__c => quoteItem.FLETE__c});
+                        else if(!mapRangesByBlock.get(quoteItem.PackWeightAVG__c).containsKey(quoteItem.Rango_KM__c))
+                            mapRangesByBlock.get(quoteItem.PackWeightAVG__c).put(quoteItem.Rango_KM__c , quoteItem.FLETE__c);
+                        if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                            this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
+        
+                        if(!this.mapService.get('ACK').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                            this.mapService.get('ACK').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.ACK__c);
+        
+                        if(quoteItem.ZonaPlus__c)
+                            this.mapService.get('ZP').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);
+                    }
+                }
+            }
+            Integer blockCounter = 1;
+            Decimal decRespaldoFlete = 0;
+            Map<String, Map<String, Decimal>> mapRespaldo = new Map<String, Map<String, Decimal>>();
+            System.debug('mapguide: ' + this.mapGuide);
+            for(Decimal decW : this.mapGuide.keySet()){
+                System.debug('entra iteración');
+                this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
+                this.mapBlocks.get('BLOQUE '+ blockCounter).mapRanges = mapRangesByBlock.get(decW);
+                mapRespaldo.put('BLOQUE ' + blockCounter, new Map<String, Decimal>());
+                for(String keyRange: this.listRangeDestiny){
+                    Decimal decFlete = 0;
+                    if(!this.mapBlocksServ.containsKey('BLOQUE ' + blockCounter)) {
+                        this.mapBlocksServ.put('BLOQUE ' + blockCounter, new map<String, map<String, Decimal>>());
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('FLT', new map<String, Decimal>());
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('RAD', new map<String, Decimal>());
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('EAD', new map<String, Decimal>());
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('ADD', new Map<String, Decimal>());
+                    }
+                    decRespaldoFlete = mapRangesByBlock.get(decW).get(keyRange);
+                    system.debug('pruebas' + decRespaldoFlete);
+                    mapRespaldo.get('BLOQUE ' + blockCounter).put(keyRange, mapRangesByBlock.get(decW).get(keyRange));
+                    if(blockCounter > 1){
+                        if(this.blnRAD && this.blnEAD)
+                            decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange)) / 1.22;
+                        else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD))
+                            decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange)) / 1.11;
+                        else if(!this.blnRAD && !this.blnEAD)
+                            decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange));
+                    } else {
+                        if(this.blnRAD && this.blnEAD)
+                            decFlete = mapRangesByBlock.get(decW).get(keyRange) / 1.22;
+                        else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD))
+                            decFlete = mapRangesByBlock.get(decW).get(keyRange) / 1.11;
+                        else if(!this.blnRAD && !this.blnEAD)
+                            decFlete = mapRangesByBlock.get(decW).get(keyRange);
+                    }
+                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').containsKey(keyRange)){
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').put(keyRange, (decFlete));
+                    }
+                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').put(keyRange, (decFlete * 0.11));
+                    }
+                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').containsKey(keyRange)){
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').put(keyRange, (decFlete * 0.11));
+                    }
+                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').containsKey(keyRange)){
+                        Decimal decTotalAdic = 0;
+                        if(this.blnRAD)
+                            decTotalAdic += this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').get(keyRange);
+                        if(this.blnEAD)
+                            decTotalAdic += this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').get(keyRange);
+                        decTotalAdic += decFlete;
+                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').put(keyRange, decTotalAdic);
+                    }
+                }
+                blockCounter++;
+            }
+            System.debug('mapblocks: ' + this.mapBlocks);
+            this.mapBlockAdic.put('ADD', new map<String, Decimal>());
+            this.mapBlockAdic.put('EAD', new map<String, Decimal>());
+            this.mapBlockAdic.put('RAD', new map<String, Decimal>());
+            this.mapBlockAdic.put('TOT', new map<String, Decimal>());
+            
+            for(String keyRange: this.listRangeDestiny){
+                this.mapTotalByRange.put(keyRange, new QuoteWP());
+                this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
+                this.mapT7W.put(keyRange, 0);
+                this.mapT7V.put(keyRange, 0);
+                Decimal decFlete = 0;
+                if(!this.mapBlockAdic.containsKey(keyRange)){
+                    if(this.blnRAD && this.blnEAD){
+                        decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.22);
+                    }else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD)){
+                        decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.11);
+                    } else if(!this.blnRAD && !this.blnEAD){
+                        decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange));
+                    }
+                    this.mapBlockAdic.get('ADD').put(keyRange, decFlete);
+                    this.mapBlockAdic.get('EAD').put(keyRange, decFlete * 0.11);
+                    this.mapBlockAdic.get('RAD').put(keyRange, decFlete * 0.11);
+                    if(this.blnRAD && this.blnEAD){
+                        this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange) + this.mapBlockAdic.get('EAD').get(keyRange)));
+                    }else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD)){
+                        this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange)));
+                    } else if(!this.blnRAD && !this.blnEAD){
+                        this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange)));
+                    }
+                }
+            }
         }
     /*codigo nuevo termino---------------------------------------------------------------------------------------------------------*/     
                         
