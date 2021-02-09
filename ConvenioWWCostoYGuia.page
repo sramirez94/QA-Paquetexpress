@@ -36,22 +36,68 @@
                                 <br />  
                                 <table align="center" style="border-collapse: collapse;" border="solid 0.5px" width="100%">
                                     <tr style="height: 2px"></tr>
-                                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
-                                            <apex:repeat value="{!mapBlocks}" var="nameBlock">
-                                                <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
-                                                    <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock}</td>
-                                                </apex:outputText>
-                                            </apex:repeat>
-                                        
-                                    <tr>
-                                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="12%">Peso báscula Kg</td>
-                                        <apex:repeat value="{!mapBlocks}" var="nameBlock">
-                                            <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
-                                                <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decWeight}</td>
+                                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Rango km.</td>
+                                        <apex:repeat value="{!listBloques}" var="nameBlock">
+                                            <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock} kg.</td>
+                                        </apex:repeat>
+                                        <tr>
+                                            <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
+                                            <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Flete</td>
+                                            <apex:outputText rendered="{!blnRAD}">
+                                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">RAD</td>
                                             </apex:outputText>
+                                            <apex:outputText rendered="{!blnRAD}">
+                                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">EAD</td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!blnACK}">
+                                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Acuse</td>
+                                            </apex:outputText>
+                                        </tr>
+                                        <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                                            <tr>
+                                                <td align="Center" style="font-size:12px;" width="5%">
+                                                    {!strRange}
+                                                </td>
+                                                <apex:repeat value="{!listBloques}" var="nameBlock">
+                                                    <td align="Center" style="font-size:12px;" width="5%">
+                                                        <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                                            <apex:param value="{!mapBloques[nameBlock][strRange].Flete__c}" />
+                                                        </apex:outputText>
+                                                    </td>
+                                                    <apex:outputText rendered="{!blnRAD}">
+                                                        <td align="Center" style="font-size:12px;" width="5%">
+                                                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                                                <apex:param value="{!mapBloques[nameBlock][strRange].RAD__c}" />
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </apex:outputText>
+                                                    <apex:outputText rendered="{!blnEAD}">
+                                                        <td align="Center" style="font-size:12px;" width="5%">
+                                                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                                                <apex:param value="{!mapBloques[nameBlock][strRange].EAD__c}" />
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </apex:outputText>
+                                                    <apex:outputText rendered="{!blnACK}">
+                                                        <td align="Center" style="font-size:12px;" width="5%">
+                                                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                                                <apex:param value="{!mapBloques[nameBlock][strRange].ACK__c}" />
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </apex:outputText>
+                                                    <br/>
+                                                </apex:repeat>
+                                            </tr>
+                                        </apex:repeat>
+                                    <!--<tr>
+                                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="12%">Peso báscula Kg</td>
+                                        <apex:repeat value="{!listBloques}" var="nameBlock">
+                                            <apex:repeat value="{!listRangeDestiny}" var="keyRange">
+                                                <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBloques[nameBlock][keyRange].PackWeightAVG__c}</td>
+                                            </apex:repeat>
                                         </apex:repeat>
                                     </tr>
-                                    <tr>
+                                   <!-- <tr>
                                         <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Volumen m3</td>
                                         <apex:repeat value="{!mapBlocks}" var="nameBlock">
                                             <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
@@ -116,7 +162,7 @@
                                                 </apex:outputText>
                                             </apex:repeat>
                                         </tr>
-                                    </apex:repeat>
+                                    </apex:repeat>-->
                                 </table>                
                             </div>
                         </div>
@@ -124,7 +170,7 @@
                 </div>
 
 
-                <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                <!--<apex:repeat value="{!mapBlocks}" var="nameBlock">
                 <apex:outputText rendered="{!nameBlock != 'BLOQUE 1'}">
                     <div class="col-md-20">
                         <apex:outputPanel >
@@ -226,7 +272,7 @@
                 </apex:outputText>
 
 
-            </apex:repeat>
+            </apex:repeat>-->
         </apex:form>
     </div>    
 </apex:page>
