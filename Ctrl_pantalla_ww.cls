@@ -104,6 +104,8 @@ public class Ctrl_pantalla_ww {
     public Map<Decimal, String> mapTarifasName                              {get; set;}
     public Map<String, String> mapTarifasKey                                {get; set;}
     public string Id                                                        {get; set;}
+    public Map<Decimal, Map<String, TempleateLine__c>> mapBloques           {get;set;}
+    public List<Decimal> listBloques                                        {get;set;}
 
     public map<String, decimal> mapPruebas                                 {get;set;}
     public map<String, String> mapRangosByDest                              {get; set;}
@@ -376,6 +378,8 @@ public class Ctrl_pantalla_ww {
         this.mapTotalByFeeGuiaZP     = new Map<String, Decimal>();
         this.mapTotalByRangeGuia     = new Map<String, Decimal>();
         this.mapTotalByRangeGuiaZP   = new Map<String, Decimal>();
+        this.mapBloques              = new Map<Decimal,  Map<String, TempleateLine__c>>();
+        this.listBloques             = new List<Decimal>();
         this.totalGuias             = 0;
         this.totalGuiasZP           = 0;
         
@@ -416,17 +420,30 @@ public class Ctrl_pantalla_ww {
         
         listSSS = querySSS(strIdQuote);
         listPlantillaLineItems = queryTempleateLine(objtempleate.Id);             
-        this.listPlantillaLineItems = new List<TempleateLine__c>();      
+        this.listPlantillaLineItems = new List<TempleateLine__c>();
         this.blnZP = false;
-                 
+        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del flete y los servicios no corresponde al subtotal. ' + suma.setScale(2)+' es diferente a '+ObjDeduc.CustomerPrice__c));
         for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
+            String strRangeDest = '';
             if(line.Zona_Plus__c )
                 this.blnZP = true;
-            if(String.isNotBlank(line.Destiny__c))
-                line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
-            this.listPlantillaLineItems.add(line);          
+            /*if(String.isNotBlank(line.Destiny__c))
+                line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';*/
+            if(/*line.Quantity__c != 0 &&*/ !line.Zona_Plus__c){
+                if(!this.mapBloques.containsKey(line.PackWeightAVG__c))
+                    this.mapBloques.put(line.PackWeightAVG__c, new Map<String, TempleateLine__c>());
+                if(!this.listBloques.contains(line.PackWeightAVG__c))
+                    this.listBloques.add(line.PackWeightAVG__c);
+                if(line.Destiny__c != null)
+                    strRangeDest = line.Destiny__c;
+                else strRangeDest = line.Rango_KM__c;
+                if(!this.mapBloques.get(line.PackWeightAVG__c).containsKey(strRangeDest))
+                    this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
+                if(!this.listRangeDestiny.contains(strRangeDest))
+                    this.listRangeDestiny.add(strRangeDest);
+            }
+            this.listPlantillaLineItems.add(line);
         }
-			      
 		this.strTempleateId = objtempleate.Id;      
         this.mapLines       = new Map<String, List< TempleateLine__c>>();
         this.mapLinesZP     = new Map<String, List<TempleateLine__c>>();
@@ -1520,7 +1537,7 @@ public class Ctrl_pantalla_ww {
         } else if (this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'){
             String strRangeDest = '';
             Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
-            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
+            /*for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
                 strRangeDest = '';
                 if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)
                     System.debug('datos para t7 zona plus');
@@ -1636,7 +1653,7 @@ public class Ctrl_pantalla_ww {
                         this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange)));
                     }
                 }
-            }
+            }*/
         }
     /*codigo nuevo termino---------------------------------------------------------------------------------------------------------*/     
                         
