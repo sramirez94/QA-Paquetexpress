@@ -105,7 +105,11 @@ public class Ctrl_pantalla_ww {
     public Map<String, String> mapTarifasKey                                {get; set;}
     public string Id                                                        {get; set;}
     public Map<Decimal, Map<String, TempleateLine__c>> mapBloques           {get;set;}
+    public Map<String, Map<String, TempleateLine__c>> mapTempleateL         {get;set;}
     public List<Decimal> listBloques                                        {get;set;}
+    public Map<Decimal, Map<String, Decimal>> mapRangesByBlock              {get;set;}
+    public Map<String, Map<String, TempleateLine__c>> mapBloq              {get;set;}
+    public Decimal decPruebas                                               {get;set;}
 
     public map<String, decimal> mapPruebas                                 {get;set;}
     public map<String, String> mapRangosByDest                              {get; set;}
@@ -118,6 +122,7 @@ public class Ctrl_pantalla_ww {
     public String strOrigen                                                 {get;set;}
     public Decimal decVolumen                                               {get; set;}
     public Decimal decPeso													{get; set;}
+    public Boolean blnCostoBaseGMP                                          {get;set;}
     
     
     //para guia multipieza
@@ -178,6 +183,7 @@ public class Ctrl_pantalla_ww {
         this.bln2D = false;
         this.blnA12 = false;
         this.blnServZP = false;
+        this.blnCostoBaseGMP = false;
 		this.listFee = new List<String> {
 			  'TARIFA SOBRE'
 			, 'TARIFA T0'
@@ -277,6 +283,7 @@ public class Ctrl_pantalla_ww {
         this.total                  = 0;
         this.totalT7                = 0;
         this.totalZP                = 0;
+        this.decPruebas             = 0;
         this.blnRAD                 = false;
         this.blnEAD                 = false;
         this.blnZP                  = false;
@@ -284,7 +291,7 @@ public class Ctrl_pantalla_ww {
         this.blnACK                 = false;
         this.blnBloquesT7           = false;
         this.decSEG                 = 0;
-        this.mapBlocks              = new Map<String, Block>();
+        //this.mapBlocks              = new Map<String, Block>();
         this.mapPruebas             = new Map<String, Decimal>();
         this.mapDiscounts           = new Map<Decimal, Map<String, Decimal>>();
         this.mapDiscountsT7ZP       = new Map<Decimal, Map<String, Decimal>>();
@@ -379,7 +386,10 @@ public class Ctrl_pantalla_ww {
         this.mapTotalByRangeGuia     = new Map<String, Decimal>();
         this.mapTotalByRangeGuiaZP   = new Map<String, Decimal>();
         this.mapBloques              = new Map<Decimal,  Map<String, TempleateLine__c>>();
+        this.mapTempleateL           = new Map<String,  Map<String, TempleateLine__c>>();
+        this.mapRangesByBlock        = new Map<Decimal, Map<String, Decimal>>();
         this.listBloques             = new List<Decimal>();
+        this.mapBloq                 = new Map<String,  Map<String, TempleateLine__c>>();
         this.totalGuias             = 0;
         this.totalGuiasZP           = 0;
         
@@ -427,13 +437,9 @@ public class Ctrl_pantalla_ww {
             String strRangeDest = '';
             if(line.Zona_Plus__c )
                 this.blnZP = true;
-            /*if(String.isNotBlank(line.Destiny__c))
-                line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';*/
-            if(/*line.Quantity__c != 0 &&*/ !line.Zona_Plus__c){
+            if(!line.Zona_Plus__c){
                 if(!this.mapBloques.containsKey(line.PackWeightAVG__c))
                     this.mapBloques.put(line.PackWeightAVG__c, new Map<String, TempleateLine__c>());
-                if(!this.listBloques.contains(line.PackWeightAVG__c))
-                    this.listBloques.add(line.PackWeightAVG__c);
                 if(line.Destiny__c != null)
                     strRangeDest = line.Destiny__c;
                 else strRangeDest = line.Rango_KM__c;
@@ -441,6 +447,8 @@ public class Ctrl_pantalla_ww {
                     this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
                 if(!this.listRangeDestiny.contains(strRangeDest))
                     this.listRangeDestiny.add(strRangeDest);
+                if(!this.mapGuide.containsKey(line.PackWeightAVG__c))
+                    this.mapGuide.put(line.PackWeightAVG__c, line.PackVolAVG__c);
             }
             this.listPlantillaLineItems.add(line);
         }
@@ -510,6 +518,8 @@ public class Ctrl_pantalla_ww {
  /*codigo nuevo inicio---------------------------------------------------------------------------------------------------------*/
      this.wp.objQuote = queryQuote(sc.getId());  
      this.wp.listQuoteItem = queryQuoteItem(sc.getId());     
+        if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km')
+            this.blnCostoBaseGMP = true;
         
         if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){        
         for(String keyFee: this.listFee){
@@ -1534,126 +1544,8 @@ public class Ctrl_pantalla_ww {
             this.mapTotalZP.put('Disc', discZP);
         
        
-        } else if (this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'){
-            String strRangeDest = '';
-            Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
-            /*for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
-                strRangeDest = '';
-                if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)
-                    System.debug('datos para t7 zona plus');
-                else {
-                    if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
-                        if(!this.mapGuide.containsKey(quoteItem.PackWeightAVG__c))
-                            this.mapGuide.put(quoteItem.PackWeightAVG__c, quoteItem.PackVolAVG__c);
-                        if(quoteItem.Destiny__c != null)
-                            strRangeDest = quoteItem.Destiny__c;
-                        else strRangeDest = quoteItem.Rango_KM__c;
-                        if(!this.listRangeDestiny.contains(strRangeDest))
-                            this.listRangeDestiny.add(strRangeDest);
-                        if(!mapRangesByBlock.containsKey(quoteItem.PackWeightAVG__c))
-                            mapRangesByBlock.put(quoteItem.PackWeightAVG__c, new Map<String, Decimal>{quoteItem.Rango_KM__c => quoteItem.FLETE__c});
-                        else if(!mapRangesByBlock.get(quoteItem.PackWeightAVG__c).containsKey(quoteItem.Rango_KM__c))
-                            mapRangesByBlock.get(quoteItem.PackWeightAVG__c).put(quoteItem.Rango_KM__c , quoteItem.FLETE__c);
-                        if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
-                            this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
-        
-                        if(!this.mapService.get('ACK').mapRanges.containsKey(quoteItem.Rango_KM__c))
-                            this.mapService.get('ACK').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.ACK__c);
-        
-                        if(quoteItem.ZonaPlus__c)
-                            this.mapService.get('ZP').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);
-                    }
-                }
-            }
-            Integer blockCounter = 1;
-            Decimal decRespaldoFlete = 0;
-            Map<String, Map<String, Decimal>> mapRespaldo = new Map<String, Map<String, Decimal>>();
-            System.debug('mapguide: ' + this.mapGuide);
-            for(Decimal decW : this.mapGuide.keySet()){
-                System.debug('entra iteración');
-                this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
-                this.mapBlocks.get('BLOQUE '+ blockCounter).mapRanges = mapRangesByBlock.get(decW);
-                mapRespaldo.put('BLOQUE ' + blockCounter, new Map<String, Decimal>());
-                for(String keyRange: this.listRangeDestiny){
-                    Decimal decFlete = 0;
-                    if(!this.mapBlocksServ.containsKey('BLOQUE ' + blockCounter)) {
-                        this.mapBlocksServ.put('BLOQUE ' + blockCounter, new map<String, map<String, Decimal>>());
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('FLT', new map<String, Decimal>());
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('RAD', new map<String, Decimal>());
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('EAD', new map<String, Decimal>());
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('ADD', new Map<String, Decimal>());
-                    }
-                    decRespaldoFlete = mapRangesByBlock.get(decW).get(keyRange);
-                    system.debug('pruebas' + decRespaldoFlete);
-                    mapRespaldo.get('BLOQUE ' + blockCounter).put(keyRange, mapRangesByBlock.get(decW).get(keyRange));
-                    if(blockCounter > 1){
-                        if(this.blnRAD && this.blnEAD)
-                            decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange)) / 1.22;
-                        else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD))
-                            decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange)) / 1.11;
-                        else if(!this.blnRAD && !this.blnEAD)
-                            decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange));
-                    } else {
-                        if(this.blnRAD && this.blnEAD)
-                            decFlete = mapRangesByBlock.get(decW).get(keyRange) / 1.22;
-                        else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD))
-                            decFlete = mapRangesByBlock.get(decW).get(keyRange) / 1.11;
-                        else if(!this.blnRAD && !this.blnEAD)
-                            decFlete = mapRangesByBlock.get(decW).get(keyRange);
-                    }
-                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').containsKey(keyRange)){
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').put(keyRange, (decFlete));
-                    }
-                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').put(keyRange, (decFlete * 0.11));
-                    }
-                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').containsKey(keyRange)){
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').put(keyRange, (decFlete * 0.11));
-                    }
-                    if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').containsKey(keyRange)){
-                        Decimal decTotalAdic = 0;
-                        if(this.blnRAD)
-                            decTotalAdic += this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').get(keyRange);
-                        if(this.blnEAD)
-                            decTotalAdic += this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').get(keyRange);
-                        decTotalAdic += decFlete;
-                        this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').put(keyRange, decTotalAdic);
-                    }
-                }
-                blockCounter++;
-            }
-            System.debug('mapblocks: ' + this.mapBlocks);
-            this.mapBlockAdic.put('ADD', new map<String, Decimal>());
-            this.mapBlockAdic.put('EAD', new map<String, Decimal>());
-            this.mapBlockAdic.put('RAD', new map<String, Decimal>());
-            this.mapBlockAdic.put('TOT', new map<String, Decimal>());
-            
-            for(String keyRange: this.listRangeDestiny){
-                this.mapTotalByRange.put(keyRange, new QuoteWP());
-                this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
-                this.mapT7W.put(keyRange, 0);
-                this.mapT7V.put(keyRange, 0);
-                Decimal decFlete = 0;
-                if(!this.mapBlockAdic.containsKey(keyRange)){
-                    if(this.blnRAD && this.blnEAD){
-                        decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.22);
-                    }else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD)){
-                        decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.11);
-                    } else if(!this.blnRAD && !this.blnEAD){
-                        decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange));
-                    }
-                    this.mapBlockAdic.get('ADD').put(keyRange, decFlete);
-                    this.mapBlockAdic.get('EAD').put(keyRange, decFlete * 0.11);
-                    this.mapBlockAdic.get('RAD').put(keyRange, decFlete * 0.11);
-                    if(this.blnRAD && this.blnEAD){
-                        this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange) + this.mapBlockAdic.get('EAD').get(keyRange)));
-                    }else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD)){
-                        this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange)));
-                    } else if(!this.blnRAD && !this.blnEAD){
-                        this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange)));
-                    }
-                }
-            }*/
+        } else if (this.wp.objQuote.Modelo_de_tarifas__c ==  'Costo base más excedente: Por Destinos / Por rangos de km'){
+            CargaMapasCostoBaseGMP();
         }
     /*codigo nuevo termino---------------------------------------------------------------------------------------------------------*/     
                         
@@ -1958,44 +1850,114 @@ public class Ctrl_pantalla_ww {
 	public void updateTemplate(){
 		TempleateLine__c objDeduc;
         for	(TempleateLine__c item: this.listPlantillaLineItems){
-			if(item.Id == this.indexDeducItem)
-				objDeduc = item;
+            if(item.Id == this.indexDeducItem)
+                objDeduc = item;
         }
-        if (ValidaSubtotalVsServ(objDeduc))//Si el subtotal es diferente de la sumatoria de los servicios y el flete
-            return; //Rompe el flujo para que no guarde nada
+        if(!this.blnCostoBaseGMP){
+            if (ValidaSubtotalVsServ(objDeduc))//Si el subtotal es diferente de la sumatoria de los servicios y el flete
+                return; //Rompe el flujo para que no guarde nada
+        }
         objDeduc.EditMode__c = false;
 		Database.SaveResult resDeducUPD = Database.update(objDeduc, false);
 		if(resDeducUPD.isSuccess()) {
-            this.listPlantillaLineItems = new List<TempleateLine__c>();
-            for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
-                if(line.Zona_Plus__c )
-                    this.blnZP = true;
-              
-                if(String.isNotBlank(line.Destiny__c))
-                    line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
-                this.listPlantillaLineItems.add(line);
-            }
-            this.mapLines = new Map<String, List< TempleateLine__c>>();
-            this.mapLinesZP = new Map<String, List<TempleateLine__c>>();
-            for(TempleateLine__c line : listPlantillaLineItems){
-                if(!line.Zona_Plus__c){
-                    if(!mapLines.containsKey(line.Tarifa__c))
-                        mapLines.put(line.Tarifa__c, new List<TempleateLine__c>{ line });
-                    else
-                        mapLines.get(line.Tarifa__c).add(line);
-                } else{
-                    if(!mapLinesZP.containsKey(line.Tarifa__c))
-                        mapLinesZP.put(line.Tarifa__c, new List<TempleateLine__c>{ line });
-                    else
-                        mapLinesZP.get(line.Tarifa__c).add(line);
+            if(!this.blnCostoBaseGMP){
+                this.listPlantillaLineItems = new List<TempleateLine__c>();
+                for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
+                    if(line.Zona_Plus__c )
+                        this.blnZP = true;
+                
+                    if(String.isNotBlank(line.Destiny__c))
+                        line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
+                    this.listPlantillaLineItems.add(line);
                 }
+                this.mapLines = new Map<String, List< TempleateLine__c>>();
+                this.mapLinesZP = new Map<String, List<TempleateLine__c>>();
+                for(TempleateLine__c line : listPlantillaLineItems){
+                    if(!line.Zona_Plus__c){
+                        if(!mapLines.containsKey(line.Tarifa__c))
+                            mapLines.put(line.Tarifa__c, new List<TempleateLine__c>{ line });
+                        else
+                            mapLines.get(line.Tarifa__c).add(line);
+                    } else{
+                        if(!mapLinesZP.containsKey(line.Tarifa__c))
+                            mapLinesZP.put(line.Tarifa__c, new List<TempleateLine__c>{ line });
+                        else
+                            mapLinesZP.get(line.Tarifa__c).add(line);
+                    }
+                }
+            } else {
+                this.listPlantillaLineItems = new List<TempleateLine__c>();
+                for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
+                    String strRangeDest = '';
+                    if(line.Zona_Plus__c )
+                        this.blnZP = true;
+                    if(!line.Zona_Plus__c){
+                        if(!this.mapBloques.containsKey(line.PackWeightAVG__c))
+                            this.mapBloques.put(line.PackWeightAVG__c, new Map<String, TempleateLine__c>());
+                        if(line.Destiny__c != null)
+                            strRangeDest = line.Destiny__c;
+                        else strRangeDest = line.Rango_KM__c;
+                        if(!this.mapBloques.get(line.PackWeightAVG__c).containsKey(strRangeDest))
+                            this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
+                        if(!this.listRangeDestiny.contains(strRangeDest))
+                            this.listRangeDestiny.add(strRangeDest);
+                        if(!this.mapGuide.containsKey(line.PackWeightAVG__c))
+                            this.mapGuide.put(line.PackWeightAVG__c, line.PackVolAVG__c);
+                    }
+                    this.listPlantillaLineItems.add(line);
+                }
+                CargaMapasCostoBaseGMP();
             }
+            
         }
         else
 			for(Database.Error insError: resDeducUPD.getErrors())
 				ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, insError.getMessage()));
     }
-    
+    public void CargaMapasCostoBaseGMP(){
+        for(SBQQ__QuoteLine__c objQLine : this.wp.listQuoteItem){
+            String strRangeDest = '';
+            if(objQLine.Destiny__c != null)
+                strRangeDest = objQLine.Destiny__c;
+            else strRangeDest = objQLine.Rango_KM__c;
+            if(!mapRangesByBlock.containsKey(objQLine.PackWeightAVG__c))
+                mapRangesByBlock.put(objQLine.PackWeightAVG__c, new Map<String, Decimal>{strRangeDest => objQLine.FLETE__c});
+            else if(!mapRangesByBlock.get(objQLine.PackWeightAVG__c).containsKey(strRangeDest))
+                mapRangesByBlock.get(objQLine.PackWeightAVG__c).put(strRangeDest, objQLine.FLETE__c);
+        }
+        Integer blockCounter = 1;
+        for(Decimal decW : this.mapGuide.keySet()){
+            String strRangeDest = '';
+            this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
+            this.mapBlocks.get('BLOQUE '+ blockCounter).mapRanges = mapRangesByBlock.get(decW);
+            for(String keyRange: this.listRangeDestiny){
+                if(!this.mapBlocksServ.containsKey('BLOQUE ' + blockCounter)) {
+                    this.mapBlocksServ.put('BLOQUE ' + blockCounter, new map<String, map<String, Decimal>>());
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('FLT', new map<String, Decimal>());
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('RAD', new map<String, Decimal>());
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('EAD', new map<String, Decimal>());
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('ADD', new Map<String, Decimal>());
+                }
+                if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').containsKey(keyRange)){
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').put(keyRange, this.mapBloques.get(decW).get(keyRange).Flete__c);
+                }
+                if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').put(keyRange, this.mapBloques.get(decW).get(keyRange).RAD__c);
+                }
+                if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').containsKey(keyRange)){
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').put(keyRange, this.mapBloques.get(decW).get(keyRange).EAD__c);
+                }
+                if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').containsKey(keyRange)){
+                    this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').put(keyRange, this.mapBloques.get(decW).get(keyRange).KG_ADICIONAL__c);
+                }
+                if(!this.mapBloq.containsKey('BLOQUE '+ blockCounter))
+                    this.mapBloq.put('BLOQUE ' + blockCounter, new Map<String, TempleateLine__c>());
+                if(!this.mapBloq.get('BLOQUE ' + blockCounter).containsKey(keyRange))
+                    this.mapBloq.get('BLOQUE ' + blockCounter).put(keyRange, this.mapBloques.get(decW).get(keyRange));
+            }
+            blockCounter++;
+        }
+    }
     public class cambio{
         public decimal peso;
         public decimal volumen;
