@@ -376,21 +376,16 @@ public class TempleateTriggerHandler {
                
                 
                  //TARIFA ESTARDAR SOLA            
-                System.debug('antes validación');
-                System.debug('zona plus: ' + objTempleateLine.Zona_Plus__c);
-                System.debug('servicios adic: ' + mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c);
                 if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
-                   System.debug('entra primera validación');
                     if(this.blnCostoBaseGMP){
-                        System.debug('es costo base');
                         objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(objQLine.Rango_KM__c).setScale(2);
                         objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(objQLine.Rango_KM__c).setScale(2);
                         objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(objQLine.Rango_KM__c).setScale(2);
-                        System.debug('peso: ' + objQLine.PackWeightAVG__c);
+                        objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(objQLine.Rango_KM__c).setScale(2);
                         objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
+                        objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                         objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
                     }else{
-                        System.debug('es costos fijos');
                         objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
                         objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
                         objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
@@ -493,8 +488,9 @@ public class TempleateTriggerHandler {
                             objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(objQLine.Rango_KM__c).setScale(2);
                             objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(objQLine.Rango_KM__c).setScale(2);
                             objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(objQLine.Rango_KM__c).setScale(2);
-                            System.debug('peso: ' + objQLine.PackWeightAVG__c);
+                            objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(objQLine.Rango_KM__c).setScale(2);
                             objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
+                            objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                             objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
                         } else {
                             objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c - objTempleateLine.RAD__c);
