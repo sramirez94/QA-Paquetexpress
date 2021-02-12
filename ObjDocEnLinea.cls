@@ -41,6 +41,8 @@ public class ObjDocEnLinea {
         public string aprvUser;
         public string trifType;
         public string pieceMulti;
+        public Decimal weight;
+        public Decimal vol;
         public List<ptpServicesTrif> ptpConfig;
         public List<kmServicesTrif> kmConfig;
     }
@@ -65,13 +67,23 @@ public class ObjDocEnLinea {
     public class requestDRemota{
         public dataDRemota data;
     }
+    public class responseDRemota{
+        public Boolean success;
+        public List<message> messages;
+        public dataDRemota data;
+    }
     public class bodyDRemota{
         public requestDRemota request;
+        public responseDRemota response;
     }
     public class documentacionRemota{
         public bodyDRemota body;
         public header header;
     }
-    
+    public class message{
+        public string code;
+        public string description;
+        public string typeError;
+    }
 
 }
