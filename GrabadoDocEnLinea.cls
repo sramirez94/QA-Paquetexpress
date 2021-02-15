@@ -586,10 +586,10 @@ public class GrabadoDocEnLinea {
                         if(cot.ZonaPlus__c && cot.Tarifa__c != 'TARIFA T7')
                             this.blnZP = true;
                     }
-                    if(this.blnCostoBaseGMP){
+                    /*if(this.blnCostoBaseGMP){
                         if(!this.mapGuide.containsKey(cot.PackWeightAVG__c))
                             this.mapGuide.put(cot.PackWeightAVG__c, cot.PackVolAVG__c);
-                    }
+                    }*/
                 }
                 if(this.blnCostosFijos){
                     if(this.listTarifasCotizacion.size() == 0 && this.listTarifasExp.size() > 0){
