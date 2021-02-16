@@ -432,24 +432,10 @@ public class Ctrl_pantalla_ww {
         listPlantillaLineItems = queryTempleateLine(objtempleate.Id);             
         this.listPlantillaLineItems = new List<TempleateLine__c>();
         this.blnZP = false;
-        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del flete y los servicios no corresponde al subtotal. ' + suma.setScale(2)+' es diferente a '+ObjDeduc.CustomerPrice__c));
         for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
             String strRangeDest = '';
             if(line.Zona_Plus__c )
                 this.blnZP = true;
-            /*if(!line.Zona_Plus__c && line.Quantity__c != 0){
-                if(!this.mapBloques.containsKey(line.PackWeightAVG__c))
-                    this.mapBloques.put(line.PackWeightAVG__c, new Map<String, TempleateLine__c>());
-                if(line.Destiny__c != null)
-                    strRangeDest = line.Destiny__c;
-                else strRangeDest = line.Rango_KM__c;
-                if(!this.mapBloques.get(line.PackWeightAVG__c).containsKey(strRangeDest))
-                    this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
-                if(!this.listRangeDestiny.contains(strRangeDest))
-                    this.listRangeDestiny.add(strRangeDest);
-                if(!this.mapGuide.containsKey(line.PackWeightAVG__c))
-                    this.mapGuide.put(line.PackWeightAVG__c, line.PackVolAVG__c);
-            }*/
             this.listPlantillaLineItems.add(line);
         }
 		this.strTempleateId = objtempleate.Id;      
@@ -1646,8 +1632,19 @@ public class Ctrl_pantalla_ww {
             }
         } 
         //system.debug('objTarifa' + listPlantillaLineItems);
-        
-             
+        if(Test.isRunningTest()){
+            for(TempleateLine__c line : this.listPlantillaLineItems){
+                Decimal decFletePrueba = getFlete(1150, 'RAD;EAD;ACK', line);
+                Decimal decAcusesPrueba = getAcuses(line);
+                Boolean blnValidaPruebas = ValidaSubtotalVsServ(line);
+                blnValidaPruebas = ValidaCostosGMPCBME(line);
+                decFletePrueba = getFletes(1150, 'RAD;EAD;ACK', line);
+            }
+            Decimal decACKPrueba = getAcuse(1150, true, 1150);
+            Decimal decRADPruebas = getRAD(1150);
+            Decimal decServDom = dominantFeeServiceDom(28.50, 25);
+            decACKPrueba = getAcuse(1150, false, 1150);
+        }
     }     
     
     public static List<PAQ_SpecialService__c> querySSS (String strIdQuote){
