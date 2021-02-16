@@ -150,14 +150,35 @@ public class GrabadoDocEnLinea {
             }
             Apexpages.StandardController StandarC   = new Apexpages.StandardController(cas);
             GrabadoController                       = new GrabadoBtnController(StandarC);
-            for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
+            for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull()){
                 if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
                     wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
                 else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
                     wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
-            if(ObtieneInfoResponse(cas))
-                System.debug('ejecutó correctamente');
-            else System.debug('error al obtener response');
+            }
+            if(cas.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){
+                if(ObtieneInfoResponse(cas))
+                    System.debug('ejecutó correctamente');
+                else System.debug('error al obtener response');
+            }
+            if(cas.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cas.SBQQ__Account__r.Id_SIpWeb__c)){
+                String endpoint = Label.Grabado_DocLinea;
+                String userSipweb = '';
+                User u = [SELECT Id_Sipweb__c, FederationIdentifier FROM User WHERE Id=:System.UserInfo.getUserId()];
+                if(!String.isEmpty(u.Id_Sipweb__c)){
+                    userSipweb = u.Id_Sipweb__c;
+                    this.aprvUser = userSipweb;
+                    this.blnPuedeGrabar = true;
+                }else if(!String.isEmpty(u.FederationIdentifier)){
+                    userSipweb = u.FederationIdentifier;
+                    this.aprvUser = userSipweb;
+                    this.blnPuedeGrabar = true;
+                } else {
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Su usuario no cuenta con un ID de sipweb o de federación por lo tanto no puede realizar el proceso del grabado de tarifas. Favor de contactarse con TI para la configuración correcta del usuario.'));
+                    this.blnPuedeGrabar = false;
+                    return;
+                }
+            }
             //el bloque del if se comenta para que no ejecute nada en el constructor una vez que se pase a revisión
         }catch (Exception ex){
             System.debug('Error en el constructor ' +ex.getLineNumber()+' '+EX.getMessage());
@@ -168,28 +189,11 @@ public class GrabadoDocEnLinea {
         Boolean resultado   = false;
         strMensajeError     = '';
         blnMostrarMensaje   = false;
+        String endpoint     = Label.Grabado_DocLinea;
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
         GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
-                String endpoint = Label.Grabado_DocLinea;
-                String userSipweb = '';
-                User u = [SELECT Id_Sipweb__c, FederationIdentifier FROM User WHERE Id=:System.UserInfo.getUserId()];
-                //if(!System.isScheduled()){
-                    if(!String.isEmpty(u.Id_Sipweb__c)){
-                        userSipweb = u.Id_Sipweb__c;
-                        this.aprvUser = userSipweb;
-                        this.blnPuedeGrabar = true;
-                    }else if(!String.isEmpty(u.FederationIdentifier)){
-                        userSipweb = u.FederationIdentifier;
-                        this.aprvUser = userSipweb;
-                        this.blnPuedeGrabar = true;
-                    } else {
-                        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Su usuario no cuenta con un ID de sipweb o de federación por lo tanto no puede realizar el proceso del grabado de tarifas. Favor de contactarse con TI para la configuración correcta del usuario.'));
-                        this.blnPuedeGrabar = false;
-                        return false;
-                    }
-                //}
                 DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
                 DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
                 DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
@@ -440,12 +444,14 @@ public class GrabadoDocEnLinea {
                         String strRangeDest = '';
                         if(line.Zona_Plus__c && line.Quantity__c != 0)
                             this.blnZP = true;
-                        if(!line.Zona_Plus__c){
+                        if(!line.Zona_Plus__c && line.CustomerPrice__c != 0){
                             if(!this.mapBloques.containsKey(line.PackWeightAVG__c))
                                 this.mapBloques.put(line.PackWeightAVG__c, new Map<String, TempleateLine__c>());
-                            if(line.Destiny__c != null)
-                                strRangeDest = line.Destiny__c;
-                            else strRangeDest = line.Rango_KM__c;
+                            if(line.Destiny__c != null){
+                                if(line.Destiny__c.contains('('))
+                                    strRangeDest = line.Destiny__c.replace(line.Rango_KM__c, '').replace(' (', '').replace(')', '');
+                                else strRangeDest = line.Destiny__c;
+                            } else strRangeDest = line.Rango_KM__c;
                             if(!this.mapBloques.get(line.PackWeightAVG__c).containsKey(strRangeDest))
                                 this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
                             if(!this.listRangeDestiny.contains(strRangeDest))
@@ -586,10 +592,6 @@ public class GrabadoDocEnLinea {
                         if(cot.ZonaPlus__c && cot.Tarifa__c != 'TARIFA T7')
                             this.blnZP = true;
                     }
-                    /*if(this.blnCostoBaseGMP){
-                        if(!this.mapGuide.containsKey(cot.PackWeightAVG__c))
-                            this.mapGuide.put(cot.PackWeightAVG__c, cot.PackVolAVG__c);
-                    }*/
                 }
                 if(this.blnCostosFijos){
                     if(this.listTarifasCotizacion.size() == 0 && this.listTarifasExp.size() > 0){
@@ -600,93 +602,6 @@ public class GrabadoDocEnLinea {
                 }
                 if(this.blnCostoBaseGMP)
                     CargaMapasCostoBaseGMP();
-                /*if(this.blnCostoBaseGMP){
-                    Integer blockCounter = 1;
-                    Decimal decRespaldoFlete = 0;
-                    Map<String, Map<String, Decimal>> mapRespaldo = new Map<String, Map<String, Decimal>>();
-                    for(Decimal decW : this.mapGuide.keySet()){
-                        this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
-                        this.mapBlocks.get('BLOQUE '+ blockCounter).mapRanges = mapRangesByBlock.get(decW);
-                        mapRespaldo.put('BLOQUE ' + blockCounter, new Map<String, Decimal>());
-                        for(String keyRange: this.listRangeDestiny){
-                            Decimal decFlete = 0;
-                            if(!this.mapBlocksServ.containsKey('BLOQUE ' + blockCounter)) {
-                                this.mapBlocksServ.put('BLOQUE ' + blockCounter, new map<String, map<String, Decimal>>());
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('FLT', new map<String, Decimal>());
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('RAD', new map<String, Decimal>());
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('EAD', new map<String, Decimal>());
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('ADD', new Map<String, Decimal>());
-                            }
-                            decRespaldoFlete = mapRangesByBlock.get(decW).get(keyRange);
-                            mapRespaldo.get('BLOQUE ' + blockCounter).put(keyRange, mapRangesByBlock.get(decW).get(keyRange));
-                            if(blockCounter > 1){
-                                if(this.blnRAD && this.blnEAD)
-                                    decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange)) / 1.22;
-                                else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD))
-                                    decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange)) / 1.11;
-                                else if(!this.blnRAD && !this.blnEAD)
-                                    decFlete = (mapRangesByBlock.get(decW).get(keyRange) - mapRespaldo.get('BLOQUE ' + (blockCounter - 1)).get(keyRange));
-                            } else {
-                                if(this.blnRAD && this.blnEAD)
-                                    decFlete = mapRangesByBlock.get(decW).get(keyRange) / 1.22;
-                                else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD))
-                                    decFlete = mapRangesByBlock.get(decW).get(keyRange) / 1.11;
-                                else if(!this.blnRAD && !this.blnEAD)
-                                    decFlete = mapRangesByBlock.get(decW).get(keyRange);
-                            }
-                                
-                            
-                            if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').containsKey(keyRange)){
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').put(keyRange, (decFlete));
-                            }
-                            if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').put(keyRange, (decFlete * 0.11));
-                            }
-                            if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').containsKey(keyRange)){
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').put(keyRange, (decFlete * 0.11));
-                            }
-                            if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').containsKey(keyRange)){
-                                Decimal decTotalAdic = 0;
-                                if(this.blnRAD)
-                                    decTotalAdic += this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').get(keyRange);
-                                if(this.blnEAD)
-                                    decTotalAdic += this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('EAD').get(keyRange);
-                                decTotalAdic += decFlete;
-                                this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('ADD').put(keyRange, decTotalAdic);
-                            }
-                        }
-                        blockCounter++;
-            
-                    }
-                    this.mapBlockAdic.put('ADD', new map<String, Decimal>());
-                    this.mapBlockAdic.put('EAD', new map<String, Decimal>());
-                    this.mapBlockAdic.put('RAD', new map<String, Decimal>());
-                    this.mapBlockAdic.put('TOT', new map<String, Decimal>());
-                    
-                    for(String keyRange: this.listRangeDestiny){
-                        this.mapTotalByRange.put(keyRange, new QuoteWP());
-                        Decimal decFlete = 0;
-                        if(!this.mapBlockAdic.get('ADD').containsKey(keyRange)){
-                            if(this.blnRAD && this.blnEAD){
-                                decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.22);
-                            }else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD)){
-                                decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange) / 1.11);
-                            } else if(!this.blnRAD && !this.blnEAD){
-                                decFlete = (this.mapService.get('ADD').mapRanges.get(keyRange));
-                            }
-                            this.mapBlockAdic.get('ADD').put(keyRange, decFlete);
-                            this.mapBlockAdic.get('EAD').put(keyRange, decFlete * 0.11);
-                            this.mapBlockAdic.get('RAD').put(keyRange, decFlete * 0.11);
-                            if(this.blnRAD && this.blnEAD){
-                                this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange) + this.mapBlockAdic.get('EAD').get(keyRange)));
-                            }else if((this.blnEAD && !this.blnRAD) || (!this.blnEAD && this.blnRAD)){
-                                this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange) + this.mapBlockAdic.get('RAD').get(keyRange)));
-                            } else if(!this.blnRAD && !this.blnEAD){
-                                this.mapBlockAdic.get('TOT').put(keyRange, (this.mapBlockAdic.get('ADD').get(keyRange)));
-                            }
-                        }
-                    }
-                }*/
                 if(this.blnByDelivery){
                     data.vol    = decVolPromedio;
                     data.weight = decPesoPromedio;
