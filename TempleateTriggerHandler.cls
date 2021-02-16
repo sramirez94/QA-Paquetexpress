@@ -61,7 +61,7 @@ public class TempleateTriggerHandler {
             
             for(SBQQ__Quote__c objQuote : queryQuote(setIdQuotes)){
                 mapQuotes.put(objQuote.Id, objQuote);
-                if(objQuote.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por rangos de km' || objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km')
+                if((objQuote.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por rangos de km') || (objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'))
                     this.blnCostoBaseGMP = true;
                 if(String.isNotBlank(objQuote.Servicios_adicionales__c)){          
                     for (String strKeyService : objQuote.Servicios_adicionales__c.split(';')){
@@ -378,10 +378,23 @@ public class TempleateTriggerHandler {
                  //TARIFA ESTARDAR SOLA            
                 if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
                     if(this.blnCostoBaseGMP){
-                        objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(objQLine.Rango_KM__c).setScale(2);
-                        objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(objQLine.Rango_KM__c).setScale(2);
-                        objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(objQLine.Rango_KM__c).setScale(2);
-                        objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(objQLine.Rango_KM__c).setScale(2);
+                        String strRangeDest = '';
+                        if(objQLine.Destiny__c != null)
+                            strRangeDest = objQLine.Destiny__c;
+                        else strRangeDest = objQLine.Rango_KM__c;
+                        System.debug('peso: ' + objQLine.PackWeightAVG__c + '. Rango: ' + strRangeDest);
+                        objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(strRangeDest).setScale(2);
+                        if(this.blnRAD)
+                            objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(strRangeDest).setScale(2);
+                        if(this.blnEAD)
+                            objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
+                        objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
+                        objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest);
+                        if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
+                            objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest);
+                        if(this.mapBlockAdic.get('EAD').containsKey(strRangeDest) && this.blnEAD)
+                            objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest);
+                        objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest);
                         objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
                         objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                         objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
@@ -482,13 +495,24 @@ public class TempleateTriggerHandler {
                     else{
                          objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
                     }
-                                      
                     if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
                         if(this.blnCostoBaseGMP){
-                            objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(objQLine.Rango_KM__c).setScale(2);
-                            objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(objQLine.Rango_KM__c).setScale(2);
-                            objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(objQLine.Rango_KM__c).setScale(2);
-                            objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(objQLine.Rango_KM__c).setScale(2);
+                            String strRangeDest = '';
+                            if(objQLine.Destiny__c != null)
+                                strRangeDest = objQLine.Destiny__c;
+                            else strRangeDest = objQLine.Rango_KM__c;
+                            objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(strRangeDest).setScale(2);
+                            if(this.blnRAD)
+                                objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(strRangeDest).setScale(2);
+                            if(this.blnEAD)
+                                objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
+                            objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
+                            objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest);
+                            if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
+                                objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest);
+                            if(this.mapBlockAdic.get('EAD').containsKey(strRangeDest) && this.blnEAD)
+                                objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest);
+                            objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest);
                             objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
                             objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                             objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
