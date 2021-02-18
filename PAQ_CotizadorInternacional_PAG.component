@@ -22,7 +22,20 @@
             <table class="table table-striped" >
                 <tr >
                 <th  BGCOLOR="#FFFFFF" colspan="2"  >Pais destino</th>
-                    <td BGCOLOR="#F5F6CE" colspan="3"   ><apex:inputText value="{!paisDestino}"/></td>
+                   <!-- <td BGCOLOR="#F5F6CE" colspan="3"   ><apex:inputText value="{!paisDestino}"/></td>-->
+                   <!--<apex:selectList id="picklist2">
+                       <apex:selectOptions value="{!Paises}"/>
+                   </apex:selectList>-->
+                   <td BGCOLOR="#F5F6CE" colspan="3"   >
+                        <!--<select size="1" onchange="countryChanged(this)">
+                            <option value="AF">Afganistán</option>
+                            <option value="AL">Albania</option>
+                            <option value="DE">Alemania</option>
+                        </select>-->
+                        <apex:selectList id="ctrl_internacional" value="{!paisDestino}" size="1">
+                            <apex:selectOptions value="{!Paises}"/>
+                        </apex:selectList>
+                   </td>
                 </tr>
                 <tr >
                 <th BGCOLOR="#FFFFFF"  colspan="3" >CP destino</th>
@@ -31,7 +44,17 @@
                 </tr>
                 <tr >
                 <th BGCOLOR="#FFFFFF" colspan="3" >Tipo de paquete</th>
-                <td BGCOLOR="#F5F6CE" colspan="3"  ><apex:inputText value="{!tipo}"/></td>
+                <!--<td BGCOLOR="#F5F6CE" colspan="3"  ><apex:inputText value="{!tipo}"/></td>-->
+                <td BGCOLOR="#F5F6CE" colspan="3"  >
+                    <!--<apex:selectList id="ctrl_internacional2" value="{!tipo}">
+                        <apex:selectOption itemValue="ENV" itemLabel="Sobre de cartón"/>
+                        <apex:selectOption itemValue="PKG" itemLabel="Bolsa plastificada"/>
+                        <apex:selectOption itemValue="BOX" itemLabel="Otro empaque"/>
+                    </apex:selectList>-->
+                    <apex:selectList id="ctrl_internacional2" value="{!tipo}" size="1">
+                        <apex:selectOptions value="{!tipos}"/>
+                    </apex:selectList>
+                </td>
                 </tr>
             </table>
             </div>
@@ -205,7 +228,23 @@
             </div>  
            
              </div>
+            <!--<apex:outputText rendered="{!blnSuccess}">
+                <div class="row center" ng-show="{!blnSuccess}">
+                    <div class="col-sm-12 col-md-12">
+                        <div class="alert alert-success" role="alert" ng-show="{!blnSuccess}">
+                            <span ng-bind="Se ha guardado la cotización exitosamente."></span>  <span ng-show="Wrapper.objQuote.Id"> Ver: <a href="/{{Wrapper.objQuote.Id}}">{{ Wrapper.objQuote.Name }}</a> </span>
+                        </div>
+                    </div>
+                </div>
+            </apex:outputText>-->
          </div>
     </div>
+    <apex:pageMessages escape="false"/>
      </apex:form>
+     <script>
+        function countryChanged(SelectCountry){
+            var country = SelectCountry.options[SelectCountry.selectedIndex].value;
+            "{!paisDestino}" == country;
+        }
+     </script>
     </apex:component>
