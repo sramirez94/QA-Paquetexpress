@@ -1,0 +1,211 @@
+<apex:component controller="ctrl_internacional" allowDML="true">
+
+    <apex:attribute name="LeadId" type="String" description="Lead Object Id" assignTo="{!strLeadId}" />
+    <apex:attribute name="QuoteId" type="String" description="Quote Object Id" assignTo="{!strQuoteId}" />
+    <apex:attribute name="CaseId" type="String" description="Case Object Id" assignTo="{!strCaseId}" />
+    <apex:attribute name="AccountId" type="String" description="Account Object Id" assignTo="{!strAccId}" />
+    <apex:attribute name="OppId" type="String" description="Opportunity Object Id" assignTo="{!strOppId}" />
+    <apex:form >
+	<div class="container-fluid"  ng-controller="cotizadorInternacional">
+               <div style="background-color:#EFF2FB" class="panel panel-default">
+             <div  class="panel-body">	         
+             <div class="col-md-12 col-sm-12">  
+                 <div style="background-color:#F7D358" class="panel panel-default">
+                 <h1 align="Center" ><strong>COTIZADOR INTERNACIONAL</strong></h1>
+                 </div>
+             </div>
+          
+       
+        <div class="col-md-7 col-sm-">   
+            
+            <div class="col-md-5 col-sm-5">           
+            <table class="table table-striped" >
+                <tr >
+                <th  BGCOLOR="#FFFFFF" colspan="2"  >Pais destino</th>
+                    <td BGCOLOR="#F5F6CE" colspan="3"   ><apex:inputText value="{!paisDestino}"/></td>
+                </tr>
+                <tr >
+                <th BGCOLOR="#FFFFFF"  colspan="3" >CP destino</th>
+                <!--<td BGCOLOR="#F5F6CE" colspan="3"  ><input type="number" class="rouded-med"/></td>-->
+                    <td BGCOLOR="#F5F6CE" colspan="3"   ><apex:inputText value="{!cp}"/></td>
+                </tr>
+                <tr >
+                <th BGCOLOR="#FFFFFF" colspan="3" >Tipo de paquete</th>
+                <td BGCOLOR="#F5F6CE" colspan="3"  ><apex:inputText value="{!tipo}"/></td>
+                </tr>
+            </table>
+            </div>
+            </div>
+                 <!--
+           <div  class="col-md-5 col-sm-5">                  
+             
+                 <div class="panel-body">
+          		  <table class="table table-striped" align="right">
+                        <tr >
+                        <th  BGCOLOR="#FFFFFF" colspan="3"  style="width: 40%" >IVA</th>
+                        <td BGCOLOR="#A9D0F5" colspan="2" style="border:0.5px solid black"  ng-show="iva" ></td>
+                        </tr>
+                        <tr >
+                        <th BGCOLOR="#FFFFFF" colspan="3"  style="width: 40%">Factor por combustible</th>
+                        <td BGCOLOR="#A9D0F5" colspan="2" style="border:0.5px solid black"  ></td>
+                        </tr>
+                        <tr >
+                        <th BGCOLOR="#FFFFFF"  colspan="3" style="width: 40%">Factor por combustible estandar</th>
+                        <td BGCOLOR="#A9D0F5" colspan="2" style="border:0.5px solid black" ></td>
+                        </tr>
+            		</table>
+            </div>
+                 </div>
+              -->   
+             
+                 <div  class="col-md-12 col-sm-12"> 
+            <div class="panel-body">	        
+                
+                  <!-- <div class="col-md-1 col-sm-1" >     
+                    <table class="table table-striped">
+                <tr style="border:0.5px solid black">
+                <th  BGCOLOR="#81BEF7" style="border:0.5px solid black" >Cantidad</th>
+                </tr> 
+                <tr style="border:0.5px solid black">
+                <td BGCOLOR="#F5F6CE" style="border:0.5px solid black"  ><input type="number" style="width: 100%"/></td>
+                <td BGCOLOR="#F5F6CE" colspan="3"   ><apex:inputText value="{!cantidad}"/></td>
+                        </tr>
+            </table>               
+            </div>-->
+            
+         <div class="col-md-5 col-sm-5">
+          <table class="table table-striped">
+                <tr style="border:0.5px solid black">
+                <th align="Center"  colspan="3" BGCOLOR="#81BEF7"  style="border:0.5px solid black" >Unidad CM.</th>
+                </tr>
+                <tr style="border:0.5px solid black">
+                <th  colspan="1" BGCOLOR="#C0C0C0" style="border:0.5px solid black" >Largo</th>
+                <th  colspan="1" BGCOLOR="#C0C0C0" style="border:0.5px solid black" >Alto</th>
+                <th  colspan="1" BGCOLOR="#C0C0C0" style="border:0.5px solid black" >Ancho</th>
+                </tr> 
+                <tr style="border:0.5px solid black">
+               <!-- <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"  ><input type="number" style="width: 100%"/></td>
+                <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"  ><input type="number" style="width: 100%"/></td>
+                <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"  ><input type="number" style="width: 100%"/></td>-->
+                <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"  ><apex:inputText value="{!largo}"/></td>
+                <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"  ><apex:inputText value="{!alto}"/></td>
+                <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"  ><apex:inputText value="{!ancho}"/></td>
+                </tr>
+            </table>  
+            </div>
+               
+            
+           <div class="col-md-3 col-sm-3">
+            <table class="table table-striped">
+                <tr style="border:0.5px solid black">
+                <th text-align="Center" colspan="3" BGCOLOR="#81BEF7" style="border:0.5px solid black" >Unidad Kilogramo</th>
+                </tr>
+                <tr style="border:0.5px solid black">
+                <th  BGCOLOR="#C0C0C0" colspan="1" style="border:0.5px solid black" >Volum.</th>
+                <th  BGCOLOR="#C0C0C0" colspan="1" style="border:0.5px solid black" >Peso Bascula</th>
+                <th  BGCOLOR="#C0C0C0" colspan="1" style="border:0.5px solid black" >T. Peso</th>
+                </tr> 
+                <tr style="border:0.5px solid black">
+                <td colspan="1" style="border:0.5px solid black">{!volumen}</td>
+                <td BGCOLOR="#F5F6CE" colspan="1" style="border:0.5px solid black"><apex:inputText value="{!peso}"/><!--<input type="number" style="width: 100%"/>--></td>
+                <td colspan="1" style="border:0.5px solid black">{!pesoBascula}</td>
+                </tr>
+            </table> 
+           </div>
+                
+            <div class="col-md-4 col-sm-4">
+            <table class="table table-striped">
+                <tr style="border:0.5px solid black">
+                <th align="Center" colspan="5" BGCOLOR="#81BEF7" style="border:0.5px solid black" >Tarifas</th>
+                </tr>
+                <tr style="border:0.5px solid black">
+                <th colspan="1" BGCOLOR="#C0C0C0" style="border:0.5px solid black; width: 33%" >Premium</th>
+                <th  BGCOLOR="#C0C0C0" colspan="1" style="border:0.5px solid black" >Lite</th>
+                <th  BGCOLOR="#C0C0C0" colspan="1" style="border:0.5px solid black" >Standard</th>
+                </tr> 
+                <tr style="border:0.5px solid black">
+                <td colspan="1" style="border:0.5px solid black; width: 20%">{!tarifaSA}</td>
+                <td colspan="1" style="border:0.5px solid black; width: 20%">{!tarifaEX}</td>
+                <td colspan="1" style="border:0.5px solid black; width: 20%">{!tarifaES}</td>
+                </tr>
+            </table>
+            </div>
+            </div>       
+            </div>
+            <br/>
+            <div id="abajo" class="col-md-12 col-sm-12"> 
+            <div style="background-color:#EFF2FB" >
+            <div class="panel-body">	        
+                
+                <div class="col-md-6 col-sm-6">
+            <table id="resultados" class="table table-striped" style="width:100%">
+                
+            </table>
+           </div>
+                <!-- 
+           <div class="col-md-8 col-sm-8">
+              
+            <table id="resultados" class="table table-striped" style="width:100%">
+                <tr >
+                <th  BGCOLOR="#F2F2F2" colspan="1" style="width: 39%">Tarifas</th>
+                <td ng-bind=" | currency" ng-show="" ></td>
+                <td ng-bind=" | currency" ng-show=""  ></td>
+                <td ng-bind=" | currency" ng-show=""  ></td>
+                </tr>
+                <tr >
+                <th BGCOLOR="#F2F2F2" colspan="1" style="width: 39%">Factor Combustible</th>
+                <td ng-bind=" | currency" ng-show=""  style="width: 20%" ></td>
+                <td ng-bind=" | currency" ng-show=""  style="width: 20%" ></td>
+                    <td ng-bind=" | currency" ng-show="" ></td>
+                </tr>
+            </table>
+              
+           </div>
+                
+                <div class="col-md-4 col-sm-4">
+            <table id="resultados" class="table table-striped" style="width:100%">
+                
+            </table>
+           </div>-->
+                
+            <div class="col-md-6 col-sm-6">
+            <table id="resultado" class="table table-striped" style="width:100%">
+                <tr >
+                <th  BGCOLOR="#F2F2F2" colspan="1" style="width: 39%" >Subtotal </th>
+                <td  ng-bind=" | currency" ng-show="" style="width: 20%" >{!subtotal}</td>
+                <td  ng-bind=" | currency" ng-show="" style="width: 20%" >{!subtotalEX}</td>
+                <td  ng-bind=" | currency" ng-show="" style="width: 20%" >{!subtotalES}</td>
+                </tr>
+                <tr >
+                <th BGCOLOR="#F2F2F2" colspan="1" style="width: 39%" >Iva  </th>
+                <td ng-bind=" | currency" ng-show=""  style="width: 20%" >{!iva}</td>
+                <td ng-bind=" | currency" ng-show=""  style="width: 20%" >{!ivaEX}</td>
+                 <td ng-bind=" | currency" ng-show=""  style="width: 20%" >{!ivaES}</td>
+                </tr>
+                <tr >
+                <th BGCOLOR="#F2F2F2" colspan="1" style="width: 39%" >TOTAL</th>
+                <td ng-bind=" | currency" ng-show="" style="width: 20%" >{!totalS}</td>
+                 <td ng-bind=" | currency" ng-show="" style="width: 20%" >{!totalE}</td>
+                 <td ng-bind=" | currency" ng-show="" style="width: 20%" >{!totalES}</td>
+                </tr>
+            </table>
+            </div>
+            </div>  
+            </div>
+                </div>           
+            <div class="col-md-12 col-sm-12 right">
+                <div class="btn-group ">
+                   <!-- <button type="button" class="btn btn-primary" ng-click="createQuotes()">
+                        Guardar <span class="glyphicon glyphicon-floppy-disk"></span>
+                    </button>-->
+                   
+                     <apex:commandButton action="{!crearCotizacion}"
+                        value="Guardar Cotizacion" />
+                </div>
+            </div>  
+           
+             </div>
+         </div>
+    </div>
+     </apex:form>
+    </apex:component>
