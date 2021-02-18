@@ -454,8 +454,13 @@ public class GrabadoDocEnLinea {
                             } else strRangeDest = line.Rango_KM__c;
                             if(!this.mapBloques.get(line.PackWeightAVG__c).containsKey(strRangeDest))
                                 this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
-                            if(!this.listRangeDestiny.contains(strRangeDest))
-                                this.listRangeDestiny.add(strRangeDest);
+                            if(this.blnCostoBaseGMP){
+                                if(!this.listRangeDestiny.contains(strRangeDest) && line.Flete__c != 0)
+                                    this.listRangeDestiny.add(strRangeDest);
+                            } else {
+                                if(!this.listRangeDestiny.contains(strRangeDest))
+                                    this.listRangeDestiny.add(strRangeDest);
+                            }
                             if(!this.mapGuide.containsKey(line.PackWeightAVG__c))
                                 this.mapGuide.put(line.PackWeightAVG__c, line.PackVolAVG__c);
                             if(!this.mapBlockAdic.containsKey(strRangeDest))
@@ -575,14 +580,15 @@ public class GrabadoDocEnLinea {
                                 || cot.Tarifa__c == 'TARIFA T6') && (cot.ZonaPlus__c)){
                         if(cot.Destiny__c != null){
                             if(this.blnCostoBaseGMP){
-                                String Destino = '';
+                                /*String Destino = '';
                                 if(cot.Destiny__c.contains('('))
                                     Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
                                 else Destino = cot.Destiny__c;
-                                this.mapService.get('ZP').mapRanges.put(Destino, cot.EAD__c);
+                                this.mapService.get('ZP').mapRanges.put(Destino, cot.EAD__c);*/
                             }
                         } else {
-                            this.mapService.get('ZP').mapRanges.put(cot.Rango_KM__c, cot.EAD__c);
+                            if(this.blnCostosFijos)
+                                this.mapService.get('ZP').mapRanges.put(cot.Rango_KM__c, cot.EAD__c);
                         }
                     }
                     if(this.blnCostoBaseGMP){
@@ -1154,7 +1160,8 @@ public class GrabadoDocEnLinea {
                            	else serviceTrif.trifAmount		= 0.001;
                             serviceTrif.trifAmntBase        = 0;
                             serviceTrif.discount            = 0;
-                            serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                            if(this.blnRAD)
+                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
                             listserviceTrif.add(serviceTrif);
                         }
                         serviceTrifCbe.serviceTrif = listserviceTrif;
@@ -1211,7 +1218,8 @@ public class GrabadoDocEnLinea {
                                	else serviceTrif.trifAmount		= 0.001;
                                 serviceTrif.trifAmntBase        = 0;
                                 serviceTrif.discount            = 0;
-                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decVol;
+                                if(this.blnRAD)
+                                    serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decVol;
                                 listserviceTrif.add(serviceTrif);
                             }
                             serviceTrifCbe.serviceTrif = listserviceTrif;
@@ -1780,8 +1788,10 @@ public class GrabadoDocEnLinea {
             if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
                 this.mapService.get('ACK').mapRanges.put(strRangeDest, objQLine.ACK__c);
 
-            if(objQLine.ZonaPlus__c)
-                this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
+            if(objQLine.ZonaPlus__c && objQLine.Tarifa__c != 'TARIFA T7'){
+                if(!this.mapService.get('ZP').mapRanges.containsKey(strRangeDest))
+                    this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
+            }
         }
         Integer blockCounter = 1;
         for(Decimal decW : this.mapGuide.keySet()){
