@@ -27,16 +27,35 @@ public class ctrl_internacional {
     public String   strQuoteId            {get; set;}
     public String   strLeadId             {get; set;}
     public String   strCaseId             {get; set;}
-    public String   strAccId              {get; set;}
-    public String   strOppId              {get; set;}
-    public String   profileObj            {get; set;} 
-    public String   strIdQuote      {get; set;}
+    public static String   strAccId              {get; set;}
+    public static String   strOppId              {get; set;}
+    public String   profileObj            {get; set;}
+    public static String   strQuoteName          {get;set;}
+    public static String   strIdQuote      {get; set;}
+    public static String SuccessMessage          {get;set;}
+    public static Boolean blnSuccess             {get;set;}
     public Ctrl_InternacionalController wrapper {get; set;}
+   public List<SelectOption> Paises             {get;set;}
+   public List<SelectOption> tipos             {get;set;}
     
-    public ctrl_internacional(){ 
-        this.strIdQuote = '';
+   public ctrl_internacional(){ 
+      blnSuccess = false;
+      this.paises = new List<SelectOption>();
+      this.tipos = new List<SelectOption>();
 		this.profileObj = getProfileObj();
+      this.Paises.add(new SelectOption('AF',  'Afganistán'));
+      this.Paises.add(new SelectOption('DE',  'Alemania'));
+      this.Paises.add(new SelectOption('AD',  'Andorra'));
+      /*this.Paises.add(new SelectOption('U1',  'Estados Unidos desde el interior'));
+      this.Paises.add(new SelectOption('U2',  'Estados Unidos desde frontera'));*/
+      this.Paises.add(new SelectOption('US',  'Estados Unidos'));
+      this.Paises.add(new SelectOption('CA',  'Canadá'));
+
+      this.tipos.add(new SelectOption('ENV', 'Sobre de cartón'));
+      this.tipos.add(new SelectOption('PKG', 'Bolsa plastificada'));
+      this.tipos.add(new SelectOption('BOx', 'Otro empaque'));
    }
+
     /*String jsonBody = '{/n' + 
             ' "opportunityId" : " ' +opp.Id+' " , \n' +
             ' "opportunityName" : " '+opp.Name+' " ,\n' + 
@@ -45,7 +64,9 @@ public class ctrl_internacional {
             ' "amount" : "'+opp.Amount+'",\n}';*/
    
     
-      public static void deserialize() {         
+      public static void deserialize() {    
+         System.debug('Tipo: ' + Tipo);     
+         System.debug('País: ' + paisDestino);
     String jsonBody = '{\n' + 
    '"header": {\n' +
       '"security": {\n' +
@@ -151,8 +172,8 @@ public class ctrl_internacional {
        if (response.getStatusCode() != 200) {
        System.debug('Error: ' +
         response.getStatusCode() + ' ' + response.getStatus());
-        } else { 
-        System.debug('EXITO!!'); 
+        } else {
+            System.debug('EXITO!!'); 
 				System.debug(response.getBody());
            //wrapper = (Ctrl_InternacionalController) JSON.deserializeStrict(response.getBody(), Ctrl_InternacionalController.class);
             JSON2Apex m = JSON2Apex.parse(response.getBody());
@@ -174,8 +195,13 @@ public class ctrl_internacional {
             ' "Ancho" : '+ancho+',\n' +
             ' "Peso Bascula" : '+pesoBascula+' }';
             System.debug(datos);
-            
-            
+
+            //Asignación de solo 2 decimales a los subtotales
+            subtotal = subtotal.setScale(2);
+            iva      = iva.setScale(2);
+            totalS   = totalS.setScale(2);
+            tarifaSA = tarifaSA.setScale(2);
+            volumen  = volumen.setScale(2);
         }  
           
          
@@ -310,8 +336,11 @@ public class ctrl_internacional {
             ' "Ancho" : '+ancho+',\n' +
             ' "Peso Bascula" : '+pesoBascula+' }';
             System.debug(datos);
-            
-            
+            subtotalEX  = subtotalEX.setScale(2);
+            ivaEX       = ivaEX.setScale(2);
+            totalE      = totalE.setScale(2);
+            tarifaEX    = tarifaEX.setScale(2);
+            volumen     = volumen.setScale(2);
         }  
           
          
@@ -459,6 +488,8 @@ public class ctrl_internacional {
              deserializeDos();
             
              SBQQ__Quote__c cotizacion = new  SBQQ__Quote__c();
+             DmlWrapper wp = new DmlWrapper();
+             String strlink = '';
              //List<SBQQ__Quote__c> cotizacion = new  List<SBQQ__Quote__c>{ new SBQQ__Quote__c (RecordTypeId = '0123D000001U1YRQA0',CP__c = this.cp ,iva__c = this.iva, pais__c = this.paisDestino)};
              
              cotizacion.RecordTypeId = '0123D000001U1YRQA0';
@@ -477,14 +508,23 @@ public class ctrl_internacional {
              cotizacion.TPeso__c = pesoBascula.setScale(2);
              cotizacion.dimension__c = volumen.setScale(2);
              cotizacion.SubtotalEx__c = subtotalEX;
-             
+             cotizacion.SBQQ__Opportunity2__c = strOppId;
+             cotizacion.SBQQ__Account__c = strAccId;
              cotizacion.IvaEx__c = ivaEx;
              
              cotizacion.Saver__c = tarifaSA;
              cotizacion.Expedite__c = tarifaEX;
              
                         
-              insert cotizacion; 
+              //insert cotizacion; 
+              Database.SaveResult quoteInsResult = Database.insert(cotizacion, false);
+            if(quoteInsResult.isSuccess()){
+               strIdQuote = quoteInsResult.getId();
+               SuccessMessage = 'Se ha guardado la cotización exitosamente.';
+               strlink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/SBQQ__Quote__c/'+ strIdQuote +'/view';
+               ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.confirm, 'Se ha guardado la cotización exitosamente. Ver: <a href="' + strlink + '"> Aquí </a> ' ));
+               blnSuccess = true;   
+            }
           } catch(Exception e) {
               System.debug('The following exception has occurred: ' + e.getMessage());
           } 
@@ -493,4 +533,13 @@ public class ctrl_internacional {
     public static String getProfileObj(){
 		return [SELECT Name FROM Profile WHERE Id =: UserInfo.getProfileId()].Name;
 	}
+   public static SBQQ__Quote__c QueryQuote(String Id){
+      return [SELECT Id, Name FROM SBQQ__Quote__c WHERE ID = :Id];
+   }
+   public class DmlWrapper{
+      public SBQQ__Quote__c 			objQuote  		{get; set;}
+      public DmlWrapper (){
+
+      }
+  }
 }
