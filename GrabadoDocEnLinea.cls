@@ -1109,7 +1109,7 @@ public class GrabadoDocEnLinea {
                         serviceTrifCbe.factor               = 'KG';
                         serviceTrifCbe.serviceId            = 'SHP-G';
                         serviceTrifCbe.refServiceId         = 'PACKETS';
-                        serviceTrifCbe.trifAmountExce       = this.mapBlockAdic.get(strRange).TotalAdic__c.setScale(2);
+                        serviceTrifCbe.trifAmountExce       = this.mapBlockAdic.get(strRange).FleteAdic__c.setScale(2);
                         for(String strBlock : this.mapBlocks.keySet()){
                             serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
@@ -1126,7 +1126,7 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.factor               = 'KG';
                             serviceTrifCbe.serviceId            = 'EAD-1';
                             serviceTrifCbe.refServiceId         = 'EAD';
-                            serviceTrifCbe.trifAmountExce   	= this.mapBlockAdic.get(strRange).TotalAdic__c.setScale(2);
+                            serviceTrifCbe.trifAmountExce   	= this.mapBlockAdic.get(strRange).EADAdic__c.setScale(2);
                             for(String strBlock : this.mapBlocks.keySet()){
                                 serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                                 serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('EAD').get(strRange);
@@ -1138,31 +1138,35 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
                         }
-                        if(this.blnRAD){
-                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
-                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                            serviceTrifCbe.factor               = 'KG';
-                            serviceTrifCbe.serviceId            = 'RAD-1';
-                            serviceTrifCbe.refServiceId         = 'RAD';
-                            serviceTrifCbe.trifAmountExce       = this.mapBlockAdic.get(strRange).TotalAdic__c.setScale(2);
-                            for(String strBlock : this.mapBlocks.keySet()){
-                                serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange);
-                                serviceTrif.trifAmntBase        = 0;
-                                serviceTrif.discount            = 0;
-                                serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
-                                listserviceTrif.add(serviceTrif);
-                            }
-                            serviceTrifCbe.serviceTrif = listserviceTrif;
-                            listserviceTrifCbe.add(serviceTrifCbe);
+                        //if(this.blnRAD){
+                        listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                        serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                        serviceTrifCbe.factor               = 'KG';
+                        serviceTrifCbe.serviceId            = 'RAD-1';
+                        serviceTrifCbe.refServiceId         = 'RAD';
+                        if((this.mapBlockAdic.get(strRange).RADAdic__c != 0 || this.mapBlockAdic.get(strRange).RADAdic__c != null) && (this.blnRAD))
+                        	serviceTrifCbe.trifAmountExce   = this.mapBlockAdic.get(strRange).RADAdic__c.setScale(2);
+                       	else serviceTrifCbe.trifAmountExce	= 0.001;
+                        for(String strBlock : this.mapBlocks.keySet()){
+                            serviceTrif                     = new ObjDocEnLinea.serviceTrif();
+                            if(this.mapBlocksServ.get(strBlock).get('RAD').get(strRange) != 0 && this.blnRAD)
+                            	serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange);
+                           	else serviceTrif.trifAmount		= 0.001;
+                            serviceTrif.trifAmntBase        = 0;
+                            serviceTrif.discount            = 0;
+                            serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decWeight;
+                            listserviceTrif.add(serviceTrif);
                         }
+                        serviceTrifCbe.serviceTrif = listserviceTrif;
+                        listserviceTrifCbe.add(serviceTrifCbe);
+                        //}
                         //Salvador: A partir de aquí se genera el grabado por volumen
                         listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
                         serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
                         serviceTrifCbe.factor               = 'CUM';
                         serviceTrifCbe.serviceId            = 'SHP-G';
                         serviceTrifCbe.refServiceId         = 'PACKETS';
-                        serviceTrifCbe.trifAmountExce       = (this.mapBlockAdic.get(strRange).TotalAdic__c * 200).setScale(2);
+                        serviceTrifCbe.trifAmountExce       = (this.mapBlockAdic.get(strRange).FleteAdic__c * 200).setScale(2);
                         for(String strBlock : this.mapBlocks.keySet()){
                             serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('FLT').get(strRange);
@@ -1179,7 +1183,7 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.factor               = 'CUM';
                             serviceTrifCbe.serviceId            = 'EAD-1';
                             serviceTrifCbe.refServiceId         = 'EAD';
-                            serviceTrifCbe.trifAmountExce       = (this.mapBlockAdic.get(strRange).TotalAdic__c * 200).setScale(2);
+                            serviceTrifCbe.trifAmountExce       = (this.mapBlockAdic.get(strRange).EADAdic__c * 200).setScale(2);
                             for(String strBlock : this.mapBlocks.keySet()){
                                 serviceTrif                     = new ObjDocEnLinea.serviceTrif();
                                 serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('EAD').get(strRange).setScale(2);
@@ -1191,16 +1195,20 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
                         }
-                        if(this.blnRAD){
+                        //if(this.blnRAD){
                             listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
                             serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
                             serviceTrifCbe.factor               = 'CUM';
                             serviceTrifCbe.serviceId            = 'RAD-1';
                             serviceTrifCbe.refServiceId         = 'RAD';
-                            serviceTrifCbe.trifAmountExce       = (this.mapBlockAdic.get(strRange).TotalAdic__c * 200).setScale(2);
+                        	if((this.mapBlockAdic.get(strRange).RADAdic__c != 0 || this.mapBlockAdic.get(strRange).RADAdic__c != null) && (this.blnRAD))
+                            	serviceTrifCbe.trifAmountExce   = (this.mapBlockAdic.get(strRange).RADAdic__c * 200).setScale(2);
+                       		else serviceTrifCbe.trifAmountExce	= 0.001;
                             for(String strBlock : this.mapBlocks.keySet()){
                                 serviceTrif                     = new ObjDocEnLinea.serviceTrif();
-                                serviceTrif.trifAmount          = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange).setScale(2);
+                                if(this.mapBlocksServ.get(strBlock).get('RAD').get(strRange) != 0 && this.blnRAD)
+                                	serviceTrif.trifAmount      = this.mapBlocksServ.get(strBlock).get('RAD').get(strRange).setScale(2);
+                               	else serviceTrif.trifAmount		= 0.001;
                                 serviceTrif.trifAmntBase        = 0;
                                 serviceTrif.discount            = 0;
                                 serviceTrif.factorValue         = this.mapBlocks.get(strBlock).decVol;
@@ -1208,7 +1216,7 @@ public class GrabadoDocEnLinea {
                             }
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
-                        }
+                        //}
                     }
                     if(this.blnACK || this.blnZP)
                         listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
