@@ -1101,7 +1101,6 @@ public class Ctrl_pantalla_ww {
                         this.totalPaq +=quoteItem.SBQQ__Quantity__c;
                         this.decMontoTotalT7ZP += quoteItem.SBQQ__SpecialPrice__c;
                         blnCotizaT7 = true;
-                        this.T7ZP = true;
                     } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
                         decTotNormal += quoteItem.FLETE__c;
                         decTotProp += quoteItem.GUIA__c;
@@ -1115,7 +1114,7 @@ public class Ctrl_pantalla_ww {
                         listRangeT7.sort();
                         
                     }
-                        
+                    this.T7ZP = true;
                 } else {
                     if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
                         if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
@@ -2013,8 +2012,10 @@ public class Ctrl_pantalla_ww {
             if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
                 this.mapService.get('ACK').mapRanges.put(strRangeDest, objQLine.ACK__c);
 
-            if(objQLine.ZonaPlus__c)
-                this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
+            if(objQLine.ZonaPlus__c && objQLine.Tarifa__c != 'TARIFA T7'){
+                if(!this.mapService.get('ZP').mapRanges.containsKey(strRangeDest))
+                	this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
+            }
         }
         Integer blockCounter = 1;
         //System.debug('mapbloque: ' + this.mapBloques);
