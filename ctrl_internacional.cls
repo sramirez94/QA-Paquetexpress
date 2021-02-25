@@ -1,5 +1,7 @@
 public class ctrl_internacional {
     
+    public static String   descripcion     {get; set;}
+    public static String   tipoError       {get; set;}
     public static String   paisDestino     {get; set;}
     public static String   cp              {get; set;}
     public integer  cantidad               {get; set;}
@@ -36,24 +38,29 @@ public class ctrl_internacional {
     public static Boolean blnSuccess             {get;set;}
     public Ctrl_InternacionalController wrapper {get; set;}
    public List<SelectOption> Paises             {get;set;}
-   public List<SelectOption> tipos             {get;set;}
+   public List<SelectOption> tipos              {get;set;}
+   public List<pais__c> listPaises              {get;set;}
     
    public ctrl_internacional(){ 
       blnSuccess = false;
       this.paises = new List<SelectOption>();
       this.tipos = new List<SelectOption>();
 		this.profileObj = getProfileObj();
-      this.Paises.add(new SelectOption('AF',  'Afganistán'));
+      this.listPaises = queryPaises();
+      for(pais__c Pais : this.listPaises){
+         this.Paises.add(new SelectOption(Pais.Abreviacion__c, Pais.Name));
+      }
+      /*this.Paises.add(new SelectOption('AF',  'Afganistán'));
       this.Paises.add(new SelectOption('DE',  'Alemania'));
       this.Paises.add(new SelectOption('AD',  'Andorra'));
-      /*this.Paises.add(new SelectOption('U1',  'Estados Unidos desde el interior'));
-      this.Paises.add(new SelectOption('U2',  'Estados Unidos desde frontera'));*/
+      this.Paises.add(new SelectOption('U1',  'Estados Unidos desde el interior'));
+      this.Paises.add(new SelectOption('U2',  'Estados Unidos desde frontera'));
       this.Paises.add(new SelectOption('US',  'Estados Unidos'));
-      this.Paises.add(new SelectOption('CA',  'Canadá'));
+      this.Paises.add(new SelectOption('CA',  'Canadá'));*/
 
       this.tipos.add(new SelectOption('ENV', 'Sobre de cartón'));
       this.tipos.add(new SelectOption('PKG', 'Bolsa plastificada'));
-      this.tipos.add(new SelectOption('BOx', 'Otro empaque'));
+      this.tipos.add(new SelectOption('BOX', 'Otro empaque'));
    }
 
     /*String jsonBody = '{/n' + 
@@ -121,7 +128,7 @@ public class ctrl_internacional {
                '"volume":0.0,\n' +
                '"insuredValue":0,\n' +
                '"declaredValue":0, \n' +
-               '"wrapId":"BOX"\n' +  
+               '"wrapId":"'+tipo+'"\n' +  
                '} \n' +
             '],\n' +
             '"quoteServiceList": [\n' +
@@ -181,11 +188,12 @@ public class ctrl_internacional {
             System.debug(m.Body.Response.Data.shipmentAmount.shipAmnt);
             tarifaSA = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].slabSubTotal;
             subtotal = m.Body.Response.Data.shipmentAmount.subTotalAmnt;
-            iva = m.Body.Response.Data.shipmentAmount.srvcAmnt;
+            iva = m.Body.Response.Data.shipmentAmount.taxAmnt;
             totalS = m.Body.Response.Data.shipmentAmount.totalAmnt;
             tipo = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId;
             pesoBascula = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].weight;
             volumen = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].volume;
+            descripcion = m.Body.Response.messages[0].description;
             String datos = '{\n'+   
             ' "Pais de destino" : " ' +paisDestino+' " , \n' +
             ' "CP destino" : " '+cp+' " ,\n' + 
@@ -193,6 +201,7 @@ public class ctrl_internacional {
             ' "Largo" : '+largo+', \n' +
             ' "Alto" : '+alto+',\n' + 
             ' "Ancho" : '+ancho+',\n' +
+            ' "Tipo" : " '+tipo+' ",\n' +
             ' "Peso Bascula" : '+pesoBascula+' }';
             System.debug(datos);
 
@@ -262,7 +271,7 @@ public class ctrl_internacional {
                '"volume":0.0,\n' +
                '"insuredValue":0,\n' +
                '"declaredValue":0, \n' +
-               '"wrapId":"BOX"\n' +  
+               '"wrapId":"'+tipo+'"\n' +  
                '} \n' +
             '],\n' +
             '"quoteServiceList": [\n' +
@@ -322,11 +331,12 @@ public class ctrl_internacional {
             System.debug(m.Body.Response.Data.shipmentAmount.shipAmnt);
             tarifaEX = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].slabSubTotal;
             subtotalEX = m.Body.Response.Data.shipmentAmount.subTotalAmnt;
-            ivaEX = m.Body.Response.Data.shipmentAmount.srvcAmnt;
+            ivaEX = m.Body.Response.Data.shipmentAmount.taxAmnt;
             totalE = m.Body.Response.Data.shipmentAmount.totalAmnt;
             tipo = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId;
             pesoBascula = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].weight;
             volumen = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].volume;
+            descripcion = m.Body.Response.messages[0].description;
             String datos = '{\n'+   
             ' "Pais de destino" : " ' +paisDestino+' " , \n' +
             ' "CP destino" : " '+cp+' " ,\n' + 
@@ -334,6 +344,7 @@ public class ctrl_internacional {
             ' "Largo" : '+largo+', \n' +
             ' "Alto" : '+alto+',\n' + 
             ' "Ancho" : '+ancho+',\n' +
+            ' "Tipo" : " '+tipo+' ",\n' +
             ' "Peso Bascula" : '+pesoBascula+' }';
             System.debug(datos);
             subtotalEX  = subtotalEX.setScale(2);
@@ -496,8 +507,7 @@ public class ctrl_internacional {
              cotizacion.CP__c = cp;
              cotizacion.iva__c = iva.setScale(2);
              cotizacion.pais__c = paisDestino;
-             cotizacion.Subtotal__c = subtotal.setScale(2);
-             
+             cotizacion.Subtotal__c = subtotal.setScale(2);          
              cotizacion.TotalExpedite__c = totalE.setScale(2);
              cotizacion.TotalSa__c = totalS.setScale(2);
              cotizacion.Alto__c = alto.setScale(2);
@@ -511,7 +521,7 @@ public class ctrl_internacional {
              cotizacion.SBQQ__Opportunity2__c = strOppId;
              cotizacion.SBQQ__Account__c = strAccId;
              cotizacion.IvaEx__c = ivaEx;
-             
+             cotizacion.Tipo_de_paquete__c = tipo;
              cotizacion.Saver__c = tarifaSA;
              cotizacion.Expedite__c = tarifaEX;
              
@@ -535,6 +545,9 @@ public class ctrl_internacional {
 	}
    public static SBQQ__Quote__c QueryQuote(String Id){
       return [SELECT Id, Name FROM SBQQ__Quote__c WHERE ID = :Id];
+   }
+   public static List<pais__c> queryPaises(){
+      return [SELECT Abreviacion__c, Name FROM pais__c ORDER BY Name];
    }
    public class DmlWrapper{
       public SBQQ__Quote__c 			objQuote  		{get; set;}
