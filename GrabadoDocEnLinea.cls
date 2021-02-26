@@ -231,9 +231,11 @@ public class GrabadoDocEnLinea {
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
         GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
-            HttpResponse res = gr.consultaAPIPOST(body,endpoint);
+            this.blnclientenuevo = true;
+            return true;
+            /*HttpResponse res = gr.consultaAPIPOST(body,endpoint);
             String respuesta = res.getBody().replace('time','timeR');
-            return ProcesaResponse(res,cotizacion);
+            return ProcesaResponse(res,cotizacion);*/
         }catch (Exception ex){
             System.debug('ObtieneInfoSipweb: '+ex.getLineNumber()+' '+ex.getMessage());
             gr.publicarEvento(false, 'Error al obtener info sipweb');
@@ -398,9 +400,9 @@ public class GrabadoDocEnLinea {
                                 if(!this.mapTLinesExp.get(line.Guia__c).containsKey(line.Tarifa__c)){
                                     this.mapTLinesExp.get(line.Guia__c).put(line.Tarifa__c, new Map<String, TempleateLine__c>());
                                 }
-                                if(line.KG_ADICIONAL__c != 0){
+                                if(line.KG_ADICIONAL__c != 0 && line.KG_ADICIONAL__c != null){
                                     if(line.Destiny__c != null)
-                                        strRangeDest = line.Destiny__c;
+                                        strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
                                     else strRangeDest = line.Rango_KM__c;
                                     if(!this.mapExpAdic.containsKey(line.Tarifa__c))
                                         this.mapExpAdic.put(line.Tarifa__c, new Map<String, Decimal>());
@@ -413,15 +415,15 @@ public class GrabadoDocEnLinea {
                             if(line.Destiny__c != null){
                                 if(!this.mapRangeByDest.containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')'))
                                     this.mapRangeByDest.put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line.Rango_KM__c);
-                                strRangeDest = line.Destiny__c;
+                                strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
                                 if(!this.mapAcuse.containsKey(line.Destiny__c))
                                     this.mapAcuse.put(line.Destiny__c, line.ACK__c);
                                 if(line.Tarifa__c == 'SEG-DS' || line.Tarifa__c == 'SEG-2D' || line.Tarifa__c == 'SEG-A12'){
-                                    if(!this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__C).containsKey(line.Destiny__c))
-                                        this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__c).put(line.Destiny__c, line);
+                                    if(!this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__C).containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')'))
+                                        this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__c).put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line);
                                 } else {
-                                    if(!this.mapTLines.get(line.Tarifa__c).containsKey(line.Destiny__c))
-                                        this.mapTLines.get(line.Tarifa__c).put(line.Destiny__c, line);
+                                    if(!this.mapTLines.get(line.Tarifa__c).containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')'))
+                                        this.mapTLines.get(line.Tarifa__c).put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line);
                                 }
                             } else {
                                 strRangeDest = line.Rango_KM__c;
@@ -453,25 +455,34 @@ public class GrabadoDocEnLinea {
                 } else {
                     for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
                         String strRangeDest = '';
-                        /*if(line.Zona_Plus__c && line.EAD__c > 0 && line.Tarifa__c != 'TARIFA T7')
+                        /*if(line.Zona_Plus__c && line.EAD__c > 0)
                             this.blnZP = true;*/
                         if(!line.Zona_Plus__c && line.CustomerPrice__c != 0){
                             if(!this.mapBloques.containsKey(line.PackWeightAVG__c))
                                 this.mapBloques.put(line.PackWeightAVG__c, new Map<String, TempleateLine__c>());
                             if(line.Destiny__c != null){
-                                if(line.Destiny__c.contains('('))
+                                /*if(line.Destiny__c.contains('('))
                                     strRangeDest = line.Destiny__c.replace(line.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                                else strRangeDest = line.Destiny__c;
+                                else strRangeDest = line.Destiny__c;*/
+                                if(!line.Destiny__c.contains('(')){
+                                	strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
+                                    if(!this.mapRangeByDest.containsKey(strRangeDest))
+                                        this.mapRangeByDest.put(strRangeDest, line.Rango_KM__c);
+                                }else{
+                                    strRangeDest = line.Destiny__c;
+                                    if(!this.mapRangeByDest.containsKey(strRangeDest))
+                                        this.mapRangeByDest.put(strRangeDest, line.Rango_KM__c);
+                                } 
                             } else strRangeDest = line.Rango_KM__c;
                             if(!this.mapBloques.get(line.PackWeightAVG__c).containsKey(strRangeDest))
                                 this.mapBloques.get(line.PackWeightAVG__c).put(strRangeDest, line);
-                            /*if(this.blnCostoBaseGMP){
+                            if(this.blnCostoBaseGMP){
                                 if(!this.listRangeDestiny.contains(strRangeDest) && line.Flete__c != 0)
                                     this.listRangeDestiny.add(strRangeDest);
                             } else {
                                 if(!this.listRangeDestiny.contains(strRangeDest))
                                     this.listRangeDestiny.add(strRangeDest);
-                            }*/
+                            }
                             if(!this.mapGuide.containsKey(line.PackWeightAVG__c))
                                 this.mapGuide.put(line.PackWeightAVG__c, line.PackVolAVG__c);
                             if(!this.mapBlockAdic.containsKey(strRangeDest))
@@ -485,7 +496,7 @@ public class GrabadoDocEnLinea {
                     if(cot.Tarifa__c == 'TARIFA T7' && cot.ZonaPlus__c && cot.SBQQ__Description__c == 'Propuesta'){
                         strRangeDest = '';
                         if(cot.Destiny__c != null)
-                            strRangeDest = cot.Destiny__c;
+                            strRangeDest = cot.Destiny__c + ' ('+cot.Rango_KM__c+')';
                         else strRangeDest = cot.Rango_KM__c;
                         if(!this.mapQuotesT7ZP.containsKey(strRangeDest))
                             this.mapQuotesT7ZP.put(strRangeDest, cot);
@@ -509,9 +520,10 @@ public class GrabadoDocEnLinea {
                                     decPesoPromedio = cot.PackWeightAVG__c;
                             }
                             if(cot.Destiny__c != null){
-                                if(cot.Destiny__c.contains('('))
+                                /*if(cot.Destiny__c.contains('('))
                                     strRangeDest = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                                else strRangeDest = cot.Destiny__c;
+                                else strRangeDest = cot.Destiny__c;*/
+                                strRangeDest = cot.Destiny__c + ' (' + cot.Rango_KM__c + ')';
                             } else strRangeDest = cot.Rango_KM__c;
                             if(this.blnCostosFijos){
                                 if(!this.mapQuotes.get(cot.Tarifa__c).containsKey(strRangeDest))
@@ -534,8 +546,8 @@ public class GrabadoDocEnLinea {
                                 if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
                                     this.mapService.get('ACK').mapRanges.put(strRangeDest, cot.ACK__c);
                 
-                                /*if(cot.ZonaPlus__c)
-                                    this.mapService.get('ZP').mapRanges.put(strRangeDest, cot.EAD__c);*/
+                                if(cot.ZonaPlus__c)
+                                    this.mapService.get('ZP').mapRanges.put(strRangeDest, cot.EAD__c);
                             }
 
                         } else {
@@ -548,18 +560,18 @@ public class GrabadoDocEnLinea {
                         }
                         if(cot.Destiny__c != null){
                             if(this.blnCostoBaseGMP){
-                                /*if(cot.Flete__c != 0){
-                                    if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
+                                if(cot.Flete__c != 0){
+                                    /*if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
                                         String Destino = '';
                                         if(cot.Destiny__c.contains('('))
                                             Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
                                         else Destino = cot.Destiny__c;
                                         this.listRangeDestiny.add(Destino);
-                                    }
-                                }*/
+                                    }*/
+                                }
                             } else {
-                                if(!this.listRangeDestiny.contains(cot.Destiny__c)){
-                                    this.listRangeDestiny.add(cot.Destiny__c);
+                                if(!this.listRangeDestiny.contains(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')')){
+                                    this.listRangeDestiny.add(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')');
                                 }
                                 if(!this.listRanges.contains(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')'))
                                     this.listRanges.add(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')');
@@ -572,10 +584,10 @@ public class GrabadoDocEnLinea {
                             }
                         } else {
                             if(this.blnCostoBaseGMP){
-                                /*if(cot.Flete__c != 0){
+                                if(cot.Flete__c != 0){
                                     if(!this.listRangeDestiny.contains(cot.Rango_KM__c))
                                         this.listRangeDestiny.add(cot.Rango_KM__c);
-                                }*/
+                                }
                             } else {
                                 if(!this.listRangeDestiny.contains(cot.Rango_KM__c))
                                     this.listRangeDestiny.add(cot.Rango_KM__c);
@@ -591,11 +603,11 @@ public class GrabadoDocEnLinea {
                                 || cot.Tarifa__c == 'TARIFA T6') && (cot.ZonaPlus__c)){
                         if(cot.Destiny__c != null){
                             if(this.blnCostoBaseGMP){
-                                /*String Destino = '';
+                                String Destino = '';
                                 if(cot.Destiny__c.contains('('))
                                     Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
                                 else Destino = cot.Destiny__c;
-                                this.mapService.get('ZP').mapRanges.put(Destino, cot.EAD__c);*/
+                                this.mapService.get('ZP').mapRanges.put(Destino, cot.EAD__c);
                             }
                         } else {
                             if(this.blnCostosFijos)
@@ -702,153 +714,144 @@ public class GrabadoDocEnLinea {
                             wp.mapTarifarioEXP.put(tarifaEXP.Tarifa__c, new Map<String, Tarifario__c>{ tarifaEXP.Rango_km__c => tarifaEXP });
                         else if(!wp.mapTarifarioEXP.get(tarifaEXP.Tarifa__c).containsKey(tarifaEXP.Rango_km__c))
                             wp.mapTarifarioEXP.get(tarifaEXP.Tarifa__c).put(tarifaEXP.Rango_km__c, tarifaEXP);
-                    for(String strTarifa : this.listTarifas){
-                        //if(!this.mapTLines.containsKey(strTarifa)){
-                            if(!this.mapTLines.containsKey(strTarifa))
-                                this.mapTLines.put(strTarifa, new Map<String, TempleateLine__c>());
-                            if(!this.mapQuotes.containsKey(strTarifa))
-                                this.mapQuotes.put(strTarifa, new Map<String, SBQQ__QuoteLine__c>());
-                            for(Decimal decTarifa: this.listDecTarifas){
-                                blnTarifasCargadas = false;
-                                if(obtieneNumeroTarifa(strTarifa) <= decTarifa && decTarifa < 7){
-                                    for(String strRange : this.listRanges){
-                                        strNuevoRango = '';
-                                        String rango  = '';
+                    
+                    for(String strRange : this.listrangedestiny){
+                        if(!this.listRanges.contains(strRange))
+                            this.listRanges.add(strRange);
+                    }
+
+
+                    for(Decimal decTarifa: this.listDecTarifas){ //Recorre las tarifas que ya están registradas para planchar hacia abajo
+                        if(decTarifa < 7){
+                            for(String strTarifa : this.listTarifas){
+                                if(!this.mapTLines.containsKey(strTarifa))
+                                    this.mapTLines.put(strTarifa, new Map<String, TempleateLine__c>());
+                                if(!this.mapQuotes.containsKey(strTarifa))
+                                    this.mapQuotes.put(strTarifa, new Map<String, SBQQ__QuoteLine__c>());
+                                for(String strRange : this.listRanges){
+                                    if(!this.mapTLines.get(strTarifa).containsKey(strRange) && obtieneNumeroTarifa(strTarifa) < decTarifa && this.mapdecTLines.get(decTarifa).containsKey(strRange)){
+                                        this.mapdecTLines.get(decTarifa).get(strRange).Tarifa__c    = strTarifa;
+                                        this.mapTarifas.get(decTarifa).get(strRange).Tarifa__c      = strTarifa;
+                                        this.mapTLines.get(strTarifa).put(strRange, this.mapdecTLines.get(decTarifa).get(strRange));
+                                        this.mapQuotes.get(strTarifa).put(strRange, this.mapTarifas.get(decTarifa).get(strRange));
+                                    } else if(!this.mapTLines.get(strTarifa).containsKey(strRange) && obtieneNumeroTarifa(strTarifa) < decTarifa && !this.mapdecTLines.get(decTarifa).containsKey(strRange)){
+                                        TempleateLine__c TL     = new TempleateLine__c();
+                                        SBQQ__QuoteLine__c QL   = new SBQQ__QuoteLine__c();
+                                        String rango            = '';
+                                        String Tarifa           = '';
+                                        String strNewRange      = '';
                                         if(strRange.contains('('))
                                             rango = this.mapRangeByDest.get(strRange);
                                         else rango = strRange;
-                                        if(this.mapdecTLines.containsKey(decTarifa) && !this.mapTLines.get(strTarifa).containsKey(strRange)){
-                                            if(this.mapdecTLines.get(decTarifa).containsKey(strRange)){
-                                                this.mapdecTLines.get(decTarifa).get(strRange).Tarifa__c = strTarifa;
-                                            } else {
-                                                TempleateLine__c TL     = new TempleateLine__c();
-                                                String Tarifa           = '';
-                                                if(strTarifa == 'TARIFA SOBRE')
-                                                    Tarifa = 'TARIFA TS';
-                                                else Tarifa = strTarifa;
-                                                if(strTarifa == 'TARIFA T7' || strTarifa == 'TARIFA T7-P'){
-                                                    TL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                                    if(this.blnRAD)
-                                                        TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                                    if(this.blnEAD)
-                                                        TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                                } else if(strTarifa == 'TARIFA T7-V'){
-                                                    TL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                                    if(this.blnRAD)
-                                                        TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                                    if(this.blnEAD)
-                                                        TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                                } else {
-                                                    TL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
-                                                    if(this.blnRAD){
-                                                        if(strTarifa != 'TARIFA SOBRE')
-                                                            TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                                        else TL.RAD__c      = 0.01;
-                                                    }
-                                                    if(this.blnEAD){
-                                                        if(strTarifa != 'TARIFA SOBRE')
-                                                            TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                                        else TL.EAD__c      = 0.01;
-                                                    }
-                                                }
-                                                if(strRange.contains('('))
-                                                    strNuevoRango = strRange.replace(rango, '').replace(' (', '').replace(')', '');
-                                                else strNuevoRango = strRange;
-                                                this.mapdecTLines.get(decTarifa).put(strNuevoRango, TL);
-                                            }
-                                            if(strRange.contains('('))
-                                                strNuevoRango = strRange.replace(rango, '').replace(' (', '').replace(')', '');
-                                            else strNuevoRango = strRange;
-                                            this.mapTLines.get(strTarifa).put(strNuevoRango, this.mapdecTLines.get(decTarifa).get(strNuevoRango));
-                                        }
-                                        if(this.mapTarifas.containsKey(decTarifa) && !this.mapQuotes.get(strTarifa).containsKey(strRange)){
-                                            if(this.mapTarifas.get(decTarifa).containsKey(strRange))
-                                                this.mapTarifas.get(decTarifa).get(strRange).Tarifa__c = strTarifa;
-                                            else{
-                                                SBQQ__QuoteLine__c QL   = new SBQQ__QuoteLine__c();
-                                                String Tarifa           = '';
-                                                if(strTarifa == 'TARIFA SOBRE')
-                                                    Tarifa = 'TARIFA TS';
-                                                else Tarifa = strTarifa;
-                                                if(strRange.contains('('))
-                                                    rango = this.mapRangeByDest.get(strRange);
-                                                else rango = strRange;
-                                                if(strTarifa == 'TARIFA T7' || strTarifa == 'TARIFA T7-P'){
-                                                    QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                                } else if(strTarifa == 'TARIFA T7-V'){
-                                                    QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                                } else {
-                                                    QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
-                                                }
-                                                if(strRange.contains('('))
-                                                    strNuevoRango = strRange.replace(rango, '').replace(' (', '').replace(')', '');
-                                                else strNuevoRango = strRange;
-                                                this.mapTarifas.get(decTarifa).put(strNuevoRango, QL);
-                                            }
-                                            this.mapQuotes.get(strTarifa).put(strNuevoRango, this.mapTarifas.get(decTarifa).get(strNuevoRango));
-                                        }
-                                    }
-                                    blnTarifasCargadas = true;
-                                }
-                            }
-                            if(!blnTarifasCargadas){
-                                for(String strRange : this.listRanges){
-                                    String rango = '';
-                                    String Tarifa = '';
-                                    String strNewRange = '';
-                                    if(strRange.contains('('))
-                                        rango = this.mapRangeByDest.get(strRange);
-                                    else rango = strRange;
-                                    TempleateLine__c TLine = new TempleateLine__c();
-                                    SBQQ__QuoteLine__c QL = new SBQQ__QuoteLine__c();
-                                    if(strTarifa == 'TARIFA T7-P'){
-                                        TLine.Flete__c  = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                        if(this.blnRAD)
-                                            TLine.RAD__C= this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c * 0.11;//dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                        if(this.blnEAD)
-                                            TLine.EAD__c= this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c * 0.11;//dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
-                                        QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
-                                    } else if(strTarifa == 'TARIFA T7-V'){
-                                        TLine.Flete__c  = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                        if(this.blnRAD)
-                                            TLine.RAD__C = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c * 0.11; //dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                        if(this.blnEAD)
-                                            TLine.EAD__c = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c * 0.11;//dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
-                                        QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
-                                    } else {
                                         if(strTarifa == 'TARIFA SOBRE')
                                             Tarifa = 'TARIFA TS';
-                                        else if(strTarifa == 'TARIFA T7') 
-                                            Tarifa = 'TARIFA T7P';
                                         else Tarifa = strTarifa;
-                                        if(this.blnRAD){
-                                            if(strTarifa != 'TARIFA SOBRE')
-                                                TLine.RAD__C = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                            else TLine.RAD__c = 0.01;
+                                        if(strTarifa == 'TARIFA T7-P' || strTarifa == 'TARIFA T7'){
+                                            QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
+                                            TL.Flete__c = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
+                                            if(this.blnRAD)
+                                                TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
+                                            if(this.blnEAD)
+                                                TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
+                                        } else if(strTarifa == 'TARIFA T7-V') {
+                                            TL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
+                                            if(this.blnRAD)
+                                                TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
+                                            if(this.blnEAD)
+                                                TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
+                                            QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
+                                        } else {
+                                            TL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
+                                            if(this.blnRAD){
+                                                if(strTarifa != 'TARIFA SOBRE')
+                                                    TL.RAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
+                                                else TL.RAD__c      = 0.01;
+                                            }
+                                            if(this.blnEAD){
+                                                if(strTarifa != 'TARIFA SOBRE')
+                                                    TL.EAD__c       = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
+                                                else TL.EAD__c      = 0.01;
+                                            }
+                                            QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
                                         }
-                                        if(this.blnEAD){
-                                            if(strTarifa != 'TARIFA SOBRE')
-                                                TLine.EAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
-                                            else TLine.EAD__c = 0.01;
-                                        }
-                                        TLine.Flete__c  = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
-                                        QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
+                                        TL.Weight__c = 1;
+                                        TL.Vol__c    = 1;
+                                        TL.Tarifa__c = strTarifa;
+                                        QL.Weight__c    = 1;
+                                        QL.Tarifa__c    = strTarifa;
+                                        /*if(strRange.contains('('))
+                                            strNewRange = strRange.replace(rango, '').replace(' (', '').replace(')', '');
+                                        else strNewRange = strRange;*/
+                                        this.mapTLines.get(strTarifa).put(strRange, TL);
+                                        this.mapQuotes.get(strTarifa).put(strRange, QL);
                                     }
-                                    TLine.Weight__c = 1;
-                                    TLine.Vol__c    = 1;
-                                    TLine.Tarifa__c = strTarifa;
-                                    QL.Weight__c    = 1;
-                                    QL.Tarifa__c    = strTarifa;
-                                    if(strRange.contains('('))
-                                        strNewRange = strRange.replace(rango, '').replace(' (', '').replace(')', '');
-                                    else strNewRange = strRange;
-                                    if(!this.mapTLines.get(strTarifa).containsKey(strNewRange))
-                                        this.mapTLines.get(strTarifa).put(strNewRange, TLine);
-                                    if(!this.mapQuotes.get(strTarifa).containsKey(strNewRange))
-                                        this.mapQuotes.get(strTarifa).put(strNewRange, QL);
                                 }
                             }
-                        //}
+                        }
+                    }
+                    for(String strTarifa : this.listTarifas){
+                        for(String strRange : this.listRanges){
+                            String rango = '';
+                            String Tarifa = '';
+                            String strNewRange = '';
+                            if(strRange.contains('('))
+                                rango = this.mapRangeByDest.get(strRange);
+                            else rango = strRange;
+                            if(!this.mapTLines.containsKey(strTarifa))
+                                this.mapTLines.put(strTarifa, new Map<String, TempleateLine__c>());
+                            if(!this.mapTLines.get(strTarifa).containsKey(strRange)){
+                                TempleateLine__c TLine = new TempleateLine__c();
+                                SBQQ__QuoteLine__c QL = new SBQQ__QuoteLine__c();
+                                if(strTarifa == 'TARIFA T7-P' || strTarifa == 'TARIFA T7'){
+                                    TLine.Flete__c  = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
+                                    if(this.blnRAD)
+                                        TLine.RAD__C= this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c * 0.11;//dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
+                                    if(this.blnEAD)
+                                        TLine.EAD__c= this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c * 0.11;//dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c);
+                                    QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7P').get(rango).Flete__c;
+                                } else if(strTarifa == 'TARIFA T7-V'){
+                                    TLine.Flete__c  = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
+                                    if(this.blnRAD)
+                                        TLine.RAD__C = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c * 0.11; //dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
+                                    if(this.blnEAD)
+                                        TLine.EAD__c = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c * 0.11;//dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c);
+                                    QL.Flete__c     = this.wp.mapTarifarioT.get('TARIFA T7V').get(rango).Flete__c;
+                                } else {
+                                    if(strTarifa == 'TARIFA SOBRE')
+                                        Tarifa = 'TARIFA TS';
+                                    else if(strTarifa == 'TARIFA T7') 
+                                        Tarifa = 'TARIFA T7P';
+                                    else Tarifa = strTarifa;
+                                    if(this.blnRAD){
+                                        if(strTarifa != 'TARIFA SOBRE')
+                                            TLine.RAD__C = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
+                                        else TLine.RAD__c = 0.01;
+                                    }
+                                    if(this.blnEAD){
+                                        if(strTarifa != 'TARIFA SOBRE')
+                                            TLine.EAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c);
+                                        else TLine.EAD__c = 0.01;
+                                    }
+                                    TLine.Flete__c  = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
+                                    QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
+                                }
+                                TLine.Weight__c = 1;
+                                TLine.Vol__c    = 1;
+                                TLine.Tarifa__c = strTarifa;
+                                QL.Weight__c    = 1;
+                                QL.Tarifa__c    = strTarifa;
+                                /*if(strRange.contains('('))
+                                    strNewRange = strRange.replace(rango, '').replace(' (', '').replace(')', '');
+                                else strNewRange = strRange;*/
+                                if(!this.mapTLines.get(strTarifa).containsKey(strRange))
+                                    this.mapTLines.get(strTarifa).put(strRange, TLine);
+                                if(!this.mapQuotes.containsKey(strTarifa))
+                                    this.mapQuotes.put(strTarifa, new Map<String, SBQQ__QuoteLine__c>());
+                                if(!this.mapQuotes.get(strTarifa).containsKey(strRange))
+                                    this.mapQuotes.get(strTarifa).put(strRange, QL);
+                            }
+                            
+                        }
                     }
                     //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Rangos antes: ' + this.listRangeDestiny));
                     for(String strRange : this.listRanges){
@@ -864,6 +867,8 @@ public class GrabadoDocEnLinea {
                                     for(String strTarifa: this.listTarifasExp){
                                         if(!this.mapTLinesExp.get(decBloque).containsKey(strTarifa))
                                             this.mapTLinesExp.get(decBloque).put(strTarifa, new Map<String,TempleateLine__c>());
+                                        if(!this.mapExpAdic.containsKey(strTarifa))
+                                            this.mapExpAdic.put(strTarifa, new Map<String, Decimal>());
                                         if(!this.mapTLinesExp.get(decBloque).get(strTarifa).containsKey(strRange)){
                                             TempleateLine__c TL = new TempleateLine__c();
                                             String tarifa       = '';
@@ -871,6 +876,8 @@ public class GrabadoDocEnLinea {
                                             TL.KG_Adicional__c = this.wp.mapTarifarioEXP.get(tarifa).get(strRange).Kg_adicional__c;
                                             TL.FleteE__c       = this.wp.mapTarifarioEXP.get(tarifa).get(strRange).GuiaDeArranque1Kg__c;
                                             this.mapTLinesExp.get(decBloque).get(strTarifa).put(strRange, TL);
+                                            if(!this.mapExpAdic.containsKey(strRange))
+                                                this.mapExpAdic.get(strTarifa).put(strRange, TL.KG_ADICIONAL__c);
                                         }
                                     }
                                 }
@@ -935,7 +942,9 @@ public class GrabadoDocEnLinea {
                         blnDest                     = false;
                     } else {
                         ptpServicesTrifSub.orgnSite = strOrigen;
-                        ptpServicesTrifSub.destSite = strRange;
+                        if(strRange.contains('('))
+                            ptpServicesTrifSub.destSite = strRange.replace(this.mapRangeByDest.get(strRange), '').replace(' (', '').replace(')', '');
+                        else ptpServicesTrifSub.destSite = strRange;
                         blnRango                    = false;
                         blnDest                     = true;
                     }
@@ -964,7 +973,6 @@ public class GrabadoDocEnLinea {
                                             else serviceTrif.trifAmount             = this.mapTLines.get(strTarifa).get(strRange).FLETE__c.setScale(2);
                                         }
                                         else{
-                                            system.debug('tarifa: ' + strTarifa + '. Rango: ' + strRange);
                                             serviceTrif.trifAmount                 = this.mapTLines.get(strTarifa).get(strRange).FLETE__c.setScale(2);
                                         } 
                                         serviceTrif.discount                    = this.mapQuotes.get(strTarifa).get(strRange).SBQQ__Discount__c;
@@ -1198,9 +1206,10 @@ public class GrabadoDocEnLinea {
                             if(this.mapQuotesT7ZP.get(strRange).SBQQ__SpecialPrice__c != null && this.mapQuotesT7ZP.get(strRange).SBQQ__SpecialPrice__c != 0){
                                 serviceTrif.trifAmount         = this.mapQuotesT7ZP.get(strRange).SBQQ__SpecialPrice__c.setScale(2);
                                 serviceTrif.factor              = 'KG';
-                                serviceTrif.factorValue         = this.mapQuotesT7ZP.get(strRange).Weight__c;
-                            } else
+                                serviceTrif.factorValue         = this.mapQuotesT7ZP.get(strRange).PackWeightAVG__c;
+                            } else {
                                 serviceTrif.trifAmount              = 0.001;
+                            }
                             serviceTrif.trifAmntBase                = 0;
                             serviceTrif.discount                    = this.mapQuotesT7ZP.get(strRange).SBQQ__Discount__c;
                             listserviceTrif.add(serviceTrif);
@@ -1288,10 +1297,11 @@ public class GrabadoDocEnLinea {
                             serviceTrif.servicesCant                = obtieneTipoAcuse(cotizacion.AcuseCosto__c);
                         else serviceTrif.servicesCant           = '';
                         serviceTrif.factor                      = 'NON';
+                        serviceTrif.factorValue                 = 0;
                         listserviceTrif.add(serviceTrif);
                     }
                     if(this.blnZP){
-                        if((this.blnCostoBaseGMP && this.mapService.get('ZP').mapRanges.get(strRange) != 0) || (this.blnCostosFijos && this.mapZonaPlus.get(strRange) != 0)){
+                        if((this.blnCostoBaseGMP && (this.mapService.get('ZP').mapRanges.get(strRange) != 0 || this.mapService.get('ZP').mapRanges.get(strRange) != null)) || (this.blnCostosFijos && (this.mapZonaPlus.get(strRange) != 0 || this.mapZonaPlus.get(strRange) != null))){
                             serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                             serviceTrif.serviceId                   = 'EXT-1';
                             serviceTrif.refServiceId                = 'EXT';
@@ -1305,6 +1315,7 @@ public class GrabadoDocEnLinea {
                             }
                             serviceTrif.discount                    = 0;
                             serviceTrif.trifAmntBase                = 0;
+                            serviceTrif.factorValue                 = 0;
                             serviceTrif.factor                      = 'NON';
                             listserviceTrif.add(serviceTrif);
                         }
@@ -1529,6 +1540,31 @@ public class GrabadoDocEnLinea {
         else if(Tarifa == 'TARIFA T7')
             return 7.0;
         else return 0.0;
+    }
+    public static String obtieneTarifaDeNum(Decimal decTarifa){
+        if(decTarifa == 0.0)
+            return 'TARIFA TS';
+        else if(decTarifa == 0.1)
+            return 'TARIFA T0';
+        else if(decTarifa == 1.0)
+            return 'TARIFA T1';
+        else if(decTarifa == 2.0)
+            return 'TARIFA T2';
+        else if(decTarifa == 3.0)
+            return 'TARIFA T3';
+        else if(decTarifa == 4.0)
+            return 'TARIFA T4';
+        else if(decTarifa == 5.0)
+            return 'TARIFA T5';
+        else if(decTarifa == 6.0)
+            return 'TARIFA T6';
+        else if(decTarifa == 7.0)
+            return 'TARIFA T7';
+        else if(decTarifa == 7.1)
+            return 'TARIFA T7-P';
+        else if(decTarifa == 7.2)
+            return 'TARIFA T7-V';
+        else return '';
     }
     public void GrabarTarifaDocLinea(){
         try{
@@ -1824,9 +1860,9 @@ public class GrabadoDocEnLinea {
             
 
             if(!(objQLine.Tarifa__c == 'TARIFA T7' && objQLine.ZonaPlus__c)){
-                if(objQLine.Destiny__c != null)
+                /*if(objQLine.Destiny__c != null)
                     strRangeDest = objQLine.Destiny__c.replace(objQLine.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                else strRangeDest = objQLine.Rango_KM__c;
+                else strRangeDest = objQLine.Rango_KM__c;*/
                 if(!this.listRangeDestiny.contains(strRangeDest) && objQline.Flete__c > 0)
                     this.listRangeDestiny.add(strRangeDest);
                 /*if(!this.mapBloques.containsKey(objQLine.PackWeightAVG__c))
@@ -1864,6 +1900,7 @@ public class GrabadoDocEnLinea {
                     this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('ADD', new Map<String, Decimal>());
                 }
                 if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').containsKey(keyRange)){
+                    System.debug('rango: ' + keyrange);
                     this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').put(keyRange, this.mapBloques.get(decW).get(keyRange).Flete__c);
                 }
                 if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
