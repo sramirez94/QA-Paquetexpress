@@ -1,0 +1,53 @@
+<apex:page standardController="Account" extensions="Inicio_descuento_real_Ctrl">
+    <!--EN EL CONTROLADOR DEBEMOS PASAR EL ID SIPWEB DE LA CUENTA AL MOMENTO DE DETONAR LOS BATCH, ESE ID DEBERÁ 
+		SER EL ÚNICO VALOR QUE PASAREMOS EN EL CONTROLADOR, TODOS LOS DEMÁS DEBERÁN GUARDARSE EN CADA CUENTA-->
+    <head>
+    <!-- estilos personalizados -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
+    <!-- jquery  -->
+    <apex:includeScript value="{!$Resource.PAQ_JQuery}"/>
+    <!-- Boostrap css -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Boostrap3, 'bootstrap-3.3.7-dist/css/bootstrap.min.css')}"/>
+    <!-- jquery UI 11.2.1 css-->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.css')}"/>
+    <!-- Boostrap js -->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_Boostrap3,'bootstrap-3.3.7-dist/js/bootstrap.min.js')}"/>
+    <!-- jquery UI 11.2.1 js-->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.js')}"/>
+    <!-- Recurso Sforce -->
+    <apex:includeScript value="/support/console/40.0/integration.js"/>
+                  
+       <style>
+            body{
+                font-size: 12px !important;
+            }
+        </style> 
+                   
+    </head>
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageBlock >
+            <table class="table table-hover">
+                    <tr>
+                        <td ><strong>Ingrese una fecha de inicio de seguimiento</strong></td>
+                        <td><apex:inputField value="{! Account.Inicio_seguimiento__c}"/></td>
+                    </tr>
+            </table>
+            <table class="table table-hover">
+                    <tr>
+                        <td ><strong>Ingrese una fecha de cierre de seguimiento</strong></td>
+                        <td><apex:inputField value="{! Account.Fin_seguimiento__c}"/></td>
+                    </tr>
+            </table>
+            <table class="table table-hover">
+                    <tr>
+                        <td ><strong>Ingrese un Tipo de cliente</strong></td>
+                        <td><apex:inputField value="{! Account.Tipo_de_cliente__c}"/></td>
+                    </tr>
+            </table>
+            <apex:pageBlockButtons >
+                <apex:commandButton style="background: #5882FA; color: white" action="{! quicksave }" value="Guardar" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
