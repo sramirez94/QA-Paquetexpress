@@ -10,7 +10,7 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
     list<SBQQ__QuoteLine__c> listQL                                                 = new list<SBQQ__QuoteLine__c>();
     public Map<String, Map<String, Map<Decimal, wpCotizaciones>>> mapCotizaciones   = new Map<String, Map<String, Map<Decimal, wpCotizaciones>>>();
     public Map<String, Map<String, Map<Decimal, wpCotizaciones>>> mapCotizacionesZP = new Map<String, Map<String, Map<Decimal, wpCotizaciones>>>();
-    public Map<String, SBQQ__QuoteLine__c> mapQuotes                                = new Map<String, SBQQ__QuoteLine__c>();
+    public Map<String, List<SBQQ__QuoteLine__c>> mapQuotes                          = new Map<String, List<SBQQ__QuoteLine__c>>();
     public Map<String, String> mapIdCotizacion                                      = new Map<String, String>();
     public Map<String, Decimal> mapCotizacionesCargadas                             = new Map<String, Decimal>();
     public Map<String, Decimal> mapCotizacionesCargadasZP                           = new Map<String, Decimal>();
@@ -36,7 +36,6 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                     wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
                 else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
                     wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
-
             for(SBQQ__Quote__c objQuote : records){
                 /*for(SBQQ__QuoteLine__c objCot : [SELECT Id, ZonaPlus__c, PackWeightAVG__c, PackVolAVG__c, Tarifa__c, SBQQ__Quantity__c, Destiny__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :objQuote.Id]){
                     if(objCot.SBQQ__Quantity__c != 0)
