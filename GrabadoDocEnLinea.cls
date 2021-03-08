@@ -256,6 +256,7 @@ public class GrabadoDocEnLinea {
                 this.blnClienteNuevo = true;
             else{
                 this.trifType       = rg.body.response.data.trifType;
+                this.pieceMulti     = rg.body.response.data.pieceMulti;
                 this.listTarifas    = new List<String>();
             } 
             /*this.blnclientenuevo = false;
@@ -390,6 +391,11 @@ public class GrabadoDocEnLinea {
                                     this.mapdecTLines.put(obtieneNumeroTarifa(line.Tarifa__c), new Map<String, TempleateLine__c>());
                                 if(!this.listTarifasCotizacion.contains(line.Tarifa__c))
                                     this.listTarifasCotizacion.add(line.Tarifa__c);
+                                if(line.Destiny__c != null)
+                                    strRangeDest = line.Destiny__c;
+                                else strRangeDest = line.Rango_KM__c;
+                                if(!this.mapAcuse.containsKey(strRangeDest))
+                                    this.mapAcuse.put(strRangeDest, line.ACK__c);
                             } else {
                                 if(!this.listTarifasExp.contains(line.Tarifa__c))
                                     this.listTarifasExp.add(line.Tarifa__c);
@@ -400,6 +406,11 @@ public class GrabadoDocEnLinea {
                                 if(!this.mapTLinesExp.get(line.Guia__c).containsKey(line.Tarifa__c)){
                                     this.mapTLinesExp.get(line.Guia__c).put(line.Tarifa__c, new Map<String, TempleateLine__c>());
                                 }
+                                if(line.Destiny__c != null)
+                                    strRangeDest = line.Destiny__c;
+                                else strRangeDest = line.Rango_KM__c;
+                                if(!this.mapAcuse.containsKey(strRangeDest))
+                                    this.mapAcuse.put(strRangeDest, line.ACKES__c);
                                 if(line.KG_ADICIONAL__c != 0 && line.KG_ADICIONAL__c != null){
                                     if(line.Destiny__c != null)
                                         strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
@@ -416,8 +427,8 @@ public class GrabadoDocEnLinea {
                                 if(!this.mapRangeByDest.containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')'))
                                     this.mapRangeByDest.put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line.Rango_KM__c);
                                 strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
-                                if(!this.mapAcuse.containsKey(line.Destiny__c))
-                                    this.mapAcuse.put(line.Destiny__c, line.ACK__c);
+                                /*if(!this.mapAcuse.containsKey(line.Destiny__c))
+                                    this.mapAcuse.put(line.Destiny__c, line.ACK__c);*/
                                 if(line.Tarifa__c == 'SEG-DS' || line.Tarifa__c == 'SEG-2D' || line.Tarifa__c == 'SEG-A12'){
                                     if(!this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__C).containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')'))
                                         this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__c).put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line);
@@ -427,8 +438,8 @@ public class GrabadoDocEnLinea {
                                 }
                             } else {
                                 strRangeDest = line.Rango_KM__c;
-                                if(!this.mapAcuse.containsKey(line.Rango_KM__c))
-                                    this.mapAcuse.put(line.Rango_KM__c, line.ACK__c);
+                                /*if(!this.mapAcuse.containsKey(line.Rango_KM__c))
+                                    this.mapAcuse.put(line.Rango_KM__c, line.ACK__c);*/
                                 if(line.Tarifa__c == 'SEG-DS' || line.Tarifa__c == 'SEG-2D' || line.Tarifa__c == 'SEG-A12'){
                                     if(!this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__C).containsKey(line.Rango_KM__c))
                                         this.mapTLinesExp.get(line.Guia__c).get(line.Tarifa__c).put(line.Rango_KM__c, line);
@@ -446,7 +457,7 @@ public class GrabadoDocEnLinea {
                             }
                         } else {
                             if(line.Destiny__c != null)
-                                strRangeDest = line.Destiny__c;
+                                strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
                             else strRangeDest = line.Rango_KM__c;
                             if(!this.mapZonaPlus.containsKey(strRangeDest))
                                 this.mapZonaPlus.put(strRangeDest, line.EAD__c);
@@ -577,8 +588,10 @@ public class GrabadoDocEnLinea {
                                 if(!this.listRanges.contains(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')'))
                                     this.listRanges.add(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')');
                             }
-                            if(!this.mapAcuse.containsKey(cot.Destiny__c))
-                                this.mapAcuse.put(cot.Destiny__c, cot.ACK__c);
+                            if(this.blnCostoBaseGMP){
+                                if(!this.mapAcuse.containsKey(cot.Destiny__c))
+                                    this.mapAcuse.put(cot.Destiny__c, cot.ACK__c);
+                            }
                             if(cot.Tarifa__c == 'SEG-DS' || cot.Tarifa__c == 'SEG-2D' || cot.Tarifa__c == 'SEG-A12'){
                                 if(!this.mapQuotesExp.get(cot.Tarifa__C).containsKey(cot.Destiny__c))
                                     this.mapQuotesExp.get(cot.Tarifa__c).put(cot.Destiny__c, cot);
@@ -593,8 +606,10 @@ public class GrabadoDocEnLinea {
                                 if(!this.listRangeDestiny.contains(cot.Rango_KM__c))
                                     this.listRangeDestiny.add(cot.Rango_KM__c);
                             }
-                            if(!this.mapAcuse.containsKey(cot.Rango_KM__c))
-                                this.mapAcuse.put(cot.Rango_KM__c, cot.ACK__c);
+                            if(this.blnCostoBaseGMP){
+                                if(!this.mapAcuse.containsKey(cot.Rango_KM__c))
+                                    this.mapAcuse.put(cot.Rango_KM__c, cot.ACK__c);
+                            }
                             if(cot.Tarifa__c == 'SEG-DS' || cot.Tarifa__c == 'SEG-2D' || cot.Tarifa__c == 'SEG-A12'){
                                 if(!this.mapQuotesExp.get(cot.Tarifa__C).containsKey(cot.Rango_KM__c))
                                     this.mapQuotesExp.get(cot.Tarifa__c).put(cot.Rango_KM__c, cot);
@@ -886,9 +901,9 @@ public class GrabadoDocEnLinea {
                         }
                     }
                 }
-                if(this.wp.blnSoloTarifasExp && !this.blnclientenuevo)
+                if(this.wp.blnSoloTarifasExp && !this.blnclientenuevo){
                     data.trifType = this.trifType;
-                else {
+                } else {
                     if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){
                         data.trifType           = 'A';
                     } else {
@@ -1285,6 +1300,28 @@ public class GrabadoDocEnLinea {
                             serviceTrifCbe.serviceTrif = listserviceTrif;
                             listserviceTrifCbe.add(serviceTrifCbe);
                         //}
+
+
+                        if(this.blnT7ZP){
+                            listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
+                            serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
+                            serviceTrifCbe.factor               = 'KG';
+                            serviceTrifCbe.serviceId            = 'EXT-1';
+                            serviceTrifCbe.refServiceId         = 'EXT';
+                            serviceTrifCbe.trifAmountExce	    = 0.001;
+                            serviceTrif                             = new ObjDocEnLinea.serviceTrif();
+                            if(this.mapQuotesT7ZP.get(strRange).SBQQ__SpecialPrice__c != null && this.mapQuotesT7ZP.get(strRange).SBQQ__SpecialPrice__c != 0){
+                                serviceTrif.trifAmount         = this.mapQuotesT7ZP.get(strRange).SBQQ__SpecialPrice__c.setScale(2);
+                                serviceTrif.factor              = 'KG';
+                                serviceTrif.factorValue         = this.mapQuotesT7ZP.get(strRange).PackVolAVG__c;
+                            } else
+                                serviceTrif.trifAmount              = 0.001;
+                            serviceTrif.trifAmntBase                = 0;
+                            serviceTrif.discount                    = this.mapQuotesT7ZP.get(strRange).SBQQ__Discount__c;
+                            listserviceTrif.add(serviceTrif);
+                            serviceTrifCbe.serviceTrif = listserviceTrif;
+                            listserviceTrifCbe.add(serviceTrifCbe);
+                        }
                     }
                     if(this.blnACK || this.blnZP)
                         listserviceTrif                         = new List<ObjDocEnLinea.serviceTrif>();
