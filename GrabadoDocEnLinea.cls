@@ -143,6 +143,7 @@ public class GrabadoDocEnLinea {
             fechaVigencia                   = cas.Flujo_del_mes__c;
             grabadoUnico                    = cas.Descuento_prepago_unico__c;
             confirmacionGrabadoUnico        = cas.Confirmacion_de_Grabado_Unico__c;
+            this.wp.blnSoloDestinos         = cas.Destinos__c;
             if(cas.TipoCotizacion__c == 'byDelivery' || cas.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km' || cas.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por rangos de km'){
                 this.blnByDelivery          = true;
                 this.blnByDimension         = false;
@@ -372,6 +373,8 @@ public class GrabadoDocEnLinea {
                     if(cotizacion.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por rangos de km')
                         data.pieceMulti     = 'K';
                 }
+                if(this.wp.blnSoloDestinos)
+                    this.listRanges.clear();
                 for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
                     this.listPlantillaLineItems.add(line);          
                 }
@@ -392,7 +395,7 @@ public class GrabadoDocEnLinea {
                                 if(!this.listTarifasCotizacion.contains(line.Tarifa__c))
                                     this.listTarifasCotizacion.add(line.Tarifa__c);
                                 if(line.Destiny__c != null)
-                                    strRangeDest = line.Destiny__c;
+                                    strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
                                 else strRangeDest = line.Rango_KM__c;
                                 if(!this.mapAcuse.containsKey(strRangeDest))
                                     this.mapAcuse.put(strRangeDest, line.ACK__c);
@@ -407,10 +410,10 @@ public class GrabadoDocEnLinea {
                                     this.mapTLinesExp.get(line.Guia__c).put(line.Tarifa__c, new Map<String, TempleateLine__c>());
                                 }
                                 if(line.Destiny__c != null)
-                                    strRangeDest = line.Destiny__c;
+                                    strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
                                 else strRangeDest = line.Rango_KM__c;
-                                if(!this.mapAcuse.containsKey(strRangeDest))
-                                    this.mapAcuse.put(strRangeDest, line.ACKES__c);
+                                /*if(!this.mapAcuse.containsKey(strRangeDest))
+                                    this.mapAcuse.put(strRangeDest, line.ACK__c);*/
                                 if(line.KG_ADICIONAL__c != 0 && line.KG_ADICIONAL__c != null){
                                     if(line.Destiny__c != null)
                                         strRangeDest = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
@@ -420,6 +423,9 @@ public class GrabadoDocEnLinea {
                                     if(!this.mapExpAdic.get(line.Tarifa__c).containsKey(strRangeDest))
                                         this.mapExpAdic.get(line.Tarifa__c).put(strRangeDest, line.KG_ADICIONAL__c);
                                     
+                                }
+                                if(!this.wp.mapACKExp.containsKey(strRangeDest)){
+                                    this.wp.mapACKExp.put(strRangeDest, line.ACKES__c);
                                 }
                                 this.blnTarifasExp = true;
                             }
@@ -451,9 +457,6 @@ public class GrabadoDocEnLinea {
                             if(line.Tarifa__c != 'SEG-DS' && line.Tarifa__c != 'SEG-2D' && line.Tarifa__c != 'SEG-A12'){
                                 if(!this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).containsKey(strRangeDest))
                                     this.mapdecTLines.get(obtieneNumeroTarifa(line.Tarifa__c)).put(strRangeDest, line);
-                            }
-                            if(!this.wp.mapACKExp.containsKey(strRangeDest)){
-                                this.wp.mapACKExp.put(strRangeDest, line.ACKES__c);
                             }
                         } else {
                             if(line.Destiny__c != null)
@@ -503,9 +506,9 @@ public class GrabadoDocEnLinea {
                         this.listPlantillaLineItems.add(line);
                     }
                 }
-                for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){
-                    String strRangeDest = '';
-                    if(cot.Tarifa__c == 'TARIFA T7' && cot.ZonaPlus__c && cot.SBQQ__Description__c == 'Propuesta'){
+                for(SBQQ__QuoteLine__c cot:this.wp.listQuoteItem){ //08/03/2021 Salvador: Recorrido de las partidas de presupuesto
+                    String strRangeDest = ''; //08/03/2021 Salvador: Variable que permite almacenar el rango de km o destinos para no duplicar validaciones
+                    if(cot.Tarifa__c == 'TARIFA T7' && cot.ZonaPlus__c && cot.SBQQ__Description__c == 'Propuesta'){ //08/03/2021 Salvador: Tarifas T7 zona plus
                         strRangeDest = '';
                         if(cot.Destiny__c != null)
                             strRangeDest = cot.Destiny__c + ' ('+cot.Rango_KM__c+')';
@@ -513,7 +516,7 @@ public class GrabadoDocEnLinea {
                         if(!this.mapQuotesT7ZP.containsKey(strRangeDest))
                             this.mapQuotesT7ZP.put(strRangeDest, cot);
                         this.blnT7ZP = true;
-                    } else if(!cot.ZonaPlus__c) {
+                    } else if(!cot.ZonaPlus__c) { //08/03/2021 Salvador: Si no es zona plus
                         if(cot.Tarifa__c != 'SEG-DS' && cot.Tarifa__c != 'SEG-2D' && cot.Tarifa__c != 'SEG-A12'){
                             if(this.blnCostosFijos){
                                 if(!this.listTarifas.contains(cot.Tarifa__c))
@@ -616,7 +619,7 @@ public class GrabadoDocEnLinea {
                             }
                         }
                     } else if ((cot.Tarifa__c == 'TARIFA SOBRE' || cot.Tarifa__c == 'TARIFA T0' || cot.Tarifa__c == 'TARIFA T1' || cot.Tarifa__c == 'TARIFA T2' || cot.Tarifa__c == 'TARIFA T3' || cot.Tarifa__c == 'TARIFA T4' || cot.Tarifa__c == 'TARIFA T5'
-                                || cot.Tarifa__c == 'TARIFA T6') && (cot.ZonaPlus__c)){
+                                || cot.Tarifa__c == 'TARIFA T6') && (cot.ZonaPlus__c)){ //08/03/2021 Salvador: Si es zona plus pero de las tarifas de sobre a la 6
                         if(cot.Destiny__c != null){
                             if(this.blnCostoBaseGMP){
                                 String Destino = '';
@@ -630,23 +633,27 @@ public class GrabadoDocEnLinea {
                                 this.mapService.get('ZP').mapRanges.put(cot.Rango_KM__c, cot.EAD__c);
                         }
                     }
-                    /*if(this.blnCostoBaseGMP){
-                        if(cot.SBQQ__Quantity__c != 0 && cot.ZonaPlus__c)
-                            this.blnZP = true;
-                    } else {
-                        if(cot.ZonaPlus__c && cot.Tarifa__c != 'TARIFA T7')
-                            this.blnZP = true;
-                    }*/
                 }
-                if(this.blnCostosFijos){
-                    if(this.listTarifasCotizacion.size() == 0 && this.listTarifasExp.size() > 0){
-                        this.listTarifas.clear();
-                        this.listRanges.clear();
-                        this.wp.blnSoloTarifasExp = true;
+                if(this.blnCostosFijos){ //08/03/2021 Salvador: Si es una cotización de costos fijos por tarifa
+                    if(this.listTarifasCotizacion.size() == 0 && this.listTarifasExp.size() > 0){ //08/03/2021 Salvador: Si solo hay tarifas express en la cotización
+                        this.listTarifas.clear(); //08/03/2021 Salvador: Limpia la lista que tiene precargadas las tarifas desde el inicio de la ejecución
+                        this.listRanges.clear(); //08/03/2021 Salvador: Limpia la lista de angos
+                        this.wp.blnSoloTarifasExp = true; //08/03/2021 Salvador: Indica que solo va a grabar tarifas express
+                    }
+                    for(String strRange : this.listRangeDestiny){ //08/03/2021 Salvador: El recorrido valida si uno de los rangos de km no coincide en costo de acuse tanto en las tarifas normales como express ya que debe ser el mismo monto.
+                        if(this.mapAcuse.containsKey(strRange) && this.wp.mapACKExp.containsKey(strRange)){ //08/03/2021 Salvador: Si existe el rango de km tanto en el mapa de acuse de tarifas normales como en la de acuse por express
+                            if(this.mapAcuse.get(strRange) != this.wp.mapACKExp.get(strRange)){ //08/03/2021 Salvador: Si son diferentes los montos
+                                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Imposible continuar, uno de los rangos de km no concuerda en el costo de acuse entre tarifa express y tarifa normal. Favor de revisar. ' + strRange));
+                                this.blnPuedeGrabar = false; //08/03/2021 Salvador: Oculta el botón para que no pueda volver a detonarlo.
+                                return; //08/03/2021 Salvador: se sale de todo el flujo
+                            }
+                        } else if(!this.mapAcuse.containsKey(strRange) && this.wp.mapACKExp.containsKey(strRange)){
+                            this.mapacuse.put(strRange, this.wp.mapACKExp.get(strRange));
+                        }
                     }
                 }
-                if(this.blnCostoBaseGMP)
-                    CargaMapasCostoBaseGMP();
+                if(this.blnCostoBaseGMP) //08/03/2021 Salvador: Si es una cotización de costo base más excedente
+                    CargaMapasCostoBaseGMP(); //08/03/2021 Salvador: llama la función que carga todos los mapas
                 if(this.blnByDelivery){
                     data.vol    = decVolPromedio;
                     data.weight = decPesoPromedio;
@@ -725,13 +732,13 @@ public class GrabadoDocEnLinea {
                 if(this.blnClienteNuevo && this.blnCostosFijos){ //Salvaodr 29/01/2021: Planchado de información hacia abajo o hacia arriba (Solo aplicable para costos fijos por tarifa).
                     boolean blnTarifasCargadas = false;
                     String strNuevoRango = '';
-                    for(Tarifario__c tarifaEXP : queryFullTarifario())
+                    for(Tarifario__c tarifaEXP : queryFullTarifario()) //08/03/2021 Salvador: Rellena el mapa con los costos de público en general
                         if(!wp.mapTarifarioEXP.containsKey(tarifaEXP.Tarifa__c))
                             wp.mapTarifarioEXP.put(tarifaEXP.Tarifa__c, new Map<String, Tarifario__c>{ tarifaEXP.Rango_km__c => tarifaEXP });
                         else if(!wp.mapTarifarioEXP.get(tarifaEXP.Tarifa__c).containsKey(tarifaEXP.Rango_km__c))
                             wp.mapTarifarioEXP.get(tarifaEXP.Tarifa__c).put(tarifaEXP.Rango_km__c, tarifaEXP);
                     
-                    for(String strRange : this.listrangedestiny){
+                    for(String strRange : this.listrangedestiny){ //08/03/2021 Salvador: Rellena los rangos que puedan faltar en la lista de rangos por defecto, estos rangos pueden ser destinos que no están contemplados
                         if(!this.listRanges.contains(strRange))
                             this.listRanges.add(strRange);
                     }
@@ -889,8 +896,8 @@ public class GrabadoDocEnLinea {
                                             TempleateLine__c TL = new TempleateLine__c();
                                             String tarifa       = '';
                                             tarifa              = strTarifa.remove('SEG-');
-                                            TL.KG_Adicional__c = this.wp.mapTarifarioEXP.get(tarifa).get(strRange).Kg_adicional__c;
-                                            TL.FleteE__c       = this.wp.mapTarifarioEXP.get(tarifa).get(strRange).GuiaDeArranque1Kg__c;
+                                            TL.KG_Adicional__c 	= this.wp.mapTarifarioEXP.get(tarifa).get(strRange).Kg_adicional__c;
+                                            TL.FleteE__c       	= this.wp.mapTarifarioEXP.get(tarifa).get(strRange).GuiaDeArranque1Kg__c;
                                             this.mapTLinesExp.get(decBloque).get(strTarifa).put(strRange, TL);
                                             if(!this.mapExpAdic.containsKey(strRange))
                                                 this.mapExpAdic.get(strTarifa).put(strRange, TL.KG_ADICIONAL__c);
@@ -924,8 +931,8 @@ public class GrabadoDocEnLinea {
                     if(strRange == '0-400'){
                         kmServicesTrif.fromKm       = '0';
                         kmServicesTrif.toKm         = '400';
-                        blnRango                    = true;
-                        blnDest                     = false;
+                        blnRango                    = true; //08/03/2021 Salvador: Indica que es un rango de km
+                        blnDest                     = false; //08/03/2021 Salvador: indica que es un destino
                     } else if(strRange == '401-800'){
                         kmServicesTrif.fromKm       = '401';
                         kmServicesTrif.toKm         = '800';
@@ -958,8 +965,8 @@ public class GrabadoDocEnLinea {
                         blnDest                     = false;
                     } else {
                         ptpServicesTrifSub.orgnSite = strOrigen;
-                        if(strRange.contains('('))
-                            ptpServicesTrifSub.destSite = strRange.replace(this.mapRangeByDest.get(strRange), '').replace(' (', '').replace(')', '');
+                        if(strRange.contains('(')) //08/03/2021 Salvador: Si el rango contiene un parentesis quiere decir que es un destino
+                            ptpServicesTrifSub.destSite = strRange.replace(this.mapRangeByDest.get(strRange), '').replace(' (', '').replace(')', ''); //08/03/2021 Salvador: Le quita los parentesis y el rango de km para que solo se grabe el nombre del destino
                         else ptpServicesTrifSub.destSite = strRange;
                         blnRango                    = false;
                         blnDest                     = true;
@@ -1305,7 +1312,7 @@ public class GrabadoDocEnLinea {
                         if(this.blnT7ZP){
                             listserviceTrif                     = new List<ObjDocEnLinea.serviceTrif>();
                             serviceTrifCbe                      = new ObjDocEnLinea.serviceTrifCbe();
-                            serviceTrifCbe.factor               = 'KG';
+                            serviceTrifCbe.factor               = 'CUM';
                             serviceTrifCbe.serviceId            = 'EXT-1';
                             serviceTrifCbe.refServiceId         = 'EXT';
                             serviceTrifCbe.trifAmountExce	    = 0.001;
@@ -1455,8 +1462,8 @@ public class GrabadoDocEnLinea {
                 odc.body                                = body;
                 header.security                         = sec;
                 odc.header                              = header;
-                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc)));
-                /*if(requeridoCrearUsuario(cotizacion))
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc)));
+                if(requeridoCrearUsuario(cotizacion))
                     blnRequiereCrearUsuario = true;
                 if(blnRequiereCrearUsuario){
                     if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km')
@@ -1472,7 +1479,7 @@ public class GrabadoDocEnLinea {
                     if(blnGraboTarifas){
                         NotificaGrabadoUsuario(cotizacion.Id);
                     }
-                }*/
+                }
             }else {
                 gr.publicarEvento(false, 'Imposible continuar, datos insuficientes');
             }
@@ -1944,7 +1951,6 @@ public class GrabadoDocEnLinea {
                     this.mapBlocksServ.get('BLOQUE ' + blockCounter).put('ADD', new Map<String, Decimal>());
                 }
                 if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').containsKey(keyRange)){
-                    System.debug('rango: ' + keyrange);
                     this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('FLT').put(keyRange, this.mapBloques.get(decW).get(keyRange).Flete__c);
                 }
                 if(!this.mapBlocksServ.get('BLOQUE ' + blockCounter).get('RAD').containsKey(keyRange)){
@@ -1968,6 +1974,7 @@ public class GrabadoDocEnLinea {
         public Map<String, Decimal> mapACK                                              {get; set;}
         public Map<String, Decimal> mapACKExp                                           {get; set;}
         public Boolean blnSoloTarifasExp                                                {get; set;}
+        public Boolean blnSoloDestinos                                                  {get; set;}
         public Map<String, Map<String, Tarifario__c>> mapTarifarioEXP                   {get; set;}
         public Wrapper(){
             this.listQuoteItem      = new List<SBQQ__QuoteLine__c>();
@@ -1978,6 +1985,7 @@ public class GrabadoDocEnLinea {
             this.mapACKExp          = new Map<String, Decimal>();
             this.mapTarifarioEXP    = new Map<String, Map<String, Tarifario__c>>();
             this.blnSoloTarifasExp  = false;
+            this.blnSoloDestinos    = false;
         }
     }
     public class SS{
