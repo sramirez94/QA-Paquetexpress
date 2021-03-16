@@ -228,6 +228,7 @@
             </div>  
            
              </div>
+                   
             <!--<apex:outputText rendered="{!blnSuccess}">
                 <div class="row center" ng-show="{!blnSuccess}">
                     <div class="col-sm-12 col-md-12">
@@ -238,6 +239,18 @@
                 </div>
             </apex:outputText>-->
          </div>
+        <div>
+            <div class="col-md-3 col-sm-3">
+            <table class="table table-striped">
+                <tr style="border:0.5px solid black">
+                <th text-align="Center" colspan="3" BGCOLOR="#81BEF7" style="border:0.5px solid black" >Respuesta</th>   
+                </tr>
+                <tr style="border:0.5px solid black">
+                <td colspan="1" style="border:0.5px solid black">{!descripcion}</td>
+                </tr>
+            </table> 
+           </div>
+        </div>
     </div>
     <apex:pageMessages escape="false"/>
      </apex:form>
