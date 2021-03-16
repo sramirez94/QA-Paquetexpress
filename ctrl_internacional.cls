@@ -74,287 +74,304 @@ public class ctrl_internacional {
       public static void deserialize() {    
          System.debug('Tipo: ' + Tipo);     
          System.debug('País: ' + paisDestino);
-    String jsonBody = '{\n' + 
-   '"header": {\n' +
-      '"security": {\n' +
-         '"user": "SALESFORCE",\n' +
-         '"token": "325746796331582000000"\n' +
-      '}\n' +
-   '},\n' +
-   '"body": {\n' +
-      '"request": {\n' +
-         '"data": {\n' +
-            '"datetime":"2020-01-13 21:11:11",\n' +
-            '"serviceDetail": {\n' +
-               '"datetime":"2020-01-13 21:11:11",\n' +
-               '"serviceType": "01",\n' +
-               '"insuredType": "B",\n' +
-               '"declaredValue": 100\n' +
-            '},\n' +
-               '"clientAddrOrig": {\n' +
-               '"country":null,\n' +
-               '"state":null,\n' +
-               '"city":null,\n' +
-               '"colony":null,\n' +
-               '"street":null,\n' +
-               '"zipcode":"81200",\n' +
-               '"zone":null,\n' +
-               '"phonenumber":null,\n' +
-               '"brnc":"LMM01",\n' +
-               '"place":"place"\n' + 
-            '},\n' +
-            '"clientAddrDest": {\n' +
-               '"country":"'+paisDestino+'" ,\n' +
-               '"state":"CA",\n' +
-               '"city":null,\n' +
-               '"colony":null,\n' +
-               '"street":null,\n' +
-               '"zipcode":" '+cp+' ",\n' +
-               '"zone":null,\n' +
-               '"phonenumber":null,\n' +
-               '"brnc":null,\n' +
-               '"place":null\n' +
-            '},\n' +
-            '"packageList": [\n' +
-               '{\n' +
-               '"description":"",\n' +
-               '"sequence":1,\n' +
-               '"quantity":1,\n' +
-               '"packagingCode":"03",\n' +
-               '"weight":'+peso+',\n' +
-               '"width":'+ancho+',\n' +
-               '"length":'+largo+',\n' +
-               '"height":'+alto+',\n' +
-               '"volume":0.0,\n' +
-               '"insuredValue":0,\n' +
-               '"declaredValue":0, \n' +
-               '"wrapId":"'+tipo+'"\n' +  
-               '} \n' +
-            '],\n' +
-            '"quoteServiceList": [\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' +
-               '} \n' +
-            '],\n' +
-            '"otherServiceList": [\n' +  
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' +
-               '} ,\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' +
-               '} ,\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' + 
-               '} \n' +
-            '],\n' +
-            '"aditionalDataList": [\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null,\n' +
-                  '"aditionalData1": null,\n' +
-                  '"aditionalData2": null,\n' +
-                  '"aditionalData3": null,\n' +
-                  '"aditionalData4":null\n' +
+         try{
+            String jsonBody = '{\n' + 
+            '"header": {\n' +
+               '"security": {\n' +
+                  '"user": "SALESFORCE",\n' +
+                  '"token": "325746796331582000000"\n' +
                '}\n' +
-            ']\n' +
-         '},\n' +
-         '"objectDTO": null\n' +
-      '},\n' +
-      '"response": null\n' +
-        '}\n' +
-'}';
-        System.debug(jsonBody);
-        Http h = new Http();
-        HttpRequest request = new HttpRequest();
-        request.setEndPoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/quote/getQuotationItl');
-        request.setHeader('Content-Type', 'application/json; charset=utf-8');
-        request.setMethod('POST');
-        request.setBody(jsonBody);
-        HttpResponse response = h.send(request);
-          
-       if (response.getStatusCode() != 200) {
-       System.debug('Error: ' +
-        response.getStatusCode() + ' ' + response.getStatus());
-        } else {
-            System.debug('EXITO!!'); 
-				System.debug(response.getBody());
-           //wrapper = (Ctrl_InternacionalController) JSON.deserializeStrict(response.getBody(), Ctrl_InternacionalController.class);
-            JSON2Apex m = JSON2Apex.parse(response.getBody());
-            System.debug(m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId);  
-            System.debug(m.Body.Response.Data.shipmentAmount.shipAmnt);
-            tarifaSA = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].slabSubTotal;
-            subtotal = m.Body.Response.Data.shipmentAmount.subTotalAmnt;
-            iva = m.Body.Response.Data.shipmentAmount.taxAmnt;
-            totalS = m.Body.Response.Data.shipmentAmount.totalAmnt;
-            tipo = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId;
-            pesoBascula = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].weight;
-            volumen = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].volume;
-            descripcion = m.Body.Response.messages[0].description;
-            String datos = '{\n'+   
-            ' "Pais de destino" : " ' +paisDestino+' " , \n' +
-            ' "CP destino" : " '+cp+' " ,\n' + 
-            ' "Peso" : '+peso+', \n' +
-            ' "Largo" : '+largo+', \n' +
-            ' "Alto" : '+alto+',\n' + 
-            ' "Ancho" : '+ancho+',\n' +
-            ' "Tipo" : " '+tipo+' ",\n' +
-            ' "Peso Bascula" : '+pesoBascula+' }';
-            System.debug(datos);
-
-            //Asignación de solo 2 decimales a los subtotales
-            subtotal = subtotal.setScale(2);
-            iva      = iva.setScale(2);
-            totalS   = totalS.setScale(2);
-            tarifaSA = tarifaSA.setScale(2);
-            volumen  = volumen.setScale(2);
-        }  
-          
-         
+            '},\n' +
+            '"body": {\n' +
+               '"request": {\n' +
+                  '"data": {\n' +
+                     '"datetime":"2020-01-13 21:11:11",\n' +
+                     '"serviceDetail": {\n' +
+                        '"datetime":"2020-01-13 21:11:11",\n' +
+                        '"serviceType": "01",\n' +
+                        '"insuredType": "B",\n' +
+                        '"declaredValue": 100\n' +
+                     '},\n' +
+                        '"clientAddrOrig": {\n' +
+                        '"country":null,\n' +
+                        '"state":null,\n' +
+                        '"city":null,\n' +
+                        '"colony":null,\n' +
+                        '"street":null,\n' +
+                        '"zipcode":"81200",\n' +
+                        '"zone":null,\n' +
+                        '"phonenumber":null,\n' +
+                        '"brnc":"LMM01",\n' +
+                        '"place":"place"\n' + 
+                     '},\n' +
+                     '"clientAddrDest": {\n' +
+                        '"country":"'+paisDestino+'" ,\n' +
+                        '"state":"CA",\n' +
+                        '"city":null,\n' +
+                        '"colony":null,\n' +
+                        '"street":null,\n' +
+                        '"zipcode":" '+cp+' ",\n' +
+                        '"zone":null,\n' +
+                        '"phonenumber":null,\n' +
+                        '"brnc":null,\n' +
+                        '"place":null\n' +
+                     '},\n' +
+                     '"packageList": [\n' +
+                        '{\n' +
+                        '"description":"",\n' +
+                        '"sequence":1,\n' +
+                        '"quantity":1,\n' +
+                        '"packagingCode":"03",\n' +
+                        '"weight":'+peso+',\n' +
+                        '"width":'+ancho+',\n' +
+                        '"length":'+largo+',\n' +
+                        '"height":'+alto+',\n' +
+                        '"volume":0.0,\n' +
+                        '"insuredValue":0,\n' +
+                        '"declaredValue":0, \n' +
+                        '"wrapId":"'+tipo+'"\n' +  
+                        '} \n' +
+                     '],\n' +
+                     '"quoteServiceList": [\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' +
+                        '} \n' +
+                     '],\n' +
+                     '"otherServiceList": [\n' +  
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' +
+                        '} ,\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' +
+                        '} ,\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' + 
+                        '} \n' +
+                     '],\n' +
+                     '"aditionalDataList": [\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null,\n' +
+                           '"aditionalData1": null,\n' +
+                           '"aditionalData2": null,\n' +
+                           '"aditionalData3": null,\n' +
+                           '"aditionalData4":null\n' +
+                        '}\n' +
+                     ']\n' +
+                  '},\n' +
+                  '"objectDTO": null\n' +
+               '},\n' +
+               '"response": null\n' +
+               '}\n' +
+            '}';
+            System.debug(jsonBody);
+            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.confirm, 'Primer JSON: ' +jsonBody));
+            Http h = new Http();
+            HttpRequest request = new HttpRequest();
+            request.setEndPoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/quote/getQuotationItl');
+            request.setHeader('Content-Type', 'application/json; charset=utf-8');
+            request.setMethod('POST');
+            request.setBody(jsonBody);
+            HttpResponse response = h.send(request);
+            if (response.getStatusCode() != 200) {
+               System.debug('Error: ' +
+               response.getStatusCode() + ' ' + response.getStatus());
+            } else {
+               System.debug('EXITO!!'); 
+               System.debug(response.getBody());
+              //wrapper = (Ctrl_InternacionalController) JSON.deserializeStrict(response.getBody(), Ctrl_InternacionalController.class);
+               JSON2Apex m = JSON2Apex.parse(response.getBody());
+               //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.confirm, 'Lista: ' +m));
+               if(m.body.response.success && m.Body.Response.Data != null){
+                  tarifaSA = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].slabSubTotal;
+                  subtotal = m.Body.Response.Data.shipmentAmount.subTotalAmnt;
+                  iva = m.Body.Response.Data.shipmentAmount.taxAmnt;
+                  totalS = m.Body.Response.Data.shipmentAmount.totalAmnt;
+                  tipo = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId;
+                  pesoBascula = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].weight;
+                  volumen = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].volume;
+                  descripcion = m.Body.Response.messages[0].description;
+                  String datos = '{\n'+   
+                  ' "Pais de destino" : " ' +paisDestino+' " , \n' +
+                  ' "CP destino" : " '+cp+' " ,\n' + 
+                  ' "Peso" : '+peso+', \n' +
+                  ' "Largo" : '+largo+', \n' +
+                  ' "Alto" : '+alto+',\n' + 
+                  ' "Ancho" : '+ancho+',\n' +
+                  ' "Tipo" : " '+tipo+' ",\n' +
+                  ' "Peso Bascula" : '+pesoBascula+' }';
+                  System.debug(datos);
+      
+                  //Asignación de solo 2 decimales a los subtotales
+                  subtotal = subtotal.setScale(2);
+                  iva      = iva.setScale(2);
+                  totalS   = totalS.setScale(2);
+                  tarifaSA = tarifaSA.setScale(2);
+                  volumen  = volumen.setScale(2);
+               } else {
+                  if(m.Body.Response.Data == null){
+                     ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.confirm, 'Error, no se obtuvieron datos. Consulte a su área de TI.'));
+                     return;
+                  }
+               }
+            }
+         } catch(Exception ex){
+            System.debug('Error deserialize: ' +  +ex.getLineNumber()+' '+EX.getMessage());
+         }
       }
     
-    public static void deserializeDos() {         
-    String jsonBody = '{\n' + 
-   '"header": {\n' +
-      '"security": {\n' +
-         '"user": "SALESFORCE",\n' +
-         '"token": "325746796331582000000"\n' +
-      '}\n' +
-   '},\n' +
-   '"body": {\n' +
-      '"request": {\n' +
-         '"data": {\n' +
-            '"datetime":"2020-01-13 21:11:11",\n' +
-            '"serviceDetail": {\n' +
-               '"datetime":"2020-01-13 21:11:11",\n' +
-               '"serviceType": "02",\n' +
-               '"insuredType": "B",\n' +
-               '"declaredValue": 100\n' +
-            '},\n' +
-               '"clientAddrOrig": {\n' +
-               '"country":null,\n' +
-               '"state":null,\n' +
-               '"city":null,\n' +
-               '"colony":null,\n' +
-               '"street":null,\n' +
-               '"zipcode":"81200",\n' +
-               '"zone":null,\n' +
-               '"phonenumber":null,\n' +
-               '"brnc":"LMM01",\n' +
-               '"place":"place"\n' + 
-            '},\n' +
-            '"clientAddrDest": {\n' +
-               '"country":"'+paisDestino+'" ,\n' +
-               '"state":"CA",\n' +
-               '"city":null,\n' +
-               '"colony":null,\n' +
-               '"street":null,\n' +
-               '"zipcode":" '+cp+' ",\n' +
-               '"zone":null,\n' +
-               '"phonenumber":null,\n' +
-               '"brnc":null,\n' +
-               '"place":null\n' +
-            '},\n' +
-            '"packageList": [\n' +
-               '{\n' +
-               '"description":"",\n' +
-               '"sequence":1,\n' +
-               '"quantity":1,\n' +
-               '"packagingCode":"03",\n' +
-               '"weight":'+peso+',\n' +
-               '"width":'+ancho+',\n' +
-               '"length":'+largo+',\n' +
-               '"height":'+alto+',\n' +
-               '"volume":0.0,\n' +
-               '"insuredValue":0,\n' +
-               '"declaredValue":0, \n' +
-               '"wrapId":"'+tipo+'"\n' +  
-               '} \n' +
-            '],\n' +
-            '"quoteServiceList": [\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' +
-               '} \n' +
-            '],\n' +
-            '"otherServiceList": [\n' +  
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' +
-               '} ,\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' +
-               '} ,\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null\n' + 
-               '} \n' +
-            '],\n' +
-            '"aditionalDataList": [\n' +
-               '{\n' +
-                  '"id": null,\n' +
-                  '"description": null,\n' +
-                  '"aditionalData1": null,\n' +
-                  '"aditionalData2": null,\n' +
-                  '"aditionalData3": null,\n' +
-                  '"aditionalData4":null\n' +
+      public static void deserializeDos() {
+         try{
+            String jsonBody = '{\n' + 
+            '"header": {\n' +
+               '"security": {\n' +
+                  '"user": "SALESFORCE",\n' +
+                  '"token": "325746796331582000000"\n' +
                '}\n' +
-            ']\n' +
-         '},\n' +
-         '"objectDTO": null\n' +
-      '},\n' +
-      '"response": null\n' +
-        '}\n' +
-'}';
-        System.debug(jsonBody);
-        Http h = new Http();
-        HttpRequest request = new HttpRequest();
-        request.setEndPoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/quote/getQuotationItl');
-        request.setHeader('Content-Type', 'application/json; charset=utf-8');
-        request.setMethod('POST');
-        request.setBody(jsonBody);
-        HttpResponse response = h.send(request);
-          
-       if (response.getStatusCode() != 200) {
-       System.debug('Error: ' +
-        response.getStatusCode() + ' ' + response.getStatus());
-        } else { 
-        System.debug('EXITO!!'); 
-				System.debug(response.getBody());
-           //wrapper = (Ctrl_InternacionalController) JSON.deserializeStrict(response.getBody(), Ctrl_InternacionalController.class);
-            JSON2Apex m = JSON2Apex.parse(response.getBody());
-            System.debug(m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId);  
-            System.debug(m.Body.Response.Data.shipmentAmount.shipAmnt);
-            tarifaEX = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].slabSubTotal;
-            subtotalEX = m.Body.Response.Data.shipmentAmount.subTotalAmnt;
-            ivaEX = m.Body.Response.Data.shipmentAmount.taxAmnt;
-            totalE = m.Body.Response.Data.shipmentAmount.totalAmnt;
-            tipo = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId;
-            pesoBascula = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].weight;
-            volumen = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].volume;
-            descripcion = m.Body.Response.messages[0].description;
-            String datos = '{\n'+   
-            ' "Pais de destino" : " ' +paisDestino+' " , \n' +
-            ' "CP destino" : " '+cp+' " ,\n' + 
-            ' "Peso" : '+peso+', \n' +
-            ' "Largo" : '+largo+', \n' +
-            ' "Alto" : '+alto+',\n' + 
-            ' "Ancho" : '+ancho+',\n' +
-            ' "Tipo" : " '+tipo+' ",\n' +
-            ' "Peso Bascula" : '+pesoBascula+' }';
-            System.debug(datos);
-            subtotalEX  = subtotalEX.setScale(2);
-            ivaEX       = ivaEX.setScale(2);
-            totalE      = totalE.setScale(2);
-            tarifaEX    = tarifaEX.setScale(2);
-            volumen     = volumen.setScale(2);
-        }  
-          
-         
+            '},\n' +
+            '"body": {\n' +
+               '"request": {\n' +
+                  '"data": {\n' +
+                     '"datetime":"2020-01-13 21:11:11",\n' +
+                     '"serviceDetail": {\n' +
+                        '"datetime":"2020-01-13 21:11:11",\n' +
+                        '"serviceType": "02",\n' +
+                        '"insuredType": "B",\n' +
+                        '"declaredValue": 100\n' +
+                     '},\n' +
+                        '"clientAddrOrig": {\n' +
+                        '"country":null,\n' +
+                        '"state":null,\n' +
+                        '"city":null,\n' +
+                        '"colony":null,\n' +
+                        '"street":null,\n' +
+                        '"zipcode":"81200",\n' +
+                        '"zone":null,\n' +
+                        '"phonenumber":null,\n' +
+                        '"brnc":"LMM01",\n' +
+                        '"place":"place"\n' + 
+                     '},\n' +
+                     '"clientAddrDest": {\n' +
+                        '"country":"'+paisDestino+'" ,\n' +
+                        '"state":"CA",\n' +
+                        '"city":null,\n' +
+                        '"colony":null,\n' +
+                        '"street":null,\n' +
+                        '"zipcode":" '+cp+' ",\n' +
+                        '"zone":null,\n' +
+                        '"phonenumber":null,\n' +
+                        '"brnc":null,\n' +
+                        '"place":null\n' +
+                     '},\n' +
+                     '"packageList": [\n' +
+                        '{\n' +
+                        '"description":"",\n' +
+                        '"sequence":1,\n' +
+                        '"quantity":1,\n' +
+                        '"packagingCode":"03",\n' +
+                        '"weight":'+peso+',\n' +
+                        '"width":'+ancho+',\n' +
+                        '"length":'+largo+',\n' +
+                        '"height":'+alto+',\n' +
+                        '"volume":0.0,\n' +
+                        '"insuredValue":0,\n' +
+                        '"declaredValue":0, \n' +
+                        '"wrapId":"'+tipo+'"\n' +  
+                        '} \n' +
+                     '],\n' +
+                     '"quoteServiceList": [\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' +
+                        '} \n' +
+                     '],\n' +
+                     '"otherServiceList": [\n' +  
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' +
+                        '} ,\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' +
+                        '} ,\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null\n' + 
+                        '} \n' +
+                     '],\n' +
+                     '"aditionalDataList": [\n' +
+                        '{\n' +
+                           '"id": null,\n' +
+                           '"description": null,\n' +
+                           '"aditionalData1": null,\n' +
+                           '"aditionalData2": null,\n' +
+                           '"aditionalData3": null,\n' +
+                           '"aditionalData4":null\n' +
+                        '}\n' +
+                     ']\n' +
+                  '},\n' +
+                  '"objectDTO": null\n' +
+               '},\n' +
+               '"response": null\n' +
+               '}\n' +
+            '}';
+            System.debug(jsonBody);
+            Http h = new Http();
+            HttpRequest request = new HttpRequest();
+            request.setEndPoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/quote/getQuotationItl');
+            request.setHeader('Content-Type', 'application/json; charset=utf-8');
+            request.setMethod('POST');
+            request.setBody(jsonBody);
+            HttpResponse response = h.send(request);
+            if (response.getStatusCode() != 200) {
+               System.debug('Error: ' +
+               response.getStatusCode() + ' ' + response.getStatus());
+            } else { 
+               System.debug('EXITO!!'); 
+               System.debug(response.getBody());
+              //wrapper = (Ctrl_InternacionalController) JSON.deserializeStrict(response.getBody(), Ctrl_InternacionalController.class);
+               JSON2Apex m = JSON2Apex.parse(response.getBody());
+               /*System.debug(m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId);  
+               System.debug(m.Body.Response.Data.shipmentAmount.shipAmnt);*/
+               //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.confirm, 'Lista: ' +m.Body.Response.Data.ShipmentDetail.ShipmentList));
+               if(m.body.response.success && m.Body.Response.Data != null){
+                  tarifaEX = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].slabSubTotal;
+                  subtotalEX = m.Body.Response.Data.shipmentAmount.subTotalAmnt;
+                  ivaEX = m.Body.Response.Data.shipmentAmount.taxAmnt;
+                  totalE = m.Body.Response.Data.shipmentAmount.totalAmnt;
+                  tipo = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].wrapId;
+                  pesoBascula = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].weight;
+                  volumen = m.Body.Response.Data.ShipmentDetail.ShipmentList[0].volume;
+                  descripcion = m.Body.Response.messages[0].description;
+                  String datos = '{\n'+   
+                  ' "Pais de destino" : " ' +paisDestino+' " , \n' +
+                  ' "CP destino" : " '+cp+' " ,\n' + 
+                  ' "Peso" : '+peso+', \n' +
+                  ' "Largo" : '+largo+', \n' +
+                  ' "Alto" : '+alto+',\n' + 
+                  ' "Ancho" : '+ancho+',\n' +
+                  ' "Tipo" : " '+tipo+' ",\n' +
+                  ' "Peso Bascula" : '+pesoBascula+' }';
+                  System.debug(datos);
+                  subtotalEX  = subtotalEX.setScale(2);
+                  ivaEX       = ivaEX.setScale(2);
+                  totalE      = totalE.setScale(2);
+                  tarifaEX    = tarifaEX.setScale(2);
+                  volumen     = volumen.setScale(2);
+               } else {
+                  if(m.Body.Response.Data == null){
+                     ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.confirm, 'Error, no se obtuvieron datos. Consulte a su área de TI'));
+                     return;
+                  }
+               }
+            }  
+         } catch (Exception ex){
+            System.debug('Error deserializedos: ' +  ex.getLineNumber()+' '+EX.getMessage());
+         }
       }
     
    /* public static void deserializeTres() {         
@@ -536,7 +553,7 @@ public class ctrl_internacional {
                blnSuccess = true;   
             }
           } catch(Exception e) {
-              System.debug('The following exception has occurred: ' + e.getMessage());
+              System.debug('The following exception has occurred: ' + e.getMessage() + '. ' + e.getLineNumber());
           } 
           
     }
