@@ -118,7 +118,7 @@ public class TempleateTriggerHandler {
                         if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
                             this.mapService.get('ACK').mapRanges.put(strRangeDest, objQLine.ACK__c);
         
-                        if(objQLine.ZonaPlus__c)
+                        if(objQLine.ZonaPlus__c && objQLine.Tarifa__c != 'TARIFA T7')
                             this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
                         if(!this.listRangeDestiny.contains(strRangeDest))
                             this.listRangeDestiny.add(strRangeDest);
@@ -131,6 +131,8 @@ public class TempleateTriggerHandler {
             List<Excepciones_de_incremento__c> listIncrementoExe = queryIncrementoExe();
             TempleateLine__c objTempleateLine;
             Decimal decCustomerPricePAQ = 0;
+            
+           //aqui comienza el desarrollo para los calculos de plantillas de costo base y guia multipieza
             if(this.blnCostoBaseGMP){
                 Integer blockCounter = 1;
                 Decimal decRespaldoFlete = 0;
@@ -214,6 +216,8 @@ public class TempleateTriggerHandler {
                 }
             }
         System.debug('va a entrar a grabar');
+            
+            //mapeo de plantillas dependiendo si son por rango de kilometros o destinos y le asigna el subtotal.
 		for(Templeate__c objTempleate : listNewTempleates){         
 			for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){                
                 if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
@@ -223,7 +227,7 @@ public class TempleateTriggerHandler {
 					decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Destiny__c).SBQQ__CustomerPrice__c;
                 }
                
-                
+        // codigo para el incremento anual guias prepagadas.        
                 if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas')){ 
                     if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
                         for(Incremento_Anual__c IncYear : listIncremento){                       
@@ -271,7 +275,7 @@ public class TempleateTriggerHandler {
                             } 
                         } 
                }
-                
+             // codigo para el incremento documentacion en linea.          
                if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota')){   
                     if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
                         for(Incremento_Anual__c IncYear : listIncremento){
@@ -318,7 +322,7 @@ public class TempleateTriggerHandler {
                             } 
                         } 
                 }
-
+// fin del codigo del incremento anual.       
 				objTempleateLine = new TempleateLine__c(
 						Templeate__c = objTempleate.Id
 						, Quantity__c = objQLine.SBQQ__Quantity__c
@@ -336,13 +340,14 @@ public class TempleateTriggerHandler {
 						, EAD__c = 0
 						, RAD__c = 0
 						, SEG__c = objQLine.SEG__c
-						, CustomerPrice__c = 0
+						, CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c
 						, FLETE__c = 0
                         , fleteE__c = objQLine.FLETE__c
                         , ACKES__c = objQLine.ACK__c
                         ,KG_ADICIONAL__c = objQline.KG_ADICIONAL__c
                         
 				);
+                //cualculo para ver el peso predominante del t7 si es por volumen o por kilogramo
 				if(objQLine.Tarifa__c == 'TARIFA T7'){
 					objTempleateLine.Vol__c = objQLine.PackVolAVG__c;
 					objTempleateLine.Weight__c = objQLine.PackWeightAVG__c;
@@ -568,9 +573,18 @@ public class TempleateTriggerHandler {
                     }                                        
                 }       
                 else if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){//ZONA PLUS
+                    String strRangeDest = '';
+                    if(objQLine.Destiny__c != null)
+                        strRangeDest = objQLine.Destiny__c;
+                    else strRangeDest = objQLine.Rango_KM__c;
                     objTempleateLine.FLETE__c = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).FLETE__c;
 					objTempleateLine.RAD__c = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).RAD__c;
-                    objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEADOS(objTempleateLine.FLETE__c, objTempleateLine);
+                    if(this.blnCostoBaseGMP){
+                        if(objQLine.Tarifa__c != 'TARIFA T7')
+                            objTempleateLine.EAD__c = objTempleateLine.EAD__c = this.mapService.get('ZP').mapRanges.get(strRangeDest);
+                    } else {
+                        objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEADOS(objTempleateLine.FLETE__c, objTempleateLine);
+                    }
                     if(!mapZPL.containsKey(objQLine.Rango_KM__c))                     
                         mapZPL.put(objQLine.Destiny__c, objTempleateLine.EAD__c);                       
                     else{
