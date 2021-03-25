@@ -4,6 +4,9 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
     public List<SBQQ__Quote__c> objQuote                                            = new list<SBQQ__Quote__c>();
     public String Query                                                             = '';
     public String AccId                                                             = '';
+    public String strFechaInicio                                                    = '';
+    public String strFechaFin                                                       = '';
+    public String strModelo                                                         = '';
     public List<Descuento_Real_SipWeb__c> insertDescuentos                          = new List<Descuento_Real_SipWeb__c>();
     public List<String> listIds                                                     = new List<String>();
     public List<String> listBloquesCargados                                         = new List<String>();
@@ -18,6 +21,9 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
     public BatchSeguimientoCBME(String AccountId, String Inicio, String Fin, String Modelo) {
         try{
             this.AccId = AccountId;
+            this.strFechaInicio = Inicio;
+            this.strFechaFin = Fin;
+            this.strModelo = Modelo;
             Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE (SBQQ__Account__c = \'' + AccountId + '\' OR SBQQ__Account__r.ParentId = \'' + AccountId + '\') ' +
             + 'AND Fecha_de_autorizada__c >= '+Inicio+' and Fecha_de_autorizada__c <= '+Fin+' AND SBQQ__Status__c = \'Approved\' AND Modelo_de_tarifas__c = \'' + Modelo + '\'';
         } catch (Exception ex){
@@ -36,6 +42,9 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                     wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
                 else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
                     wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
+            for(SBQQ__Quote__c objQuote : records){
+                
+            }
             for(SBQQ__Quote__c objQuote : records){
                 /*for(SBQQ__QuoteLine__c objCot : [SELECT Id, ZonaPlus__c, PackWeightAVG__c, PackVolAVG__c, Tarifa__c, SBQQ__Quantity__c, Destiny__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :objQuote.Id]){
                     if(objCot.SBQQ__Quantity__c != 0)
@@ -112,7 +121,6 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                 }
             }
             String strKey = '';
-            System.debug('grabar: ' + this.mapCotizacionesZP.get('ESTÁNDAR, ZP'));
             for(SBQQ__Quote__c objQuote : records){
                 for(SBQQ__QuoteLine__c objQLine : [SELECT Id, ZonaPlus__c, PackWeightAVG__c, PackVolAVG__c, Tarifa__c, SBQQ__Quantity__c, Rango_KM__c, Destiny__c, Flete__c, RAD__c, EAD__c, ACK__C FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :objQuote.Id]){
                     if(objQline.SBQQ__Quantity__c != 0){
@@ -178,6 +186,8 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                     System.debug('Error al guardar datos de partidas de cotización: ' + insError.getMessage());
             }
         }
+        BatchSeguimientoCBME2 batch2 = new BatchSeguimientoCBME2(this.AccId, this.strFechaInicio, this.strFechaFin, this.strModelo);
+        database.executeBatch(batch2,1);
     }
     public static List<Tarifario_general_terrestre__c> queryTarifarioTFull(){
         return [SELECT  Id
