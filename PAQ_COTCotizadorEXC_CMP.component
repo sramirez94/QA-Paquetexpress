@@ -854,7 +854,7 @@
                 <button type="button" class="btn btn-primary" ng-click="sumbit()" ng-show="hasRecord()">
                     Enviar a Autorización <span class="glyphicon glyphicon-check"></span>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="createQuotesEX()">
+                <button type="button" class="btn btn-primary" ng-click="createQuotesEX()" ng-show="EX.blnBotonActivo">
                     Guardar <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
                 <!--<button type="button" class="btn btn-danger" ng-click="dataTest()">
@@ -911,6 +911,7 @@
                     , hasOverWBlocks : false
                     , hasBlocksT7: false
                     , blnCotizaT7ZP : false
+                    , blnBotonActivo : true
                     , listFee : {
                         'TS': 'TARIFA SOBRE'
                         , 'T0': 'TARIFA T0'
@@ -2192,8 +2193,10 @@
                     }
                     if($scope.Wrapper.objLead && notEmpty($scope.Wrapper.objLead.Id))
                         Quote.Lead__c = $scope.Wrapper.objLead.Id;
-                    if($scope.Wrapper.objAccountId)
-                        Quote.SBQQ__Account__c = $scope.Wrapper.objAccountId;
+                    /*if($scope.Wrapper.objAccountId)
+                        Quote.SBQQ__Account__c = $scope.Wrapper.objAccountId;*/
+                    if($scope.Wrapper.objOpp && $scope.Wrapper.objOpp.AccountId)
+                    	Quote.SBQQ__Account__c = $scope.Wrapper.objOpp.AccountId;
                     if($scope.Wrapper.objOpp && notEmpty($scope.Wrapper.objOpp.Id))
                         Quote.SBQQ__Opportunity2__c = $scope.Wrapper.objOpp.Id;
                     Quote.Servicios_adicionales__c = "";
@@ -4273,6 +4276,7 @@
                                     }
                                 if($scope.DML.blnSuccess)
                                     $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
+                                $scope.EX.blnBotonActivo = false;
                                 $scope.$apply();
                                 j$.unblockUI();
 
@@ -4321,6 +4325,7 @@
                                 }
                                 if($scope.DML.blnSuccess)
                                     $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
+                                $scope.DML.blnSuccess = false;
                                 $scope.$apply();
                                 j$.unblockUI();
                             }
