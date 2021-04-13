@@ -411,6 +411,8 @@ public class TempleateTriggerHandler {
                         objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
                         objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
                         objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
+                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
+                            System.debug('ead 1: ' + objTempleateLine.EAD__c);
                     }
                     objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);
                     decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
@@ -459,6 +461,7 @@ public class TempleateTriggerHandler {
                         else{
                             objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
                         }
+                        System.debug('Flete 2: ' + objTempleateLine.FLETE__c);
                         decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
                    	    if(suma2 < objTempleateLine.CustomerPrice__c.setScale(2)){
                             if(mapResiduo.containsKey(objQLine.Rango_KM__c))
@@ -486,13 +489,19 @@ public class TempleateTriggerHandler {
                     }
 					if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD') && objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
                         objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEADS(objTempleateLine);
-                        if(!mapZPLL.containsKey(objQLine.Rango_KM__c))
+                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
+                            System.debug('getEad2: ' + objTempleateLine.EAD__C);
+                        /*if(!mapZPLL.containsKey(objQLine.Rango_KM__c))
                             mapZPLL.put(objQLine.Rango_KM__c, objTempleateLine.EAD__c);
                         else{
                             objTempleateLine.EAD__c = mapZPLL.get(objQLine.Rango_KM__c);
-                        }
+                            if(objQLine.Tarifa__c == 'TARIFA T3')
+                                System.debug('getEAD4: ' + objTempleateLine.EAD__c);
+                        }*/
                     } else{
-                         objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
+                        objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
+                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
+                            System.debug('getEAD3: ' + objTempleateLine.EAD__c);
                     }
                     if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
                         if(this.blnCostoBaseGMP){
@@ -578,12 +587,16 @@ public class TempleateTriggerHandler {
                             objTempleateLine.EAD__c = objTempleateLine.EAD__c = this.mapService.get('ZP').mapRanges.get(strRangeDest);
                     } else {
                         objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEADOS(objTempleateLine.FLETE__c, objTempleateLine);
+                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
+                            System.debug('getEADOS: ' + objTempleateLine.EAD__c);
                     }
-                    if(!mapZPL.containsKey(objQLine.Rango_KM__c))                     
+                    /*if(!mapZPL.containsKey(objQLine.Rango_KM__c))                     
                         mapZPL.put(objQLine.Destiny__c, objTempleateLine.EAD__c);                       
                     else{
                         objTempleateLine.EAD__c = mapZPL.get(objQLine.Rango_KM__c);
-                      }
+                        if(objQLine.Tarifa__c == 'TARIFA T3')
+                            System.debug('getEAD5: ' + objTempleateLine.EAD__c);
+                      }*/
                 }
                 // TARIFA ZONA PLUS SOLA
                 else{   
@@ -596,12 +609,14 @@ public class TempleateTriggerHandler {
                         }
                     }
                     if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD')){
-                        //objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
-                        if(!mapZPL.containsKey(objQLine.Rango_KM__c))
+                        objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
+                        /*if(!mapZPL.containsKey(objQLine.Rango_KM__c))
                             mapZPL.put(objQLine.Rango_KM__c, objTempleateLine.EAD__c);
                         else{
                             objTempleateLine.EAD__c = mapZPL.get(objQLine.Rango_KM__c);
-                        }
+                            if(objQLine.Tarifa__c == 'TARIFA T3')
+                                System.debug('getEAD5: ' + objTempleateLine.EAD__c);
+                        }*/
                     }  
                     objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c) / 1.11;
                     objTempleateLine.RAD__c =  objTempleateLine.FLETE__c * 0.11;
@@ -624,13 +639,13 @@ public class TempleateTriggerHandler {
 
 	public Decimal getDominantPrice(Decimal decWeigth, Decimal decVol){
         try{
-		if(decVol > decWeigth)
-			return  decVol;
-		else
-			return decWeigth;
+            if(decVol > decWeigth)
+                return  decVol;
+            else
+                return decWeigth;
         }  catch (Exception ex){
-        System.debug(ex.getMessage());
-        return 0;
+            System.debug(ex.getMessage());
+            return 0;
         }
 
 	}
