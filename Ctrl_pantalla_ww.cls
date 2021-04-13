@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @group             : 
+ * @last modified on  : 04-13-2021
+ * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+ * Modifications Log 
+ * Ver   Date         Author                               Modification
+ * 1.0   04-08-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+**/
 public class Ctrl_pantalla_ww {
     
     public boolean Sipweb  					{get;set;}
@@ -438,8 +448,11 @@ public class Ctrl_pantalla_ww {
         this.blnZP = false;
         for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
             String strRangeDest = '';
-            if(line.Destiny__c != null)
+            if(line.Destiny__c != null){
+                if(!this.mapRangosByDest.containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')')) //08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Valida si ya existe en el mapa
+                    this.mapRangosByDest.put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line.Rango_KM__c);//08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Se carga el valor, este mapa guarda el equivalente en rango de km de cada destino
                 line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
+            }
             if(line.Zona_Plus__c && line.EAD__c > 0)
                 this.blnZP = true;
             else this.blnZP = false;
@@ -1773,11 +1786,16 @@ public class Ctrl_pantalla_ww {
         Decimal decFlete = 0;
         
         if(!objtempleateItem.Zona_Plus__c){
-            if(objtempleateItem.Tarifa__c == 'TARIFA T7' &&  objtempleateItem.ACK__c >= 66){
+            if((objtempleateItem.Tarifa__c == 'TARIFA T7' || objtempleateItem.Tarifa__c == 'TARIFA T7-V') &&  objtempleateItem.ACK__c >= 66){
                 objtempleateItem.ACK__c = 65;
             }
-            //decFlete = objtempleateItem.CustomerPrice__c - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
-            decFlete = decCustomerPrice;
+            System.debug('tarifa: ' + objtempleateItem.Tarifa__c + '. customer: ' + decCustomerPrice + '. Acuse: ' + objtempleateItem.ACK__c);
+            if(objtempleateItem.Tarifa__c == 'TARIFA T7-V' || objtempleateItem.Tarifa__c == 'TARIFA T7-P'){
+                if(objtempleateItem.Tarifa__c == 'TARIFA T7-V')
+                    decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c; 
+                else decFlete = decCustomerPrice;
+            } else decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
+            /*decFlete = decCustomerPrice;*/
             if(strServiciosAdd != null){
                 if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD'))
                     decFlete = decFlete / 1.22;
@@ -1785,11 +1803,12 @@ public class Ctrl_pantalla_ww {
                     decFlete = decFlete / 1.11;
                 else decFlete = decFlete;
             }
+
         } else if(objtempleateItem.Zona_Plus__c) {
             if(objtempleateItem.Tarifa__c == 'TARIFA T7' &&  objtempleateItem.ACK__c >= 66){
                 objtempleateItem.ACK__c = 65;
             }
-            decFlete = objtempleateItem.CustomerPrice__c - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
+            decFlete = decCustomerPrice - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
             if(strServiciosAdd != null){
                 decFlete = decFlete;
             }
@@ -1802,14 +1821,15 @@ public class Ctrl_pantalla_ww {
         
         if(!objtempleateItem.Zona_Plus__c)
         {
-        decFlete = objtempleateItem.CustomerPrice__c - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
+        //decFlete = objtempleateItem.CustomerPrice__c - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
+        decFlete = decCustomerPrice - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
        if(strServiciosAdd != null){
             decFlete = decFlete;
         }
       }
         else if(objtempleateItem.Zona_Plus__c)
         {
-         decFlete = objtempleateItem.CustomerPrice__c - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
+         decFlete = decCustomerPrice - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
          if(strServiciosAdd != null){
             decFlete = decFlete;
         }
@@ -1867,7 +1887,7 @@ public class Ctrl_pantalla_ww {
     
      public static Decimal getEADS(TempleateLine__c objtempleateItem){ //90
         decimal decEad = 0;
-        decEad = objtempleateItem.Flete__c * 0.09;
+        decEad = objtempleateItem.Flete__c * 0.11;
         return decEad; //5.82
     }
     
@@ -1938,8 +1958,11 @@ public class Ctrl_pantalla_ww {
     public void updateTemplate(){
         TempleateLine__c objDeduc;
         for	(TempleateLine__c item: this.listPlantillaLineItems){
-            if(item.Id == this.indexDeducItem)
+            if(item.Id == this.indexDeducItem){
+                if(item.Rango_KM__c.contains('(')) //08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Si contiene un paréntesis quiere decir que es un destino
+                    item.Rango_KM__c = this.mapRangosByDest.get(item.Rango_KM__c);
                 objDeduc = item;
+            }
         }
         if(this.blnCostoBaseGMP){
             if(ValidaCostosGMPCBME(objDeduc))
