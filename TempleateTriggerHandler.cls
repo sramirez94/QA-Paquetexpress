@@ -35,11 +35,12 @@ public class TempleateTriggerHandler {
             Map<Id, SBQQ__Quote__c> mapQuotes = new Map<Id, SBQQ__Quote__c>();
             Map<String, Decimal> mapACK = new Map<String, Decimal>();
             Map<String, Decimal> mapACKK = new Map<String, Decimal>();
-            Map<String, Decimal> mapRAD = new Map<String, Decimal>();
             Map<String, Decimal> mapZPL = new Map<String, Decimal>();
             Map<String, Decimal> mapZPLL = new Map<String, Decimal>();
-            Map<String, Map<String, decimal>> mapQLinesResiduo = new Map<String, Map<String, decimal>>();
             Map<String, Decimal> mapResiduo = new Map<String, Decimal>();
+            Map<String, Map<String, Decimal>> mapFlete = new Map<String, Map<String, Decimal>>();
+            Map<String, Map<String, Decimal>> mapRAD = new Map<String, Map<String, Decimal>>();
+            Map<String, Decimal> mapEAD = new Map<String, Decimal>();
             this.blnCostoBaseGMP    = false;
             this.blnRAD             = false;
             this.blnEAD             = false;
@@ -218,8 +219,10 @@ public class TempleateTriggerHandler {
         System.debug('va a entrar a grabar');
             
             //mapeo de plantillas dependiendo si son por rango de kilometros o destinos y le asigna el subtotal.
+        Integer contador = 0;
+        String strTarifaResp = '';
 		for(Templeate__c objTempleate : listNewTempleates){         
-			for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){                
+			for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){
                 if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
 					decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c;
                 }
@@ -227,7 +230,7 @@ public class TempleateTriggerHandler {
 					decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Destiny__c).SBQQ__CustomerPrice__c;
                 }
                
-            // codigo para el incremento anual guias prepagadas.        
+                // codigo para el incremento anual guias prepagadas.        
                 if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas')){ 
                     if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
                         for(Incremento_Anual__c IncYear : listIncremento){                       
@@ -322,7 +325,7 @@ public class TempleateTriggerHandler {
                             } 
                         } 
                 }
-// fin del codigo del incremento anual.       
+                // fin del codigo del incremento anual.       
 				objTempleateLine = new TempleateLine__c(
 						Templeate__c = objTempleate.Id
 						, Quantity__c = objQLine.SBQQ__Quantity__c
@@ -383,127 +386,48 @@ public class TempleateTriggerHandler {
                     objTempleateLine.ACK__c = 0;
                 }
                 
-               
-                
-                 //TARIFA ESTARDAR SOLA            
-                if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
-                    if(this.blnCostoBaseGMP){
-                        String strRangeDest = '';
-                        if(objQLine.Destiny__c != null)
-                            strRangeDest = objQLine.Destiny__c;
-                        else strRangeDest = objQLine.Rango_KM__c;
-                        objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(strRangeDest).setScale(2);
-                        if(this.blnRAD)
-                            objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(strRangeDest).setScale(2);
-                        if(this.blnEAD)
-                            objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
-                        objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
-                        objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest);
-                        if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
-                            objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest);
-                        if(this.mapBlockAdic.get('EAD').containsKey(strRangeDest) && this.blnEAD)
-                            objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest);
-                        objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest);
-                        objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
-                        objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
-                        objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
-                    }else{
-                        objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
-                        objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
-                        objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
-                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
-                            System.debug('ead 1: ' + objTempleateLine.EAD__c);
+                if(!this.blnCostoBaseGMP){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es una cotización de costo base más excedente o de guía multipieza (Es por costos fijos por tarifa)
+                    if(!(objTempleateLine.Tarifa__C == 'TARIFA T7' && objTempleateLine.Zona_Plus__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es una tarifa t7 que sea zona plus
+                        if(strTarifaResp == '') //Salvador Ramírez (sramirez@freewayconsulting.com): Si aún no se respalda la tarifa anterior
+                            contador = 0; //Salvador Ramírez (sramirez@freewayconsulting.com): El contador se queda en 0
+                        else if(strTarifaResp != objTempleateLine.Tarifa__c) //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya se respaldó la tarifa anterior se compara con la actual 
+                            contador++; //Salvador Ramírez (sramirez@freewayconsulting.com): Si es diferente se le suma 1 al contador, esto para solo para saber si es la primer tarifa en pasar o son superiores, esto para saber si el flete debe dividirse entre 1.22 o 1.11
+                        if(!mapFlete.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa no tiene la tarifa
+                            mapFlete.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea un nuevo registro de mapa con esa tarifa
+                        if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
+                            if(mapEAD.containsKey(objTempleateLine.Rango_KM__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si hay un rango de km con costo de EAD
+                                objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(objTempleateLine.Rango_KM__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se le resta al subtotal
+                            objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, contador); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo del flete
+                            mapFlete.get(objTempleateLine.Tarifa__c).put(objTempleateLine.Rango_KM__c, objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en su rango de km el costo que tuvo el flete
+                        } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__c).get(objTempleateLine.Rango_KM__c);
+                        if(this.blnRAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización con RAD
+                            if(!mapRAD.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa de RAD no tiene la tarifa
+                                mapRAD.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea una nueva llave
+                            if(!mapRAD.get(objTempleateLine.Tarifa__c).containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa que respalda el costo de RAD no tiene el rango de km 
+                                objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por RAD
+                                mapRAD.get(objTempleateLine.Tarifa__c).put(objTempleateLine.Rango_KM__c, objTempleateLine.RAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
+                            } else objTempleateLine.RAD__c = mapRAD.get(objTempleateLine.Tarifa__c).get(objTempleateLine.Rango_KM__c);
+                        }
+                        if(this.blnEAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando EAD
+                            if(!objQline.ZonaPlus__c){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es un registro con zona plus (Esto porque la zona plus es considerada un tipo de EAD que se calcula diferente)
+                                if(!mapEAD.containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
+                                    objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por EAD de ese rango
+                                    mapEAD.put(objTempleateLine.Rango_KM__c, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
+                                } objTempleateLine.EAD__c = mapEAD.get(objTempleateLine.Rango_KM__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
+                            }
+                        }
+                        if(objQline.ZonaPlus__c){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando zona plus
+                            if(!mapZPL.containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay un costo de zona plus para ese rango
+                                objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.RAD__c - objTempleateLine.ACK__c; //Salvador Ramírez (sramirez@freewayconsulting.com): se calcula de acuerdo a las reglas de paquetexpress
+                                mapZPL.put(objTempleateLine.Rango_KM__c, objTempleateLine.EAD__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el costo en su rango de km
+                            } else objTempleateLine.EAD__c = mapZPL.get(objTempleateLine.Rango_KM__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Si el rango de km ya tiene un costo de zona plus se asigna al rango actual.
+
+                        }
+                        strTarifaResp = objTempleateLine.Tarifa__c;//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda la tarifa para la siguiente vuelta del recorrido
                     }
-                    objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);
-                    decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                    if(suma > objTempleateLine.CustomerPrice__c.setScale(2)){
-                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                            
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                            
-                        }
-                        else if(suma < objTempleateLine.CustomerPrice__c.setScale(2)){
-                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
-                            
-                        }
-                        else{
-                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                    }
-                    decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-               
-                   	if(suma2 < objTempleateLine.CustomerPrice__c.setScale(2)){
-                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))        
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
-                    } else if(suma2 > objTempleateLine.CustomerPrice__c.setScale(2)){
-                        if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                            objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                    } else{
-                        objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                    }
-                }
-                //TARIFA ESTANDAR Y TARIFA ZONA PLUS JUNTAS
-                else if(!objTempleateLine.Zona_Plus__c){//ESTANDAR  
-                    objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
-                    if( objTempleateLine.Tarifa__c == 'TARIFA T7-P') {
-                        objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine);
-                        objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);
-                        decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                   	
-                        if(suma > objTempleateLine.CustomerPrice__c.setScale(2)){
-                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                        }
-                        else if(suma < objTempleateLine.CustomerPrice__c.setScale(2)){
-                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;
-                        }
-                        else{
-                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                        }
-                        System.debug('Flete 2: ' + objTempleateLine.FLETE__c);
-                        decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                   	    if(suma2 < objTempleateLine.CustomerPrice__c.setScale(2)){
-                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
-                        }
-                        else if(suma2 > objTempleateLine.CustomerPrice__c.setScale(2)){
-                            if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                        }
-                        else{
-                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                        }                                     
-                    }
-                    if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('RAD') && objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
-				        objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRADS(objTempleateLine);						
-                        /*if(!mapRAD.containsKey(objQLine.Rango_KM__c))
-                           mapRAD.put(objQLine.Rango_KM__c, objTempleateLine.RAD__c);
-                        else{
-                            objTempleateLine.RAD__c = mapRAD.get(objQLine.Rango_KM__c);
-                        }*/
-                        mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).RAD__c = objTempleateLine.RAD__c;
-                    } else{
-                        objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
-                       
-                    }
-					if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD') && objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
-                        objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEADS(objTempleateLine);
-                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
-                            System.debug('getEad2: ' + objTempleateLine.EAD__C);
-                        /*if(!mapZPLL.containsKey(objQLine.Rango_KM__c))
-                            mapZPLL.put(objQLine.Rango_KM__c, objTempleateLine.EAD__c);
-                        else{
-                            objTempleateLine.EAD__c = mapZPLL.get(objQLine.Rango_KM__c);
-                            if(objQLine.Tarifa__c == 'TARIFA T3')
-                                System.debug('getEAD4: ' + objTempleateLine.EAD__c);
-                        }*/
-                    } else{
-                        objTempleateLine.EAD__c = objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
-                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
-                            System.debug('getEAD3: ' + objTempleateLine.EAD__c);
-                    }
-                    if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
+                } else {
+                    //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización de costo base más excedente
+                    if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
                         if(this.blnCostoBaseGMP){
                             String strRangeDest = '';
                             if(objQLine.Destiny__c != null)
@@ -524,104 +448,62 @@ public class TempleateTriggerHandler {
                             objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
                             objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                             objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
-                        } else {
-                            //objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c - objTempleateLine.RAD__c);
-                            decimal sumar = objTempleateLine.FLETE__c + objTempleateLine.RAD__c + objTempleateLine.EAD__c + objTempleateLine.ACK__c + objTempleateLine.SEG__c;
-                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;                               
-                       
-                            objTempleateLine.FLETE__c = objTempleateLine.FLETE__c.setScale(2);                        
-                            
-                            objTempleateLine.RAD__c = objTempleateLine.RAD__c;
-                        
-                            
-                            objTempleateLine.RAD__c = objTempleateLine.RAD__c.setScale(2);                        
-                        
-                            
-                            objTempleateLine.EAD__c = objTempleateLine.EAD__c;
-                        
-                            objTempleateLine.EAD__c = objTempleateLine.EAD__c.setScale(2);                        
-                    
-                            
-                            objTempleateLine.ACK__c = objTempleateLine.ACK__c;
-                        
-                            objTempleateLine.ACK__c = objTempleateLine.ACK__c.setScale(2);
-                            decimal suma = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                            if(suma > objTempleateLine.CustomerPrice__c){
-                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;                     
-                            }
-                            else if(suma < objTempleateLine.CustomerPrice__c){
-                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;                      
-                            }
-                            else{
-                                objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                            }
-                            decimal	suma2 = objTempleateLine.FLETE__c.setScale(2) + objTempleateLine.RAD__c.setScale(2) + objTempleateLine.EAD__c.setScale(2) + objTempleateLine.ACK__c.setScale(2) + objTempleateLine.SEG__c.setScale(2);
-                            if(suma2 < objTempleateLine.CustomerPrice__c ){
-                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c + 0.01;     
-                            }
-                            else if(suma2 > objTempleateLine.CustomerPrice__c){
-                                if(mapResiduo.containsKey(objQLine.Rango_KM__c))
-                                    objTempleateLine.FLETE__c =  objTempleateLine.FLETE__c - 0.01;
-                            }
-                            else{
-                                objTempleateLine.FLETE__c = objTempleateLine.FLETE__c;
-                            }
-                            if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
-                                mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).FLETE__c = objTempleateLine.FLETE__c;
-                            }
-                        }
-                    }                                        
-                }       
-                else if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){//ZONA PLUS
-                    String strRangeDest = '';
-                    if(objQLine.Destiny__c != null)
-                        strRangeDest = objQLine.Destiny__c;
-                    else strRangeDest = objQLine.Rango_KM__c;
-                    objTempleateLine.FLETE__c = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).FLETE__c;
-					objTempleateLine.RAD__c = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).RAD__c;
-                    if(this.blnCostoBaseGMP){
-                        if(objQLine.Tarifa__c != 'TARIFA T7')
-                            objTempleateLine.EAD__c = objTempleateLine.EAD__c = this.mapService.get('ZP').mapRanges.get(strRangeDest);
-                    } else {
-                        objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEADOS(objTempleateLine.FLETE__c, objTempleateLine);
-                        if(objQLine.Tarifa__c == 'TARIFA T7-V')
-                            System.debug('getEADOS: ' + objTempleateLine.EAD__c);
-                    }
-                    /*if(!mapZPL.containsKey(objQLine.Rango_KM__c))                     
-                        mapZPL.put(objQLine.Destiny__c, objTempleateLine.EAD__c);                       
-                    else{
-                        objTempleateLine.EAD__c = mapZPL.get(objQLine.Rango_KM__c);
-                        if(objQLine.Tarifa__c == 'TARIFA T3')
-                            System.debug('getEAD5: ' + objTempleateLine.EAD__c);
-                      }*/
-                }
-                // TARIFA ZONA PLUS SOLA
-                else{   
-                    if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){             
-                        objTempleateLine.ACK__c  = Ctrl_pantalla_ww.getAcuses(objTempleateLine);
-                        if(!mapACKK.containsKey(objQLine.Rango_KM__c))
-                            mapACKK.put(objQLine.Rango_KM__c, objTempleateLine.ACK__c);
-                        else{
-                            objTempleateLine.ACK__c = mapACKK.get(objQLine.Rango_KM__c);
                         }
                     }
-                    if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD')){
-                        objTempleateLine.EAD__c =  Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
-                        /*if(!mapZPL.containsKey(objQLine.Rango_KM__c))
-                            mapZPL.put(objQLine.Rango_KM__c, objTempleateLine.EAD__c);
-                        else{
-                            objTempleateLine.EAD__c = mapZPL.get(objQLine.Rango_KM__c);
-                            if(objQLine.Tarifa__c == 'TARIFA T3')
-                                System.debug('getEAD5: ' + objTempleateLine.EAD__c);
-                        }*/
-                    }  
-                    objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c) / 1.11;
-                    objTempleateLine.RAD__c =  objTempleateLine.FLETE__c * 0.11;
+                    //TARIFA ESTANDAR Y TARIFA ZONA PLUS JUNTAS
+                    else if(!objTempleateLine.Zona_Plus__c){//ESTANDAR  
+                        if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
+                            if(this.blnCostoBaseGMP){
+                                String strRangeDest = '';
+                                if(objQLine.Destiny__c != null)
+                                    strRangeDest = objQLine.Destiny__c;
+                                else strRangeDest = objQLine.Rango_KM__c;
+                                objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(strRangeDest).setScale(2);
+                                if(this.blnRAD)
+                                    objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(strRangeDest).setScale(2);
+                                if(this.blnEAD)
+                                    objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
+                                objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
+                                objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest);
+                                if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
+                                    objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest);
+                                if(this.mapBlockAdic.get('EAD').containsKey(strRangeDest) && this.blnEAD)
+                                    objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest);
+                                objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest);
+                                objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
+                                objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
+                                objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
+                            }
+                        }                                        
+                    }       
+                    else if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){//ZONA PLUS
+                        String strRangeDest = '';
+                        if(objQLine.Destiny__c != null)
+                            strRangeDest = objQLine.Destiny__c;
+                        else strRangeDest = objQLine.Rango_KM__c;
+                        if(this.blnCostoBaseGMP){
+                            if(objQLine.Tarifa__c != 'TARIFA T7')
+                                objTempleateLine.EAD__c = objTempleateLine.EAD__c = this.mapService.get('ZP').mapRanges.get(strRangeDest);
+                        }
+                    }
+                    // TARIFA ZONA PLUS SOLA
+                    /*else{   
+                        if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){             
+                            objTempleateLine.ACK__c  = Ctrl_pantalla_ww.getAcuses(objTempleateLine);
+                            if(!mapACKK.containsKey(objQLine.Rango_KM__c))
+                                mapACKK.put(objQLine.Rango_KM__c, objTempleateLine.ACK__c);
+                            else{
+                                objTempleateLine.ACK__c = mapACKK.get(objQLine.Rango_KM__c);
+                            }
+                        }
+                        if(mapFlete.containsKey(objTempleateLine.Tarifa__C) && mapFlete.get(objTempleateLine.Tarifa__C).containsKey(objTempleateLine.Rango_KM__c))
+                            objTempleateLine.Flete__c = mapFlete.get(objTempleateLine.Tarifa__C).get(objTempleateLine.Rango_KM__c);
+                        else objTempleateLine.FLETE__c = (objTempleateLine.CustomerPrice__c  - objTempleateLine.ACK__c - objTempleateLine.SEG__c - objTempleateLine.EAD__c) / 1.11;
+                        objTempleateLine.RAD__c =  objTempleateLine.FLETE__c * 0.11;
+                        objTempleateLine.EAD__C = 1;
+                        //objTempleateLine.Flete__c = objTempleateLine.Flete__c - objTempleateLine.RAD__C;
+                    }*/
                 }
-                 
 				listTempleateLines.add(objTempleateLine);
 			}
 		 }
