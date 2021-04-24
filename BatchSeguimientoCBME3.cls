@@ -1,171 +1,241 @@
-global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Database.AllowsCallouts, Database.Stateful {
+/**
+ * @description       : 
+ * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @group             : 
+ * @last modified on  : 04-21-2021
+ * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+ * Modifications Log 
+ * Ver   Date         Author                               Modification
+ * 1.0   04-20-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+**/
+global class BatchSeguimientoCBME3 implements Database.Batchable<sObject>, Database.AllowsCallouts, Database.Stateful {
     public String query;
     public String AccId;
-    public String strModelo;
     public String strIdQuote;
-    public Boolean blnRAD                                             = false;
-    public Boolean blnEAD                                             = false;
-    public Boolean blnACK                                             = false;
-    public Map<String, Map<String, wpFrecuencias>> mapFrecuencias     = new Map<String, Map<String, wpFrecuencias>>();
-    public Map<String, Map<String, wpFrecuencias>> mapFrecuenciasZP   = new Map<String, Map<String, wpFrecuencias>>();
-    public Map<String, Map<String, wpFrecuencias>> mapGuias           = new Map<String, Map<String, wpFrecuencias>>();
-    public Map<String, Map<String, wpFrecuencias>> mapGuiasZP         = new Map<String, Map<String, wpFrecuencias>>();
-    public Map<String, Decimal> mapAcuse                              = new Map<String, Decimal>();
-    public List<FrecuenciaDeEnvios__c> listFrecuencia                 = new List<FrecuenciaDeEnvios__c>();
-    //public List<String> listTarifas                             = new List<String>{'TARIFA SOBRE', 'TARIFA T0', 'TARIFA T1', 'TARIFA T2', 'TARIFA T3', 'TARIFA T4', 'TARIFA T5', 'TARIFA T6', 'TARIFA T7-V', 'TARIFA T7-P'};
-    public List<String> listTarifas                             = new List<String>();
-    public List<String> listRangeDestiny                        = new List<String>{'0-400', '401-800', '801-1200', '1201-1600', '1601-2000', '2001-2400', 'Más de 2400'};
-    public BatchSeguimientoCBME2(String AccountId, String Inicio, String Fin, String Modelo, Boolean RAD, Boolean EAD, Boolean ACK, Map<String, Decimal> mapAc) {
-        this.AccId = AccountId;
-        this.strModelo = Modelo;
+    public Boolean blnRAD                                                           = false;
+    public Boolean blnEAD                                                           = false;
+    public Boolean blnACK                                                           = false;
+    public Map<String, wpFrecuencias> mapFrecuencias                                = new Map<String, wpFrecuencias>();
+    public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotes                   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
+    public Wrapper wp                                                               = new Wrapper();
+    public Map<String, Decimal> mapAcuse                                            = new Map<String, Decimal>();
+    public List<String> listRangeDestiny                                            = new List<String>();
+    public List<Decimal> listBloques                                                = new list<Decimal>();
+    public Map<String, Decimal> mapFlete                                            = new Map<String, Decimal>();
+    public List<FrecuenciaDeEnvios__c> insertarF                                    = new List<FrecuenciaDeEnvios__c>();
+
+    public BatchSeguimientoCBME3(String AccountId, String Inicio, String Fin, String strQuote, Boolean RAD, Boolean EAD, Boolean ACK, Map<String, Decimal> mapAc) {
+        AccId = AccountId;
+        this.strIdQuote = strQuote;
         this.blnRAD = RAD;
         this.blnEAD = EAD;
         this.blnACK = ACK;
-        this.mapAcuse = mapAc;
-        Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE (SBQQ__Account__c = \'' + AccountId + '\' OR SBQQ__Account__r.ParentId = \'' + AccountId + '\') ' +
-        + 'AND Fecha_de_autorizada__c >= '+Inicio+' and Fecha_de_autorizada__c <= '+Fin+' AND SBQQ__Status__c = \'Approved\' AND Modelo_de_tarifas__c = \'' + Modelo + '\'';
+        //this.mapAcuse = mapAc;
+        query = 'SELECT Id, Cuenta__c, Cuenta__r.ParentId, Fecha__c, Linea__c, Rango_Kms__c, Peso_de_bultos__c, Tarifa_de_Bulto__c, ' +
+            	'Bultos__c, Volumen_de_bultos__c, Servicio__c FROM Seguimiento_de_descuento_real__c ' +
+            	'WHERE (Cuenta__c = \'' + AccountId + '\' OR Cuenta__r.ParentId = \'' + AccountId + '\') ' +
+            	' AND Fecha__c >= ' + Inicio + ' AND Fecha__c <= ' + Fin +
+            	' AND Servicio__c = \'STD-T\' AND Linea__c = \'DOC_LINEA_NORMAL\'';
     }
-    global Database.QueryLocator start(Database.BatchableContext bc) {
-        //System.debug('consulta: '+ query);
-        return Database.getQueryLocator(this.Query);	
+    global Database.QueryLocator start(Database.BatchableContext bc){
+        system.debug(query);
+    	return Database.getQueryLocator(query);	
     }
-    global void execute(Database.BatchableContext bc, List<SBQQ__Quote__c> records){
-        try{
-            String strRangeDest = '';
-            this.strIdQuote = records[0].Id;
-            //03/03/2021 Salvador: Recorre todas las frecuencias de todas las cotizaciones para irlas sumando y acomodando en cada mapa dependiendo si es zona plus o normal
-            for(SBQQ__Quote__c objQuote : records){
-                for(SBQQ__QuoteLine__c objQLine : [SELECT Id, ZonaPlus__c, PackWeightAVG__c, PackVolAVG__c, Tarifa__c, SBQQ__Quantity__c, Rango_KM__c, Destiny__c, Flete__c, RAD__c, EAD__c, ACK__C, PaqPorGuia__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :objQuote.Id]){
-                    if(!objQLine.Tarifa__C.contains('TARIFA T7_')){
-                        strRangeDest = '';
-                        if(objQLine.Destiny__c != null)
-                            strRangeDest = objQLine.Destiny__c.remove(' (').remove(objQLine.Rango_KM__c).remove(')');
-                        else strRangeDest = objQLine.Rango_KM__c;
-                        if(!objQLine.ZonaPlus__c){
-                            if(!this.mapFrecuencias.containsKey(objQLine.Tarifa__c))
-                                this.mapFrecuencias.put(objQLine.Tarifa__c, new Map<String, wpFrecuencias>());
-                            if(!this.mapFrecuencias.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
-                                this.mapFrecuencias.get(objQLine.Tarifa__c).put(strRangeDest, new wpFrecuencias());
-                                this.mapFrecuencias.get(objQLine.Tarifa__C).get(strRangeDest).decFrecuencia = objQLine.SBQQ__Quantity__c;
-                            }else this.mapFrecuencias.get(objQLine.Tarifa__c).get(strRangeDest).decFrecuencia += objQLine.SBQQ__Quantity__c;
-                            if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km'){
-                                if(!this.mapGuias.containsKey(objQLine.Tarifa__c))
-                                    this.mapGuias.put(objQLine.Tarifa__c, new Map<String, wpFrecuencias>());
-                                if(!this.mapGuias.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
-                                    this.mapGuias.get(objQLine.Tarifa__c).put(strRangeDest, new wpFrecuencias());
-                                    this.mapGuias.get(objQLine.Tarifa__C).get(strRangeDest).decFrecuencia = objQLine.PaqPorGuia__c;
-                                }else this.mapGuias.get(objQLine.Tarifa__c).get(strRangeDest).decFrecuencia += objQLine.PaqPorGuia__c;
-                            }
-                        } else {
-                            if(!this.mapFrecuenciasZP.containsKey(objQLine.Tarifa__c))
-                                this.mapFrecuenciasZP.put(objQLine.Tarifa__c, new Map<String, wpFrecuencias>());
-                            if(!this.mapFrecuenciasZP.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
-                                this.mapFrecuenciasZP.get(objQLine.Tarifa__c).put(strRangeDest, new wpFrecuencias());
-                                this.mapFrecuenciasZP.get(objQLine.Tarifa__C).get(strRangeDest).decFrecuencia = objQLine.SBQQ__Quantity__c;
-                            }else this.mapFrecuenciasZP.get(objQLine.Tarifa__c).get(strRangeDest).decFrecuencia += objQLine.SBQQ__Quantity__c;
-                            if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km'){
-                                if(!this.mapGuiasZP.containsKey(objQLine.Tarifa__c))
-                                    this.mapGuiasZP.put(objQLine.Tarifa__c, new Map<String, wpFrecuencias>());
-                                if(!this.mapGuiasZP.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
-                                    this.mapGuiasZP.get(objQLine.Tarifa__c).put(strRangeDest, new wpFrecuencias());
-                                    this.mapGuiasZP.get(objQLine.Tarifa__C).get(strRangeDest).decFrecuencia = objQLine.PaqPorGuia__c;
-                                }else this.mapGuiasZP.get(objQLine.Tarifa__c).get(strRangeDest).decFrecuencia += objQLine.PaqPorGuia__c;
-                            }
-                        }
-                        if(!this.listTarifas.contains(objQLine.Tarifa__c))
-                            this.listTarifas.add(objQLine.Tarifa__c);
-                        if(!this.listRangeDestiny.contains(strRangeDest))
-                            this.listRangeDestiny.add(strRangeDest);
-                    }
-                }
+    global void execute(Database.BatchableContext bc, List<Seguimiento_de_descuento_real__c> records){
+        for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
+            if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
+                wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
+            else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
+                wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
+        for (AcusePorGuia__mdt objACK : queryACK())
+            wp.mapACK.put(objACK.Label, objACK.Amount__c);
+        this.wp.listQuoteItem = queryQuoteItem(this.strIdQuote); //30/03/2021 Salvador (sramirez@freewayconsulting.com): se consultan los costos de flete por rango de km o  destino
+        String strRangeDest;
+        for(SBQQ__QuoteLine__c QL : this.wp.listQuoteItem){
+            strRangeDest = '';
+            if(QL.Destiny__c != null)
+                strRangeDest = QL.Destiny__c.remove(' (' + QL.Rango_KM__c + ')');
+            else strRangeDest = QL.Rango_KM__c;
+            if(!this.mapFlete.containsKey(strRangeDest))
+                this.mapFlete.put(strRangeDest, QL.Flete__c);
+            if(this.blnACK){
+                if(!this.mapAcuse.containsKey(strRangeDest))
+                    this.mapAcuse.put(strRangeDest, QL.ACK__c);
             }
-            //03/03/2021 Salvador: Rellena los rangos de km que no se contuvieron en las cotizaciones.
-            for(String strTarifa : this.listTarifas){
-                for(String strRange : this.listRangeDestiny){
-                    if(!strTarifa.contains('TARIFA T7_')){
-                        if(!this.mapFrecuencias.containsKey(strTarifa))
-                            this.mapFrecuencias.put(strTarifa, new Map<String, wpFrecuencias>());
-                        if(!this.mapFrecuenciasZP.containsKey(strTarifa))
-                            this.mapFrecuenciasZP.put(strTarifa, new Map<String, wpFrecuencias>());
-                        if(!this.mapFrecuencias.get(strTarifa).containsKey(strRangeDest)){
-                            this.mapFrecuencias.get(strTarifa).put(strRangeDest, new wpFrecuencias());
-                        }
-                        if(!this.mapFrecuenciasZP.get(strTarifa).containsKey(strRangeDest)){
-                            this.mapFrecuenciasZP.get(strTarifa).put(strRangeDest, new wpFrecuencias());
-                        }
-
-                        if(!this.mapGuias.containsKey(strTarifa))
-                            this.mapGuias.put(strTarifa, new Map<String, wpFrecuencias>());
-                        if(!this.mapGuiasZP.containsKey(strTarifa))
-                            this.mapGuiasZP.put(strTarifa, new Map<String, wpFrecuencias>());
-                    }
-                }
+            if(!this.listRangeDestiny.contains(strRangeDest))
+                this.listRangeDestiny.add(strRangeDest);
+        }
+        Decimal tarLlena;
+        Decimal decPropuesta;
+        String strTarifa;
+        for (Seguimiento_de_descuento_real__c s: records){
+            //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorrido para llenar todas las cantidades de frecuencias
+            if(!mapFrecuencias.containsKey(s.Peso_de_bultos__c)){
+                this.mapFrecuencias.put(s.Peso_de_bultos__c, new wpFrecuencias());
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos = Decimal.valueOf(s.Bultos__c);
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).decPeso = Decimal.valueOf(s.Peso_de_bultos__c);
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).decVolumen = Decimal.valueOf(s.Volumen_de_bultos__c);
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).decPesoVol = Decimal.valueOf(s.Volumen_de_bultos__c) * 200;
+            } else {
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos += Decimal.valueOf(s.Bultos__c);
             }
-        } catch(Exception ex){
-            System.debug('escribir mensaje de error');
+            if(!this.listBloques.contains(Decimal.valueOf(s.Peso_de_bultos__c)))
+                this.listBloques.add(Decimal.valueOf(s.Peso_de_bultos__c));
+        }
+        for (Seguimiento_de_descuento_real__c s: records){
+            //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorrido para recotizar los montos pero ahora de las frecuencias reales obtenidas del ws
+            tarLlena = 0;
+            decPropuesta = 0;
+            strRangeDest = '';
+            if(s.Tarifa_de_Bulto__c == 'T7')
+                strTarifa = 'TARIFA T7P';
+            else if(s.Tarifa_de_Bulto__c == 'TS')
+                strTarifa = 'TARIFA SOBRE';
+            else strTarifa = 'TARIFA ' + s.Tarifa_de_Bulto__c;
+            tarLlena = wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c;
+            if(this.blnRAD)
+                tarLlena += wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c * 0.11;
+            if(this.blnEAD)
+                tarLlena += wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c * 0.11;
+            if(this.blnACK){
+                tarLlena += wp.mapACK.get(ObtieneRangoKM(s.Rango_Kms__c));
+            }
+            if(s.Site_Destino__c != 'ALL')
+                strRangeDest = s.Site_Destino__c;
+            else strRangeDest = ObtieneRangoKM(s.Rango_Kms__c);
+            decPropuesta = this.mapFlete.get(strRangeDest);
+            if(this.blnACK)
+                decPropuesta += this.mapAcuse.get(strRangeDest);
+            this.mapFrecuencias.get(s.Peso_de_bultos__c).decTotalTarifaLlena += this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos * tarLlena;
+            this.mapFrecuencias.get(s.Peso_de_bultos__c).decTotalTarifaPropuesta += decPropuesta;
+        }
+        for(Decimal decBloque : this.listBloques){
+            //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorridos para obtener los descuentos en base a lo recotizado anteriormente, se recorren todos los bloques ya que se debe obtener por costos finales
+            if(this.mapFrecuencias.containsKey(String.ValueOf(decBloque))){
+                this.mapFrecuencias.get(String.valueOf(decBloque)).decDescuento = this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaPropuesta / this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaLlena - 1;
+            }
         }
     }
-    global void finish(Database.BatchableContext bc) {
-        //System.debug('mapa frecuencias: ' + this.mapFrecuencias.get('TARIFA SOBRE'));
-        try{
-            for(String strTarifa : this.listTarifas){
-                for(String strRange : this.listRangeDestiny){
-                    //03/03/2021 Salvador: Tarifa paquetexpress
-                    if(this.mapFrecuencias.get(strTarifa).containsKey(strRange)){
-                        FrecuenciaDeEnvios__c f = new FrecuenciaDeEnvios__c();
-                        f.Cuenta__c = AccId;
-                        if(strTarifa == 'TARIFA SOBRE')
-                            f.Tarifa__C = 'TS';
-                        else f.Tarifa__C = strTarifa.remove('TARIFA ');
-                        f.Rango__c = strRange;
-                        System.debug('tarifa: ' + strTarifa);
-                        System.debug('rango: ' + strRange);
-                        f.Bultos__c = this.mapFrecuencias.get(strTarifa).get(strRange).decFrecuencia;
-                        f.Zona_Plus__c = false;
-                        if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km')
-                            f.GuiasPorPaq__c = this.mapGuias.get(strTarifa).get(strRange).decFrecuencia; 
-                        this.listFrecuencia.add(f);
-                    }
-                    //03/03/2021 Salvador: Zona extendida o zona plus
-                    if(this.mapFrecuenciasZP.get(strTarifa).containsKey(strRange)){
-                        if(strTarifa != 'TARIFA T7' || !strTarifa.contains('TARIFA T7_')){
-                            FrecuenciaDeEnvios__c f = new FrecuenciaDeEnvios__c();
-                            f.Cuenta__c = AccId;
-                            if(!strTarifa.contains('TARIFA T7_')){
-                                if(strTarifa == 'TARIFA SOBRE')
-                                    f.Tarifa__C = 'TS';
-                                else f.Tarifa__C = strTarifa.remove('TARIFA ');
-                            }
-                            f.Rango__c = strRange;
-                            f.Bultos__c = this.mapFrecuenciasZP.get(strTarifa).get(strRange).decFrecuencia;
-                            f.Zona_Plus__c = true;
-                            if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km')
-                                f.GuiasPorPaq__c = this.mapGuiasZP.get(strTarifa).get(strRange).decFrecuencia;
-                            this.listFrecuencia.add(f);
-                        }
-                    }
-                    
-
-                }
-            }
-            for(Database.SaveResult resDeducUPD : Database.insert(this.listFrecuencia, false)){
-                if(resDeducUPD.isSuccess())
-                    System.debug('Se guardaron correctamente los cambios.');
-                else {
-                    for(Database.Error insError: resDeducUPD.getErrors())
-                        System.debug('Error al guardar datos de partidas de cotización: ' + insError.getMessage());
-                }
-            }
-            Account theAcc = [SELECT Id, Id_SIpWeb__c FROM Account WHERE Id=: AccId];
-            CallWSDescuentoPorCliente.callDescuentoCliente(theAcc.Id_SIpWeb__c, theAcc);
-        } catch (Exception ex){
-            System.debug('finish ' + + ex.getLineNumber()+' '+ex.getMessage());
-        }
+    global void finish(Database.BatchableContext bc){
+        //Al retomar este desarrollo esta nota te va a servir:
+        //Es necesario guardar lo que está en mapFrecuencias en el objeto de frecuencias, deben crearse los campos para almacenar los totales y también debe hacerse un mapa que guarde las frecuencias totales.
     }
-    public class wpFrecuencias {
-        public Decimal decFrecuencia;
+    public static String ObtieneRangoKM(String rango){
+        if(rango == '0-400')
+            return '0000-0400';
+        else if(rango == '401-800')
+            return '0401-0800';
+        else if(rango == '801-1200')
+            return '0801-1200';
+        else if(rango == '1201-1600')
+            return '1201-1600';
+        else if(rango == '1601-2000')
+            return '1601-2000';
+        else if(rango == '2001-2400')
+            return '2001-2400';
+        else if(rango == 'Más de 2400' || rango == '+2400')
+            return '2401-9999';
+        else if(rango == '0000-0400')
+            return '0-400';
+        else if(rango == '0401-0800')
+            return '401-800';
+        else if(rango == '0801-1200')
+            return '801-1200';
+        else return '';
+    }
+    public static List<Tarifario_general_terrestre__c> queryTarifarioTFull(){
+        return [SELECT  Id
+        , Tarifa__c
+        , Flete__c
+        , Name
+        , PesoMaximo__c
+        , VolumenMaximo__c
+        , RangoKM__c
+        FROM Tarifario_general_terrestre__c WHERE Year__c = null];
+    }
+    public static List<SBQQ__QuoteLine__c> queryQuoteItem(String strQuoteId){
+        return [SELECT Id
+        , SBQQ__Quantity__c
+        , SBQQ__CustomerTotal__c
+        , Pack_Seg__c
+        , DiscountAcuse__c
+        , DiscountFlete__c
+        , DiscountRecolection__c
+        , DiscountDelivery__c
+        , DiscountSeg__c
+        , DiscountGuia__c
+        , Servicio__c
+        , PackWeightAVG__c
+        , PackVolAVG__c
+        , SBQQ__Discount__c
+        , SBQQ__CustomerPrice__c
+        , SBQQ__NetPrice__c
+        , SBQQ__NetTotal__c
+        , QuoteTotal__c
+        , MAN__c
+        , EDC__c
+        , EDD__c
+        , CRF__c
+        , ACK__c
+        , EAD__c
+        , RAD__c
+        , SEG__c
+        , Tarifa__c
+        , Width__c
+        , Weight__c
+        , Large__c
+        , High__c
+        , Vol__c
+        , VolWeight__c
+        , Rango_KM__c
+        , ZonaPlus__c
+        , SBQQ__VolumeDiscount__c
+        , SBQQ__SpecialPrice__c
+        , Destiny__c
+        , GUIA__c
+        , KG_ADICIONAL__c
+        , FLETE__c
+        , DiscKgAditional__c
+        , SBQQ__Description__c
+        FROM SBQQ__QuoteLine__c
+        WHERE SBQQ__Quote__c =: strQuoteId];
+    }
+    public static List<AcusePorGuia__mdt> queryACK(){
+        List<AcusePorGuia__mdt> listACK = new List<AcusePorGuia__mdt>();
+        try {
+            listACK = [SELECT Id, Label, Amount__c FROM AcusePorGuia__mdt];
+        } catch (Exception ex) {
+            System.debug(LoggingLevel.ERROR, ex.getMessage() + ' caused by: ' + ex.getCause());
+        }
+        return listACK;
+    }
+    
+    public class wpFrecuencias{
+        Decimal bultos;
+        Decimal decPeso;
+        Decimal decVolumen;
+        Decimal decPesoVol;
+        Decimal decTotalTarifaLlena;
+        Decimal decTotalTarifaPropuesta;
+        Decimal decDescuento;
         public wpFrecuencias(){
-            this.decFrecuencia = 0;
+            this.bultos     = 0;
+            this.decPeso    = 0;
+            this.decVolumen = 0;
+            this.decPesoVol = 0;
+            this.decTotalTarifaLlena = 0;
+            this.decTotalTarifaPropuesta = 0;
+            this.decDescuento = 0;
+        }
+    }
+    public class Wrapper{
+        public Map<String, Map<String, Tarifario_general_terrestre__c>> mapTarifarioT       {get; set;}
+        public Map<String, Decimal> mapACK                                                  {get; set;}
+        public List<SBQQ__QuoteLine__c> listQuoteItem                                       {get; set;}
+        public Wrapper (){
+            this.mapTarifarioT      = new Map<String, Map<String, Tarifario_general_terrestre__c>>();
+            this.mapACK             = new Map<String, Decimal>();
+            this.listQuoteItem      = new List<SBQQ__QuoteLine__c>();
         }
     }
 }
