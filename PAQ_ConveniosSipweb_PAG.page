@@ -1,0 +1,135 @@
+<!--
+  @description       : Pantalla para visualizar las tarifas grabadas en sipweb en base al webservice proporcionado por ellos.
+  @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
+  @group             : 
+  @last modified on  : 05-04-2021
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+  Modifications Log 
+  Ver   Date         Author                               Modification
+  1.0   04-27-2021   Salvador Ramírez López             Initial Version
+-->
+<apex:page extensions="PAQ_ConveniosSipweb_CTR" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" standardcontroller="Account">
+  <!-- estilos personalizados -->
+  <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
+  <!-- jquery  -->
+  <apex:includeScript value="{!$Resource.PAQ_JQuery}"/>
+  <!-- Boostrap css -->
+  <apex:stylesheet value="{!URLFOR($Resource.PAQ_Boostrap3, 'bootstrap-3.3.7-dist/css/bootstrap.min.css')}"/>
+  <!-- jquery UI 11.2.1 css-->
+  <apex:stylesheet value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.css')}"/>
+  <!-- Boostrap js -->
+  <apex:includeScript value="{!URLFOR($Resource.PAQ_Boostrap3,'bootstrap-3.3.7-dist/js/bootstrap.min.js')}"/>
+  <!-- jquery UI 11.2.1 js-->
+  <apex:includeScript value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.js')}"/>
+  <!-- Recurso Sforce -->
+  <apex:includeScript value="/support/console/40.0/integration.js"/>
+  <!-- AngularJS -->
+  <apex:includeScript value="{!$Resource.PAQ_AngularJS}"/>
+  <!-- blockUI JS -->
+  <apex:includeScript value="{!$Resource.PAQ_BlockUI}" />
+  <head>
+     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+     <style>
+         body{
+             font-size: 12px !important;
+         }
+     </style>
+ </head>
+  <apex:form >
+    <apex:inputHidden value="{!Account.Id_SIpWeb__c}"/>
+    <apex:pageMessages />
+    <apex:pageBlock mode="maindetail" rendered="true">
+      <apex:pageBlock mode="maindetail" id="Part1">
+        <apex:pageBlockSection collapsible="false" columns="2"  >
+          <table class="table table-striped table-bordered">
+            <thead class="thead-light">
+              <th colspan="15" class="center">Convenios obtenidos en sipweb</th>
+              <tbody>
+                <tr>
+                  <th width="16%" class="thead-light verticalTH">Cliente</th>
+                  <th width="16%" class="thead-light verticalTH">Rango Km</th>
+                  <th width="16%" class="thead-light verticalTH">Tipo de tarifa</th>
+                  <th width="16%" class="thead-light verticalTH">Servicio</th>
+                  <th width="16%" class="thead-light verticalTH">Factor</th>
+                  <th width="16%" class="thead-light verticalTH">Peso vol. Inicial</th>
+                  <th width="16%" class="thead-light verticalTH">Monto</th>
+                  <th width="16%" class="thead-light verticalTH">Monto excedente</th>
+                  <th width="16%" class="thead-light verticalTH">Multipieza</th>
+                  <th width="16%" class="thead-light verticalTH">Cotización</th>
+                </tr>
+                <!--<apex:outputText rendered="{!blnPtpConfig}">-->
+                  <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                    <apex:repeat value="{!listServicio}" var="strService">
+                      <apex:repeat value="{!listFactor}" var="strFactor">
+                        <tr>
+                          <td align="left" style="font-size:11px; ">{!clntId}</td>
+                          <td align="left" style="font-size:11px; ">{!strRange}</td>
+                          <td align="left" style="font-size:11px; ">{!strTipoTarifa}</td>
+                          <td align="left" style="font-size:11px; ">{!strService}</td>
+                          <td align="left" style="font-size:11px; ">{!strFactor}</td>
+                          <td align="left" style="font-size:11px; ">{!maptarifas[strRange][strService][strFactor].Peso_Vol_Inicial}</td>
+                          <td align="left" style="font-size:11px; ">{!maptarifas[strRange][strService][strFactor].Monto}</td>
+                          <td align="left" style="font-size:11px; ">{!maptarifas[strRange][strService][strFactor].Monto_Excedente}</td>
+                          <td align="left" style="font-size:11px; ">{!maptarifas[strRange][strService][strFactor].Multipieza}</td>
+                          <td align="left" style="font-size:11px; ">{!maptarifas[strRange][strService][strFactor].Cotizacion}</td>
+                        </tr>
+                      </apex:repeat>
+                    </apex:repeat>
+                  </apex:repeat>
+      
+      
+                  <apex:repeat value="{!listRangeDestinyExp}" var="strRange">
+                    <apex:repeat value="{!listServicioExp}" var="strService">
+                      <apex:repeat value="{!listBloquesExp}" var="decBloque">
+                        <tr>
+                          <td align="left" style="font-size:11px; ">{!clntId}</td>
+                          <td align="left" style="font-size:11px; ">{!strRange}</td>
+                          <td align="left" style="font-size:11px; ">{!strTipoTarifa}</td>
+                          <td align="left" style="font-size:11px; ">{!strService}</td>
+                          <td align="left" style="font-size:11px; ">KG</td>
+                          <td align="left" style="font-size:11px; ">{!mapTarifasExp[strRange][strService][decBloque].Peso_Vol_Inicial}</td>
+                          <td align="left" style="font-size:11px; ">{!mapTarifasExp[strRange][strService][decBloque].Monto}</td>
+                          <td align="left" style="font-size:11px; ">{!mapTarifasExp[strRange][strService][decBloque].Monto_Excedente}</td>
+                          <td align="left" style="font-size:11px; ">{!mapTarifasExp[strRange][strService][decBloque].Multipieza}</td>
+                          <td align="left" style="font-size:11px; ">{!mapTarifasExp[strRange][strService][decBloque].Cotizacion}</td>
+                        </tr>
+                      </apex:repeat>
+                    </apex:repeat>
+                  </apex:repeat>
+                <!--</apex:outputText>-->
+              </tbody>
+            </thead>
+          </table>
+          <br/>
+          <table class="table table-striped table-bordered">
+            <thead class="thead-light">
+              <th colspan="15" class="center">Servicios de los convenios</th>
+              <tbody>
+                <tr>
+                  <th width="16%" class="thead-light verticalTH">Rango Km</th>
+                  <th width="16%" class="thead-light verticalTH">Servicio</th>
+                  <th width="16%" class="thead-light verticalTH">Monto</th>
+                  <th width="16%" class="thead-light verticalTH"></th>
+                  <th width="16%" class="thead-light verticalTH"></th>
+                </tr>
+                <apex:repeat value="{!listRangeServ}" var="strRange">
+                  <!--<apex:repeat value="{!listServicios}" var="strServ">-->
+                    <tr>
+                      <td align="left" style="font-size:11px; ">{!mapServicios[strRange].rango}</td>
+                      <td align="left" style="font-size:11px; ">{!mapServicios[strRange].Servicio}</td>
+                      <!--<td align="left" style="font-size:11px; ">{!strServ}</td>-->
+                      <td align="left" style="font-size:11px; ">{!mapServicios[strRange].Monto}</td>
+                      <td align="left" style="font-size:11px; ">{!mapServicios[strRange].servicesCant}</td>
+                      <td align="left" style="font-size:11px; ">{!mapServicios[strRange].Cotizacion}</td>
+                    </tr>
+                  <!--</apex:repeat>-->
+                </apex:repeat>
+              </tbody>
+            </thead>
+            
+          </table>
+        </apex:pageBlockSection>
+      </apex:pageBlock>
+    </apex:pageBlock>
+  </apex:form>
+</apex:page>
