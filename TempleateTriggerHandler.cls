@@ -351,7 +351,6 @@ public class TempleateTriggerHandler {
                         , fleteE__c = objQLine.FLETE__c
                         , ACKES__c = objQLine.ACK__c
                         ,KG_ADICIONAL__c = objQline.KG_ADICIONAL__c
-                        
 				);
                 if(this.blnCostoBaseGMP){
                     if(objQLine.Tarifa__C.contains('TARIFA T7_'))
@@ -390,6 +389,10 @@ public class TempleateTriggerHandler {
                 }
                 
                 if(!this.blnCostoBaseGMP){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es una cotización de costo base más excedente o de guía multipieza (Es por costos fijos por tarifa)
+                    strRangeDest = '';
+                    if(objTempleateLine.Destiny__c != null)
+                        strRangeDest = objTempleateLine.Destiny__c;
+                    else strRangeDest = objTempleateLine.Rango_KM__c;
                     if(!(objTempleateLine.Tarifa__C == 'TARIFA T7' && objTempleateLine.Zona_Plus__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es una tarifa t7 que sea zona plus
                         if(strTarifaResp == '') //Salvador Ramírez (sramirez@freewayconsulting.com): Si aún no se respalda la tarifa anterior
                             contador = 0; //Salvador Ramírez (sramirez@freewayconsulting.com): El contador se queda en 0
@@ -404,12 +407,12 @@ public class TempleateTriggerHandler {
                         } else {
                             if(!mapFlete.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa no tiene la tarifa
                                 mapFlete.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea un nuevo registro de mapa con esa tarifa
-                            if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
-                                if(mapEAD.containsKey(objTempleateLine.Rango_KM__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si hay un rango de km con costo de EAD
-                                    objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(objTempleateLine.Rango_KM__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se le resta al subtotal
+                            if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
+                                if(mapEAD.containsKey(strRangeDest)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si hay un rango de km con costo de EAD
+                                    objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Se le resta al subtotal
                                 objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, contador); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo del flete
-                                mapFlete.get(objTempleateLine.Tarifa__c).put(objTempleateLine.Rango_KM__c, objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en su rango de km el costo que tuvo el flete
-                            } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__c).get(objTempleateLine.Rango_KM__c);
+                                mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en su rango de km el costo que tuvo el flete
+                            } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
                         }
                         if(this.blnRAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización con RAD
                             if(objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7'){
@@ -417,10 +420,10 @@ public class TempleateTriggerHandler {
                             } else {
                                 if(!mapRAD.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa de RAD no tiene la tarifa
                                     mapRAD.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea una nueva llave
-                                if(!mapRAD.get(objTempleateLine.Tarifa__c).containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa que respalda el costo de RAD no tiene el rango de km 
+                                if(!mapRAD.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa que respalda el costo de RAD no tiene el rango de km 
                                     objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por RAD
-                                    mapRAD.get(objTempleateLine.Tarifa__c).put(objTempleateLine.Rango_KM__c, objTempleateLine.RAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
-                                } else objTempleateLine.RAD__c = mapRAD.get(objTempleateLine.Tarifa__c).get(objTempleateLine.Rango_KM__c);
+                                    mapRAD.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.RAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
+                                } else objTempleateLine.RAD__c = mapRAD.get(objTempleateLine.Tarifa__c).get(strRangeDest);
                             }
                         }
                         if(this.blnEAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando EAD
@@ -428,18 +431,18 @@ public class TempleateTriggerHandler {
                                 if(objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7'){
                                     objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
                                 } else {
-                                    if(!mapEAD.containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
+                                    if(!mapEAD.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
                                         objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por EAD de ese rango
-                                        mapEAD.put(objTempleateLine.Rango_KM__c, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
-                                    } else  objTempleateLine.EAD__c = mapEAD.get(objTempleateLine.Rango_KM__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
+                                        mapEAD.put(strRangeDest, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
+                                    } else  objTempleateLine.EAD__c = mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
                                 }
                             }
                         }
                         if(objQline.ZonaPlus__c){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando zona plus
-                            if(!mapZPL.containsKey(objTempleateLine.Rango_KM__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay un costo de zona plus para ese rango
+                            if(!mapZPL.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay un costo de zona plus para ese rango
                                 objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.RAD__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c; //Salvador Ramírez (sramirez@freewayconsulting.com): se calcula de acuerdo a las reglas de paquetexpress
-                                mapZPL.put(objTempleateLine.Rango_KM__c, objTempleateLine.EAD__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el costo en su rango de km
-                            } else objTempleateLine.EAD__c = mapZPL.get(objTempleateLine.Rango_KM__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Si el rango de km ya tiene un costo de zona plus se asigna al rango actual.
+                                mapZPL.put(strRangeDest, objTempleateLine.EAD__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el costo en su rango de km
+                            } else objTempleateLine.EAD__c = mapZPL.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si el rango de km ya tiene un costo de zona plus se asigna al rango actual.
 
                         }
                         strTarifaResp = objTempleateLine.Tarifa__c;//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda la tarifa para la siguiente vuelta del recorrido
@@ -448,7 +451,7 @@ public class TempleateTriggerHandler {
                     //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización de costo base más excedente
                     if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
                         if(this.blnCostoBaseGMP){
-                            String strRangeDest = '';
+                            strRangeDest = '';
                             if(objQLine.Destiny__c != null)
                                 strRangeDest = objQLine.Destiny__c;
                             else strRangeDest = objQLine.Rango_KM__c;
@@ -473,7 +476,7 @@ public class TempleateTriggerHandler {
                     else if(!objTempleateLine.Zona_Plus__c){//ESTANDAR  
                         if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
                             if(this.blnCostoBaseGMP){
-                                String strRangeDest = '';
+                                strRangeDest = '';
                                 if(objQLine.Destiny__c != null)
                                     strRangeDest = objQLine.Destiny__c;
                                 else strRangeDest = objQLine.Rango_KM__c;
@@ -496,7 +499,7 @@ public class TempleateTriggerHandler {
                         }                                        
                     }       
                     else if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){//ZONA PLUS
-                        String strRangeDest = '';
+                        strRangeDest = '';
                         if(objQLine.Destiny__c != null)
                             strRangeDest = objQLine.Destiny__c;
                         else strRangeDest = objQLine.Rango_KM__c;
