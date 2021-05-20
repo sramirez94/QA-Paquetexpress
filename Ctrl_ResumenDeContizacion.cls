@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @group             : 
+ * @last modified on  : 05-19-2021
+ * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+ * Modifications Log 
+ * Ver   Date         Author                               Modification
+ * 1.0   05-19-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+**/
 public class Ctrl_ResumenDeContizacion {
 
     public boolean Sipweb  					{get;set;}
@@ -71,6 +81,8 @@ public class Ctrl_ResumenDeContizacion {
     public Decimal decMontoTotalT7ZP {get; set;}
     public Decimal totalAmountQZP {get;set;}
     public Decimal decTotProp {get;set;}
+    public Integer IntAnioVigencia {get;set;}
+    public String strFechaVigencia {get;set;}
 
     public Ctrl_ResumenDeContizacion (ApexPages.StandardController sc){
 		Decimal coutFee = 0;
@@ -191,6 +203,8 @@ public class Ctrl_ResumenDeContizacion {
         this.listRangeProp           = new List<String>();
         this.mapTotalesT7ZP          = new Map<String, Decimal>();
         this.mapDescT7ZP             = new Map<String, Decimal>();
+        this.IntAnioVigencia         = 0;
+        this.strFechaVigencia        = '';
 
         this.mapTotalZP.put('Disc', 0);
         this.mapTotal.put('Disc', 0);
@@ -198,6 +212,8 @@ public class Ctrl_ResumenDeContizacion {
         this.mapTotalZP.put('Full', 0);
         this.mapTotal.put('Quote', 0);
         this.mapTotalZP.put('Quote', 0);
+        this.IntAnioVigencia = System.Date.today().year();
+        this.strFechaVigencia = '31/12/' + String.valueOf(IntAnioVigencia);
 
         for(String keyFee: this.listFee){
             this.mapTotalByFee.put(keyFee, new QuoteWP());
