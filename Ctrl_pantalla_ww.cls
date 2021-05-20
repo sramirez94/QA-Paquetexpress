@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 04-13-2021
+ * @last modified on  : 04-19-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -447,17 +447,17 @@ public class Ctrl_pantalla_ww {
         this.listPlantillaLineItems = new List<TempleateLine__c>();
         this.blnZP = false;
         for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
-            String strRangeDest = '';
-            if(line.Destiny__c != null){
-                if(!this.mapRangosByDest.containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')')) //08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Valida si ya existe en el mapa
-                    this.mapRangosByDest.put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line.Rango_KM__c);//08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Se carga el valor, este mapa guarda el equivalente en rango de km de cada destino
-                line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
-            }
-            if(line.Zona_Plus__c && line.EAD__c > 0)
-                this.blnZP = true;
-            else this.blnZP = false;
-            this.listPlantillaLineItems.add(line);
-        }
+              String strRangeDest = '';
+              if(line.Destiny__c != null){
+                   if(!this.mapRangosByDest.containsKey(line.Destiny__c + ' (' + line.Rango_KM__c + ')')) //08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Valida si ya existe en el mapa
+                         this.mapRangosByDest.put(line.Destiny__c + ' (' + line.Rango_KM__c + ')', line.Rango_KM__c);//08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Se carga el valor, este mapa guarda el equivalente en rango de km de cada destino
+                         line.Rango_KM__c = line.Destiny__c + ' (' + line.Rango_KM__c + ')';
+               }
+              if(line.Zona_Plus__c && line.EAD__c > 0)
+                  this.blnZP = true;
+              else this.blnZP = false;
+                   this.listPlantillaLineItems.add(line);
+         }
 		this.strTempleateId = objtempleate.Id;      
         this.mapLines       = new Map<String, List< TempleateLine__c>>();
         this.mapLinesZP     = new Map<String, List<TempleateLine__c>>();
@@ -477,41 +477,33 @@ public class Ctrl_pantalla_ww {
         for(TempleateLine__c line : listPlantillaLineItems){
             setTarifas.add(line.Tarifa__c);
             if(!line.Zona_Plus__c){
-               if(line.Tarifa__c == 'TARIFA T7'){
-                   if(line.ACK__c >= 66)
-                   {
-                       line.ACK__c = 65;
-                       
-                   }
-                   else
-                   {
-                    line.ACK__c = line.ACK__c;  
-                   }
-                }
+                if(line.Tarifa__c == 'TARIFA T7'){
+                    if(line.ACK__c >= 66){
+                        line.ACK__c = 65;
+                     }else{
+                           line.ACK__c = line.ACK__c;  
+                         }
+                 }
                 if(line.Tarifa__c == 'TARIFA T7-V' ){
-                   if(line.ACK__c >= 66)
-                   {
+                   if(line.ACK__c >= 66){
                        line.ACK__c = 65;
-                   }
-                   else
-                   {
-                    line.ACK__c = line.ACK__c;  
-                   }                
-                  
-                }
-               if(line.Tarifa__c == 'TARIFA T7-P'){
-                    line.ACK__c = 0;                
-                }
+                    }else{
+                           line.ACK__c = line.ACK__c;  
+                        }  
+                 }
+                if(line.Tarifa__c == 'TARIFA T7-P'){
+                     line.ACK__c = 0;                
+                 }
                 if(line.Tarifa__c == 'SEG-2D' || line.Tarifa__c == 'SEG-DS' || line.Tarifa__c == 'SEG-A12'){
-                    line.FLETE__c = line.FLETE__c;
-                }
-                if(!mapLines.containsKey(line.Tarifa__c))
-                    mapLines.put(line.Tarifa__c, new List<TempleateLine__c>{line});
-                else{
-                    if(!mapLines.get(line.Tarifa__c).contains(line))
-                    	mapLines.get(line.Tarifa__c).add(line);
-                }
-            } else{
+                     line.FLETE__c = line.FLETE__c;
+                 }
+                 if(!mapLines.containsKey(line.Tarifa__c))
+                      mapLines.put(line.Tarifa__c, new List<TempleateLine__c>{line});
+                 else{
+                      if(!mapLines.get(line.Tarifa__c).contains(line))
+                    	  mapLines.get(line.Tarifa__c).add(line);
+                    }
+            }else{
                 if(!mapLinesZP.containsKey(line.Tarifa__c))
                     mapLinesZP.put(line.Tarifa__c, new List<TempleateLine__c>{line});
                     
@@ -1671,7 +1663,7 @@ public class Ctrl_pantalla_ww {
         system.debug('objTarifa: ' + mapTarifas);
         if(Test.isRunningTest()){
             for(TempleateLine__c line : this.listPlantillaLineItems){
-                Decimal decFletePrueba = getFlete(1150, 'RAD;EAD;ACK', line);
+                Decimal decFletePrueba = getFlete(1150, 'RAD;EAD;ACK', line, 1);
                 Decimal decAcusesPrueba = getAcuses(line);
                 Boolean blnValidaPruebas = ValidaSubtotalVsServ(line);
                 blnValidaPruebas = ValidaCostosGMPCBME(line);
@@ -1701,119 +1693,97 @@ public class Ctrl_pantalla_ww {
     public List<TempleateLine__c> queryTempleateLine(String templeateId){
         List<TempleateLine__c> listPlantillaLineItems = new List<TempleateLine__c>();
         try{
-            if (strTipoQuote == 'byDelivery'){
-                listPlantillaLineItems = [SELECT Id
-                , Quantity__c
-                , EditMode__c
-                , Tarifa__c
-                , Weight__c
-                , Vol__c
-                , Rango_KM__c
-                , Pack_Seg__c
-                , Zona_Plus__c
-                , ACK__c
-                , EAD__c
-                , RAD__c
-                , SEG__c
-                , PackWeightAVG__c
-                , PackVolAVG__c
-                , CustomerPrice__c
-                , TarifaDominante__c
-                , FLETE__c
-                ,Guia__c
-                , fleteE__c
-                , ACKES__c
-                ,KG_ADICIONAL__c
-                , Destiny__c
-                , FleteAdic__c, RADAdic__c, EADAdic__c, TotalAdic__c
-                FROM TempleateLine__c where Templeate__c =: templeateId  ORDER BY CreatedDate];
-            } else {
-                listPlantillaLineItems = [SELECT Id
-                , Quantity__c
-                , EditMode__c
-                , Tarifa__c
-                , Weight__c
-                , Vol__c
-                , Rango_KM__c
-                , Pack_Seg__c
-                , Zona_Plus__c
-                , ACK__c
-                , EAD__c
-                , RAD__c
-                , SEG__c
-                , TarifaDominante__c
-                , PackWeightAVG__c
-                , PackVolAVG__c
-                , CustomerPrice__c
-                , FLETE__c
-                ,Guia__c
-                ,fleteE__c
-                ,ACKES__c
-                ,KG_ADICIONAL__c
-                , Destiny__c
-                , FleteAdic__c, RADAdic__c, EADAdic__c, TotalAdic__c
-                FROM TempleateLine__c where Templeate__c =: templeateId  ORDER BY CreatedDate];
-            }
-            
-        }
-        catch (Exception ex){
-            System.debug(ex.getMessage());
-        }
+             if(strTipoQuote == 'byDelivery'){
+                listPlantillaLineItems = [SELECT Id, Quantity__c      , EditMode__c, 
+                                                     Tarifa__c        , Weight__c, 
+                                                     Vol__c           , Rango_KM__c, 
+                                                     Pack_Seg__c      , Zona_Plus__c, 
+                                                     ACK__c           , EAD__c, 
+                                                     RAD__c           , SEG__c,
+                                                     FLETE__c         , Guia__c,
+                                                     fleteE__c        , ACKES__c,
+                                                     FleteAdic__c     , RADAdic__c, 
+                                                     EADAdic__c       , TotalAdic__c,
+                                                     KG_ADICIONAL__c  , Destiny__c,
+                                                     PackWeightAVG__c , PackVolAVG__c,
+                                                     CustomerPrice__c , TarifaDominante__c
+                                            FROM TempleateLine__c 
+                                            WHERE Templeate__c =: templeateId ORDER BY CreatedDate];
+             }else{
+                listPlantillaLineItems = [SELECT Id, Quantity__c      , EditMode__c,
+                                                     Tarifa__c        , Weight__c,
+                                                     Vol__c           , Rango_KM__c,
+                                                     Pack_Seg__c      , Zona_Plus__c,
+                                                     ACK__c           , EAD__c,
+                                                     RAD__c           , SEG__c,
+                                                    TarifaDominante__c, PackWeightAVG__c,
+                                                     PackVolAVG__c    , CustomerPrice__c,
+                                                     FLETE__c         , Guia__c,
+                                                     fleteE__c        , ACKES__c,
+                                                     KG_ADICIONAL__c  , Destiny__c,
+                                                     FleteAdic__c     , RADAdic__c, 
+                                                     EADAdic__c       , TotalAdic__c
+                                           FROM TempleateLine__c 
+                                           WHERE Templeate__c =: templeateId ORDER BY CreatedDate];
+               }
+        }catch(Exception ex){
+                      System.debug(ex.getMessage());
+             }
         return listPlantillaLineItems;
     }
     
     public Templeate__c queryTempleate(){
         Templeate__c objPlantilla = new Templeate__c();
         try{
-            objPlantilla = [SELECT Id
-            , ServiciosAdicionales__c
-            , Acuse__c
-            , Electronicas__c
-            , Impresas__c
-            , TipoCotizacion__c
-            , Fecha_sugar__c
-            FROM Templeate__c where Quote__c =: this.strIdQuote ORDER BY CreatedDate DESC LIMIT 1];
-        }
-        catch (Exception ex){
-            System.debug(ex.getMessage());
-        }
+            objPlantilla = [SELECT Id, ServiciosAdicionales__c , Acuse__c,
+                                       Electronicas__c         , Impresas__c,
+                                       TipoCotizacion__c       , Fecha_sugar__c
+                            FROM Templeate__c 
+                            WHERE Quote__c =: this.strIdQuote ORDER BY CreatedDate DESC LIMIT 1];
+          }catch(Exception ex){
+                 System.debug(ex.getMessage());
+               }
         return objPlantilla;
     }
     
     //metodos involucrados en el problema que presentamos a soporte tecnico.
      
-    public static Decimal getFlete(Decimal decCustomerPrice, String strServiciosAdd, TempleateLine__c objtempleateItem){
+    public static Decimal getFlete(Decimal decCustomerPrice, String strServiciosAdd, TempleateLine__c objtempleateItem, Integer contador){
         Decimal decFlete = 0;
         
         if(!objtempleateItem.Zona_Plus__c){
             if((objtempleateItem.Tarifa__c == 'TARIFA T7' || objtempleateItem.Tarifa__c == 'TARIFA T7-V') &&  objtempleateItem.ACK__c >= 66){
                 objtempleateItem.ACK__c = 65;
             }
-            System.debug('tarifa: ' + objtempleateItem.Tarifa__c + '. customer: ' + decCustomerPrice + '. Acuse: ' + objtempleateItem.ACK__c);
             if(objtempleateItem.Tarifa__c == 'TARIFA T7-V' || objtempleateItem.Tarifa__c == 'TARIFA T7-P'){
                 if(objtempleateItem.Tarifa__c == 'TARIFA T7-V')
                     decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c; 
                 else decFlete = decCustomerPrice;
             } else decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
-            /*decFlete = decCustomerPrice;*/
             if(strServiciosAdd != null){
-                if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD'))
+                if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD') && contador == 0)
                     decFlete = decFlete / 1.22;
-                else if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') || strServiciosAdd.contains('RAD'))
+                else if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') || strServiciosAdd.contains('RAD') || contador > 0)
                     decFlete = decFlete / 1.11;
                 else decFlete = decFlete;
             }
-
         } else if(objtempleateItem.Zona_Plus__c) {
             if(objtempleateItem.Tarifa__c == 'TARIFA T7' &&  objtempleateItem.ACK__c >= 66){
                 objtempleateItem.ACK__c = 65;
             }
             decFlete = decCustomerPrice - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
             if(strServiciosAdd != null){
-                decFlete = decFlete;
+                if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD') && contador == 0)
+                    decFlete = decFlete / 1.22;
+                else if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') || strServiciosAdd.contains('RAD') || contador > 0)
+                    decFlete = decFlete / 1.11;
+                else decFlete = decFlete;
             }
+            /*if(strServiciosAdd != null){
+                decFlete = decFlete;
+            }*/
         }
-        return decFlete;
+        return decFlete.setScale(2);
     }
     
     public static Decimal getFletes(Decimal decCustomerPrice, String strServiciosAdd, TempleateLine__c objtempleateItem){
