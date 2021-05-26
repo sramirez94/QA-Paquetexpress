@@ -740,7 +740,7 @@
                 <button type="button" class="btn btn-primary" ng-show="hasRecord()" data-toggle="modal" data-target="#ModalApprovalOD">
                     Enviar a Autorización <span class="glyphicon glyphicon-check"></span>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="createQuotesOD()">
+                <button type="button" class="btn btn-primary" ng-click="createQuotesOD()" ng-show="OD.blnBotonActivo">
                     Guardar <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
                 <button type="button" class="btn btn-default" ng-click="backOD()" ng-show="ODstep2 && isAdmin()">
@@ -799,6 +799,7 @@
                                             <div class="list-group" id="list2">
                                                 <a href="#" class="list-group-item active">Tarifas Seleccionadas <input title="toggle all" type="checkbox" class="all pull-right" ng-model="OD.blnFeeRemoveAll" ng-click="addAll('fee', 'remove')"/></a>
                                                 <a href="#" class="list-group-item" ng-repeat="(i, fee) in OD.FeeSelect.selected" ng-click="clickFee(i, 'feeRemove')">
+                                                    
                                                     <span ng-bind="fee.label"></span>
                                                     <span class="glyphicon glyphicon-remove" ng-show="fee.blnSelected"/>
                                                 </a>
@@ -1203,6 +1204,7 @@
                     , blnServiceRemoveAll :false
                     , OriginDisabled : false
                     , OnlineDocByDestiny : false
+                    , blnBotonActivo : true
                     , blnCotizaT7ZP : false
                     , strOrigen : ''
                     , listFee : {
@@ -2419,51 +2421,53 @@
                                     }
                                 });
                                 Quote.PAQ_TipoServicio__c = 'Estándar terrestre (STD)';
-                                j$.each($scope.OD.listRange, function(keyRange, strRange){
-                                    var QuoteItemT7ZPTotales = {
-                                        SBQQ__Quantity__c: 0
-                                        , SBQQ__Discount__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltDescuento * 100
-                                        , SBQQ__CustomerPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta
-                                        , SBQQ__NetPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena
-                                        , SBQQ__SpecialPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltCost
-                                        , QuoteTotal__c: 0
-                                        , PackWeightAVG__c: $scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR
-                                        , PackVolAVG__c: 0
-                                        , ACK__c: 0
-                                        , EAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltZP
-                                        , RAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltRAD
-                                        , SEG__c: 0
-                                        , Tarifa__c: 'TARIFA T7'
-                                        //, Rango_KM__c: strRange
-                                        , ZonaPlus__c: true
-                                        , Pack_Seg__c: 0
-                                        , SBQQ__VolumeDiscount__c: 0
-                                        , SBQQ__Quote__c: Quote.Id
-                                        , Destiny__c : ''
-                                        , SBQQ__Description__c : 'Propuesta'
-                                        , Id : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].Id
-                                        , Flete__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
-                                        , Guia__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
-                                    };
-                                    if($scope.OnlineDocByDestiny){
-                                        /*let rango = '';
-                                        rango = strRange.replace(keyRange + ' (');
-                                        rango = rango.replace(')');*/
-                                        QuoteItemT7ZPTotales.Rango_KM__c = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].strRango;
-                                        QuoteItemT7ZPTotales.Destiny__c = keyRange;
-                                    } else {
-                                        let rango = '';
-                                        if(strRange.includes('(')){
-                                            rango = strRange.replace(keyRange + ' (', '');
-                                            rango = rango.replace(')', '');
+                                if($scope.OD.blnCotizaT7ZP){
+                                    j$.each($scope.OD.listRange, function(keyRange, strRange){
+                                        var QuoteItemT7ZPTotales = {
+                                            SBQQ__Quantity__c: 0
+                                            , SBQQ__Discount__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltDescuento * 100
+                                            , SBQQ__CustomerPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta
+                                            , SBQQ__NetPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena
+                                            , SBQQ__SpecialPrice__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltCost
+                                            , QuoteTotal__c: 0
+                                            , PackWeightAVG__c: $scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR
+                                            , PackVolAVG__c: 0
+                                            , ACK__c: 0
+                                            , EAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltZP
+                                            , RAD__c: $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltRAD
+                                            , SEG__c: 0
+                                            , Tarifa__c: 'TARIFA T7'
+                                            //, Rango_KM__c: strRange
+                                            , ZonaPlus__c: true
+                                            , Pack_Seg__c: 0
+                                            , SBQQ__VolumeDiscount__c: 0
+                                            , SBQQ__Quote__c: Quote.Id
+                                            , Destiny__c : ''
+                                            , SBQQ__Description__c : 'Propuesta'
+                                            , Id : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].Id
+                                            , Flete__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
+                                            , Guia__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
+                                        };
+                                        if($scope.OnlineDocByDestiny){
+                                            /*let rango = '';
+                                            rango = strRange.replace(keyRange + ' (');
+                                            rango = rango.replace(')');*/
+                                            QuoteItemT7ZPTotales.Rango_KM__c = $scope.OD.mapPropuesta['PROP'].ranges[keyRange].strRango;
                                             QuoteItemT7ZPTotales.Destiny__c = keyRange;
                                         } else {
-                                            rango = strRange;
-                                        }
-                                        QuoteItemT7ZPTotales.Rango_KM__c = rango;
-                                    } 
-                                    listQuoteItem.push(QuoteItemT7ZPTotales);
-                                });
+                                            let rango = '';
+                                            if(strRange.includes('(')){
+                                                rango = strRange.replace(keyRange + ' (', '');
+                                                rango = rango.replace(')', '');
+                                                QuoteItemT7ZPTotales.Destiny__c = keyRange;
+                                            } else {
+                                                rango = strRange;
+                                            }
+                                            QuoteItemT7ZPTotales.Rango_KM__c = rango;
+                                        } 
+                                        listQuoteItem.push(QuoteItemT7ZPTotales);
+                                    });
+                                }
                         }
                         if($scope.OD.blnZP)
                             Quote.Servicios_adicionales__c += ";EAD Zona plus";
@@ -5201,6 +5205,7 @@
                                 );
                                 if($scope.DML.blnSuccess)
                                     $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
+                                $scope.OD.blnBotonActivo = false;
                                 $scope.$apply();
                                 j$.unblockUI();
 
@@ -5492,7 +5497,7 @@
                                 );
                                 if($scope.DML.blnSuccess)
                                     $scope.SuccessMessage = 'Se han guardado los cambios con exito';
-
+                                $scope.OD.blnBotonActivo = false;
                                 $scope.$apply();
                                 j$.unblockUI();
                             }
