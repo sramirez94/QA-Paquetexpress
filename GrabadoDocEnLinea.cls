@@ -584,8 +584,10 @@ public class GrabadoDocEnLinea {
                             }
                             if(!this.mapExpAdic.containsKey(cot.Tarifa__c))
                                 this.mapExpAdic.put(cot.Tarifa__c, new Map<String, Decimal>());
-                            if(!this.mapExpAdic.get(cot.Tarifa__c).containsKey(strRangeDest))
-                                this.mapExpAdic.get(cot.Tarifa__c).put(strRangeDest, cot.KG_ADICIONAL__c);
+                            if(cot.KG_ADICIONAL__c != 0 && cot.KG_ADICIONAL__c != null){
+                                if(!this.mapExpAdic.get(cot.Tarifa__c).containsKey(strRangeDest))
+                                    this.mapExpAdic.get(cot.Tarifa__c).put(strRangeDest, cot.KG_ADICIONAL__c);
+                            }
                             if(!this.mapQuotesExp.containsKey(cot.Tarifa__c)){
                                 this.mapQuotesExp.put(cot.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>());
                             }
@@ -594,13 +596,7 @@ public class GrabadoDocEnLinea {
                         if(cot.Destiny__c != null){
                             if(this.blnCostoBaseGMP){
                                 if(cot.Flete__c != 0){
-                                    /*if(!this.listRangeDestiny.contains(cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', ''))){
-                                        String Destino = '';
-                                        if(cot.Destiny__c.contains('('))
-                                            Destino = cot.Destiny__c.replace(cot.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                                        else Destino = cot.Destiny__c;
-                                        this.listRangeDestiny.add(Destino);
-                                    }*/
+
                                 }
                             } else {
                                 if(!this.listRangeDestiny.contains(cot.Destiny__c + ' (' + cot.Rango_KM__c + ')')){
@@ -1499,6 +1495,7 @@ public class GrabadoDocEnLinea {
                             listkmServicesTrif.add(kmServicesTrif);
                     }
                 }
+               
                 servicesTrifDtlList                     = new List<ObjDocEnLinea.servicesTrifDtl>{servicesTrifDtl};
                 if(listkmServicesTrif != null && listkmServicesTrif.size() != 0)
                     kmServicesTrif1.kmServicesTrif          = listkmServicesTrif;
@@ -1517,6 +1514,8 @@ public class GrabadoDocEnLinea {
                 odc.body                                = body;
                 header.security                         = sec;
                 odc.header                              = header;
+                
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM, 'Terminó el proceso')); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
                 //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc))); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
                 //Salvador Ramírez (sranmirez@freewayconsulting.com): Si no se va a pedir el grabado y solo se quiere analizar el json que se genere deben comentarse los siguientes if (requeridocrearusuario(), blnrequierecrearusuario y this.blngrabartarifas)
                 if(requeridoCrearUsuario(cotizacion))
@@ -1967,19 +1966,8 @@ public class GrabadoDocEnLinea {
             
 
             if(!(objQLine.Tarifa__c == 'TARIFA T7' && objQLine.ZonaPlus__c)){
-                /*if(objQLine.Destiny__c != null)
-                    strRangeDest = objQLine.Destiny__c.replace(objQLine.Rango_KM__c, '').replace(' (', '').replace(')', '');
-                else strRangeDest = objQLine.Rango_KM__c;*/
                 if(!this.listRangeDestiny.contains(strRangeDest) && objQline.Flete__c > 0)
                     this.listRangeDestiny.add(strRangeDest);
-                /*if(!this.mapBloques.containsKey(objQLine.PackWeightAVG__c))
-                    this.mapBloques.put(objQLine.PackWeightAVG__c, new Map<String, SBQQ__QuoteLine__c>());
-                if(!this.mapBloques.get(objQLine.PackWeightAVG__c).containsKey(strRangeDest))
-                    this.mapBloques.get(objQLine.PackWeightAVG__c).put(strRangeDest, objQLine);*/
-    
-    
-    
-    
                 if(!this.mapService.get('ADD').mapRanges.containsKey(strRangeDest))
                     this.mapService.get('ADD').mapRanges.put(strRangeDest, objQLine.KG_ADICIONAL__c);
     
@@ -2069,31 +2057,4 @@ public class GrabadoDocEnLinea {
             this.mapRanges      = new Map<String, Decimal>();
         }
     }
-    /*public class QuoteWP{
-        public Decimal totalPaquetes {get; set;}
-        public Decimal frecPaquetes {get; set;}
-        public Decimal totalAmount {get; set;}
-        public Decimal totalNormal {get; set;}
-        public Decimal totalSEG {get; set;}
-        public Decimal totalDiscount {get; set;}
-
-        public QuoteWP (){
-            this.totalPaquetes = 0;
-            this.frecPaquetes = 0;
-            this.totalAmount = 0;
-            this.totalNormal = 0;
-            this.totalSEG = 0;
-            this.totalDiscount = 0;
-        }
-
-        public QuoteWP(Decimal totalPaquetes, Decimal total, Decimal totalAmount){
-            this.totalPaquetes = totalPaquetes;
-            if(total > 0)
-                this.frecPaquetes = (totalPaquetes / total) * 100;
-            else
-                this.frecPaquetes = 0;
-
-            this.totalAmount = totalAmount;
-        }
-    }*/
 }
