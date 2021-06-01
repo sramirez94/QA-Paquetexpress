@@ -1,8 +1,8 @@
 /**
  * @description       : 
- * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
  * @group             : 
- * @last modified on  : 04-21-2021
+ * @last modified on  : 06-01-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -12,6 +12,8 @@ global class BatchSeguimientoCBME3 implements Database.Batchable<sObject>, Datab
     public String query;
     public String AccId;
     public String strIdQuote;
+    public String strInicio;
+    public String strFin;
     public Boolean blnRAD                                                           = false;
     public Boolean blnEAD                                                           = false;
     public Boolean blnACK                                                           = false;
@@ -23,102 +25,155 @@ global class BatchSeguimientoCBME3 implements Database.Batchable<sObject>, Datab
     public List<Decimal> listBloques                                                = new list<Decimal>();
     public Map<String, Decimal> mapFlete                                            = new Map<String, Decimal>();
     public List<FrecuenciaDeEnvios__c> insertarF                                    = new List<FrecuenciaDeEnvios__c>();
+    public List<Frecuencia_real_envio__c> listFrec                                  = new List<Frecuencia_real_envio__c>();
 
     public BatchSeguimientoCBME3(String AccountId, String Inicio, String Fin, String strQuote, Boolean RAD, Boolean EAD, Boolean ACK, Map<String, Decimal> mapAc) {
-        AccId = AccountId;
+        AccId           = AccountId;
         this.strIdQuote = strQuote;
-        this.blnRAD = RAD;
-        this.blnEAD = EAD;
-        this.blnACK = ACK;
-        //this.mapAcuse = mapAc;
-        query = 'SELECT Id, Cuenta__c, Cuenta__r.ParentId, Fecha__c, Linea__c, Rango_Kms__c, Peso_de_bultos__c, Tarifa_de_Bulto__c, ' +
-            	'Bultos__c, Volumen_de_bultos__c, Servicio__c FROM Seguimiento_de_descuento_real__c ' +
-            	'WHERE (Cuenta__c = \'' + AccountId + '\' OR Cuenta__r.ParentId = \'' + AccountId + '\') ' +
-            	' AND Fecha__c >= ' + Inicio + ' AND Fecha__c <= ' + Fin +
-            	' AND Servicio__c = \'STD-T\' AND Linea__c = \'DOC_LINEA_NORMAL\'';
+        this.blnRAD     = RAD;
+        this.blnEAD     = EAD;
+        this.blnACK     = ACK;
+        this.mapAcuse   = mapAc;
+        this.strInicio  = Inicio;
+        this.strFin     = Fin;
+        //if(!test.isRunningTest()){
+            query = 'SELECT Id, Cuenta__c, Cuenta__r.ParentId, Fecha__c, Linea__c, Rango_Kms__c, Peso_de_bultos__c, Tarifa_de_Bulto__c, ' +
+                    'Bultos__c, Volumen_de_bultos__c, Servicio__c, Site_Destino__c FROM Seguimiento_de_descuento_real__c ' +
+                    'WHERE (Cuenta__c = \'' + AccountId + '\' OR Cuenta__r.ParentId = \'' + AccountId + '\') ' +
+                    ' AND Fecha__c >= ' + Inicio + ' AND Fecha__c <= ' + Fin +
+                    ' AND Servicio__c = \'STD-T\' AND (Linea__c = \'DOC_LINEA_NORMAL\' OR Linea__c = \'DOC_LINEA_ZE\')';
+        /*} else {
+            String strId = 'a137i000001QQ9XAAW';
+            Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE ID = \'' + strId + '\'';
+        }*/
     }
     global Database.QueryLocator start(Database.BatchableContext bc){
         system.debug(query);
     	return Database.getQueryLocator(query);	
     }
     global void execute(Database.BatchableContext bc, List<Seguimiento_de_descuento_real__c> records){
-        for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
-            if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
-                wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
-            else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
-                wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
-        for (AcusePorGuia__mdt objACK : queryACK())
-            wp.mapACK.put(objACK.Label, objACK.Amount__c);
-        this.wp.listQuoteItem = queryQuoteItem(this.strIdQuote); //30/03/2021 Salvador (sramirez@freewayconsulting.com): se consultan los costos de flete por rango de km o  destino
-        String strRangeDest;
-        for(SBQQ__QuoteLine__c QL : this.wp.listQuoteItem){
-            strRangeDest = '';
-            if(QL.Destiny__c != null)
-                strRangeDest = QL.Destiny__c.remove(' (' + QL.Rango_KM__c + ')');
-            else strRangeDest = QL.Rango_KM__c;
-            if(!this.mapFlete.containsKey(strRangeDest))
-                this.mapFlete.put(strRangeDest, QL.Flete__c);
-            if(this.blnACK){
-                if(!this.mapAcuse.containsKey(strRangeDest))
-                    this.mapAcuse.put(strRangeDest, QL.ACK__c);
+        try{
+            for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
+                if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
+                    wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
+                else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
+                    wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
+            for (AcusePorGuia__mdt objACK : queryACK())
+                wp.mapACK.put(objACK.Label, objACK.Amount__c);
+            this.wp.listQuoteItem = queryQuoteItem(this.strIdQuote); //30/03/2021 Salvador (sramirez@freewayconsulting.com): se consultan los costos de flete por rango de km o  destino
+            String strRangeDest;
+            for(SBQQ__QuoteLine__c QL : this.wp.listQuoteItem){
+                strRangeDest = '';
+                if(QL.Destiny__c != null)
+                    strRangeDest = QL.Destiny__c.remove(' (' + QL.Rango_KM__c + ')');
+                else strRangeDest = QL.Rango_KM__c;
+                if(!this.mapFlete.containsKey(strRangeDest))
+                    this.mapFlete.put(strRangeDest, QL.Flete__c);
+                if(this.blnACK){
+                    if(!this.mapAcuse.containsKey(strRangeDest))
+                        this.mapAcuse.put(strRangeDest, QL.ACK__c);
+                }
+                if(!this.listRangeDestiny.contains(strRangeDest))
+                    this.listRangeDestiny.add(strRangeDest);
             }
-            if(!this.listRangeDestiny.contains(strRangeDest))
-                this.listRangeDestiny.add(strRangeDest);
-        }
-        Decimal tarLlena;
-        Decimal decPropuesta;
-        String strTarifa;
-        for (Seguimiento_de_descuento_real__c s: records){
-            //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorrido para llenar todas las cantidades de frecuencias
-            if(!mapFrecuencias.containsKey(s.Peso_de_bultos__c)){
-                this.mapFrecuencias.put(s.Peso_de_bultos__c, new wpFrecuencias());
-                this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos = Decimal.valueOf(s.Bultos__c);
-                this.mapFrecuencias.get(s.Peso_de_bultos__c).decPeso = Decimal.valueOf(s.Peso_de_bultos__c);
-                this.mapFrecuencias.get(s.Peso_de_bultos__c).decVolumen = Decimal.valueOf(s.Volumen_de_bultos__c);
-                this.mapFrecuencias.get(s.Peso_de_bultos__c).decPesoVol = Decimal.valueOf(s.Volumen_de_bultos__c) * 200;
-            } else {
-                this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos += Decimal.valueOf(s.Bultos__c);
+            Decimal tarLlena;
+            Decimal decPropuesta;
+            String strTarifa;
+            for (Seguimiento_de_descuento_real__c s: records){
+                //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorrido para llenar todas las cantidades de frecuencias
+                if(!mapFrecuencias.containsKey(s.Peso_de_bultos__c)){
+                    this.mapFrecuencias.put(s.Peso_de_bultos__c, new wpFrecuencias());
+                    this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos = Decimal.valueOf(s.Bultos__c);
+                    this.mapFrecuencias.get(s.Peso_de_bultos__c).decPeso = Decimal.valueOf(s.Peso_de_bultos__c);
+                    this.mapFrecuencias.get(s.Peso_de_bultos__c).decVolumen = Decimal.valueOf(s.Volumen_de_bultos__c);
+                    this.mapFrecuencias.get(s.Peso_de_bultos__c).decPesoVol = Decimal.valueOf(s.Volumen_de_bultos__c) * 200;
+                } else {
+                    this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos += Decimal.valueOf(s.Bultos__c);
+                }
+                if(!this.listBloques.contains(Decimal.valueOf(s.Peso_de_bultos__c)))
+                    this.listBloques.add(Decimal.valueOf(s.Peso_de_bultos__c));
             }
-            if(!this.listBloques.contains(Decimal.valueOf(s.Peso_de_bultos__c)))
-                this.listBloques.add(Decimal.valueOf(s.Peso_de_bultos__c));
-        }
-        for (Seguimiento_de_descuento_real__c s: records){
-            //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorrido para recotizar los montos pero ahora de las frecuencias reales obtenidas del ws
-            tarLlena = 0;
-            decPropuesta = 0;
-            strRangeDest = '';
-            if(s.Tarifa_de_Bulto__c == 'T7')
-                strTarifa = 'TARIFA T7P';
-            else if(s.Tarifa_de_Bulto__c == 'TS')
-                strTarifa = 'TARIFA SOBRE';
-            else strTarifa = 'TARIFA ' + s.Tarifa_de_Bulto__c;
-            tarLlena = wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c;
-            if(this.blnRAD)
-                tarLlena += wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c * 0.11;
-            if(this.blnEAD)
-                tarLlena += wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c * 0.11;
-            if(this.blnACK){
-                tarLlena += wp.mapACK.get(ObtieneRangoKM(s.Rango_Kms__c));
+            for (Seguimiento_de_descuento_real__c s: records){
+                //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorrido para recotizar los montos pero ahora de las frecuencias reales obtenidas del ws
+                tarLlena = 0;
+                decPropuesta = 0;
+                strRangeDest = '';
+                if(s.Tarifa_de_Bulto__c == 'T7')
+                    strTarifa = 'TARIFA T7P';
+                else if(s.Tarifa_de_Bulto__c == 'TS')
+                    strTarifa = 'TARIFA TS';
+                else strTarifa = 'TARIFA ' + s.Tarifa_de_Bulto__c;
+                tarLlena = wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c;
+                if(this.blnRAD)
+                    tarLlena += wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c * 0.11;
+                if(this.blnEAD)
+                    tarLlena += wp.mapTarifarioT.get(strTarifa).get(ObtieneRangoKM(s.Rango_Kms__c)).Flete__c * 0.11;
+                if(this.blnACK){
+                    tarLlena += wp.mapACK.get('XT');
+                }
+                if(s.Site_Destino__c != 'ALL')
+                    strRangeDest = s.Site_Destino__c;
+                else strRangeDest = ObtieneRangoKM(s.Rango_Kms__c);
+                decPropuesta = this.mapFlete.get(strRangeDest);
+                if(this.blnACK)
+                    decPropuesta += this.mapAcuse.get(strRangeDest);
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).decTotalTarifaLlena += this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos * tarLlena;
+                this.mapFrecuencias.get(s.Peso_de_bultos__c).decTotalTarifaPropuesta += decPropuesta * this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos;
             }
-            if(s.Site_Destino__c != 'ALL')
-                strRangeDest = s.Site_Destino__c;
-            else strRangeDest = ObtieneRangoKM(s.Rango_Kms__c);
-            decPropuesta = this.mapFlete.get(strRangeDest);
-            if(this.blnACK)
-                decPropuesta += this.mapAcuse.get(strRangeDest);
-            this.mapFrecuencias.get(s.Peso_de_bultos__c).decTotalTarifaLlena += this.mapFrecuencias.get(s.Peso_de_bultos__c).bultos * tarLlena;
-            this.mapFrecuencias.get(s.Peso_de_bultos__c).decTotalTarifaPropuesta += decPropuesta;
-        }
-        for(Decimal decBloque : this.listBloques){
-            //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorridos para obtener los descuentos en base a lo recotizado anteriormente, se recorren todos los bloques ya que se debe obtener por costos finales
-            if(this.mapFrecuencias.containsKey(String.ValueOf(decBloque))){
-                this.mapFrecuencias.get(String.valueOf(decBloque)).decDescuento = this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaPropuesta / this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaLlena - 1;
+            for(Decimal decBloque : this.listBloques){
+                //29/03/2021 Salvador (sramirez@freewayconsulting.com): Recorridos para obtener los descuentos en base a lo recotizado anteriormente, se recorren todos los bloques ya que se debe obtener por costos finales
+                if(this.mapFrecuencias.containsKey(String.ValueOf(decBloque))){
+                    this.mapFrecuencias.get(String.valueOf(decBloque)).decDescuento = this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaPropuesta / this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaLlena - 1;
+                }
             }
+        } catch(Exception ex){
+            System.debug('Error en execute BATCHSEGUIMIENTOCBME3: ' + ex.getLineNumber()+' '+ex.getMessage());
         }
+        
     }
     global void finish(Database.BatchableContext bc){
         //Al retomar este desarrollo esta nota te va a servir:
         //Es necesario guardar lo que está en mapFrecuencias en el objeto de frecuencias, deben crearse los campos para almacenar los totales y también debe hacerse un mapa que guarde las frecuencias totales.
+        try{
+            for(Decimal decBloque : this.listBloques){
+                Frecuencia_real_envio__c FR = new Frecuencia_real_envio__c();
+                FR.Bultos__c = this.mapFrecuencias.get(String.valueOf(decBloque)).bultos;
+                FR.Descuento__c = this.mapFrecuencias.get(String.valueOf(decBloque)).decDescuento;
+                FR.Peso__c = this.mapFrecuencias.get(String.valueOf(decBloque)).decPeso;
+                FR.Peso_vol__c = this.mapFrecuencias.get(String.valueOf(decBloque)).decPesoVol;
+                FR.Total_propuesta__c = this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaPropuesta;
+                FR.Total_tarifa_llena__c = this.mapFrecuencias.get(String.valueOf(decBloque)).decTotalTarifaLlena;
+                FR.Cuenta__c = AccId;
+                this.listFrec.add(FR);
+            }
+            if(this.listFrec.size() > 0){
+                List<Frecuencia_real_envio__c> borrarF = new List<Frecuencia_real_envio__c>();
+                borrarF = [SELECT Id FROM Frecuencia_real_envio__c WHERE Cuenta__c = :AccId];
+                if(borrarF.size()>0){
+                    Delete borrarF;
+                }
+            }
+            for(Database.SaveResult Grabado : Database.insert(this.listFrec, false)){
+                if(Grabado.isSuccess())
+                    System.debug('Se guardaron correctamente los cambios de frecuencia real de envíos (BatchSeguimientoCBME3).');
+                else {
+                    for(Database.Error insError: Grabado.getErrors())
+                        System.debug('Error al guardar datos de frecuencia real de envíos: ' + insError.getMessage());
+                }
+            }
+            if(!test.isRunningTest()){
+                BatchSeguimientoCBME4 batch4 = new BatchSeguimientoCBME4(this.AccId, this.strInicio, this.strFin);
+            	database.executeBatch(batch4,1);
+            }
+        } catch (Exception ex){
+            System.debug('Error en finish BatchSeguimientoCBME3: ' + ex.getLineNumber()+' '+ex.getMessage() + ' BatchSeguimientoCBME3');
+        }
+	
+        /*if(!test.isRunningTest()){
+            Account theAcc = [SELECT Id, Id_SIpWeb__c FROM Account WHERE Id=: AccId];
+        	CallWSDescuentoPorCliente.callDescuentoCliente(theAcc.Id_SIpWeb__c, theAcc);
+        }*/
+        
     }
     public static String ObtieneRangoKM(String rango){
         if(rango == '0-400')
