@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
  * @group             : 
- * @last modified on  : 05-12-2021
+ * @last modified on  : 05-28-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -49,7 +49,9 @@ public class PAQ_ConveniosSipweb_CTR {
     public List<String> listServicio                                            {get;set;}
     public List<String> listFactor                                              {get;set;}
 
-    public Map<String, Map<String, Map<Decimal, wpTarifa>>> mapTarifasExp        {get;set;}
+    public Map<String, Map<String, Map<Decimal, wpTarifa>>> mapTarifasExp       {get;set;}
+    public Map<String, wpTarifa> mapTarifasC                                    {get;set;}
+    
     public List<String> listRangeDestinyExp                                     {get;set;}
     public List<String> listServicioExp                                         {get;set;}
     //public List<String> listFactorExp                                           {get;set;}
@@ -59,6 +61,7 @@ public class PAQ_ConveniosSipweb_CTR {
     public List<String> listServicios                                           {get;set;}
     public List<String> listRangeServ                                           {get;set;}
     public List<String> listTarifas                                             {get;set;}
+    public List<String> listTarifasC                                            {get;set;}
     public PAQ_ConveniosSipweb_CTR(ApexPages.StandardController controller) {
         this.objCuenta                              = (Account) controller.getRecord();
         this.StandarC                               = new Apexpages.StandardController(this.objCuenta);
@@ -92,6 +95,7 @@ public class PAQ_ConveniosSipweb_CTR {
         listptpServTrif                             = new List<ObjDocEnLinea.serviceTrif>();
         listserviceTrifCbe                          = new List<ObjDocEnLinea.serviceTrifCbe>();
         listotherServiceTrif                        = new List<ObjDocEnLinea.serviceTrif>();
+        this.mapTarifasC                            = new Map<String, wpTarifa>();
         this.mapTarifas                             = new Map<String, Map<String, Map<String, wpTarifa>>>();
         this.listRangeDestiny                       = new List<String>();
         this.listServicio                           = new List<String>();
@@ -106,6 +110,7 @@ public class PAQ_ConveniosSipweb_CTR {
         this.listServicios                          = new List<String>();
         this.listRangeServ                          = new List<String>();
         this.listTarifas                            = new List<String>();
+        this.listTarifasC                           = new list<String>();
         this.mapTarifas2                            = new Map<String, wpTarifa>();
         if(test.isRunningTest()){
             wpServicios wpS = new wpServicios();
@@ -116,11 +121,17 @@ public class PAQ_ConveniosSipweb_CTR {
             CargaInfoSipweb();
     }
     public void CargaInfoSipweb(){
+        String strRangeDest = '';
+        String strKeyServ   = '';
         try{
             if(ObtieneInfoResponse(objCuenta)){
+                if(rg.body.response.messages != null && rg.body.response.messages[0] != null){
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, rg.body.response.messages[0].description));
+                    return;
+                }
                 if(rg.body.response.data != null || test.isrunningtest() ){
                     if(rg.body.response.data.kmConfig == null && rg.body.response.data.ptpConfig == null){
-                        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'El cliente consultado no cuenta con tarifas grabadas en sipweb'));
+                        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'El cliente consultado no cuenta con tarifas grabadas en documentación en línea.'));
                         return;
                     }
                     this.clntId = rg.body.response.data.clntId;
@@ -136,51 +147,48 @@ public class PAQ_ConveniosSipweb_CTR {
                             for(Integer x = 0;x < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif.size();x++){
                                 if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif != null && this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif.size() > 0){
                                     for(Integer z = 0; z < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif.size();z ++){
-                                        if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EXT'){
+                                        if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EXT' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EAD' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'RAD' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
-                                            if(!this.listRangeServ.contains(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId))
-                                                this.listRangeServ.add(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId);
+                                            strKeyServ = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].factor;
+                                            if(!this.listRangeServ.contains(strKeyServ))
+                                                this.listRangeServ.add(strKeyServ);
     
-                                            if(!this.mapServicios.containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId)){
-                                                this.mapServicios.put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId, new wpServicios());
+                                            if(!this.mapServicios.containsKey(strKeyServ)){
+                                                this.mapServicios.put(strKeyServ, new wpServicios());
                                             }
-                                            if(this.mapServicios.containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId)){
-                                                this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).Servicio = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].serviceId;
-                                                this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).Monto = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].trifAmount;
-                                                this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).servicesCant = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].servicesCant;
-                                                this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).cotizacion = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].quotation;
-                                                this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).rango = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
+                                            if(this.mapServicios.containsKey(strKeyServ)){
+                                                this.mapServicios.get(strKeyServ).Servicio = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].serviceId;
+                                                this.mapServicios.get(strKeyServ).Monto = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].trifAmount;
+                                                this.mapServicios.get(strKeyServ).servicesCant = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].servicesCant;
+                                                this.mapServicios.get(strKeyServ).cotizacion = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].quotation;
+                                                this.mapServicios.get(strKeyServ).rango = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
                                             }
                                         }
                                     }
                                 }
+                                if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe != null && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size() > 0){
                                 for(Integer i = 0; i < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size(); i ++){
                                     for(Integer y = 0; y < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif.size(); y ++){
                                         if(rg.body.response.data.pieceMulti != '')
                                             strMultipieza = 'SI';
                                         else strMultipieza = 'NO';
                                         if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-DS' && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-2D'){
-                                            if(!this.listRangeDestiny.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite))
-                                                this.listRangeDestiny.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite);
-                                            if(!this.listServicio.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.listServicio.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId);
-                                            if(!this.listFactor.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor))
-                                                this.listFactor.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor);
-                                            if(!this.mapTarifas.containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite))
-                                                this.maptarifas.put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite, new Map<String, Map<String, wpTarifa>>());
-                                            if(!this.mapTarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<String, wpTarifa>());
-                                            if(!this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor)){
-                                                if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor == 'CUM' || rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor == 'KG'){
-                                                    this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).put(
-                                                            rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor, new wpTarifa());
-                                                    this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor).Peso_Vol_Inicial = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                                    this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor).Monto = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                    this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor).Monto_Excedente = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                    this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor).Multipieza = strMultipieza;
-                                                    this.maptarifas.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor).cotizacion = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
-                                                }
+                                            strRangeDest = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
+                                            if(!this.listTarifasC.contains(strRangeDest))
+                                                this.listTarifasC.add(strRangeDest);
+                                                if(!this.mapTarifasC.containsKey(strRangeDest)){
+                                                this.mapTarifasC.put(strRangeDest, new wpTarifa());
+                                                this.mapTarifasC.get(strRangeDest).Peso_Vol_Inicial = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
+                                                this.mapTarifasC.get(strRangeDest).Monto            = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
+                                                this.mapTarifasC.get(strRangeDest).Monto_Excedente  = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
+                                                this.mapTarifasC.get(strRangeDest).Multipieza       = strMultipieza;
+                                                this.mapTarifasC.get(strRangeDest).cotizacion       = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
+                                                this.mapTarifasC.get(strRangeDest).RangoKm          = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
+                                                this.mapTarifasC.get(strRangeDest).Tarifa           = rg.body.response.data.trifType;
+                                                this.mapTarifasC.get(strRangeDest).Servicio         = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId;
+                                                this.mapTarifasC.get(strRangeDest).factor           = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factor;
                                             }
+                                           
                                         } else {
                                             this.blnTarifasExp = true;
                                             if(!this.listRangeDestinyExp.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite))
@@ -209,6 +217,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                         }
                                     }
                                 }
+                                }
                             }
                         }
                         if(this.rg.body.response.data.kmConfig != null){
@@ -220,7 +229,7 @@ public class PAQ_ConveniosSipweb_CTR {
                             for(Integer x = 0;x < this.rg.body.response.data.kmConfig[0].kmServicesTrif.size();x++){
                                 if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif != null && this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif.size() > 0){
                                     for(Integer z = 0; z < this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif.size();z ++){
-                                        if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EXT'){
+                                        if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EXT' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EAD' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'RAD' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
                                             if(!this.listRangeServ.contains(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId))
                                                 this.listRangeServ.add(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId);
@@ -244,26 +253,20 @@ public class PAQ_ConveniosSipweb_CTR {
                                             strMultipieza = 'SI';
                                         else strMultipieza = 'NO';
                                         if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-DS' && rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-2D'){
-                                            if(!this.listRangeDestiny.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm))
-                                                this.listRangeDestiny.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm);
-                                            if(!this.listServicio.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.listServicio.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId);
-                                            if(!this.listFactor.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor))
-                                                this.listFactor.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor);
-                                            if(!this.mapTarifas.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm))
-                                                this.maptarifas.put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm, new Map<String, Map<String, wpTarifa>>());
-                                            if(!this.mapTarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<String, wpTarifa>());
-                                            if(!this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor)){
-                                                if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor == 'CUM' || rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor == 'KG'){
-                                                    this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).put(
-                                                            rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor, new wpTarifa());
-                                                    this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor).Peso_Vol_Inicial = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                                    this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor).Monto = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                    this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor).Monto_Excedente = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                    this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor).Multipieza = strMultipieza;
-                                                    this.maptarifas.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor).cotizacion = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
-                                                }
+                                            strRangeDest = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
+                                            if(!this.listTarifasC.contains(strRangeDest))
+                                                this.listTarifasC.add(strRangeDest);
+                                            if(!this.mapTarifasC.containsKey(strRangeDest)){
+                                                this.mapTarifasC.put(strRangeDest, new wpTarifa());
+                                                this.mapTarifasC.get(strRangeDest).Peso_Vol_Inicial = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
+                                                this.mapTarifasC.get(strRangeDest).Monto            = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
+                                                this.mapTarifasC.get(strRangeDest).Monto_Excedente  = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
+                                                this.mapTarifasC.get(strRangeDest).Multipieza       = strMultipieza;
+                                                this.mapTarifasC.get(strRangeDest).cotizacion       = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
+                                                this.mapTarifasC.get(strRangeDest).RangoKm          = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
+                                                this.mapTarifasC.get(strRangeDest).Tarifa           = rg.body.response.data.trifType;
+                                                this.mapTarifasC.get(strRangeDest).Servicio         = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId;
+                                                this.mapTarifasC.get(strRangeDest).factor           = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factor;
                                             }
                                         } else {
                                             this.blnTarifasExp = true;
@@ -300,20 +303,21 @@ public class PAQ_ConveniosSipweb_CTR {
                             for(Integer x = 0;x < this.rg.body.response.data.kmConfig[0].kmServicesTrif.size();x++){
                                 if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif != null && this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif.size() > 0){
                                     for(Integer z = 0; z < this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif.size();z ++){
-                                        if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EXT'){
+                                        if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EXT' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EAD' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'RAD' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
-                                            if(!this.listRangeServ.contains(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId))
-                                                this.listRangeServ.add(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId);
+                                            strKeyServ = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].factor;
+                                            if(!this.listRangeServ.contains(strKeyServ))
+                                                this.listRangeServ.add(strKeyServ);
             
-                                            if(!this.mapServicios.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId)){
-                                                this.mapServicios.put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId, new wpServicios());
+                                            if(!this.mapServicios.containsKey(strKeyServ)){
+                                                this.mapServicios.put(strKeyServ, new wpServicios());
                                             }
-                                            if(this.mapServicios.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId)){
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).Servicio = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].serviceId;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).Monto = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].trifAmount;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).servicesCant = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].servicesCant;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).cotizacion = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].quotation;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).rango = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
+                                            if(this.mapServicios.containsKey(strKeyServ)){
+                                                this.mapServicios.get(strKeyServ).Servicio      = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].serviceId;
+                                                this.mapServicios.get(strKeyServ).Monto         = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].trifAmount;
+                                                this.mapServicios.get(strKeyServ).servicesCant  = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].servicesCant;
+                                                this.mapServicios.get(strKeyServ).cotizacion    = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].quotation;
+                                                this.mapServicios.get(strKeyServ).rango         = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
                                             }
                                         }
                                     }
@@ -379,26 +383,30 @@ public class PAQ_ConveniosSipweb_CTR {
                                 }
                             }
                         }
-                        if(this.rg.body.response.data.ptpConfig != null){
+                        if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif != null && this.rg.body.response.data.ptpConfig[0].ptpServicesTrif.size() > 0){
                             for(Integer x = 0;x < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif.size();x++){
-                                for(Integer z = 0; z < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif.size();z ++){
-                                    if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EXT'){
+                               if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe != null && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size() > 0){
+                                for(Integer z = 0; z < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif.size();z ++){                                    
+                                    if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EXT' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EAD' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'RAD' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'PACKETS'){
                                         this.blnServicios = true;
-                                        if(!this.listRangeServ.contains(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId))
-                                            this.listRangeServ.add(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId);
+                                        strKeyServ = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].factor;
+                                        if(!this.listRangeServ.contains(strKeyServ))
+                                            this.listRangeServ.add(strKeyServ);
         
-                                        if(!this.mapServicios.containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId)){
-                                            this.mapServicios.put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId, new wpServicios());
+                                        if(!this.mapServicios.containsKey(strKeyServ)){
+                                            this.mapServicios.put(strKeyServ, new wpServicios());
                                         }
-                                        if(this.mapServicios.containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId)){
-                                            this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).Servicio = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].serviceId;
-                                            this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).Monto = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].trifAmount;
-                                            this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).servicesCant = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].servicesCant;
-                                            this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).cotizacion = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].quotation;
-                                            this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId).rango = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
+                                        if(this.mapServicios.containsKey(strKeyServ)){
+                                            this.mapServicios.get(strKeyServ).Servicio      = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].serviceId;
+                                            this.mapServicios.get(strKeyServ).Monto         = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].trifAmount;
+                                            this.mapServicios.get(strKeyServ).servicesCant  = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].servicesCant;
+                                            this.mapServicios.get(strKeyServ).cotizacion    = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].quotation;
+                                            this.mapServicios.get(strKeyServ).rango         = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
                                         }
                                     }
                                 }
+                            }
+                             if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].otherServiceTrif != null && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].otherServiceTrif.size() > 0){
                                 for(Integer z = 0; z < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].otherServiceTrif.size();z++){
                                     this.blnServicios = true;
                                     if(!this.listRangeServ.contains(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].otherServiceTrif[z].refServiceId))
@@ -414,7 +422,9 @@ public class PAQ_ConveniosSipweb_CTR {
                                         this.mapServicios.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].otherServiceTrif[z].refServiceId).rango = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
                                     }
                                 }
-                                for(Integer i = 0; i < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl.size(); i ++){
+                            }
+                               if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl != null && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl.size() > 0){
+								for(Integer i = 0; i < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl.size(); i ++){
                                     for(Integer y = 0; y < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].serviceTrif.size(); y ++){
                                         if(!this.listRangeDestiny.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].serviceTrif[y].serviceId + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].slabNo))
                                             this.listRangeDestiny.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite+ ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].serviceTrif[y].serviceId + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifDtl[i].slabNo);
@@ -428,6 +438,8 @@ public class PAQ_ConveniosSipweb_CTR {
                                         }
                                     }
                                 }
+                            }
+                               if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe != null && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size() > 0){
                                 for(Integer i = 0; i < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size(); i ++){
                                     if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId == 'SEG-DS' || rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId == 'SEG-2D'){
                                         this.blnTarifasExp = true;
@@ -454,6 +466,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                         }
                                     }
                                 }
+                            }
                             }
                         }
                     }
@@ -551,6 +564,7 @@ public class PAQ_ConveniosSipweb_CTR {
         public String Tarifa            {get;set;}
         public String Servicio          {get;set;}
         public String RangoKm           {get;set;}
+        public String factor            {get;set;}
         public wpTarifa(){
             this.Peso_Vol_Inicial   = 0;
             this.Monto              = 0;
@@ -560,6 +574,7 @@ public class PAQ_ConveniosSipweb_CTR {
             this.Tarifa             = '';
             this.Servicio           = '';
             this.RangoKm            = '';
+            this.factor             = '';
         }
     }
     public class wpServicios{
