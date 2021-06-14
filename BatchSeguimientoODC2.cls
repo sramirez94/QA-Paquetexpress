@@ -9,7 +9,7 @@ global class BatchSeguimientoODC2 implements Database.Batchable<sObject>, Databa
     public Decimal bultos; //Salvador Ramírez López (sramirez@freewayconsulting.com): Variable para almacenar el total de bultos en alguna iteración
     public Map<String, Map<String, SBQQ__QuoteLine__c>> quotes = new Map<String, Map<String, SBQQ__QuoteLine__c>>(); //Salvador Ramírez López (sramirez@freewayconsulting.com): Mapa que va a guardar las partidas de cotización seccionadas por tarifa y rango de km
     public Map<String, wpFrecuencias> mapFrecuencias                                = new Map<String, wpFrecuencias>();
-    public Map<String, Map<String, wpFrecuencias>> mapQuotes                        = new Map<String, Map<String, wpFrecuencias>>();
+    public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotes                   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
     public Map<String, Map<String, Decimal>> mapFlete                               = new Map<String, Map<String, Decimal>>();
     public Map<String, String> mapTarifas                                           = new Map<String, String>();
     public Map<String, String> mapRangeByDest                                       = new Map<String, String>();
@@ -40,6 +40,7 @@ global class BatchSeguimientoODC2 implements Database.Batchable<sObject>, Databa
             Decimal decRAD          = 0;
             Decimal decEAD          = 0;
             Decimal decFlete        = 0;
+            Decimal decTarLlena     = 0;
             Cotizador__c ObjCostos  = [SELECT  EAD__c, RAD__c FROM Cotizador__c LIMIT 1];
             //Obtener tarifas para rangos por km del año actual
             for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull()){
@@ -68,36 +69,46 @@ global class BatchSeguimientoODC2 implements Database.Batchable<sObject>, Databa
                         this.mapRangeByDest.put(s.Site_Destino__c, ObtieneRangoKM(s.Rango_Kms__c));
                 }
                 if(!this.mapQuotes.containsKey(strTarifa))
-                    this.mapQuotes.put(strTarifa, new map<String, wpFrecuencias>());
+                    this.mapQuotes.put(strTarifa, new map<String, SBQQ__QuoteLine__c>());
                 if(!this.mapQuotes.get(strTarifa).containsKey(strRangeDest)){
-                    System.debug('Tarifa: ' + strTarifa + '. Rango: ' + strRangeDest);
-                    wpFrecuencias wpF = new wpFrecuencias();
+                    SBQQ__QuoteLine__c wpF = new SBQQ__QuoteLine__c();
                     this.mapQuotes.get(strTarifa).put(strRangeDest, wpF);
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).SBQQ__Quantity__c       = Decimal.valueOf(s.Bultos__c);
+                    s.Peso_de_bultos__c = s.Peso_de_bultos__c.replace(',','');
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).PackWeightAVG__c        = Decimal.valueOf(s.Peso_de_bultos__c);
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).PackVolAVG__c           = Decimal.valueOf(s.Volumen_de_bultos__c);
+                } else {
+                    s.Peso_de_bultos__c = s.Peso_de_bultos__c.replace(',','');
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).SBQQ__Quantity__c      += Decimal.valueOf(s.Bultos__c);
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).PackWeightAVG__c        = Decimal.valueOf(s.Peso_de_bultos__c);
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).PackVolAVG__c           = Decimal.valueOf(s.Volumen_de_bultos__c);
                 }
-                this.mapQuotes.get(strTarifa).get(strRangeDest).bultos      += Decimal.valueOf(s.Bultos__c);
-                this.mapQuotes.get(strTarifa).get(strRangeDest).decPeso     = Decimal.valueOf(s.Peso_de_bultos__c);
-                this.mapQuotes.get(strTarifa).get(strRangeDest).decVolumen  = Decimal.valueOf(s.Volumen_de_bultos__c);
-                if(s.Linea__c == 'DOC_LINEA_ZE_PT' || s.Linea__c == 'DOC_LINEA_NORMAL_PT')
-                    this.mapQuotes.get(strTarifa).get(strRangeDest).blnZP   = true;
+                if(s.Linea__c == 'DOC_LINEA_ZE_PT' || s.Linea__c == 'DOC_LINEA_ZE')
+                    this.mapQuotes.get(strTarifa).get(strRangeDest).ZonaPlus__c   = true;
                 if(!this.listFee.contains(strTarifa))
                     this.listFee.add(strTarifa);
                 if(!this.listRangeDestiny.contains(strRangeDest))
                     this.listRangeDestiny.add(strRangeDest);
             }
-            //System.debug('mapa: ' + this.mapQuotes.get('T6').get('PBC'));
             for(String keyFee : this.listFee){
                 for(String keyRange : this.listRangeDestiny){
-                    //Inicia proceso de recotización
-                    if(this.mapRangeByDest.containsKey(keyRange)){
-                        decFlete                                                            = this.wp.mapTarifarioT.get(this.mapTarifas.get(keyFee)).get(this.mapRangeByDest.get(keyRange)).Flete__c;
-                    } else {
-                        decFlete                                                            = this.wp.mapTarifarioT.get(this.mapTarifas.get(keyFee)).get(keyRange).Flete__c;
+                    if(this.mapQuotes.get(keyFee).containsKey(keyRange)){
+                        strRangeDest = '';
+                        //Inicia proceso de recotización
+                        if(this.mapRangeByDest.containsKey(keyRange))
+                            strRangeDest = this.mapRangeByDest.get(keyRange);
+                        else strRangeDest = keyRange;
+                        if(this.mapRangeByDest.containsKey(keyRange)){
+                            decFlete                                                            = this.wp.mapTarifarioT.get(this.mapTarifas.get(keyFee)).get(strRangeDest).Flete__c;
+                        } else {
+                            decFlete                                                            = this.wp.mapTarifarioT.get(this.mapTarifas.get(keyFee)).get(keyRange).Flete__c;
+                        }
+                        decRAD                                                                  = decFlete * (ObjCostos.EAD__c / 100);
+                        decEAD                                                                  = decFlete * (ObjCostos.EAD__c / 100);
+                        decTarLlena                                                             = decFlete + decRAD + decEAD;
+                        this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetPrice__c              = this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c * decTarLlena;
+                        this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c         = this.mapFlete.get(this.mapTarifas.get(keyFee)).get(strRangeDest) * this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
                     }
-                    decRAD                                                                  = decFlete * (ObjCostos.EAD__c / 100);
-                    decEAD                                                                  = decFlete * (ObjCostos.EAD__c / 100);
-                    this.mapQuotes.get(keyFee).get(keyRange).decTarifaLlena             = decFlete + decRAD + decEAD;
-                    this.mapQuotes.get(keyFee).get(keyRange).decTotalTarifaLlena        = this.mapQuotes.get(keyFee).get(keyRange).bultos * this.mapQuotes.get(keyFee).get(keyRange).decTarifaLlena;
-                    this.mapQuotes.get(keyFee).get(keyRange).decTotalTarifaPropuesta    = this.mapFlete.get(this.mapTarifas.get(keyFee)).get(keyRange) * this.mapQuotes.get(keyFee).get(keyRange).bultos;
                 }
             }
         } catch(Exception ex){
@@ -113,19 +124,19 @@ global class BatchSeguimientoODC2 implements Database.Batchable<sObject>, Databa
             for(String keyFee : this.listFee){
                 for(String keyRange : this.listRangeDestiny){
                     if(this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange)){
-                        if(this.mapQuotes.get(keyFee).get(keyRange).bultos > 0){
+                        if(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
                             FrecuenciaDeEnvios__c fr = new FrecuenciaDeEnvios__c();
                             fr.Cuenta__c = AccId;
                             fr.RecordTypeId = tipo;
                             fr.Tipo__c = 'DOC_LINEA';
                             fr.Rango__c = keyRange;
                             fr.Tarifa__c = keyFee;
-                            fr.Bultos__c = mapQuotes.get(keyFee).get(keyRange).bultos;
-                            fr.Peso__c = mapQuotes.get(keyFee).get(keyRange).decPeso;
-                            fr.Volumen__c = mapQuotes.get(keyFee).get(keyRange).decVolumen;
-                            fr.Zona_Plus__c = mapQuotes.get(keyFee).get(keyRange).blnZP;
-                            fr.Total_tarifa_llena__c = mapQuotes.get(keyFee).get(keyRange).decTotalTarifaLlena;
-                            fr.Total_propuesta__c = mapQuotes.get(keyFee).get(keyRange).decTotalTarifaPropuesta;
+                            fr.Bultos__c = mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                            fr.Peso__c = mapQuotes.get(keyFee).get(keyRange).PackWeightAVG__c;
+                            fr.Volumen__c = mapQuotes.get(keyFee).get(keyRange).PackVolAVG__c;
+                            fr.Zona_Plus__c = mapQuotes.get(keyFee).get(keyRange).ZonaPlus__c;
+                            fr.Total_tarifa_llena__c = mapQuotes.get(keyFee).get(keyRange).SBQQ__NetPrice__c;
+                            fr.Total_propuesta__c = mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c;
                             insertFrecuencias.add(fr);
                         }
                     }
