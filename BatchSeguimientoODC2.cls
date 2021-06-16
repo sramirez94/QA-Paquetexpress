@@ -98,6 +98,7 @@ global class BatchSeguimientoODC2 implements Database.Batchable<sObject>, Databa
                         if(this.mapRangeByDest.containsKey(keyRange))
                             strRangeDest = this.mapRangeByDest.get(keyRange);
                         else strRangeDest = keyRange;
+                        System.debug('tarifa: ' + this.mapTarifas.get(keyFee) +'. Rango: ' + strRangeDest);
                         if(this.mapRangeByDest.containsKey(keyRange)){
                             decFlete                                                            = this.wp.mapTarifarioT.get(this.mapTarifas.get(keyFee)).get(strRangeDest).Flete__c;
                         } else {
