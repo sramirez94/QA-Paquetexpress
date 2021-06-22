@@ -2,7 +2,7 @@
   @description       : Ventana para ingresar el rango de fechas para el reporte global de descuentos autorizados.
   @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
 -->
-<apex:page>
+<apex:page controller="PAQ_FiltroReporteGlobalDescuentos_CTR">
     <!-- estilos personalizados -->
     <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
     <!-- jquery  -->
@@ -22,6 +22,12 @@
         <style>
             body{
                 font-size: 12px !important;
+            }
+            table{
+                font-size: 13px !important;
+            }
+            h3{
+                font-size: 14px !important;
             }
             .alertDanger{
                 color: #721c24;
@@ -63,7 +69,7 @@
                 width: 80% !important;
             }
             .pad3{
-                padding-left: 5px;
+                padding-left: 20px;
             }
             .right{
                 text-align: right;
@@ -73,12 +79,12 @@
             }
             .rouded{
                 border-radius: 100px;
-                padding-left: 6px;
+                padding-left: 20px;
                 width: 25%;
             }
             .rouded-med{
                 border-radius: 100px;
-                padding-left: 6px;
+                padding-left: 20px;
                 width: 75%;
             }
             .row{
@@ -106,59 +112,97 @@
                 justify-content:center;
                 flex-flow: column wrap;
             }
-            .circle{
-                height: 15px;
-                width: 15px;
-                border-radius: 50%;
-                display: inline-block;
-                margin-top: 2px;
-                background-color: #A7A7A7;
-            }
-            .green {
-                background-color: #2aa734;
-            }
-            .yellow {
-                background-color: #dad100;
-            }
-            .red {
-                background-color: #a70616;
-            }
         </style> 
     </head>
-    <apex:form>
+    <apex:form html-align="center">
         <apex:pageMessages />
-        <br/>
-        <div align="center" style="width: 500px;" draggable="false">  
-            <apex:pageBlock mode="edit" >
-                <table class="table table-hover">
-                    <div style="background-color: #E2E9EA;"  >
-                        <br></br>
-                        <apex:outputText value="Cotizaciones autorizadas" />
-                        <br></br><br></br>
+        <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+        <!--<div align="center" style="width: 500px;" draggable="false">-->
+            <div align="right" class="col-md-12 v-center" style="padding-left: 150px">
+                <apex:pageBlock mode="maindetail">
+                    <div class="col-sm-5 col-md-5" align="center">
+                        <div class="panel panel-default">
+                            <table class="table table-striped table-bordered" width="30%" align = "center">
+                                <tr>
+                                    <div class="panel-heading">
+                                        <a data-toggle="collapse" href="#Guide"><h3 class="panel-title">Cotizaciones autorizadas</h3></a>
+                                    </div>
+                                    
+                                </tr>
+                                <div style="background-color: #E2E9EA;width: 100px;"  >
+                                    <tr>
+                                        <td align="center" width="20%"><strong>Fecha inicio: <input type="date" id="start" name="trip-start" value="2021-01-01" min="1900-01-01" max="2030-12-31"/></strong></td>
+                                        <td align="center" width="20%"><strong>Fecha fin: <input type="date" id="end" name="trip-end" value="2021-01-01" minm="1900-01-01" max="2030-12-31"/></strong></td>
+                                    </tr>
+                                </div>
+                            </table>
+                        </div>
                     </div>
-                    <br/>
-                    <tr>
-                        <td ><strong>Fecha inicio</strong></td>
-                        <td><input type="date" id="start" name="trip-start" value="2021-01-01" min="1900-01-01" max="2030-12-31"/></td>
-                        <td ><strong>Fecha fin</strong></td>
-                        <td><input type="date" id="end" name="trip-end" value="2021-01-01" minm="1900-01-01" max="2030-12-31"/></td>
-                    </tr>
-                    <div style="background-color: #E2E9EA;"  >
-                        <br></br>
-                        <apex:outputText value="Decuento real" />
-                        <br></br><br></br>
+
+                    <div class="col-sm-5 col-md-5" align = "center">
+                        <div class="panel panel-default" align = "center">
+                            <table class="table table-striped table-bordered" width="30%" align = "center">
+                                <tr>
+                                    <div class="panel-heading">
+                                        <a data-toggle="collapse" href="#Guide"><h3 class="panel-title">Descuento real</h3></a>
+                                    </div>
+                                    
+                                </tr>
+                                <div style="background-color: #E2E9EA;width: 100px;"  >
+                                    <tr>
+                                        <td align="center" width="20%"><strong>Fecha inicio: <input type="date" id="start" name="trip-start" value="2021-01-01" min="1900-01-01" max="2030-12-31"/></strong></td>
+                                        <td align="center" width="20%"><strong>Fecha fin: <input type="date" id="end" name="trip-end" value="2021-01-01" minm="1900-01-01" max="2030-12-31"/></strong></td>
+                                    </tr>
+                                </div>
+                            </table>
+                        </div>
                     </div>
-                    <tr>
-                        <td ><strong>Fecha inicio</strong></td>
-                        <td><input type="date" id="startDR" name="trip-start-DR" value="2021-01-01" min="1900-01-01" max="2030-12-31"/></td>
-                        <td ><strong>Fecha fin</strong></td>
-                        <td><input type="date" id="endDR" name="trip-end-DR" value="2021-01-01" minm="1900-01-01" max="2030-12-31"/></td>
-                    </tr>
-                </table>
-                <apex:pageBlockButtons location="bottom">
-                    <apex:commandButton style="btn-primary" action="{! quicksave }" value="Iniciar proceso" />
-                </apex:pageBlockButtons>
-            </apex:pageBlock>
-        </div>
+
+                    <div class="col-sm-5 col-md-5" align = "center">
+                        <div class="panel panel-default" align = "center">
+                            <table class="table table-striped table-bordered" width="30%" align = "center">
+                                <tr>
+                                    <div class="panel-heading">
+                                        <a data-toggle="collapse" href="#Guide"><h3 class="panel-title">Plazas</h3></a>
+                                    </div>
+                                    
+                                </tr>
+                                    <td  align="center" width="20%">
+                                        <strong>
+                                            Seleccionar una plaza: <apex:selectList id="ctrl_internacional" size="1"></apex:selectList>
+                                        </strong>
+                                    </td>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-5 col-md-5" align = "center">
+                        <div class="panel panel-default" align = "center">
+                            <table class="table table-striped table-bordered" width="30%" align = "center">
+                                <tr>
+                                    <div class="panel-heading">
+                                        <a data-toggle="collapse" href="#Guide"><h3 class="panel-title">Selección enviador/receptor</h3></a>
+                                    </div>
+                                    
+                                </tr>
+                                <div style="background-color: #E2E9EA;width: 100px;"  >
+                                    <tr>
+                                        <td align="center" width="20%"><strong>Enviador: <input type="checkbox" id="enviador"/></strong></td>
+                                        <td align="center" width="20%"><strong>Receptor: <input type="checkbox" id="receptor"/></strong></td>
+                                    </tr>
+                                </div>
+                            </table>
+                        </div>
+                    </div>
+                    <apex:pageBlockButtons location="bottom" html-align="left">
+                        <apex:commandButton style="btn-primary" action="{!ProcesarReporte}" value="Generar reporte" />
+                        <apex:commandButton style="btn-primary" action="{!ProcesarReporte}" value="Salir" />
+                    </apex:pageBlockButtons>
+                </apex:pageBlock>
+            </div>
+            
+
+            
+        <!--</div>-->
     </apex:form>
 </apex:page>
