@@ -1,0 +1,82 @@
+<!--
+  @description       : Maquetación que debe permitir la descarga del reporte global de descuentos autorizados
+  @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
+  @Created date      : 06-21-2021
+-->
+<apex:page controller="PAQ_ReporteGlobalDescuentos_CTR" docType="HTML-5.0" contentType="text/html;charset=utf-8" renderAs="PDF" applyBodyTag="false">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+        <style type="text/css">
+            @page {  
+                size: A4 landscape; /* ISO/JIS A4 (210mm�297mm) */  
+                margin: 5mm; 
+            } 
+            @page:first {  
+                    size: A4 landscape; /* ISO/JIS A4 (210mm�297mm) */ 
+                    margin: 5mm; 
+                    margin-top: 3mm; 
+
+                }  
+            .label{
+                font-size: 13px;
+                color: #000;
+            }
+
+        </style>
+    </head>
+    <apex:outputPanel id="PanelC">
+        <table Id="customers" cellspacing="0" width="100%">
+            <tr>
+                <td width="70%" align="left"  style="font-size:15px; color:black; font-family: Calibri; align: left; "><h7> <u><b>ANÁLISIS DE RENTABILIDAD</b></u> </h7><br/><br/></td>
+                <td width="30%" align="right"  style="font-size:10px; "><img  src="{!$Resource.PaqueteEslogan}" width="220px" height="60px"/></td>
+            </tr>
+        </table>
+        <br/>
+        <table Id="customers" cellspacing="0" width="100%">
+            <tr>
+                <td width="30%" align="left"  style="font-size:11px">COTIZACIONES APROBADAS</td>
+                <td width="30%" align="left"  style="font-size:11px">DESDE: 01/01/2021</td>
+                <td width="30%" align="left"  style="font-size:11px">HASTA: 31/01/2021</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:11px">FRECUENCIA REAL</td>
+                <td width="30%" align="left"  style="font-size:11px">DESDE: 01/01/2021</td>
+                <td width="30%" align="left"  style="font-size:11px">HASTA: 31/01/2021</td>
+            </tr>
+            <tr>
+                <td width="30%" align="left"  style="font-size:11px">PLAZAS: </td>
+                <td width="30%" align="left"  style="font-size:11px">TODAS</td>
+            </tr>
+        </table>
+        <br/>
+        <table style="border-collapse: collapse;" width="100%" align = "left">
+            <thead class="thead-light">
+                <tbody>
+                    <tr>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">CLIENTE</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">PLAZA</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">ID Principal</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">DESCUENTO AUTORIZADO</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">DESCUENTO REAL SF</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">DESCUENTO REAL BI</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">DEFASE VS SF</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">DEFASE VS BI</td>
+                        <td align="center"   style="font-size:11px; background-color:rgb(31, 73, 125); color: white;">Cotizaciones</td>
+                      </tr>
+                      <apex:repeat value="{!listAccounts}" var="Cuenta">
+                          <tr>
+                            <td align="left" style="font-size:11px;">{!mapDescuentoGlobal[Cuenta].Cuenta__R.NAME}</td>
+                            <td align="left" style="font-size:11px;">{!mapDescuentoGlobal[Cuenta].cuenta__r.Plaza_Envio__r.Name}</td>
+                            <td align="left" style="font-size:11px;">{!mapDescuentoGlobal[Cuenta].Id_sipweb__c}</td>
+                            <td align="left" style="font-size:11px;">
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDescuentoGlobal[Cuenta].Descuento_autorizado__c}" />
+                                </apex:outputText>
+                            </td>
+                          </tr>
+                      </apex:repeat>
+                </tbody>
+            </thead>
+        </table>
+    </apex:outputPanel>
+</apex:page>
