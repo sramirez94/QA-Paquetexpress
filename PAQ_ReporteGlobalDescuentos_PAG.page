@@ -3,8 +3,8 @@
   @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
   @Created date      : 06-21-2021
 -->
-<!--<apex:page controller="PAQ_ReporteGlobalDescuentos_CTR" docType="HTML-5.0" contentType="text/html;charset=utf-8" renderAs="PDF" applyBodyTag="false">-->
-<apex:page controller="PAQ_ReporteGlobalDescuentos_CTR" contentType='application/vnd.ms-excel#Reporte_Descuentos_Autorizados.xls'  applyBodyTag="false">
+<apex:page controller="PAQ_ReporteGlobalDescuentos_CTR" docType="HTML-5.0" contentType="text/html;charset=utf-8" renderAs="PDF" applyBodyTag="false">
+<!--<apex:page controller="PAQ_ReporteGlobalDescuentos_CTR" contentType='application/vnd.ms-excel#Reporte_Descuentos_Autorizados.xls'  applyBodyTag="false">-->
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
         <style type="text/css">
@@ -74,17 +74,30 @@
                                 <apex:param value="{!mapDescuentoGlobal[Cuenta].Descuento_autorizado__c}" />
                             </apex:outputText>
                         </td>
-                        <td align="left" style="font-size:11px;"></td>
+                        <td align="Center" style="font-size:11px;">
+                            <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                <apex:param value="{!mapDescuentoGlobal[Cuenta].Descuento_real_SF__c}" />
+                            </apex:outputText>
+                        </td>
                         <td align="Center" style="font-size:11px;">
                             <apex:outputText value="{0, number, ###,###,##0.00%}">
                                 <apex:param value="{!mapDescuentoGlobal[Cuenta].Descuento_BI__c}" />
                             </apex:outputText>
                         </td>
-                        <td align="Center" style="font-size:11px;">
-                            <!--<apex:outputText value="{0, number, ###,###,##0.00%}">
-                                <apex:param value="{!mapDescuentoGlobal[Cuenta].Defase_vs_SF__c}" />
-                            </apex:outputText>-->
-                        </td>
+                        <apex:outputText rendered="{!mapDescuentoGlobal[Cuenta].Defase_vs_SF__c > 0}">
+                            <td align="Center" style="font-size:11px;height:auto;width:100px;background-color:rgb(29, 186, 55);">
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDescuentoGlobal[Cuenta].Defase_vs_SF__c}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!mapDescuentoGlobal[Cuenta].Defase_vs_SF__c < 0}">
+                            <td align="Center" style="font-size:11px;height:auto;width:100px;background-color:rgb(221, 62, 26);">
+                                <apex:outputText value="{0, number, ###,###,##0.00%}">
+                                    <apex:param value="{!mapDescuentoGlobal[Cuenta].Defase_vs_SF__c}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:outputText>
                         <apex:outputText rendered="{!mapDescuentoGlobal[Cuenta].Defase_vs_BI__c > 0}">
                             <td align="Center" style="font-size:11px;height:auto;width:100px;background-color:rgb(29, 186, 55);">
                                 <apex:outputText value="{0, number, ###,###,##0.00%}">
