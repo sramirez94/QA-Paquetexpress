@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 04-19-2021
+ * @last modified on  : 07-02-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -1694,38 +1694,58 @@ public class Ctrl_pantalla_ww {
         List<TempleateLine__c> listPlantillaLineItems = new List<TempleateLine__c>();
         try{
              if(strTipoQuote == 'byDelivery'){
-                listPlantillaLineItems = [SELECT Id, Quantity__c      , EditMode__c, 
-                                                     Tarifa__c        , Weight__c, 
-                                                     Vol__c           , Rango_KM__c, 
-                                                     Pack_Seg__c      , Zona_Plus__c, 
-                                                     ACK__c           , EAD__c, 
-                                                     RAD__c           , SEG__c,
-                                                     FLETE__c         , Guia__c,
-                                                     fleteE__c        , ACKES__c,
-                                                     FleteAdic__c     , RADAdic__c, 
-                                                     EADAdic__c       , TotalAdic__c,
-                                                     KG_ADICIONAL__c  , Destiny__c,
-                                                     PackWeightAVG__c , PackVolAVG__c,
-                                                     CustomerPrice__c , TarifaDominante__c
-                                            FROM TempleateLine__c 
-                                            WHERE Templeate__c =: templeateId ORDER BY CreatedDate];
+                listPlantillaLineItems = [SELECT Id
+                , Quantity__c
+                , EditMode__c
+                , Tarifa__c
+                , Weight__c
+                , Vol__c
+                , Rango_KM__c
+                , Pack_Seg__c
+                , Zona_Plus__c
+                , ACK__c
+                , EAD__c
+                , RAD__c
+                , SEG__c
+                , PackWeightAVG__c
+                , PackVolAVG__c
+                , CustomerPrice__c
+                , TarifaDominante__c
+                , FLETE__c
+                ,Guia__c
+                , fleteE__c
+                , ACKES__c
+                ,KG_ADICIONAL__c
+                , Destiny__c
+                , FleteAdic__c, RADAdic__c, EADAdic__c, TotalAdic__c
+                FROM TempleateLine__c where Templeate__c =: templeateId ORDER BY CreatedDate];
              }else{
-                listPlantillaLineItems = [SELECT Id, Quantity__c      , EditMode__c,
-                                                     Tarifa__c        , Weight__c,
-                                                     Vol__c           , Rango_KM__c,
-                                                     Pack_Seg__c      , Zona_Plus__c,
-                                                     ACK__c           , EAD__c,
-                                                     RAD__c           , SEG__c,
-                                                    TarifaDominante__c, PackWeightAVG__c,
-                                                     PackVolAVG__c    , CustomerPrice__c,
-                                                     FLETE__c         , Guia__c,
-                                                     fleteE__c        , ACKES__c,
-                                                     KG_ADICIONAL__c  , Destiny__c,
-                                                     FleteAdic__c     , RADAdic__c, 
-                                                     EADAdic__c       , TotalAdic__c
-                                           FROM TempleateLine__c 
-                                           WHERE Templeate__c =: templeateId ORDER BY CreatedDate];
-               }
+                listPlantillaLineItems = [SELECT Id
+                , Quantity__c
+                , EditMode__c
+                , Tarifa__c
+                , Weight__c
+                , Vol__c
+                , Rango_KM__c
+                , Pack_Seg__c
+                , Zona_Plus__c
+                , ACK__c
+                , EAD__c
+                , RAD__c
+                , SEG__c
+                , TarifaDominante__c
+                , PackWeightAVG__c
+                , PackVolAVG__c
+                , CustomerPrice__c
+                , FLETE__c
+                ,Guia__c
+                ,fleteE__c
+                ,ACKES__c
+                ,KG_ADICIONAL__c
+                , Destiny__c
+                , FleteAdic__c, RADAdic__c, EADAdic__c, TotalAdic__c
+                FROM TempleateLine__c where Templeate__c =: templeateId ORDER BY CreatedDate];
+            }
         }catch(Exception ex){
                       System.debug(ex.getMessage());
              }
@@ -1735,11 +1755,14 @@ public class Ctrl_pantalla_ww {
     public Templeate__c queryTempleate(){
         Templeate__c objPlantilla = new Templeate__c();
         try{
-            objPlantilla = [SELECT Id, ServiciosAdicionales__c , Acuse__c,
-                                       Electronicas__c         , Impresas__c,
-                                       TipoCotizacion__c       , Fecha_sugar__c
-                            FROM Templeate__c 
-                            WHERE Quote__c =: this.strIdQuote ORDER BY CreatedDate DESC LIMIT 1];
+            objPlantilla = [SELECT Id
+            , ServiciosAdicionales__c
+            , Acuse__c
+            , Electronicas__c
+            , Impresas__c
+            , TipoCotizacion__c
+            , Fecha_sugar__c
+            FROM Templeate__c where Quote__c =: this.strIdQuote ORDER BY CreatedDate DESC LIMIT 1];
           }catch(Exception ex){
                  System.debug(ex.getMessage());
                }
@@ -1876,8 +1899,8 @@ public class Ctrl_pantalla_ww {
         if(!this.blnCostoBaseGMP)
             suma = objDeduc.ACK__c + objDeduc.FLETE__c + ObjDeduc.RAD__c + ObjDeduc.EAD__c + ObjDeduc.SEG__c; //Se suman los servicios adicionales y el flete
         else suma = objDeduc.FLETE__c + ObjDeduc.RAD__c + ObjDeduc.EAD__c;
-        if (suma.setScale(2) <> ObjDeduc.CustomerPrice__c){ //La sumatoria de los servicios y el flete no puede ser ni mayor ni menor que el subtotal
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del flete y los servicios no corresponde al subtotal. ' + suma.setScale(2)+' es diferente a '+ObjDeduc.CustomerPrice__c));
+        if (suma.setScale(2) <> ObjDeduc.CustomerPrice__c.setScale(2)){ //La sumatoria de los servicios y el flete no puede ser ni mayor ni menor que el subtotal
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del flete y los servicios no corresponde al subtotal. ' + suma.setScale(2)+' es diferente a '+ObjDeduc.CustomerPrice__c.setScale(2)));
         	return true;
         } else
             return false;
