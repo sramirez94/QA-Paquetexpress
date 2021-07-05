@@ -28,50 +28,51 @@
     <div class="container-fluid">
         <p align="Center"><strong>Plantillas de convenio WW</strong></p>
         <br/>
-        <apex:form id="ppTable" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'}">
+        <apex:form id="ppTable" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota'}">
             <div class="col-md-20">
                 <apex:outputPanel >
                     <div class="tarifa">
                         <div>
+                            <apex:pageMessages id="apexerror"/>
                             <br />
                             <table align="center" style="border-collapse: collapse;" border="solid 0.5px" width="100%">
                                 <tr style="height: 2px"></tr>
                                 <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
                                 <apex:repeat value="{!mapBlocks}" var="nameBlock">
                                     <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
-                                        <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock}</td>
+                                        <td colspan ="5" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!nameBlock}</td>
                                     </apex:outputText>
                                 </apex:repeat>
-                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
+                                <!--<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>-->
                                 <tr>
                                     <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="12%">Peso báscula Kg</td>
                                     <apex:repeat value="{!mapBlocks}" var="nameBlock">
                                         <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
-                                            <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decWeight}</td>
+                                            <td colspan ="5" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decWeight}</td>
                                         </apex:outputText>
                                     </apex:repeat>
-                                    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
+                                    <!--<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>-->
                                 </tr>
                                 <tr>
                                     <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Volumen m3</td>
                                     <apex:repeat value="{!mapBlocks}" var="nameBlock">
                                         <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
-                                            <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decVol}</td>
+                                            <td colspan ="5" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">{!mapBlocks[nameBlock].decVol}</td>
                                         </apex:outputText>
                                     </apex:repeat>
-                                    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
+                                    <!--<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>-->
                                 </tr>
                                 <tr>  
                                     <td align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="9%">Rango Km</td>
                                     <apex:repeat value="{!mapBlocks}" var="nameBlock">
                                         <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
                                             <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
-                                            <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">
-                                            <apex:outputText rendered="{!blnRAD}">RAD
-                                            </apex:outputText></td>            
-                                            <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%"> 
-                                            <apex:outputText rendered="{!blnEAD}">EAD
-                                            </apex:outputText></td>
+                                            <apex:outputText rendered="{!blnRAD}">
+                                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">RAD</td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!blnEAD}">
+                                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">EAD</td>
+                                            </apex:outputText>
                                             <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>
                                             <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">ACCIÓN</td>
                                         </apex:outputText>
@@ -94,29 +95,29 @@
                                                 </td>
                                             </apex:outputText>
                                             <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">                          
-                                                <td align="Center" style="font-size:12px;" width="5%">
                                                     <apex:outputText rendered="{!blnRAD}">
-                                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}" >
-                                                            <apex:param value="{!mapBlocksServ[nameBlock]['RAD'][strRange]}" />
-                                                        </apex:outputText>
-                                                        <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].RAD__c}">
-                                                            <apex:param value="{!mapBloq[nameBlock][strRange].RAD__c}" />
-                                                        </apex:inputText>
+                                                        <td align="Center" style="font-size:12px;" width="5%">
+                                                            <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}" >
+                                                                <apex:param value="{!mapBlocksServ[nameBlock]['RAD'][strRange]}" />
+                                                            </apex:outputText>
+                                                            <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].RAD__c}">
+                                                                <apex:param value="{!mapBloq[nameBlock][strRange].RAD__c}" />
+                                                            </apex:inputText>
+                                                        </td>
                                                     </apex:outputText>
-                                                </td>
                                             
                                             </apex:outputText>
                                             <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">                         
-                                                <td align="Center" style="font-size:12px;" width="5%">
                                                     <apex:outputText rendered="{!blnEAD}">
-                                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}">
-                                                            <apex:param value="{!mapBlocksServ[nameBlock]['EAD'][strRange]}" />
-                                                        </apex:outputText>
-                                                        <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].EAD__c}">
-                                                            <apex:param value="{!mapBloq[nameBlock][strRange].EAD__c}" />
-                                                        </apex:inputText>
+                                                        <td align="Center" style="font-size:12px;" width="5%">
+                                                            <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}">
+                                                                <apex:param value="{!mapBlocksServ[nameBlock]['EAD'][strRange]}" />
+                                                            </apex:outputText>
+                                                            <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].EAD__c}">
+                                                                <apex:param value="{!mapBloq[nameBlock][strRange].EAD__c}" />
+                                                            </apex:inputText>
+                                                        </td>
                                                     </apex:outputText>
-                                                </td>
                                             </apex:outputText>
                                             <apex:outputText rendered="{!nameBlock == 'BLOQUE 1'}">
                                                 <td align="Center" style="font-size:12px;" width="5%">
@@ -148,8 +149,8 @@
 
             <apex:repeat value="{!mapBlocks}" var="nameBlock"> 
                 <apex:outputText rendered="{!nameBlock != 'BLOQUE 1'}">
-                    <apex:outputPanel rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'}">       
-                        <apex:pageMessages />
+                    <apex:outputPanel rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota'}">       
+                        <apex:pageMessages id="apexerror"/>
                         <div class="col-md-20">
                             <apex:outputPanel >
                                 <div class="tarifa">
@@ -207,6 +208,9 @@
                                                             <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}">
                                                                 <apex:param value="{!mapBlocksServ[nameBlock]['FLT'][strRange]}" />
                                                             </apex:outputText>
+                                                            <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].Flete__c}">
+                                                                <apex:param value="{!mapBloq[nameBlock][strRange].Flete__c}" />
+                                                            </apex:inputText>
                                                         </td>
                                                     </apex:outputText>
                                                     <apex:outputText rendered="{!nameBlock != 'BLOQUE 1'}">                          
@@ -215,6 +219,9 @@
                                                                 <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}">
                                                                     <apex:param value="{!mapBlocksServ[nameBlock]['RAD'][strRange]}" />
                                                                 </apex:outputText>
+                                                                <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].RAD__c}">
+                                                                    <apex:param value="{!mapBloq[nameBlock][strRange].RAD__c}" />
+                                                                </apex:inputText>
                                                             </apex:outputText>
                                                         </td>
                                                     </apex:outputText>
@@ -224,6 +231,9 @@
                                                                 <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBloq[nameBlock][strRange].EditMode__c)}">
                                                                     <apex:param value="{!mapBlocksServ[nameBlock]['EAD'][strRange]}" />
                                                                 </apex:outputText>
+                                                                <apex:inputText rendered="{!mapBloq[nameBlock][strRange].EditMode__c}" value="{!mapBloq[nameBlock][strRange].EAD__c}">
+                                                                    <apex:param value="{!mapBloq[nameBlock][strRange].EAD__c}" />
+                                                                </apex:inputText>
                                                             </apex:outputText>
                                                         </td>    
                                                     </apex:outputText>
@@ -269,9 +279,154 @@
                     </apex:outputPanel> 
                 </apex:outputText>
             </apex:repeat>
+
+
+            <apex:outputPanel >
+            <div class="tarifa">
+                <div>
+                    <br />
+                    <table align="center" style="border-collapse: collapse;" border="solid 0.5px" width="100%">
+                		<tr style="height: 2px"></tr>
+                        <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%"></td>
+                        <td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">Kilogramo adicional</td>
+                        <apex:outputText rendered="{!T7ZP}">
+                    	    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white; " width="5%">Zona plus T7</td>
+                	    </apex:outputText>
+                        <apex:outputText rendered="{!blnACK}">
+                    	    <td rowspan ="4" align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">
+                            <apex:outputText rendered="{!SBQQ__Quote__c.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                            <apex:outputText rendered="{!SBQQ__Quote__c.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                            <apex:outputText rendered="{!SBQQ__Quote__c.Acuse__c =='XT'}">ACUSE XT</apex:outputText></td>
+                	    </apex:outputText>
+                        <apex:outputText rendered="{!blnServZP && T7ZP == null}">
+                            <td rowspan ="4"  align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white; " width="5%">EAD Zona plus</td>
+                        </apex:outputText>
+                		<tr>
+                    		<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="12%">Peso báscula Kg</td>
+                    		<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">1.000</td>
+                             <apex:outputText rendered="{!T7ZP}">
+                        		<td colspan="1" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">
+                                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="true">
+                                        <apex:param value="{!elPeso}" />
+                                    </apex:outputText>
+                                </td>
+                        	</apex:outputText>
+                		</tr>
+                		<tr>
+                    		<td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="9%">Volumen m3</td>                   		
+                    		<td colspan ="4" align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="32%">0.005</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td colspan="1" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">
+                                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="true">
+                                        <apex:param value="{!elVol}" />
+                                    </apex:outputText> <apex:outputText >
+                                    
+                                    </apex:outputText> Kg vol
+                                </td>
+                        	</apex:outputText>
+                		</tr>
+                      
+                        <tr>  
+                            <td align="Center" style="font-size:12px;  background-color:rgb(31, 73, 125); color: white;" width="9%">Rango Km</td>
+                            <!--<tr>
+                            tabla del kilogramo adicional
+                            </tr>-->
+                            <td colspan ="1" align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">FLETE</td>
+                                <apex:outputText rendered="{!blnRAD}">
+                                    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">
+                                        RAD
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!blnEAD}">
+                                    <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">
+                                        EAD
+                                    </td>
+                                </apex:outputText>
+                            <td colspan ="1" align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">SUBTOTAL</td>   
+                            <apex:outputText rendered="{!T7ZP}">
+                                <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white; " width="5%">SUBTOTAL T7ZP</td>
+                            </apex:outputText>
+                            <td align="Center" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="5%">ACCIÓN</td>
+                        </tr>
+                
+
+                        <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                            <tr>
+                                <td align="Center" style="font-size:12px; " width="5%">{!strRange}</td>
+                                                        
+                                <!--dagos kilogramo adicional -->
+                                <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBlockAdic[strRange].EditMode__c)}">
+                                        <apex:param value="{!mapBlockAdic[strRange].FleteAdic__c}" />
+                                    </apex:outputText>
+                                    <apex:inputField value="{!mapBlockAdic[strRange].FleteAdic__c}" rendered="{!mapBlockAdic[strRange].EditMode__c}" ></apex:inputField>
+                                </td>
+                                <apex:outputText rendered="{!blnRAD}">
+                                    <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBlockAdic[strRange].EditMode__c)}">
+                                            <apex:param value="{!mapBlockAdic[strRange].RADAdic__c}" />
+                                        </apex:outputText>
+                                        <apex:inputField value="{!mapBlockAdic[strRange].RADAdic__c}" rendered="{!mapBlockAdic[strRange].EditMode__c}" ></apex:inputField>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!blnEAD}">
+                                    <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBlockAdic[strRange].EditMode__c)}">
+                                            <apex:param value="{!mapBlockAdic[strRange].EADAdic__c}" />
+                                        </apex:outputText>
+                                        <apex:inputField value="{!mapBlockAdic[strRange].EADAdic__c}" rendered="{!mapBlockAdic[strRange].EditMode__c}" ></apex:inputField>
+                                    </td>
+                                </apex:outputText>
+                                
+                                <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!NOT(mapBlockAdic[strRange].EditMode__c)}">
+                                        <apex:param value="{!mapBlockAdic[strRange].TotalAdic__c}" />
+                                    </apex:outputText>
+                                </td>
+                                <apex:outputText rendered="{!blnACK}">
+                                    <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
+                                            <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!blnServZP && T7ZP == null}">
+                                    <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnServZP && T7ZP == null}">
+                                            <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!T7ZP}">
+                                    <td colspan ="1" align="Center" style="font-size:12px;" width="5%">
+                                        <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!T7ZP}">
+                                            <apex:param value="{!mapPropuestaT7ZP[strRange].SBQQ__SpecialPrice__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <td align="Center" style="font-size:12px;" width="5%">
+                                    <apex:commandButton value="Editar" action="{!editTemplate}" rendered="{!NOT(mapBlockAdic[strRange].EditMode__c)}" reRender="ppTable">
+                                        <apex:param name="indexDeducItem" value="{!mapBlockAdic[strRange].Id}" assignTo="{!indexDeducItem}"/>
+                                    </apex:commandButton>
+                                    <apex:commandButton value="Cancelar" action="{!editTemplate}" rendered="{!mapBlockAdic[strRange].EditMode__c}" reRender="ppTable">
+                                        <apex:param name="indexDeducItem" value="{!mapBlockAdic[strRange].Id}" assignTo="{!indexDeducItem}"/>
+                                    </apex:commandButton>
+                                    <apex:commandButton value="Guardar" action="{!updateTemplate}" rendered="{!mapBlockAdic[strRange].EditMode__c}" reRender="ppTable">
+                                        <apex:param name="indexDeducItem" value="{!mapBlockAdic[strRange].Id}" assignTo="{!indexDeducItem}"/>
+                                    </apex:commandButton>
+                                </td>
+                            </tr>
+                        </apex:repeat>   		
+            		</table>                
+            	</div>
+            </div>
+        </apex:outputPanel>  
         </apex:form>
+
+
+        
     </div>  
-     <apex:form id="ppTable2" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por Rangos de km'}">
+        <!--<apex:form id="ppTable2" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' && SBQQ__Quote__c.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por Rangos de km'}">
             <div class="col-md-20">
                 <apex:outputPanel >
                     <div class="tarifa">
@@ -512,6 +667,6 @@
                     </apex:outputPanel> 
                 </apex:outputText>
             </apex:repeat>
-        </apex:form>
+        </apex:form>-->
    
 </apex:page>
