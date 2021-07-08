@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : msalinas@freewayconsulting.com
  * @group             : 
- * @last modified on  : 06-04-2021
+ * @last modified on  : 06-22-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -313,21 +313,22 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
             	Insert insertFrecuencias;
         	}
        
-        Account theAcc = [SELECT Id, Id_SIpWeb__c FROM Account WHERE Id=: AccId];
+        Account theAcc = [SELECT Id, Id_SIpWeb__c, Name FROM Account WHERE Id=: AccId];
         
         //Email de resultados
         User U = [SELECT Id, Email  FROM User WHERE Id = :System.UserInfo.getUserId()];
         //Tablero de QA
         //String strLink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/Dashboard/01Z7i000000Ia93EAC/view?queryScope=userFolders&fv0=' + theAcc.Id_SIpWeb__c;
-        String strLink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/Dashboard/01Z2E000001ZhkKUAS/view?queryScope=userFolders'; //Link temporal para ver los datos
+        //String strLink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/Dashboard/01Z2E000001ZhkKUAS/view?queryScope=userFolders'; //Link temporal para ver los datos
+        String strLink = 'https://paquetexpress--qa2020.lightning.force.com/lightning/r/Account/'+AccId+'/view'; //Link temporal para pruebas
         //Tablero de Producción
         //String strLink = 'https://paquetexpress.lightning.force.com/lightning/r/Dashboard/01Z2E000001ZhkKUAS/view?queryScope=userFolders&fv0=' + theAcc.Id_SIpWeb__c;
         List<string> toAddress = new List<string>{U.Email};
-        String strTemplate = '<hr color="purple" Style="border:15px;"/><br><br>Se le notifica que el procesamiento del reporte seguimiento al descuento real ha terminado. <br/> Para más resultados <a href="'+ strLink +'"><span style="color:#0066FF" wfd-id="2">click aquí</span>.<br><br><hr color="purple" Style="border:15px;"/>';
+        String strTemplate = '<hr color="purple" Style="border:15px;"/><br><br>El procesamiento del reporte seguimiento al descuento real sipweb para el cliente ' + theAcc.Name + ' ha terminado.<br/> Para ver los resultados <a href="'+ strLink +'"><span style="color:#0066FF" wfd-id="2">clic aquí</span>.<br><br><hr color="purple" Style="border:15px;"/>';
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         //mail.setTemplateId(et.Id);
         mail.setToAddresses(toAddress);
-        mail.setSubject('Seguimiento al descuento real Prepago');
+        mail.setSubject('Seguimiento al descuento real: ' + theAcc.Name);
         mail.setHTMLBody(strTemplate);
         // mail.setTargetObjectId(primaryContact);
         mail.setWhatId('a162f000000RFQe');
