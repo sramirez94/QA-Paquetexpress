@@ -2,41 +2,50 @@
  * @description       : 
  * @author            : msalinas@freewayconsulting.com
  * @group             : 
- * @last modified on  : 06-22-2021
+ * @last modified on  : 07-09-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
  * 1.0   12-15-2021   msalinas@freewayconsulting.com   	  Initial Version
 **/
 global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database.AllowsCallouts, Database.Stateful {
+    //Variables tipo String
     public String query;
     public String AccId;
-    public Decimal bultos;
-    public List<FrecuenciaDeEnvios__c> insertFrecuencias = new List<FrecuenciaDeEnvios__c>();
-    public Map<String, Map<String, SBQQ__QuoteLine__c>> quotes = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
-    public List<String> listRange = new List<String> {
-                '0-400', '401-800', '801-1200', '1201-1600', '1601-2000', '2001-2400', 'Más de 2400'
-        };
-    public List<String> listFee = new List<String> {
-                'TS', 'T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7',
-                'TS ZP', 'T0 ZP', 'T1 ZP', 'T2 ZP', 'T3 ZP', 'T4 ZP', 'T5 ZP', 'T6 ZP', 'T7 ZP',
-                'A12', 'DS', '2DS'
-    	};
-            
     public String strIdQuote;
+    public String strtipoAcuse;
+    //Variables tipo Decimal
+    public Decimal bultos;
+    //Variables tipo Boolean
+    public Boolean blnEAD;
+    public Boolean blnRAD;
+    public Boolean blnACK;
+    public Boolean blnSEG;
+    public Date dtInicio;
+    public Date dtFin;
+    public Wrapper wp                                                               = new Wrapper();
+    //Objetos de mapas
+    public Map<String, Map<String, SBQQ__QuoteLine__c>> quotes                      = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
+    public Map<String, Map<String, SBQQ__QuoteLine__c>> mapTarifas                  = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
+    public Map<String, Map<String, SBQQ__QuoteLine__c>> mapTarifasZP                = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
     public Map<String, wpFrecuencias> mapFrecuencias                                = new Map<String, wpFrecuencias>();
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotes                   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
-    public Wrapper wp                                                               = new Wrapper();
     public Map<String, Decimal> mapAcuse                                            = new Map<String, Decimal>();
-    public List<String> listRangeDestiny                                            = new List<String>();
-    public List<Decimal> listBloques                                                = new list<Decimal>();
     public Map<String, Decimal> mapFlete                                            = new Map<String, Decimal>();
+    //Listas de sObjects y de variables
     public List<Frecuencia_real_envio__c> listFrec                                  = new List<Frecuencia_real_envio__c>();
     public List<SBQQ__QuoteLine__c> theQuotes	                                    = new List<SBQQ__QuoteLine__c>();
+    public List<FrecuenciaDeEnvios__c> insertFrecuencias                            = new List<FrecuenciaDeEnvios__c>();
+    public List<String> listRangeDestiny                                            = new List<String>();
+    public List<Decimal> listBloques                                                = new list<Decimal>();
+    public List<String> listRange                                                   = new List<String> {'0-400', '401-800', '801-1200', '1201-1600', '1601-2000', '2001-2400', 'Más de 2400'};
+    public List<String> listFee                                                     = new List<String> {'TS', 'T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7','TS ZP', 'T0 ZP', 'T1 ZP', 'T2 ZP', 'T3 ZP', 'T4 ZP', 'T5 ZP', 'T6 ZP','A12', 'DS', '2DS'};
     
     public BatchSeguimiento3b(String AccountId, String Inicio, String Fin, String quote){
         AccId = AccountId;
         strIdQuote = quote;
+        this.dtInicio = Date.valueOf(Inicio);
+        this.dtFin = Date.valueOf(Fin);
         for(String Fee:listFee){
             quotes.put(Fee, new Map<String, SBQQ__QuoteLine__c>());
             for(String Range:listRange){
@@ -44,6 +53,8 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
                 q.SBQQ__Quantity__c = 0;
                 q.PackWeightAVG__c = 0;
                 q.PackVolAVG__c = 0;
+                q.SBQQ__CustomerPrice__c = 0;
+                q.SBQQ__NetPrice__c = 0;
                 quotes.get(Fee).put(Range, q);
             }
         }
@@ -61,6 +72,16 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
     }
     
     global void execute(Database.BatchableContext bc, List<Seguimiento_de_descuento_real__c> records) {
+        Decimal decFlete = 0;
+        Decimal decRAD = 0;
+        Decimal decEAD = 0;
+        Decimal decACK = 0;
+        Decimal decSEG = 0;
+        Decimal decTarifaLlena = 0;
+        Decimal decTotalLlena = 0;
+        Decimal decTotalpropuesta = 0;
+        String strTarifa = '';
+        Cotizador__c ObjCostos = [SELECT EntregaDomicilioZonaPlus__c, SeguroMillarDeclarado__c, IVA__c, EAD__c, RAD__c, CoeficientePV__c, MinEAD__c, MinRAD__c FROM Cotizador__c LIMIT 1];
         try{
             //Obtener tarifas para rangos por km del año actual
             for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull()){
@@ -75,7 +96,33 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
                 wp.mapACK.put(objACK.Label, objACK.Amount__c);
             }
             //Se consultan las partidas de presupuesto para la cotización más actual
-            this.theQuotes = queryQuoteItem(this.strIdQuote);
+            this.theQuotes = queryQuoteItem(this.AccId, this.dtInicio, this.dtFin);
+            //Se definen los servicios para la recotización
+            if(this.theQuotes[0].SBQQ__QUOTE__R.Servicios_adicionales__c.contains('RAD'))
+                this.blnRAD = true;
+            if(this.theQuotes[0].SBQQ__QUOTE__R.Servicios_adicionales__c.contains('EAD'))
+                this.blnEAD = true;
+            if(this.theQuotes[0].SBQQ__QUOTE__R.Servicios_adicionales__c.contains('Acuse'))
+                this.blnACK = true;
+
+            for(SBQQ__QuoteLine__c QL : this.theQuotes){
+                if(QL.Tarifa__c == 'TARIFA SOBRE')
+                    strTarifa = 'TS';
+                else strTarifa = QL.Tarifa__c.remove('TARIFA ');
+                if(this.strtipoAcuse == '')
+                    this.strtipoAcuse = QL.SBQQ__Quote__r.Acuse__c;
+                if(!QL.ZonaPlus__c){
+                    if(!this.mapTarifas.containsKey(strTarifa))
+                        this.mapTarifas.put(strTarifa, new map<String, SBQQ__QuoteLine__c>( ));
+                    if(!this.mapTarifas.get(strTarifa).containsKey(QL.Rango_KM__c))
+                        this.mapTarifas.get(strTarifa).put(QL.Rango_KM__c, QL);
+                } else {
+                    if(!this.mapTarifasZP.containsKey(strTarifa))
+                        this.mapTarifasZP.put(strTarifa, new map<String, SBQQ__QuoteLine__c>( ));
+                    if(!this.mapTarifasZP.get(strTarifa).containsKey(QL.Rango_KM__c))
+                        this.mapTarifasZP.get(strTarifa).put(QL.Rango_KM__c, QL);
+                }
+            }
             
             //Procesar los bultos
             for (Seguimiento_de_descuento_real__c s: records) {
@@ -268,7 +315,47 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
                     }
                 }
             }
-            
+            //Inicia proceso de recotización en base a las cantidades y volumenes recolectados de la frecuencia real.
+            for(String keyFee : this.listFee){
+                for(String keyRange : this.listRange){
+                    decFlete = 0;
+                    decRAD = 0;
+                    decEAD = 0;
+                    decACK = 0;
+                    decSEG = 0;
+                    decTarifaLlena = 0;
+                    if(this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c != null &&this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
+                        if(keyFee != 'A12' && keyFee != 'DS' && keyFee != '2D'){
+                            decFlete = this.wp.mapTarifarioT.get(keyFee).get(keyRange).Flete__c;
+                            if(keyFee != 'TS' && keyFee != 'TS ZP'){
+                                if(this.blnRAD)
+                                    decRAD = decFlete * (ObjCostos.EAD__c / 100);
+                                if(this.blnEAD && !this.quotes.get(keyFee).get(keyRange).ZonaPlus__c)
+                                    decEAD = decFlete * (ObjCostos.RAD__c / 100);
+                            }
+                            if(this.blnACK)
+                                decACK = this.wp.mapACK.get(this.strtipoAcuse);
+                            if(this.quotes.get(keyFee).get(keyRange).ZonaPlus__c)
+                                decEAD = ObjCostos.EntregaDomicilioZonaPlus__c;
+                            decTarifaLlena = decFlete + decRAD + decEAD + decACK + decSEG;
+                            if(this.mapTarifas.containsKey(keyFee) && this.mapTarifas.get(keyFee).containsKey(keyRange)){
+                                if(!this.quotes.get(keyFee).get(keyRange).ZonaPlus__c)
+                                    decTotalpropuesta = this.mapTarifas.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c * this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                                else {
+                                    if(this.mapTarifasZP.containsKey(keyFee) && this.mapTarifasZP.get(keyFee).containsKey(keyRange))
+                                        decTotalpropuesta = this.mapTarifasZP.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c * this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                                    else decTotalpropuesta = ObjCostos.EntregaDomicilioZonaPlus__c * this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                                }
+                            } else {
+                                decTotalpropuesta = decFlete *  this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                            }
+                            this.quotes.get(keyFee).get(keyRange).SBQQ__NetPrice__c = this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c * decTarifaLlena;
+                            this.quotes.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c = decTotalpropuesta * this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                            this.quotes.get(keyFee).get(keyRange).SBQQ__Discount__c = (this.quotes.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c / this.quotes.get(keyFee).get(keyRange).SBQQ__NetPrice__c) - 1;
+                        }
+                    }
+                }
+            }
         } catch(Exception ex){
             System.debug('Error en execute BatchSeguimiento3b: ' + ex.getLineNumber()+' '+ex.getMessage());
         }
@@ -378,52 +465,11 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
         , RangoKM__c
         FROM Tarifario_general_terrestre__c WHERE Year__c = null];
     }
-    public static List<SBQQ__QuoteLine__c> queryQuoteItem(String strQuoteId){
-        return [SELECT Id
-        , SBQQ__Quantity__c
-        , SBQQ__CustomerTotal__c
-        , Pack_Seg__c
-        , DiscountAcuse__c
-        , DiscountFlete__c
-        , DiscountRecolection__c
-        , DiscountDelivery__c
-        , DiscountSeg__c
-        , DiscountGuia__c
-        , Servicio__c
-        , PackWeightAVG__c
-        , PackVolAVG__c
-        , SBQQ__Discount__c
-        , SBQQ__CustomerPrice__c
-        , SBQQ__NetPrice__c
-        , SBQQ__NetTotal__c
-        , QuoteTotal__c
-        , MAN__c
-        , EDC__c
-        , EDD__c
-        , CRF__c
-        , ACK__c
-        , EAD__c
-        , RAD__c
-        , SEG__c
-        , Tarifa__c
-        , Width__c
-        , Weight__c
-        , Large__c
-        , High__c
-        , Vol__c
-        , VolWeight__c
-        , Rango_KM__c
-        , ZonaPlus__c
-        , SBQQ__VolumeDiscount__c
-        , SBQQ__SpecialPrice__c
-        , Destiny__c
-        , GUIA__c
-        , KG_ADICIONAL__c
-        , FLETE__c
-        , DiscKgAditional__c
-        , SBQQ__Description__c
-        FROM SBQQ__QuoteLine__c
-        WHERE SBQQ__Quote__c =: strQuoteId];
+    public static List<SBQQ__QuoteLine__c> queryQuoteItem(String strIdAccount, Date FechaInicio, Date FechaFin){
+        return [SELECT SBQQ__QUOTE__R.NAME, SBQQ__QUOTE__R.Servicios_adicionales__c, SBQQ__Quote__r.Acuse__c, TARIFA__C, RANGO_KM__C, SBQQ__CUSTOMERPRICE__C, ACK__C FROM SBQQ__QUOTELINE__C 
+                WHERE SBQQ__QUOTE__R.FECHA_DE_AUTORIZADA__C >= :Fechainicio AND SBQQ__QUOTE__R.FECHA_DE_AUTORIZADA__C <= :FechaFin
+                AND SBQQ__QUOTE__R.SBQQ__ACCOUNT__C = :strIdAccount AND SBQQ__QUOTE__R.Tipo_de_documentacion__c = 'Guías prepagadas'
+                ORDER BY SBQQ__QUOTE__R.Fecha_de_autorizada__c ASC NULLS FIRST];
     }
     public static List<AcusePorGuia__mdt> queryACK(){
         List<AcusePorGuia__mdt> listACK = new List<AcusePorGuia__mdt>();
