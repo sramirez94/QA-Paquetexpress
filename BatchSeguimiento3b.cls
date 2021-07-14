@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : msalinas@freewayconsulting.com
  * @group             : 
- * @last modified on  : 07-09-2021
+ * @last modified on  : 07-14-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -16,14 +16,14 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
     public String strtipoAcuse;
     //Variables tipo Decimal
     public Decimal bultos;
-    //Variables tipo Boolean
-    public Boolean blnEAD;
-    public Boolean blnRAD;
-    public Boolean blnACK;
-    public Boolean blnSEG;
     public Date dtInicio;
     public Date dtFin;
     public Wrapper wp                                                               = new Wrapper();
+    //Variables tipo Boolean
+    public Boolean blnEAD                                                           = false;
+    public Boolean blnRAD                                                           = false;
+    public Boolean blnACK                                                           = false;
+    public Boolean blnSEG                                                           = false;
     //Objetos de mapas
     public Map<String, Map<String, SBQQ__QuoteLine__c>> quotes                      = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
     public Map<String, Map<String, SBQQ__QuoteLine__c>> mapTarifas                  = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
@@ -326,7 +326,7 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
                     decTarifaLlena = 0;
                     if(this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c != null &&this.quotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
                         if(keyFee != 'A12' && keyFee != 'DS' && keyFee != '2D'){
-                            decFlete = this.wp.mapTarifarioT.get(keyFee).get(keyRange).Flete__c;
+                            decFlete = this.wp.mapTarifarioT.get('TARIFA ' + keyFee).get(keyRange).Flete__c;
                             if(keyFee != 'TS' && keyFee != 'TS ZP'){
                                 if(this.blnRAD)
                                     decRAD = decFlete * (ObjCostos.EAD__c / 100);
@@ -385,8 +385,8 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
                 fr.Peso__c = quotes.get(keyFee).get(keyRange).PackWeightAVG__c;
                 fr.Volumen__c = quotes.get(keyFee).get(keyRange).PackVolAVG__c;
                 fr.Zona_Plus__c = quotes.get(keyFee).get(keyRange).ZonaPlus__c;
-                //fr.Total_tarifa_llena__c = quotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                //fr.Total_propuesta__c = quotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                fr.Total_tarifa_llena__c = quotes.get(keyFee).get(keyRange).SBQQ__NetPrice__c;
+                fr.Total_propuesta__c = quotes.get(keyFee).get(keyRange).SBQQ__CustomerPrice__c;
                 //fr.Mes__c = 
                 //fr.Anio__c = ;
                 
@@ -411,7 +411,7 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
         //Tablero de Producción
         //String strLink = 'https://paquetexpress.lightning.force.com/lightning/r/Dashboard/01Z2E000001ZhkKUAS/view?queryScope=userFolders&fv0=' + theAcc.Id_SIpWeb__c;
         List<string> toAddress = new List<string>{U.Email};
-        String strTemplate = '<hr color="purple" Style="border:15px;"/><br><br>El procesamiento del reporte seguimiento al descuento real sipweb para el cliente ' + theAcc.Name + ' ha terminado.<br/> Para ver los resultados <a href="'+ strLink +'"><span style="color:#0066FF" wfd-id="2">clic aquí</span>.<br><br><hr color="purple" Style="border:15px;"/>';
+        String strTemplate = '<hr color="purple" Style="border:15px;"/><br><br>El procesamiento del reporte seguimiento al descuento real prepago para el cliente ' + theAcc.Name + ' ha terminado.<br/> Para ver los resultados <a href="'+ strLink +'"><span style="color:#0066FF" wfd-id="2">clic aquí</span>.<br><br><hr color="purple" Style="border:15px;"/>';
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         //mail.setTemplateId(et.Id);
         mail.setToAddresses(toAddress);
@@ -466,7 +466,7 @@ global class BatchSeguimiento3b implements Database.Batchable<sObject>, Database
         FROM Tarifario_general_terrestre__c WHERE Year__c = null];
     }
     public static List<SBQQ__QuoteLine__c> queryQuoteItem(String strIdAccount, Date FechaInicio, Date FechaFin){
-        return [SELECT SBQQ__QUOTE__R.NAME, SBQQ__QUOTE__R.Servicios_adicionales__c, SBQQ__Quote__r.Acuse__c, TARIFA__C, RANGO_KM__C, SBQQ__CUSTOMERPRICE__C, ACK__C FROM SBQQ__QUOTELINE__C 
+        return [SELECT SBQQ__QUOTE__R.NAME, SBQQ__QUOTE__R.Servicios_adicionales__c, SBQQ__Quote__r.Acuse__c, TARIFA__C, RANGO_KM__C, SBQQ__CUSTOMERPRICE__C, ACK__C, ZonaPlus__c FROM SBQQ__QUOTELINE__C 
                 WHERE SBQQ__QUOTE__R.FECHA_DE_AUTORIZADA__C >= :Fechainicio AND SBQQ__QUOTE__R.FECHA_DE_AUTORIZADA__C <= :FechaFin
                 AND SBQQ__QUOTE__R.SBQQ__ACCOUNT__C = :strIdAccount AND SBQQ__QUOTE__R.Tipo_de_documentacion__c = 'Guías prepagadas'
                 ORDER BY SBQQ__QUOTE__R.Fecha_de_autorizada__c ASC NULLS FIRST];
