@@ -7,12 +7,16 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
     public String strFechaInicio                                                    = '';
     public String strFechaFin                                                       = '';
     public String strModelo                                                         = '';
+    public Boolean blnRAD                                                           = false;
+    public Boolean blnEAD                                                           = false;
+    public Boolean blnACK                                                           = false;
     public List<Descuento_Real_SipWeb__c> insertDescuentos                          = new List<Descuento_Real_SipWeb__c>();
     public List<String> listIds                                                     = new List<String>();
     public List<String> listBloquesCargados                                         = new List<String>();
     list<SBQQ__QuoteLine__c> listQL                                                 = new list<SBQQ__QuoteLine__c>();
     public Map<String, Map<String, Map<Decimal, wpCotizaciones>>> mapCotizaciones   = new Map<String, Map<String, Map<Decimal, wpCotizaciones>>>();
     public Map<String, Map<String, Map<Decimal, wpCotizaciones>>> mapCotizacionesZP = new Map<String, Map<String, Map<Decimal, wpCotizaciones>>>();
+    public Map<String, Decimal> mapAcuse                                            = new Map<String, Decimal>();
     public Map<String, List<SBQQ__QuoteLine__c>> mapQuotes                          = new Map<String, List<SBQQ__QuoteLine__c>>();
     public Map<String, String> mapIdCotizacion                                      = new Map<String, String>();
     public Map<String, Decimal> mapCotizacionesCargadas                             = new Map<String, Decimal>();
@@ -24,10 +28,16 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
             this.strFechaInicio = Inicio;
             this.strFechaFin = Fin;
             this.strModelo = Modelo;
-            Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE (SBQQ__Account__c = \'' + AccountId + '\' OR SBQQ__Account__r.ParentId = \'' + AccountId + '\') ' +
-            + 'AND Fecha_de_autorizada__c >= '+Inicio+' and Fecha_de_autorizada__c <= '+Fin+' AND SBQQ__Status__c = \'Approved\' AND Modelo_de_tarifas__c = \'' + Modelo + '\'';
+            if(!test.isRunningTest()){
+                Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE (SBQQ__Account__c = \'' + AccountId + '\' OR SBQQ__Account__r.ParentId = \'' + AccountId + '\') ' +
+            	+ 'AND Fecha_de_autorizada__c >= '+Inicio+' and Fecha_de_autorizada__c <= '+Fin+' AND SBQQ__Status__c = \'Approved\' AND Modelo_de_tarifas__c = \'' + Modelo + '\' ORDER BY Fecha_de_autorizada__c DESC LIMIT 1';
+            } else {
+                //String strId = 'a137i000001QQ9XAAW'; //QA
+                String strId = 'a132E000008iqWbQAI'; //PROD
+                Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE ID = \'' + strId + '\'';
+            }
         } catch (Exception ex){
-            System.debug('escribir mensaje de error');
+            System.debug('Ocurrió error en constructor: '+ ex.getLineNumber()+' '+ex.getMessage());
         }
     }
     global Database.QueryLocator start(Database.BatchableContext bc) {
@@ -43,13 +53,6 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                 else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c))
                     wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
             for(SBQQ__Quote__c objQuote : records){
-                
-            }
-            for(SBQQ__Quote__c objQuote : records){
-                /*for(SBQQ__QuoteLine__c objCot : [SELECT Id, ZonaPlus__c, PackWeightAVG__c, PackVolAVG__c, Tarifa__c, SBQQ__Quantity__c, Destiny__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :objQuote.Id]){
-                    if(objCot.SBQQ__Quantity__c != 0)
-                    listQL.add(objCot);
-                }*/
                 strId = objQuote.Id;
                 if(!this.listIds.contains(objQuote.Id))
                     this.listIds.add(objQuote.Id);
@@ -57,6 +60,7 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                     this.mapIdCotizacion.put(objQuote.Id, objQuote.Name);
                 Decimal tarLlena;
                 String strTarifa = '';
+                String strRangeDest = '';
                 for(SBQQ__QuoteLine__c objQLine : [SELECT Id, ZonaPlus__c, PackWeightAVG__c, PackVolAVG__c, Tarifa__c, SBQQ__Quantity__c, Rango_KM__c, Destiny__c, Flete__c, RAD__c, EAD__c, ACK__C FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :objQuote.Id]){
                     if(objQline.SBQQ__Quantity__c != 0){
                         if(!(objQline.Tarifa__c == 'TARIFA T7' && objQline.ZonaPlus__c)){
@@ -73,13 +77,26 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                             if(objQline.Tarifa__c == 'TARIFA SOBRE')
                                 strTarifa = 'TARIFA TS';
                             else strTarifa = objQline.Tarifa__c;
-                            tarLlena = this.wp.mapTarifarioT.get(strTarifa).get(objQline.Rango_KM__c).Flete__c;
-                            if(objQline.RAD__c != null)
+                            if(strTarifa.contains('T7'))
+                            	tarLlena = this.wp.mapTarifarioT.get('TARIFA T7P').get(objQline.Rango_KM__c).Flete__c;
+                           	else tarLlena = this.wp.mapTarifarioT.get(strTarifa).get(objQline.Rango_KM__c).Flete__c;
+                            if(objQline.RAD__c != null){
+                                this.blnRAD = true;
                                 tarLlena += objQline.RAD__c;
-                            if(objQline.EAD__c != null)
+                            }
+                            if(objQline.EAD__c != null){
+                                this.blnEAD = true;
                                 tarLlena += objQline.EAD__c;
-                            if(objQline.ACK__c != null)
+                            }
+                            if(objQline.ACK__c != null){
+                                this.blnACK = true;
                                 tarLlena += objQline.ACK__c;
+                            }
+                            if(objQLine.Destiny__c != null)
+                                strRangeDest = objQLine.Destiny__c.remove(' (' + objQLine.Rango_KM__c + ')');
+                            else strRangeDest = objQLine.Rango_KM__c;
+                            if(!this.mapAcuse.containsKey(strRangeDest))
+                                this.mapAcuse.put(strRangeDest, objQLine.ACK__c);
                             if(!objQline.ZonaPlus__c){
                                 if(!this.mapCotizaciones.containsKey(strKey1))
                                     this.mapCotizaciones.put(strKey1, new Map<String, Map<Decimal, wpCotizaciones>>());
@@ -87,7 +104,7 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                                     this.mapCotizaciones.get(strKey1).put(objQuote.Id, new Map<Decimal, wpCotizaciones>());
                                 if(!this.mapCotizaciones.get(strKey1).get(objQuote.Id).containsKey(objQline.PackWeightAVG__c)){
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).put(objQline.PackWeightAVG__c, new  wpCotizaciones());
-                                    this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).intBultos                 = objQline.PackWeightAVG__c;
+                                    this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).intBultos                 = objQline.SBQQ__Quantity__c;
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decVolPromedio            = objQline.PackVolAVG__c;
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decPesoVolumetrico        = objQline.PackVolAVG__c;
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTarifaLlena            = tarLlena;
@@ -95,7 +112,7 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTotalTarifaPropuesta   = (tarLlena * objQline.Flete__c);
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decDescuento              = (this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTotalTarifaPropuesta / this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTotalTarifaLlena) - 1;
                                 } else {
-                                    this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).intBultos                 += objQline.PackWeightAVG__c;
+                                    this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).intBultos                 += objQline.SBQQ__Quantity__c;
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTarifaLlena            += tarLlena;
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTotalTarifaLlena       += (objQline.SBQQ__Quantity__c * tarLlena);
                                     this.mapCotizaciones.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decTotalTarifaPropuesta   += (tarLlena * objQline.Flete__c);
@@ -108,7 +125,7 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                                     this.mapCotizacionesZP.get(strKey1).put(objQuote.Id, new Map<Decimal, wpCotizaciones>());
                                 if(!this.mapCotizacionesZP.get(strKey1).get(objQuote.Id).containsKey(objQline.PackWeightAVG__c)){
                                     this.mapCotizacionesZP.get(strKey1).get(objQuote.Id).put(objQline.PackWeightAVG__c, new  wpCotizaciones());
-                                    this.mapCotizacionesZP.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).intBultos           = objQline.PackWeightAVG__c;
+                                    this.mapCotizacionesZP.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).intBultos           = objQline.SBQQ__Quantity__c;
                                     this.mapCotizacionesZP.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decVolPromedio      = objQline.PackVolAVG__c;
                                     this.mapCotizacionesZP.get(strKey1).get(objQuote.Id).get(objQline.PackWeightAVG__c).decPesoVolumetrico  = objQline.PackVolAVG__c;
                                 } else {
@@ -178,6 +195,13 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
         }
     }
     global void finish(Database.BatchableContext bc) {
+        List<Descuento_Real_SipWeb__c> borrar = new List<Descuento_Real_SipWeb__c>();
+        borrar = [SELECT Id, Cuenta__c, Descuento_Real__c FROM Descuento_Real_SipWeb__c WHERE Cuenta__c =: AccId AND Descuento_Real__c = false];
+        if(this.insertDescuentos.size() > 0){
+            if(borrar.size()>0) { 
+                Delete borrar; 
+            }
+        }
         for(Database.SaveResult resDeducUPD : Database.insert(this.insertDescuentos, false)){
             if(resDeducUPD.isSuccess())
                 System.debug('Se guardaron correctamente los cambios.');
@@ -186,8 +210,10 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
                     System.debug('Error al guardar datos de partidas de cotización: ' + insError.getMessage());
             }
         }
-        BatchSeguimientoCBME2 batch2 = new BatchSeguimientoCBME2(this.AccId, this.strFechaInicio, this.strFechaFin, this.strModelo);
-        database.executeBatch(batch2,1);
+        if(!test.isRunningTest()){
+            BatchSeguimientoCBME2 batch2 = new BatchSeguimientoCBME2(this.AccId, this.strFechaInicio, this.strFechaFin, this.strModelo, this.blnRAD, this.blnEAD, this.blnACK, this.mapAcuse);
+        	database.executeBatch(batch2,1);
+        }
     }
     public static List<Tarifario_general_terrestre__c> queryTarifarioTFull(){
         return [SELECT  Id
@@ -215,12 +241,6 @@ global class BatchSeguimientoCBME implements Database.Batchable<sObject>, Databa
             this.decTotalTarifaLlena        = 0;
             this.decTotalTarifaPropuesta    = 0;
             this.decDescuento               = 0;
-        }
-        public wpCotizaciones(Decimal volPromedio, Decimal bultos, Decimal PesoVol, Decimal TarLlena){
-            this.decVolPromedio     = volPromedio;
-            this.intBultos          = bultos;
-            this.decPesoVolumetrico = PesoVol;
-            this.decTarifaLlena     = TarLlena;
         }
     }
     public class Wrapper{
