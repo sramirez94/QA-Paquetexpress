@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 04-21-2021
+ * @last modified on  : 06-02-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -18,6 +18,7 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
     public Boolean blnRAD                                             = false;
     public Boolean blnEAD                                             = false;
     public Boolean blnACK                                             = false;
+    public Boolean blnGMP                                             = false;
     public Map<String, Map<String, wpFrecuencias>> mapFrecuencias     = new Map<String, Map<String, wpFrecuencias>>();
     public Map<String, Map<String, wpFrecuencias>> mapFrecuenciasZP   = new Map<String, Map<String, wpFrecuencias>>();
     public Map<String, Map<String, wpFrecuencias>> mapGuias           = new Map<String, Map<String, wpFrecuencias>>();
@@ -36,8 +37,14 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
         this.mapAcuse = mapAc;
         this.strInicio = Inicio;
         this.strFin = Fin;
-        Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE (SBQQ__Account__c = \'' + AccountId + '\' OR SBQQ__Account__r.ParentId = \'' + AccountId + '\') ' +
-        + 'AND Fecha_de_autorizada__c >= '+Inicio+' and Fecha_de_autorizada__c <= '+Fin+' AND SBQQ__Status__c = \'Approved\' AND Modelo_de_tarifas__c = \'' + Modelo + '\'';
+        if(!test.isRunningTest()){
+            Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE (SBQQ__Account__c = \'' + AccountId + '\' OR SBQQ__Account__r.ParentId = \'' + AccountId + '\') ' +
+        	+ 'AND Fecha_de_autorizada__c >= '+Inicio+' and Fecha_de_autorizada__c <= '+Fin+' AND SBQQ__Status__c = \'Approved\' AND Modelo_de_tarifas__c = \'' + Modelo + '\'';
+        } else {
+            //String strId = 'a137i000001QQ9XAAW'; //QA
+            String strId = 'a132E000008iqWbQAI'; //PROD
+            Query = 'SELECT Id, Name, Servicios_adicionales__c, Fecha_de_autorizada__c FROM SBQQ__Quote__c WHERE ID = \'' + strId + '\'';
+        } 
     }
     global Database.QueryLocator start(Database.BatchableContext bc) {
         //System.debug('consulta: '+ query);
@@ -63,6 +70,7 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
                                 this.mapFrecuencias.get(objQLine.Tarifa__C).get(strRangeDest).decFrecuencia = objQLine.SBQQ__Quantity__c;
                             }else this.mapFrecuencias.get(objQLine.Tarifa__c).get(strRangeDest).decFrecuencia += objQLine.SBQQ__Quantity__c;
                             if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km'){
+                                this.blnGMP = true;
                                 if(!this.mapGuias.containsKey(objQLine.Tarifa__c))
                                     this.mapGuias.put(objQLine.Tarifa__c, new Map<String, wpFrecuencias>());
                                 if(!this.mapGuias.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
@@ -121,7 +129,12 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
     }
     global void finish(Database.BatchableContext bc) {
         //System.debug('mapa frecuencias: ' + this.mapFrecuencias.get('TARIFA SOBRE'));
+        String strTipoRegistro = '';
         try{
+            RecordType RT = [SELECT ID, NAME FROM RECORDTYPE WHERE DEVELOPERNAME = 'Frecuencia_Cotizada'];
+            if(RT == null)
+                System.debug('Imposible continuar, no existe el tipo de registro Frecuencia_Cotizada. BatchSeguimientoCBME2');
+            else strTipoRegistro = RT.ID;
             for(String strTarifa : this.listTarifas){
                 for(String strRange : this.listRangeDestiny){
                     //03/03/2021 Salvador: Tarifa paquetexpress
@@ -134,6 +147,7 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
                         f.Rango__c = strRange;
                         f.Bultos__c = this.mapFrecuencias.get(strTarifa).get(strRange).decFrecuencia;
                         f.Zona_Plus__c = false;
+                        f.RecordTypeId = strTipoRegistro;
                         if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km')
                             f.GuiasPorPaq__c = this.mapGuias.get(strTarifa).get(strRange).decFrecuencia; 
                         this.listFrecuencia.add(f);
@@ -151,6 +165,7 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
                             f.Rango__c = strRange;
                             f.Bultos__c = this.mapFrecuenciasZP.get(strTarifa).get(strRange).decFrecuencia;
                             f.Zona_Plus__c = true;
+                            f.RecordTypeId = strTipoRegistro;
                             if(this.strModelo == 'Guía multipieza: Por Destinos / Por Rangos de km')
                                 f.GuiasPorPaq__c = this.mapGuiasZP.get(strTarifa).get(strRange).decFrecuencia;
                             this.listFrecuencia.add(f);
@@ -158,6 +173,13 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
                     }
                     
 
+                }
+            }
+            List<FrecuenciaDeEnvios__c> borrar2 = new List<FrecuenciaDeEnvios__c>();
+            borrar2 = [SELECT Id, Cuenta__c, RecordType.Name FROM FrecuenciaDeEnvios__c WHERE Cuenta__c =: AccId AND RecordType.Name = 'Frecuencia Cotizada'];
+            if(this.listFrecuencia.size()>0){
+                if(borrar2.size()>0) { 
+                    Delete borrar2; 
                 }
             }
             for(Database.SaveResult resDeducUPD : Database.insert(this.listFrecuencia, false)){
@@ -170,8 +192,10 @@ global class BatchSeguimientoCBME2 implements Database.Batchable<sObject>, Datab
             }
             //Account theAcc = [SELECT Id, Id_SIpWeb__c FROM Account WHERE Id=: AccId];
             //CallWSDescuentoPorCliente.callDescuentoCliente(theAcc.Id_SIpWeb__c, theAcc);
-            BatchSeguimientoCBME3 batch3 = new BatchSeguimientoCBME3(this.AccId, this.strInicio, this.strFin, this.strIdQuote, this.blnRAD, this.blnEAD, this.blnACK, this.mapAcuse);
-            database.executeBatch(batch3,1);
+            if(!test.isRunningTest()){
+                BatchSeguimientoCBME3 batch3 = new BatchSeguimientoCBME3(this.AccId, this.strInicio, this.strFin, this.strIdQuote, this.blnRAD, this.blnEAD, this.blnACK, this.mapAcuse, this.blnGMP);
+            	database.executeBatch(batch3,1);
+            }
         } catch (Exception ex){
             System.debug('Error en finish ' + + ex.getLineNumber()+' '+ex.getMessage());
         }
