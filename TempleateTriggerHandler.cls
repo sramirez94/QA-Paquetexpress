@@ -349,7 +349,7 @@ public class TempleateTriggerHandler {
 						, EAD__c = 0
 						, RAD__c = 0
 						, SEG__c = objQLine.SEG__c
-						, CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c
+						, CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c.setScale(2)
 						, FLETE__c = 0
                         , fleteE__c = objQLine.FLETE__c
                         , ACKES__c = objQLine.ACK__c
@@ -483,12 +483,12 @@ public class TempleateTriggerHandler {
                             if(this.blnEAD)
                                 objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
                             objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
-                            objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest);
+                            objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest).setScale(2);
                             if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
-                                objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest);
+                                objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest).setScale(2);
                             if(this.mapBlockAdic.get('EAD').containsKey(strRangeDest) && this.blnEAD)
-                                objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest);
-                            objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest);
+                                objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest).setScale(2);
+                            objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest).setScale(2);
                             objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
                             objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                             objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
@@ -508,12 +508,12 @@ public class TempleateTriggerHandler {
                                 if(this.blnEAD)
                                     objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
                                 objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
-                                objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest);
+                                objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest).setScale(2);
                                 if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
-                                    objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest);
+                                    objTempleateLine.RADAdic__c      = this.mapBlockAdic.get('RAD').get(strRangeDest).setScale(2);
                                 if(this.mapBlockAdic.get('EAD').containsKey(strRangeDest) && this.blnEAD)
-                                    objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest);
-                                objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest);
+                                    objTempleateLine.EADAdic__c      = this.mapBlockAdic.get('EAD').get(strRangeDest).setScale(2);
+                                objTempleateLine.TotalAdic__c        = this.mapBlockAdic.get('TOT').get(strRangeDest).setScale(2);
                                 objTempleateLine.PackWeightAVG__c = objQLine.PackWeightAVG__c;
                                 objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                                 objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
