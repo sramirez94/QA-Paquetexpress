@@ -366,10 +366,7 @@ public class TempleateTriggerHandler {
 					objTempleateLine.Weight__c = objQLine.PackWeightAVG__c;
 					if(mapQuotesT7.containsKey(objQLine.Tarifa__c+'-P') && mapQuotesT7.get(objQLine.Tarifa__c+'-P').containsKey(objQLine.Rango_KM__c)
 							&& mapQuotesT7.containsKey(objQLine.Tarifa__c+'-V') && mapQuotesT7.get(objQLine.Tarifa__c+'-V').containsKey(objQLine.Rango_KM__c))
-						objTempleateLine.CustomerPrice__c = getDominantPrice(
-							mapQuotesT7.get(objQLine.Tarifa__c+'-P').get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c * objQLine.PackWeightAVG__c
-								, mapQuotesT7.get(objQLine.Tarifa__c+'-V').get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c * objQLine.PackVolAVG__c
-						);
+						objTempleateLine.CustomerPrice__c = getDominantPrice(mapQuotesT7.get(objQLine.Tarifa__c+'-P').get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c, mapQuotesT7.get(objQLine.Tarifa__c+'-V').get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c);
 				}
                                
                 if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){             
