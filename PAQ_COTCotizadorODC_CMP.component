@@ -1,3 +1,13 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 05-26-2021
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+  Modifications Log 
+  Ver   Date         Author                               Modification
+  1.0   05-26-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+-->
 <apex:component controller="PAQ_CotizadorNacional_CTR">
     <div ng-controller="ODCController as ODCCTR">
         <div ng-show="ODstep1">
@@ -108,7 +118,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 col-sm-6">
-                    <div class="panel panel-default" ng-repeat="(strFeeKey, fee) in ODZP.listFee" ng-show="OD.mapQuotes[strFeeKey].blnShow" style="overflow: scroll;">
+                    <div class="panel panel-default" ng-repeat="(strFeeKey, fee) in ODZP.listFee" ng-show="OD.mapQuotes[strFeeKey].blnShow && OD.blnEAD" style="overflow: scroll;">
                         <div class="panel-heading">
                             <a data-toggle="collapse" href="#{{strFeeKey}}-ZP"><h3 class="panel-title" ng-bind="fee+' ZP'"></h3></a>
                         </div>
@@ -2207,105 +2217,101 @@
                         var rangeDiscEXP = 0;
                         var arrayTarifas = '';
                         $scope.OD.blnZP = false;
-                        j$.each(
-                                $scope.OD.listFee
-                                , function (keyFee, strFee) {
-                                    if ($scope.OD.mapQuotes[keyFee].blnShow)
-                                        j$.each($scope.OD.listRange
-                                                , function (keyRange, labelRange) {
-                                                    if (getId(labelRange, $scope.OD.OriginalListRange))
-                                                        strRange = labelRange;
-                                                    else
-                                                        strRange = getRange(labelRange);
+                        debugger;
+                        j$.each($scope.OD.listFee, function (keyFee, strFee) {
+                            if ($scope.OD.mapQuotes[keyFee].blnShow){
+                                j$.each($scope.OD.listRange, function (keyRange, labelRange) {
+                                    if (getId(labelRange, $scope.OD.OriginalListRange))
+                                        strRange = labelRange;
+                                    else
+                                        strRange = getRange(labelRange);
+                                        if ($scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency > 0) {
+                                            Quote.PAQ_TipoServicio__c = 'Estándar terrestre (STD)';
+                                            var QuoteItem = {
+                                                SBQQ__Quantity__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency
+                                                , SBQQ__Discount__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltDiscount * 100
+                                                , SBQQ__CustomerPrice__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee
+                                                , SBQQ__NetPrice__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltFullFee
+                                                , SBQQ__SpecialPrice__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltFullFee
+                                                , QuoteTotal__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee
+                                                , PackWeightAVG__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltWeightAVR
+                                                , PackVolAVG__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltVolAVR
+                                                , ACK__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltACK
+                                                , EAD__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltEAD
+                                                , RAD__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltRAD
+                                                , SEG__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltAmountSeg
+                                                , Tarifa__c: strFee
+                                                , Rango_KM__c: strRange
+                                                , ZonaPlus__c: false
+                                                , Pack_Seg__c: $scope.OD.fltSEG
+                                                , Id: $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id
+                                                , SBQQ__VolumeDiscount__c: $scope.OD.mapQuotes[keyFee].fltFeeTotalDesc * 100
+                                                , SBQQ__Quote__c: Quote.Id
+                                            };
 
-                                                    if ($scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency > 0) {
-                                                        Quote.PAQ_TipoServicio__c = 'Estándar terrestre (STD)';
-                                                        var QuoteItem = {
-                                                            SBQQ__Quantity__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency
-                                                            , SBQQ__Discount__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltDiscount * 100
-                                                            , SBQQ__CustomerPrice__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee
-                                                            , SBQQ__NetPrice__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltFullFee
-                                                            , SBQQ__SpecialPrice__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltFullFee
-                                                            , QuoteTotal__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee
-                                                            , PackWeightAVG__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltWeightAVR
-                                                            , PackVolAVG__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltVolAVR
-                                                            , ACK__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltACK
-                                                            , EAD__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltEAD
-                                                            , RAD__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltRAD
-                                                            , SEG__c: $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltAmountSeg
-                                                            , Tarifa__c: strFee
-                                                            , Rango_KM__c: strRange
-                                                            , ZonaPlus__c: false
-                                                            , Pack_Seg__c: $scope.OD.fltSEG
-                                                            , Id: $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id
-                                                            , SBQQ__VolumeDiscount__c: $scope.OD.mapQuotes[keyFee].fltFeeTotalDesc * 100
-                                                            , SBQQ__Quote__c: Quote.Id
-                                                        };
+                                            if (!getId(labelRange, $scope.OD.OriginalListRange))
+                                                QuoteItem.Destiny__c = keyRange;
 
-                                                        if (!getId(labelRange, $scope.OD.OriginalListRange))
-                                                            QuoteItem.Destiny__c = keyRange;
-
-                                                        if (keyFee === 'T7') {
-                                                            QuoteItem.SBQQ__VolumeDiscount__c = $scope.OD.mapQuotes['T7'].fltTotalDisc * 100;
-                                                            if ($scope.PPT7Calc === 'byDimension') {
-                                                                if ($scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR > 1)
-                                                                    QuoteItem.SBQQ__SpecialPrice__c = $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee * $scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR * $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency;
-                                                                if ($scope.OD.mapQuotes['T7'].ranges[keyRange].fltWeightAVR > 1)
-                                                                    QuoteItem.SBQQ__SpecialPrice__c = $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee * $scope.OD.mapQuotes['T7'].ranges[keyRange].fltWeightAVR * $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency;
-                                                                QuoteItem.PackWeightAVG__c = $scope.OD.mapQuotes['T7P'].ranges[keyRange].fltWeightAVR;
-                                                                QuoteItem.PackVolAVG__c = $scope.OD.mapQuotes['T7V'].ranges[keyRange].fltVolAVR;
-                                                                QuoteItem.SBQQ__CustomerPrice__c = $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltTotalQuote / $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency;
-                                                            }
-                                                        }
-                                                        if ((QuoteItem.SBQQ__Discount__c * -1) > rangeDisc)
-                                                            rangeDisc = QuoteItem.SBQQ__Discount__c * -1;
-                                                        listQuoteItem.push(QuoteItem);
-
-                                                        if (!arrayTarifas.includes(strFee))
-                                                            arrayTarifas += strFee + ' ,';
-                                                    } else if ($scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency === 0 && $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id)
-                                                        listDelete.push($scope.OD.mapQuotes[keyFee].ranges[keyRange].Id);
-
-                                                    if (keyFee !== 'T7') {
-                                                        if ($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].intFrecuency > 0) {
-                                                            Quote.PAQ_TipoServicio__c = 'Estándar terrestre (STD)';
-                                                            $scope.OD.blnZP = true;
-                                                            var QuoteItemZP = {
-                                                                SBQQ__Quantity__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].intFrecuency
-                                                                , SBQQ__Discount__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltDiscount * 100
-                                                                , SBQQ__CustomerPrice__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee
-                                                                , SBQQ__NetPrice__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltFullFee
-                                                                , SBQQ__SpecialPrice__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltFullFee
-                                                                , QuoteTotal__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltTotalQuote
-                                                                , ACK__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltACK
-                                                                , EAD__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltEAD
-                                                                , RAD__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltRAD
-                                                                , SEG__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltAmountSeg
-                                                                , Tarifa__c: strFee
-                                                                , Rango_KM__c: strRange
-                                                                , ZonaPlus__c: true
-                                                                , SBQQ__VolumeDiscount__c: $scope.ODZP.mapQuotes[keyFee].fltFeeTotalDesc * 100
-                                                                , Id: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id
-                                                                , SBQQ__Quote__c: Quote.Id
-                                                            };
-
-                                                            if (!getId(labelRange, $scope.OD.OriginalListRange))
-                                                                QuoteItemZP.Destiny__c = keyRange;
-
-                                                            if ((QuoteItemZP.SBQQ__Discount__c * -1) > rangeDisc)
-                                                                rangeDisc = QuoteItemZP.SBQQ__Discount__c * -1;
-
-                                                            listQuoteItem.push(QuoteItemZP);
-                                                            if (!arrayTarifas.includes(strFee))
-                                                                arrayTarifas += strFee + ' ,';
-                                                        } else if ($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].intFrecuency === 0 && $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id)
-                                                            listDelete.push($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id);
-                                                    }
-
+                                            if (keyFee === 'T7') {
+                                                QuoteItem.SBQQ__VolumeDiscount__c = $scope.OD.mapQuotes['T7'].fltTotalDisc * 100;
+                                                if ($scope.PPT7Calc === 'byDimension') {
+                                                    if ($scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR > 1)
+                                                        QuoteItem.SBQQ__SpecialPrice__c = $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee * $scope.OD.mapQuotes['T7'].ranges[keyRange].fltVolAVR * $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency;
+                                                    if ($scope.OD.mapQuotes['T7'].ranges[keyRange].fltWeightAVR > 1)
+                                                        QuoteItem.SBQQ__SpecialPrice__c = $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee * $scope.OD.mapQuotes['T7'].ranges[keyRange].fltWeightAVR * $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency;
+                                                    QuoteItem.PackWeightAVG__c = $scope.OD.mapQuotes['T7P'].ranges[keyRange].fltWeightAVR;
+                                                    QuoteItem.PackVolAVG__c = $scope.OD.mapQuotes['T7V'].ranges[keyRange].fltVolAVR;
+                                                    QuoteItem.SBQQ__CustomerPrice__c = $scope.OD.mapQuotes[keyFee].ranges[keyRange].fltTotalQuote / $scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency;
                                                 }
-                                        );
-                                }
-                        );
+                                            }
+                                            if ((QuoteItem.SBQQ__Discount__c * -1) > rangeDisc)
+                                                rangeDisc = QuoteItem.SBQQ__Discount__c * -1;
+                                            listQuoteItem.push(QuoteItem);
+
+                                            if (!arrayTarifas.includes(strFee))
+                                                arrayTarifas += strFee + ' ,';
+                                        } else if ($scope.OD.mapQuotes[keyFee].ranges[keyRange].intFrecuency === 0 && $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id)
+                                            listDelete.push($scope.OD.mapQuotes[keyFee].ranges[keyRange].Id);
+
+                                        if (keyFee !== 'T7') {
+                                            if ($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].intFrecuency > 0) {
+                                                Quote.PAQ_TipoServicio__c = 'Estándar terrestre (STD)';
+                                                $scope.OD.blnZP = true;
+                                                var QuoteItemZP = {
+                                                    SBQQ__Quantity__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].intFrecuency
+                                                    , SBQQ__Discount__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltDiscount * 100
+                                                    , SBQQ__CustomerPrice__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltQuoteFee
+                                                    , SBQQ__NetPrice__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltFullFee
+                                                    , SBQQ__SpecialPrice__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltFullFee
+                                                    , QuoteTotal__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltTotalQuote
+                                                    , ACK__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltACK
+                                                    , EAD__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltEAD
+                                                    , RAD__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltRAD
+                                                    , SEG__c: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].fltAmountSeg
+                                                    , Tarifa__c: strFee
+                                                    , Rango_KM__c: strRange
+                                                    , ZonaPlus__c: true
+                                                    , SBQQ__VolumeDiscount__c: $scope.ODZP.mapQuotes[keyFee].fltFeeTotalDesc * 100
+                                                    , Id: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id
+                                                    , SBQQ__Quote__c: Quote.Id
+                                                };
+
+                                                if (!getId(labelRange, $scope.OD.OriginalListRange))
+                                                    QuoteItemZP.Destiny__c = keyRange;
+
+                                                if ((QuoteItemZP.SBQQ__Discount__c * -1) > rangeDisc)
+                                                    rangeDisc = QuoteItemZP.SBQQ__Discount__c * -1;
+
+                                                listQuoteItem.push(QuoteItemZP);
+                                                if (!arrayTarifas.includes(strFee))
+                                                    arrayTarifas += strFee + ' ,';
+                                            } else if ($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].intFrecuency === 0 && $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id)
+                                                listDelete.push($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id);
+                                        }
+                                    }
+                                );
+                            }
+                        });
 
                         if ($scope.OD.mapQuotes['T7'].blnShow) {
                             Quote.Tarifa_7__c = true;
@@ -3214,6 +3220,7 @@
                 };
 
                 $scope.removeFee = function(fee){
+                    debugger;
                     var index =  j$.inArray(fee, $scope.OD.FeeSelect.selected);
                     $scope.OD.FeeSelect.selected.splice(index, 1);
                     $scope.OD.FeeSelect.available.push(fee);
@@ -3229,6 +3236,12 @@
                     });
                     if(notEmpty(fee.id) && fee.id != 'DS' && fee.id != '2D' && fee.id != 'A12'){
                         $scope.OD.mapQuotes[fee.id].blnShow = false;
+                        j$.each($scope.OD.listRange, function(keyRange, strRange){
+                            if($scope.OD.mapQuotes[fee.id].ranges[keyRange].Id)
+                                $scope.listQLineDEL.push($scope.OD.mapQuotes[fee.id].ranges[keyRange].Id);
+                            if($scope.ODZP.mapQuotes[fee.id].ranges[keyRange].Id)
+                                $scope.listQLineDEL.push($scope.ODZP.mapQuotes[fee.id].ranges[keyRange].Id);
+                        });
                         $scope.OD.mapQuotes[fee.id] = {
                             ranges : []
                             , intFeeTotalFrec : 0
