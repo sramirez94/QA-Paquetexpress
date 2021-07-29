@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 07-02-2021
+ * @last modified on  : 07-28-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -16,6 +16,8 @@ public class Ctrl_pantalla_ww {
     public boolean GuiasPrepagadas 			{get;set;}
     public boolean DocumentacionEnLinea	 	{get;set;}
     public boolean ServiciosEspeciales 		{get;set;}
+    public boolean blnmapBloque             {get;set;}
+    public boolean blnmapKgAdic             {get;set;}
 	public Wrapper wp                       {get;set;}
     public List<String> listFee             {get; set;}
     public List<String> listFeeZP           {get; set;}
@@ -195,6 +197,8 @@ public class Ctrl_pantalla_ww {
         this.blnA12 = false;
         this.blnServZP = false;
         this.blnCostoBaseGMP = false;
+        this.blnmapBloque = false;
+        this.blnmapKgAdic = false;
 		this.listFee = new List<String> {
 			  'TARIFA SOBRE'
 			, 'TARIFA T0'
@@ -1773,22 +1777,27 @@ public class Ctrl_pantalla_ww {
      
     public static Decimal getFlete(Decimal decCustomerPrice, String strServiciosAdd, TempleateLine__c objtempleateItem, Integer contador){
         Decimal decFlete = 0;
-        
         if(!objtempleateItem.Zona_Plus__c){
             if((objtempleateItem.Tarifa__c == 'TARIFA T7' || objtempleateItem.Tarifa__c == 'TARIFA T7-V') &&  objtempleateItem.ACK__c >= 66){
                 objtempleateItem.ACK__c = 65;
             }
             if(objtempleateItem.Tarifa__c == 'TARIFA T7-V' || objtempleateItem.Tarifa__c == 'TARIFA T7-P'){
-                if(objtempleateItem.Tarifa__c == 'TARIFA T7-V')
+                if(objtempleateItem.Tarifa__c == 'TARIFA T7-V'){
                     decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c; 
-                else decFlete = decCustomerPrice;
-            } else decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
+                } else {
+                    decFlete = decCustomerPrice;
+                }
+            } else{
+                decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
+            } 
             if(strServiciosAdd != null){
-                if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD') && contador == 0)
+                if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD') && contador == 0){
                     decFlete = decFlete / 1.22;
-                else if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') || strServiciosAdd.contains('RAD') || contador > 0)
+                }else if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') || strServiciosAdd.contains('RAD') || contador > 0){
                     decFlete = decFlete / 1.11;
-                else decFlete = decFlete;
+                }else{
+                    decFlete = decFlete;
+                }
             }
         } else if(objtempleateItem.Zona_Plus__c) {
             if(objtempleateItem.Tarifa__c == 'TARIFA T7' &&  objtempleateItem.ACK__c >= 66){
@@ -1856,7 +1865,7 @@ public class Ctrl_pantalla_ww {
             decEad = decFlete * 0.11;
         else   
             decEad = (objtempleateItem.CustomerPrice__c - (objtempleateItem.ACK__c + objtempleateItem.SEG__c)) * .50;
-        return  decEad;//5.82
+        return  decEad.setScale(2);//5.82
     }
     
     public static Decimal getEADOS(Decimal decFlete, TempleateLine__c objtempleateItem){ //90
@@ -1869,7 +1878,9 @@ public class Ctrl_pantalla_ww {
     }
 
      public static Decimal getRAD(Decimal decFlete){ //90
-        return decFlete * 0.11; //5.82
+        Decimal decRAD;
+        decRAD = decFlete * 0.11;
+        return decRAD.setScale(2); //5.82
     }
     
      public static Decimal getRADS(TempleateLine__c objtempleateItem){ //90
@@ -1897,7 +1908,7 @@ public class Ctrl_pantalla_ww {
     public boolean ValidaSubtotalVsServ(TempleateLine__c objDeduc){       
         Decimal suma = 0;
         if(!this.blnCostoBaseGMP)
-            suma = objDeduc.ACK__c + objDeduc.FLETE__c + ObjDeduc.RAD__c + ObjDeduc.EAD__c + ObjDeduc.SEG__c; //Se suman los servicios adicionales y el flete
+            suma = objDeduc.ACK__c.setScale(2) + objDeduc.FLETE__c.setScale(2) + ObjDeduc.RAD__c.setScale(2) + ObjDeduc.EAD__c.setScale(2) + ObjDeduc.SEG__c.setScale(2); //Se suman los servicios adicionales y el flete
         else suma = objDeduc.FLETE__c + ObjDeduc.RAD__c + ObjDeduc.EAD__c;
         if (suma.setScale(2) <> ObjDeduc.CustomerPrice__c.setScale(2)){ //La sumatoria de los servicios y el flete no puede ser ni mayor ni menor que el subtotal
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del flete y los servicios no corresponde al subtotal. ' + suma.setScale(2)+' es diferente a '+ObjDeduc.CustomerPrice__c.setScale(2)));
