@@ -1,3 +1,13 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 05-20-2021
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+  Modifications Log 
+  Ver   Date         Author                               Modification
+  1.0   04-16-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+-->
 <apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_pantalla_ww" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
     <html> 
         <head> 
@@ -128,45 +138,44 @@
                               <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SUBTOTAL</th>
                             </apex:outputText>
                             </tr>
-                        <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
+                      <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
                       <tr>
-                        <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLine.Rango_Km__C}</td>
+                         <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLine.Rango_Km__C}</td>
                           <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
                               <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.fleteE__c}"></apex:outputField></td>
                               <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.Guia__c}"></apex:outputField></td>
-                               <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.KG_ADICIONAL__c}"></apex:outputField></td>
-                             
+                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.KG_ADICIONAL__c}"></apex:outputField></td>
                               <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACKES__c}"></apex:outputField></td>
                            
                           </apex:outputText>  
                           <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
-                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                        </td>
-                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                           </td>
-                        </apex:outputText>
-                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                             </td>
-                        </apex:outputText>
-                          
-                          <apex:outputText rendered="{!objTLine.ACK__c != null}">
-                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
-                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACK__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                          </td>
-                            </apex:outputText>
-                        </apex:outputText>
-                          </apex:outputText>
-                               </apex:outputText>
+                                <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                </td>
+                             <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                 <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                 </td>
+                             </apex:outputText>
+                             <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                                 <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                 </td>
+                             </apex:outputText>
+                              
+                             <apex:outputText rendered="{!objTLine.ACK__c != null}">
+                                 <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                    <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                                      <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACK__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                      </td>
+                                    </apex:outputText>
+                                  </apex:outputText>
+                              </apex:outputText>
+                           </apex:outputText>
                         <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
                             <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.SEG__c}" /> </td>
                         </apex:outputText>
                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
                         <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.CustomerPrice__c}" /></td>
-                     </apex:outputText>
-                          </tr>
+                           </apex:outputText>
+                    </tr>
                     </apex:repeat>
                         <br/>
                       </apex:outputText>
@@ -224,14 +233,17 @@
                     </td>
                     </tr>
                     <tr>              
-                    <td><apex:outputText >
-                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
-                        </apex:outputText>
-                       <apex:outputText value="{0, number, ###,##0.00}">
-                                        <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" />   
-                       </apex:outputText>
-                    </td>                   	
-                        </tr>
+                        <td>
+                            <apex:outputText >
+                                -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <!-- <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />  -->
+                                <!--Ajuste expuesto en el caso 4978-->
+                                <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" /> 
+                            </apex:outputText>
+                        </td>                   	
+                    </tr>
                     <tr>
                     <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
                         -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
@@ -434,14 +446,17 @@
                     </td>
                     </tr>
                     <tr>              
-                    <td><apex:outputText >
-                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
-                        </apex:outputText>
-                       <apex:outputText value="{0, number, ###,##0.00}">
-                                        <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" />   
-                       </apex:outputText>
-                    </td>                   	
-                        </tr>
+                        <td>
+                            <apex:outputText >
+                                -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <!-- <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />  -->
+                                <!--Ajuste expuesto en el caso 4978-->
+                                <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" /> 
+                            </apex:outputText>
+                        </td>                   	
+                    </tr>
                     <tr>
                     <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
                         -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
@@ -629,14 +644,16 @@
                     </td>
                     </tr>
                     <tr>              
-                    <td><apex:outputText >
-                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
-                        </apex:outputText>
-                       <apex:outputText value="{0, number, ###,##0.00}">
-                                        <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" />   
-                       </apex:outputText>
-                    </td>                   	
-                        </tr>
+                        <td><apex:outputText >
+                            -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <!-- <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />  -->
+                                <!--Ajuste expuesto en el caso 4978-->
+                                <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" /> 
+                            </apex:outputText>
+                        </td>                   	
+                    </tr>
                     <tr>
                     <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
                         -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
@@ -850,20 +867,23 @@
                     <td> <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=true}"> 
                         -Costo de Seguro ampara daños por mercancía con valor declarado $ 
                         <apex:outputText value="{0, number, ###,##0.00}"> 
-                        <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
+                            <apex:param value="{!listPlantillaLineItems[0].Pack_Seg__c}" /> 
                         </apex:outputText>
                         </apex:outputText>
-                    </td>
+                        </td>
                     </tr>
                     <tr>              
-                    <td><apex:outputText >
-                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
-                        </apex:outputText>
-                       <apex:outputText value="{0, number, ###,##0.00}">
-                                        <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" />   
-                       </apex:outputText>
-                    </td>                   	
-                        </tr>
+                        <td>
+                            <apex:outputText >
+                                -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <!-- <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />  -->
+                                <!--Ajuste expuesto en el caso 4978-->
+                                <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" /> 
+                            </apex:outputText>
+                        </td>                   	
+                    </tr>
                     <tr>
                     <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
                         -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
@@ -1017,14 +1037,17 @@
                     </td>
                     </tr>
                     <tr>              
-                    <td><apex:outputText >
-                        -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
-                        </apex:outputText>
-                       <apex:outputText value="{0, number, ###,##0.00}">
-                                        <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" />   
-                       </apex:outputText>
-                    </td>                   	
-                        </tr>
+                        <td>
+                            <apex:outputText >
+                                -Estas tarifas fueron pactadas con relación al potencial mensual mínimo de $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <!-- <apex:param value="{!SBQQ__Quote__c.TarifaLlenaMensual__c}" />  -->
+                                <!--Ajuste expuesto en el caso 4978-->
+                                <apex:param value="{!SBQQ__Quote__c.Ingreso_Mensual__c}" /> 
+                            </apex:outputText>
+                        </td>                   	
+                    </tr>
                     <tr>
                     <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
                         -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
