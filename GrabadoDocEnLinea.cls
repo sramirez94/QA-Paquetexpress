@@ -66,7 +66,7 @@ public class GrabadoDocEnLinea {
     //public Map<String, QuoteWP>  mapTotalByRange                                {get;set;}
     public Map<Decimal, Map<String, TempleateLine__c>> mapBloques               {get;set;}
     public Map<String, Map<String, Decimal>> mapExpAdic                         {get;set;}
-    public GrabadoBtnController GrabadoController                               {get;set;}
+    //public GrabadoBtnController GrabadoController                               {get;set;}
     public GrabadoDocEnLinea (ApexPages.StandardController controller){
         this.aprvUser                       = '';
         this.destSite                       = '';
@@ -152,7 +152,7 @@ public class GrabadoDocEnLinea {
                 this.blnCostosFijos     = false;
             }
             Apexpages.StandardController StandarC   = new Apexpages.StandardController(cas);
-            GrabadoController                       = new GrabadoBtnController(StandarC);
+            //GrabadoController                       = new GrabadoBtnController(StandarC);
             for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull()){
                 if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
                     wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
@@ -226,7 +226,7 @@ public class GrabadoDocEnLinea {
         blnMostrarMensaje   = false;
         String endpoint     = Label.Grabado_DocLinea;
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-        GrabadoBtnController gr = new GrabadoBtnController(sc);
+        //GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
                 DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
@@ -251,35 +251,35 @@ public class GrabadoDocEnLinea {
             }
         }catch (Exception ex){
             System.debug('Error al obtener response '+ex.getLineNumber()+' '+EX.getMessage());
-            gr.publicarEvento(false, 'Error al obtener response: ' + ex.getLineNumber() + ' ' + ex.getMessage());
+            publicarEvento(false, 'Error al obtener response: ' + ex.getLineNumber() + ' ' + ex.getMessage());
         }
         return resultado;
     }
     public Boolean ObtieneInfoSipweb(String body, String endpoint,SBQQ__Quote__c cotizacion){
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-        GrabadoBtnController gr = new GrabadoBtnController(sc);
+        //GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             if(Test.isRunningTest()){
-                HttpResponse res = gr.consultaAPIPOST(body,endpoint);
+                HttpResponse res = consultaAPIPOST(body,endpoint);
                 String respuesta = res.getBody().replace('time','timeR');
                 //Boolean proceso =  ProcesaResponse(res,cotizacion);
                 this.blnclientenuevo = true;
                 return true;
             } else {
-                HttpResponse res = gr.consultaAPIPOST(body,endpoint);
+                HttpResponse res = consultaAPIPOST(body,endpoint);
                 String respuesta = res.getBody().replace('time','timeR');
                 return ProcesaResponse(res,cotizacion);
             }
         }catch (Exception ex){
             System.debug('ObtieneInfoSipweb: '+ex.getLineNumber()+' '+ex.getMessage());
-            gr.publicarEvento(false, 'Error al obtener info sipweb');
+            publicarEvento(false, 'Error al obtener info sipweb');
             return false;
         }
     }
     public Boolean ProcesaResponse(HTTPResponse res,SBQQ__Quote__c cotizacion){
         //Salvador Ramírez (sranmirez@freewayconsulting.com):Función para procesar el response al consultar los convenios que tiene el cliente en sipweb
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-        GrabadoBtnController gr = new GrabadoBtnController(sc);
+        //GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             String Respuesta    = res.getBody();
             String strRange     = '';
@@ -299,7 +299,7 @@ public class GrabadoDocEnLinea {
             return true;
         }catch (Exception ex){
             System.debug('ProcesaResponse ' + ex.getLineNumber() + ' ' + ex.getMessage());
-            gr.publicarEvento(false, 'Error al procesar información obtenida de sipweb.');
+            publicarEvento(false, 'Error al procesar información obtenida de sipweb.');
             return false;
         }
     }
@@ -321,7 +321,6 @@ public class GrabadoDocEnLinea {
     }
     public void iniciarGrabado(SBQQ__Quote__c cotizacion){
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-        GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
             blnMostrarMensaje   = false;
             strMensajeError     = '';
@@ -330,23 +329,24 @@ public class GrabadoDocEnLinea {
                     if(cotizacion.SBQQ__Opportunity2__r.StageName=='Cerrada/Ganada' || Test.isRunningTest()){
                         ValidacionDocLinea(cotizacion);
                     } else {
-                        gr.publicarEvento(false, 'Imposible continuar, la oportunidad debe tener un status "Cerrada/Ganada');
+                        publicarEvento(false, 'Imposible continuar, la oportunidad debe tener un status "Cerrada/Ganada');
                     }
                 }else{
-                    gr.publicarEvento(false, 'Imposible continuar, la cotización no se encuentra aprobada');
+                    publicarEvento(false, 'Imposible continuar, la cotización no se encuentra aprobada');
                 }
             } else {
-                gr.publicarEvento(false, 'Imposible continuar, la cuenta no tiene un ID de sipweb');
+                publicarEvento(false, 'Imposible continuar, la cuenta no tiene un ID de sipweb');
             }
         }catch(Exception ex){
             System.debug('IniciarGrabado: '+ex.getLineNumber()+' '+ex.getMessage());
-            gr.publicarEvento(false, 'Error al iniciar grabado de tarifas. ' +ex.getLineNumber()+' '+ex.getMessage());
+            publicarEvento(false, 'Error al iniciar grabado de tarifas. ' +ex.getLineNumber()+' '+ex.getMessage());
         }
     }
     public void ValidacionDocLinea(SBQQ__Quote__c cotizacion){
         Apexpages.StandardController scr    = new Apexpages.StandardController(cotizacion);
-        GrabadoBtnController gr             = new GrabadoBtnController(scr);
+        //GrabadoBtnController gr             = new GrabadoBtnController(scr);
         String strOrigen                    = '';
+        String TarifaUsar                   = '';
         blnMostrarMensaje                   = false;
         Boolean blnRango                    = false;   
         Boolean blnDest                     = false;
@@ -365,7 +365,7 @@ public class GrabadoDocEnLinea {
                 this.objtempleate                                               = queryTempleate(cotizacion.id);
                 wp.mapCS                                                        = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
                 Apexpages.StandardController sc                                 = new Apexpages.StandardController(cotizacion);
-                GrabadoBtnController grab                                       = new GrabadoBtnController(sc);
+                //GrabadoBtnController grab                                       = new GrabadoBtnController(sc);
                 ObjDocEnLinea.documentacionRemota odc                           = new ObjDocEnLinea.documentacionRemota();
                 ObjDocEnLinea.header header                                     = new ObjDocEnLinea.header();
                 ObjDocEnLinea.security sec                                      = new ObjDocEnLinea.security();
@@ -1139,18 +1139,18 @@ public class GrabadoDocEnLinea {
                                             serviceTrif.factorValue                 = 1;
                                             listserviceTrif.add(serviceTrif);
                                         }
-                                        if(this.blnRAD){
+                                        //if(this.blnRAD){
                                             serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                                             serviceTrif.serviceId                   = 'RAD-1';
                                             serviceTrif.refServiceId                = 'RAD';
-                                            if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0)
+                                            if(this.mapTLines.get(strTarifa).get(strRange).RAD__c != 0 && this.blnRAD)
                                                 serviceTrif.trifAmount              = (this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Weight__c).setScale(2);
-                                            else serviceTrif.trifAmount             = 1;
+                                            else serviceTrif.trifAmount             = 0.01;
                                             serviceTrif.trifAmntBase                = 0;
                                             serviceTrif.discount                    = 0;
                                             serviceTrif.factorValue                 = 1;
                                             listserviceTrif.add(serviceTrif);
-                                        }
+                                        //}
                                         servicesTrifDtlSub.serviceTrif          = listserviceTrif;
                                         listServicesTrifDtlS.add(servicesTrifDtlSub);
                                         servicesTrifDtlSub                      = new ObjDocEnLinea.servicesTrifDtlSub();
@@ -1161,10 +1161,11 @@ public class GrabadoDocEnLinea {
                                         serviceTrif.serviceId                   = 'SHP-G';
                                         serviceTrif.refServiceId                = 'PACKETS';
                                         if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
-                                            if(strRange.contains('('))
+                                            //Salvador 28/07/2021: Desconozco la causa por la que este código estaba implementado, así que se comentan por si después son necesarias
+                                            /*if(strRange.contains('('))
                                                 serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c).setScale(2);
-                                            else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c).setscale(2);
-                                            //serviceTrif.trifAmount              = //this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
+                                            else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c).setscale(2);*/
+                                            serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
                                         }else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
                                         serviceTrif.discount                    = 0;
                                         serviceTrif.trifAmntBase                = 0;
@@ -1177,31 +1178,35 @@ public class GrabadoDocEnLinea {
                                             serviceTrif.refServiceId                = 'EAD';
 
                                             if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
-                                                //serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
-                                                if(strRange.contains('('))
+                                                serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
+                                                //Salvador 28/07/2021: Desconozco la causa por la que este código estaba implementado, así que se comentan por si después son necesarias
+                                                /*if(strRange.contains('('))
                                                     serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c * 0.11).setscale(2);
-                                                else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);
+                                                else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);*/
                                             } else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
                                             serviceTrif.discount                    = 0;
                                             serviceTrif.trifAmntBase                = 0;
                                             serviceTrif.factorValue                 = 1;
                                             listserviceTrif.add(serviceTrif);
                                         }
-                                        if(this.blnRAD){
+                                        //if(this.blnRAD){
                                             serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                                             serviceTrif.serviceId                   = 'RAD-1';
                                             serviceTrif.refServiceId                = 'RAD';
-                                            if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
-                                                if(strRange.contains('('))
-                                                    serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c * 0.11).setScale(2);
-                                                else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);
-                                                //serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
-                                            }else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
+                                            if(this.blnRAD){
+                                                if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
+                                                    //Salvador 28/07/2021: Desconozco la causa por la que este código estaba implementado, así que se comentan por si después son necesarias
+                                                    /*if(strRange.contains('('))
+                                                        serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c * 0.11).setScale(2);
+                                                    else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);*/
+                                                    serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
+                                                }else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
+                                            } else serviceTrif.trifAmount           = 0.01;
                                             serviceTrif.discount                    = 0;
                                             serviceTrif.trifAmntBase                = 0;
                                             serviceTrif.factorValue                 = 1;
                                             listserviceTrif.add(serviceTrif);
-                                        }
+                                        //}
                                         if(this.blnT7ZP){
                                             serviceTrif                             = new ObjDocEnLinea.serviceTrif();
                                             serviceTrif.serviceId                   = 'EXT-1';
@@ -1521,27 +1526,35 @@ public class GrabadoDocEnLinea {
                 if(requeridoCrearUsuario(cotizacion))
                     blnRequiereCrearUsuario = true;
                 if(blnRequiereCrearUsuario){
-                    if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km')
-                        crearUsuarioWeb(cotizacion, 'A');
-                    else crearUsuarioWeb(cotizacion, 'C');
+                    if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){
+                        TarifaUsar = 'A';
+                    } else{
+                        TarifaUsar = 'C';
+                    } 
+                    if(!crearUsuarioWeb(cotizacion, TarifaUsar)){
+                        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Error al crear a cliente en catálogo de documentación en línea: ' + this.strMensajeError)); 
+                        this.blnPuedeGrabar = false;
+                        return;
+                    }
                 }
                 if(this.blnGrabarTarifas){
                     if(envioGrabadoPOST(JSON.serialize(odc), endpoint))
                         blnGraboTarifas = true;
                     if(blnGraboTarifas)
-                        grab.publicarEvento(true,null);
-                    else grab.publicarEvento(false,this.strMensajeError);
+                        publicarEvento(true,null);
+                    else publicarEvento(false,this.strMensajeError);
                     if(blnGraboTarifas){
                         NotificaGrabadoUsuario(cotizacion.Id);
                     }
                 }
             }else {
-                gr.publicarEvento(false, 'Imposible continuar, datos insuficientes');
+                publicarEvento(false, 'Imposible continuar, datos insuficientes');
             }
 
         } catch (Exception ex){
             System.debug('ValidacionDocLinea: '+ex.getLineNumber()+' '+ex.getMessage());
-            gr.publicarEvento(false, 'Error al realizar grabado de tarifas. ' +ex.getLineNumber()+' '+ex.getMessage());
+            publicarEvento(false, 'Error al realizar grabado de tarifas. ' +ex.getLineNumber()+' '+ex.getMessage());
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Error al realizar grabado de tarifas. ' +ex.getLineNumber()+' '+ex.getMessage()));
         }
     }
     public static String obtieneTarifa(String tarifa){
@@ -1826,22 +1839,36 @@ public class GrabadoDocEnLinea {
             DefinicionesServiciosGrabado.verificarUsuarioR vuR = (DefinicionesServiciosGrabado.verificarUsuarioR)JSON.deserialize(res.getBody().replace('time','timeR'), DefinicionesServiciosGrabado.verificarUsuarioR.class);
             System.debug('requeridoCrearUsuario: ¿Se require crear usuario?: '+vur.body.response.success);
             if(vur.body.response.success == 'false'){
+                if(vur.body.response.messages[0].description.contains('ES MIEMBRO DE CLIENTE DE DOCUMENTACION EN LINEA')){
+                    //publicarEvento(false, vur.body.response.messages[0].description);
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, vur.body.response.messages[0].description));
+                    this.blnGrabarTarifas = false;
+                    blnReturn = false;
+                    blnPuedeGrabar = false;
+                } else{
+                    blnReturn = false;
+                    this.blnGrabarTarifas = true;
+                } 
+            } else {
+                blnReturn = true;
+            }
+            /*if(vur.body.response.success == 'false'){
                 this.blnGrabarTarifas = true;
                 blnReturn = Boolean.valueOf(vur.body.response.success);
             } else {
                 if(vur.body.response.messages[0].description.contains('ES MIEMBRO DE CLIENTE DE DOCUMENTACION EN LINEA')){
-                    GrabadoController.publicarEvento(false, vur.body.response.messages[0].description);
+                    publicarEvento(false, vur.body.response.messages[0].description);
                     this.blnGrabarTarifas = false;
                     blnReturn = false;
                 } else{
                     blnReturn = true;
                 }
-            }
+            }*/
             return blnReturn;
         }
         catch(Exception ex){
             System.debug('requeridoCrearUsuario: '+ex.getLineNumber()+' '+ex.getMessage());
-            GrabadoController.publicarEvento(false,'Error al verificar el usuario');
+            publicarEvento(false,'Error al verificar el usuario');
             return false;
         }
     }
@@ -1893,16 +1920,24 @@ public class GrabadoDocEnLinea {
             hu.target= null;    
             rwu.body = bu;
             rwu.header = hu;
-            return envioGrabadoPOST(JSON.serialize(rwu),endpoint);
+            if(envioGrabadoPOST(JSON.serialize(rwu),endpoint)){
+                blnGrabarTarifas = true;
+                return true;
+            } else {
+                blnGrabarTarifas = false;
+                return false;
+            }
+
         }catch(Exception ex){
             System.debug('crearUsuarioWeb: '+ex.getLineNumber()+' '+ex.getMessage());
-            GrabadoController.publicarEvento(false,'No se pudo realizar el grabado');            
+            publicarEvento(false,'No se pudo realizar el grabado');            
             return false;
         }
     }
     public HTTPResponse consultaAPIPOST(String body, String endpoint){
         Http h = new Http();
         HttpRequest request = new HttpRequest();
+        System.debug('endpoint: ' + endpoint);
         System.debug('Body: '+body);
         request.setEndpoint(endpoint);
         request.setBody(body);
@@ -1929,15 +1964,17 @@ public class GrabadoDocEnLinea {
             SBQQ__Quote__c cot = null;
             //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Respuesta: ' + respuesta));
             DefinicionesServiciosGrabado.responseGrabado rg = (DefinicionesServiciosGrabado.responseGrabado)JSON.deserializeStrict(respuesta, DefinicionesServiciosGrabado.responseGrabado.class);
+            //ObjDocEnLinea.documentacionRemota rg = (ObjDocEnLinea.documentacionRemota)JSON.deserialize(respuesta, ObjDocEnLinea.documentacionRemota.class);
             System.debug('procesarRespuestaGrabado: ¿Procesado correctamente?: '+rg.body.response.success);
-            System.debug('mensajes: ' + rg.body.response.messages);
+            //System.debug('mensajes: ' + rg.body.response.messages[0].description);
             if (rg.body.response.messages != null)
                 this.strMensajeError = rg.body.response.messages[0].description;
+            System.debug('6');
             //System.debug('procesarRespuestaGrabado: ¿Procesado correctamente?: '+rg.body.response.success);
             //System.debug('mensajes: ' + rg.body.response.messages);
             return Boolean.valueOf(rg.body.response.success);
         }catch(Exception ex){
-            System.debug('procesarRespuestaGrabado: '+ex.getLineNumber()+' '+ex.getMessage());
+            System.debug('procesarRespuestaGrabado doc en línea: '+ex.getLineNumber()+' '+ex.getMessage());
             return False;
         }        
     }
@@ -2008,6 +2045,35 @@ public class GrabadoDocEnLinea {
                 }
             }
             blockCounter++;
+        }
+    }
+    public void publicarEvento(Boolean EjecucionCorrecta, String mensaje){
+        try{
+            System.debug('Publicando evento...');
+            String mensajeFinal;
+            List<ResultadoGrabado__e> inkEvents = new List<ResultadoGrabado__e>();
+            if(mensaje==null)
+                mensajeFinal = 'Grabado exitoso';
+            else
+                mensajeFinal = mensaje;
+            inkEvents.add(new ResultadoGrabado__e(Mensaje__c=mensajeFinal, Usuario__c=System.UserInfo.getUserId()
+                                                  , Ejecucion_correcta__c = EjecucionCorrecta));
+            List<Database.SaveResult> results = EventBus.publish(inkEvents);     
+            for (Database.SaveResult sr : results) {
+                if (sr.isSuccess()) {
+                    System.debug('Successfully published event.');
+                } else {
+                    for(Database.Error err : sr.getErrors()) {
+                        System.debug('Error returned: ' +
+                                     err.getStatusCode() +
+                                     ' - ' +
+                                     err.getMessage());
+                    }
+                }       
+            }
+            
+        }catch(Exception ex){
+            System.debug('publicarEvento doc en línea: '+ex.getLineNumber()+' '+ex.getMessage());
         }
     }
     public class Wrapper{
