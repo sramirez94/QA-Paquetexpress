@@ -405,9 +405,9 @@ public class TempleateTriggerHandler {
                                     contador = 1;
                                 objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, 0);
                             } else if(this.blnZP) {
+                                if(!mapFlete.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa no tiene la tarifa
+                                    mapFlete.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea un nuevo registro de mapa con esa tarifa
                                 if((!blnACK && blnSEG) || (blnACK & !blnSEG)){
-                                    if(!mapFlete.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa no tiene la tarifa
-                                        mapFlete.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea un nuevo registro de mapa con esa tarifa
                                     if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
                                         if(mapEAD.containsKey(strRangeDest)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si hay un rango de km con costo de EAD
                                             objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Se le resta al subtotal
@@ -420,8 +420,6 @@ public class TempleateTriggerHandler {
                                     } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
                                 } else if((!blnACK && !blnSEG) || (blnACK && blnSEG)){
                                     if((blnEAD && blnRAD)){
-                                        if(!mapFlete.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa no tiene la tarifa
-                                            mapFlete.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea un nuevo registro de mapa con esa tarifa
                                         if(!mapFlete.get(objTempleateLine.Tarifa__C).containsKey(strRangeDest)){
                                             if(mapEAD.containsKey(strRangeDest) && mapRAD.containsKey(strRangeDest))
                                                 objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest) - mapRAD.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
@@ -429,8 +427,9 @@ public class TempleateTriggerHandler {
                                             mapFlete.get(objTempleateLine.Tarifa__C).put(strRangeDest, objTempleateLine.FLETE__c);
                                         } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__C).get(strRangeDest);
                                     } else if(blnEAD && !blnRAD){
-                                        if(mapEAD.containsKey(strRangeDest))
-                                            objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest);
+                                        /*if(mapEAD.containsKey(strRangeDest))
+                                            objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest);*/
+                                        objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c / 1.11;
                                     } else if(!blnEAD && blnRAD){
                                         if(mapRAD.containsKey(strRangeDest))
                                             objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapRAD.get(strRangeDest);
