@@ -450,17 +450,37 @@ public class TempleateTriggerHandler {
                                         if(mapRAD.containsKey(strRangeDest))
                                             objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapRAD.get(strRangeDest);
                                     }
-                                    //objTempleateLine.Flete__c = objTempleateLine.Flete__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
+                                }
+                            } else if (!this.blnZP) {
+                                if(!this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG){
+                                    objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c -  objTempleateLine.SEG__c - objTempleateLine.ACK__c;
                                 }
                             }
                             if(this.blnRAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización con RAD
                                 if((objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7') || !this.blnZP){
                                     objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
                                 } else if(this.blnZP) {
-                                    if(!mapRAD.containsKey(strRangeDest)){
-                                        objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por RAD
-                                        mapRAD.put(strRangeDest, objTempleateLine.RAD__c);//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
-                                    } else objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
+                                    if(!blnSEG && blnRAD && blnEAD && blnACK){
+                                        if(!objQline.ZonaPlus__c){
+                                            if(!mapRAD.containsKey(strRangeDest)){
+                                                objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por RAD
+                                                mapRAD.put(strRangeDest, objTempleateLine.RAD__c);//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
+                                            } else objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
+                                        } else {
+                                            if(contador == 0)
+                                                objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
+                                            else objTempleateLine.RAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c - objTempleateLine.FLETE__c - mapZPL.get(strRangeDest);
+                                        }
+                                    } else {
+                                        if(!mapRAD.containsKey(strRangeDest)){
+                                            objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por RAD
+                                            mapRAD.put(strRangeDest, objTempleateLine.RAD__c);//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
+                                        } else objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
+                                    }
+                                } else if(!this.blnZP) {
+                                    if(!this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG){
+                                        objTempleateLine.RAD__c = objTempleateLine.Flete__c * 0.11;
+                                    }
                                 }
                             }
                             if(this.blnEAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando EAD
