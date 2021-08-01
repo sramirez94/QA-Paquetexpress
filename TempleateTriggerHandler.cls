@@ -134,7 +134,7 @@ public class TempleateTriggerHandler {
                             this.listRangeDestiny.add(strRangeDest);
                     } else {
                         //Se realiza un caso especial para cuando la cotización solo contenga servicio de entrega a domicilio y ningún otro o solo tenga EAD y todos los servicios excepto RAD
-                        if((objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && !blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && blnSEG && blnACK)){
+                        if((objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && !blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && blnSEG && blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && blnSEG && !blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && blnACK)){
                             if(!mapSubTotalZP.containsKey(objQLine.Tarifa__c))
                                 mapSubTotalZP.put(objQLine.Tarifa__c, new Map<String, Decimal>());
                             if(!mapSubTotalZP.get(objQLine.Tarifa__c).containsKey(strRangeDest))
@@ -417,16 +417,29 @@ public class TempleateTriggerHandler {
                                 if(!mapFlete.containsKey(objTempleateLine.Tarifa__c)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa no tiene la tarifa
                                     mapFlete.put(objTempleateLine.Tarifa__c, new Map<String, Decimal>()); //Salvador Ramírez (sramirez@freewayconsulting.com): Se crea un nuevo registro de mapa con esa tarifa
                                 if((!blnACK && blnSEG) || (blnACK & !blnSEG)){
-                                    if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
-                                        if(mapEAD.containsKey(strRangeDest)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si hay un rango de km con costo de EAD
-                                            objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Se le resta al subtotal
-                                        if(mapRAD.containsKey(strRangeDest))
-                                            objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapRAD.get(strRangeDest);
-                                        if(contador == 0) //Salvador Ramírez (sramirez@freewayconsulting.com): Si es la primera vez que se hace el recorrido, es decir, la primer tarifa deberá calcular el flete dividiendo entre 1.22
-                                            objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, contador); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo del flete
-                                        else objTempleateLine.FLETE__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c; //En caso de que sea mayor al primer recorrido entonces deberá calcular el flete restando el rAD, EAD, Acuse y seguro
-                                        mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en su rango de km el costo que tuvo el flete
-                                    } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                    if((blnEAD && !blnRAD && !blnACK && blnSEG) || (blnEAD && !blnRAD && !blnSEG && blnACK)) {
+                                        if(contador == 0){
+                                            if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
+                                                objTempleateLine.Flete__c = (objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c) / 1.11;
+                                                mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.Flete__c);
+                                            } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                        } else {
+                                            //if(!objTempleateLine.Zona_Plus__c){
+                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
+                                            //}
+                                        }
+                                    } else {
+                                        if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
+                                            if(mapEAD.containsKey(strRangeDest)) //Salvador Ramírez (sramirez@freewayconsulting.com): Si hay un rango de km con costo de EAD
+                                                objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Se le resta al subtotal
+                                            if(mapRAD.containsKey(strRangeDest))
+                                                objQLine.SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c - mapRAD.get(strRangeDest);
+                                            if(contador == 0) //Salvador Ramírez (sramirez@freewayconsulting.com): Si es la primera vez que se hace el recorrido, es decir, la primer tarifa deberá calcular el flete dividiendo entre 1.22
+                                                objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, contador); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo del flete
+                                            else objTempleateLine.FLETE__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c; //En caso de que sea mayor al primer recorrido entonces deberá calcular el flete restando el rAD, EAD, Acuse y seguro
+                                            mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en su rango de km el costo que tuvo el flete
+                                        } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                    }
                                 } else if((!blnACK && !blnSEG) || (blnACK && blnSEG)){
                                     if((blnEAD && blnRAD)){
                                         if(!mapFlete.get(objTempleateLine.Tarifa__C).containsKey(strRangeDest)){
@@ -488,7 +501,7 @@ public class TempleateTriggerHandler {
                                     if((objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7') || !this.blnZP){
                                         objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
                                     } else if(this.blnZP) {
-                                        if((blnEAD && !blnRAD && !blnACK && !blnSEG) || (blnEAD && !blnRAD && blnACK && blnSEG)){
+                                        if((blnEAD && !blnRAD && !blnACK && !blnSEG) || (blnEAD && !blnRAD && blnACK && blnSEG) || (blnEAD && !blnRAD && !blnACK && blnSEG) || (blnEAD && !blnRAD && !blnSEG && blnACK)){
                                             if(contador == 0)
                                                 objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
                                             else objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
