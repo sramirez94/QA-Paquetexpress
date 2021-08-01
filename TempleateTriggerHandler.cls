@@ -1,4 +1,4 @@
-/*
+ /*
  * Created by Fran on 10/07/2020.
  */
 public class TempleateTriggerHandler {
@@ -40,6 +40,7 @@ public class TempleateTriggerHandler {
             Map<String, Decimal> mapZPLL = new Map<String, Decimal>();
             Map<String, Decimal> mapResiduo = new Map<String, Decimal>();
             Map<String, Map<String, Decimal>> mapFlete = new Map<String, Map<String, Decimal>>();
+            Map<String, Map<String, Decimal>> mapSubTotalZP = new Map<String, Map<String, Decimal>>(); //Primero se probará, cuando quede resuelto borrar este comentario
             Map<String, Decimal> mapRAD = new Map<String, Decimal>();
             Map<String, Decimal> mapEAD = new Map<String, Decimal>();
             Decimal decSEG          = 0;
@@ -111,10 +112,10 @@ public class TempleateTriggerHandler {
                     }
                     if(objQline.SEG__c > 0 && objQline.SEG__c != null)
                         decSEG = objQline.SEG__c;
+                    if(objQLine.Destiny__c != null)
+                        strRangeDest = objQLine.Destiny__c;
+                    else strRangeDest = objQLine.Rango_KM__c;
                     if(this.blnCostoBaseGMP){
-                        if(objQLine.Destiny__c != null)
-                            strRangeDest = objQLine.Destiny__c;
-                        else strRangeDest = objQLine.Rango_KM__c;
                         if(!this.mapGuide.containsKey(objQLine.PackWeightAVG__c))
                             this.mapGuide.put(objQLine.PackWeightAVG__c, objQLine.PackVolAVG__c);
                         if(!mapRangesByBlock.containsKey(objQLine.PackWeightAVG__c))
@@ -131,6 +132,14 @@ public class TempleateTriggerHandler {
                             this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
                         if(!this.listRangeDestiny.contains(strRangeDest))
                             this.listRangeDestiny.add(strRangeDest);
+                    } else {
+                        //Se realiza un caso especial para cuando la cotización solo contenga servicio de entrega a domicilio y ningún otro
+                        if(objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && !blnACK){
+                            if(!mapSubTotalZP.containsKey(objQLine.Tarifa__c))
+                                mapSubTotalZP.put(objQLine.Tarifa__c, new Map<String, Decimal>());
+                            if(!mapSubTotalZP.get(objQLine.Tarifa__c).containsKey(strRangeDest))
+                                mapSubTotalZP.get(objQLine.Tarifa__c).put(strRangeDest, objQline.SBQQ__CustomerPrice__c);
+                        }
                     }
                 }
             }
@@ -426,13 +435,17 @@ public class TempleateTriggerHandler {
                                             else  objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, 0);
                                             mapFlete.get(objTempleateLine.Tarifa__C).put(strRangeDest, objTempleateLine.FLETE__c);
                                         } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__C).get(strRangeDest);
-                                    } else if(blnEAD && !blnRAD){
-                                        /*if(mapEAD.containsKey(strRangeDest))
-                                            objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest);*/
-                                        if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
-                                            objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c / 1.11;
-                                            mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.Flete__c);
-                                        } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                    } else if(blnEAD && !blnRAD && !blnACK && !blnSEG){
+                                        if(contador == 0){
+                                            if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
+                                                objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c / 1.11;
+                                                mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.Flete__c);
+                                            } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                        } else {
+                                            //if(!objTempleateLine.Zona_Plus__c){
+                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest);
+                                            //}
+                                        }
                                     } else if(!blnEAD && blnRAD){
                                         if(mapRAD.containsKey(strRangeDest))
                                             objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapRAD.get(strRangeDest);
@@ -455,10 +468,16 @@ public class TempleateTriggerHandler {
                                     if((objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7') || !this.blnZP){
                                         objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
                                     } else if(this.blnZP) {
-                                        if(!mapEAD.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
-                                            objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por EAD de ese rango
-                                            mapEAD.put(strRangeDest, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
-                                        } else  objTempleateLine.EAD__c = mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
+                                        if(blnEAD && !blnRAD && !blnACK && !blnSEG){
+                                            if(contador == 0)
+                                                objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
+                                            else objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c;
+                                        } else {
+                                            if(!mapEAD.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
+                                                objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por EAD de ese rango
+                                                mapEAD.put(strRangeDest, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
+                                            } else  objTempleateLine.EAD__c = mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
+                                        }
                                     }
                                 }
                             }
