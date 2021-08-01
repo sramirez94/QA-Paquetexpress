@@ -133,8 +133,8 @@ public class TempleateTriggerHandler {
                         if(!this.listRangeDestiny.contains(strRangeDest))
                             this.listRangeDestiny.add(strRangeDest);
                     } else {
-                        //Se realiza un caso especial para cuando la cotización solo contenga servicio de entrega a domicilio y ningún otro
-                        if(objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && !blnACK){
+                        //Se realiza un caso especial para cuando la cotización solo contenga servicio de entrega a domicilio y ningún otro o solo tenga EAD y todos los servicios excepto RAD
+                        if((objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && !blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && blnSEG && blnACK)){
                             if(!mapSubTotalZP.containsKey(objQLine.Tarifa__c))
                                 mapSubTotalZP.put(objQLine.Tarifa__c, new Map<String, Decimal>());
                             if(!mapSubTotalZP.get(objQLine.Tarifa__c).containsKey(strRangeDest))
@@ -435,15 +435,15 @@ public class TempleateTriggerHandler {
                                             else  objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, 0);
                                             mapFlete.get(objTempleateLine.Tarifa__C).put(strRangeDest, objTempleateLine.FLETE__c);
                                         } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__C).get(strRangeDest);
-                                    } else if(blnEAD && !blnRAD && !blnACK && !blnSEG){
+                                    } else if((blnEAD && !blnRAD && !blnACK && !blnSEG) || (blnEAD && !blnRAD && blnSEG && blnACK)){
                                         if(contador == 0){
                                             if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
-                                                objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c / 1.11;
+                                                objTempleateLine.Flete__c = (objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c) / 1.11;
                                                 mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.Flete__c);
                                             } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
                                         } else {
                                             //if(!objTempleateLine.Zona_Plus__c){
-                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest);
+                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
                                             //}
                                         }
                                     } else if(!blnEAD && blnRAD){
@@ -468,10 +468,10 @@ public class TempleateTriggerHandler {
                                     if((objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7') || !this.blnZP){
                                         objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
                                     } else if(this.blnZP) {
-                                        if(blnEAD && !blnRAD && !blnACK && !blnSEG){
+                                        if((blnEAD && !blnRAD && !blnACK && !blnSEG) || (blnEAD && !blnRAD && blnACK && blnSEG)){
                                             if(contador == 0)
                                                 objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine);
-                                            else objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c;
+                                            else objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
                                         } else {
                                             if(!mapEAD.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
                                                 objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por EAD de ese rango
