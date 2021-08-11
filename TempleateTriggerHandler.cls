@@ -456,7 +456,8 @@ public class TempleateTriggerHandler {
                                             } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
                                         } else {
                                             //if(!objTempleateLine.Zona_Plus__c){
-                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
+                                                if(mapSubTotalZP.containsKey(objTempleateLine.Tarifa__c) && mapSubTotalZP.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest))
+                                                    objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
                                             //}
                                         }
                                     } else if(!blnEAD && blnRAD){
