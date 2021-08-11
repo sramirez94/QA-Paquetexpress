@@ -1,4 +1,4 @@
- /*
+/*
  * Created by Fran on 10/07/2020.
  */
 public class TempleateTriggerHandler {
@@ -466,7 +466,11 @@ public class TempleateTriggerHandler {
                                 }
                             } else if (!this.blnZP) {
                                 if(!this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG){
+                                    //Sin entrega a domicilio
                                     objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c -  objTempleateLine.SEG__c - objTempleateLine.ACK__c;
+                                } else if ((this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG) || (this.blnRAD && this.blnEAD && this.blnSEG && !this.blnACK)){
+                                    //Todos los servicios
+                                    objTempleateLine.Flete__c = (objQLine.SBQQ__CustomerPrice__c -  objTempleateLine.SEG__c - objTempleateLine.ACK__c) / 1.22;
                                 }
                             }
                             if(this.blnRAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización con RAD
@@ -491,9 +495,9 @@ public class TempleateTriggerHandler {
                                         } else objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
                                     }
                                 } else if(!this.blnZP) {
-                                    if(!this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG){
+                                    //if((!this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG) || (this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG)){
                                         objTempleateLine.RAD__c = objTempleateLine.Flete__c * 0.11;
-                                    }
+                                    //}
                                 }
                             }
                             if(this.blnEAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando EAD
@@ -511,6 +515,9 @@ public class TempleateTriggerHandler {
                                                 mapEAD.put(strRangeDest, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
                                             } else  objTempleateLine.EAD__c = mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
                                         }
+                                    } else if(!this.blnZP){
+                                        //if(this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG)
+                                            objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c - objTempleateLine.RAD__c;
                                     }
                                 }
                             }
@@ -519,7 +526,6 @@ public class TempleateTriggerHandler {
                                     objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.RAD__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c; //Salvador Ramírez (sramirez@freewayconsulting.com): se calcula de acuerdo a las reglas de paquetexpress
                                     mapZPL.put(strRangeDest, objTempleateLine.EAD__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el costo en su rango de km
                                 } else objTempleateLine.EAD__c = mapZPL.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si el rango de km ya tiene un costo de zona plus se asigna al rango actual.
-
                             }
                             strTarifaResp = objTempleateLine.Tarifa__c;//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda la tarifa para la siguiente vuelta del recorrido
                         }
