@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 07-28-2021
+ * @last modified on  : 08-11-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -764,12 +764,14 @@ public class Ctrl_pantalla_ww {
 
                 if(String.isNotBlank(quoteItem.Destiny__c)){
                     String keyRange = quoteItem.Destiny__c;
-                    if(quoteItem.ZonaPlus__c){
-                        if(!this.listRangeInfo2.contains(quoteItem.Destiny__c))
-                            this.listRangeInfo2.add(quoteItem.Destiny__c);
-                    }else{
-                        if(!this.listRangeInfo.contains(quoteItem.Destiny__c))
-                            this.listRangeInfo.add(quoteItem.Destiny__c);
+                    if(this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota' && (quoteItem.Tarifa__c =='SEG-DS' || quoteItem.Tarifa__c =='SEG-2D' || quoteItem.Tarifa__c =='SEG-A12'  )){
+                        if(quoteItem.ZonaPlus__c){
+                            if(!this.listRangeInfo2.contains(quoteItem.Destiny__c))
+                                this.listRangeInfo2.add(quoteItem.Destiny__c);
+                        }else{
+                            if(!this.listRangeInfo.contains(quoteItem.Destiny__c))
+                                this.listRangeInfo.add(quoteItem.Destiny__c);
+                        }
                     }
                         setRange.add(quoteItem.Destiny__c);
                     //System.debug(LoggingLevel.DEBUG, 'keyRange '+ keyRange);
@@ -860,12 +862,14 @@ public class Ctrl_pantalla_ww {
                             this.mapQuotesEXP.put(quoteItem.Tarifa__c, new Map<String, SBQQ__QuoteLine__c> {keyRange => quoteItem});
                     }
                 } else {
-                    if(quoteItem.ZonaPlus__c){
-                        if(!this.listRangeInfo2.contains(quoteItem.Rango_KM__c))
-                            this.listRangeInfo2.add(quoteItem.Rango_KM__c);
-                    }else{
-                        if(!this.listRangeInfo.contains(quoteItem.Rango_KM__c))
-                            this.listRangeInfo.add(quoteItem.Rango_KM__c);
+                    if(this.wp.objQuote.Tipo_de_documentacion__c == 'Documentación Remota' && (quoteItem.Tarifa__c =='SEG-DS' || quoteItem.Tarifa__c =='SEG-2D' || quoteItem.Tarifa__c =='SEG-A12'  )){
+                        if(quoteItem.ZonaPlus__c){
+                            if(!this.listRangeInfo2.contains(quoteItem.Rango_KM__c))
+                                this.listRangeInfo2.add(quoteItem.Rango_KM__c);
+                        }else{
+                            if(!this.listRangeInfo.contains(quoteItem.Rango_KM__c))
+                                this.listRangeInfo.add(quoteItem.Rango_KM__c);
+                        }
                     }
                     setRange.add(quoteItem.Rango_KM__c);
                 }
@@ -1664,7 +1668,6 @@ public class Ctrl_pantalla_ww {
         }
             
         
-        system.debug('objTarifa: ' + mapTarifas);
         if(Test.isRunningTest()){
             for(TempleateLine__c line : this.listPlantillaLineItems){
                 Decimal decFletePrueba = getFlete(1150, 'RAD;EAD;ACK', line, 1);
@@ -1789,7 +1792,7 @@ public class Ctrl_pantalla_ww {
                 }
             } else{
                 decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
-            } 
+            }
             if(strServiciosAdd != null){
                 if(String.isNotBlank(strServiciosAdd) && strServiciosAdd.contains('EAD') && strServiciosAdd.contains('RAD') && contador == 0){
                     decFlete = decFlete / 1.22;
