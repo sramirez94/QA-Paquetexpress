@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 08-11-2021
+ * @last modified on  : 08-30-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -1965,10 +1965,18 @@ public class Ctrl_pantalla_ww {
     //metodo para actualizar la plantila
     public void updateTemplate(){
         TempleateLine__c objDeduc;
+        String strRangeDest = '';
         for	(TempleateLine__c item: this.listPlantillaLineItems){
+            if(item.Destiny__c != null)
+                strRangeDest = item.Destiny__c;
+            else strRangeDest = item.Rango_KM__c;
             if(item.Id == this.indexDeducItem){
                 if(item.Rango_KM__c.contains('(')) //08/04/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Si contiene un paréntesis quiere decir que es un destino
                     item.Rango_KM__c = this.mapRangosByDest.get(item.Rango_KM__c);
+                if(this.blnCostoBaseGMP){
+                    if(this.mapBlockAdic.containsKey(strRangeDest))
+                        item.FleteAdic__c = this.mapBlockAdic.get(strRangeDest).FleteAdic__c;
+                }
                 objDeduc = item;
             }
         }
@@ -2023,7 +2031,7 @@ public class Ctrl_pantalla_ww {
                 this.mapBloques             = new Map<Decimal, Map<String, TempleateLine__c>>();
                 this.mapBlockAdic           = new Map<String,TempleateLine__c>();
                 for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
-                    String strRangeDest = '';
+                    strRangeDest = '';
                     if(line.Zona_Plus__c && line.EAD__C > 0)
                         this.blnZP = true;
                     else this.blnZP = false;
