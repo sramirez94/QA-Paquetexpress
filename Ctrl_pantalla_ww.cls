@@ -1927,8 +1927,9 @@ public class Ctrl_pantalla_ww {
             decTotalAdic += objDeduc.RADAdic__c.setScale(2);
         if(this.blnEAD)
             decTotalAdic +=  objDeduc.EADAdic__c.setScale(2);
-        if(decTotalAdic.setScale(2) != objDeduc.TotalAdic__c.setScale(2) && this.blnCostoBaseGMP){
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del total por kg adicional y los servicios no corresponde al subtotal. ' + decTotalAdic.setScale(2)+' es diferente a '+ObjDeduc.TotalAdic__c.setScale(2)));
+        system.debug('flete: ' + objDeduc.FleteAdic__c.setScale(2) + '. RAD: ' + objDeduc.RADAdic__c.setScale(2) + '. EAD: ' + objDeduc.EADAdic__c.setScale(2));
+        if(decTotalAdic != objDeduc.TotalAdic__c.setScale(2) && this.blnCostoBaseGMP){
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'La sumatoria del total por kg adicional y los servicios no corresponde al subtotal. ' + decTotalAdic+' es diferente a '+ObjDeduc.TotalAdic__c.setScale(2)));
             return true;
         } else 
             return false;
