@@ -1,0 +1,297 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 07-05-2021
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+  Modifications Log 
+  Ver   Date         Author                               Modification
+  1.0   07-05-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+-->
+<apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_pantalla_ww"  sidebar="false"  docType="HTML-5.0" contentType="text/html;charset=utf-8">
+    <head>
+    <!-- estilos personalizados -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
+    <!-- jquery  -->
+    <apex:includeScript value="{!$Resource.PAQ_JQuery}"/>
+    <!-- Boostrap css -->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_Boostrap3, 'bootstrap-3.3.7-dist/css/bootstrap.min.css')}"/>
+    <!-- jquery UI 11.2.1 css-->
+    <apex:stylesheet value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.css')}"/>
+    <!-- Boostrap js -->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_Boostrap3,'bootstrap-3.3.7-dist/js/bootstrap.min.js')}"/>
+    <!-- jquery UI 11.2.1 js-->
+    <apex:includeScript value="{!URLFOR($Resource.PAQ_JQuery_UI_1121, 'jquery-ui-1.12.1/jquery-ui.min.js')}"/>
+    <!-- Recurso Sforce -->
+    <apex:includeScript value="/support/console/40.0/integration.js"/>         
+       <style>
+       table td2:hover {
+       color: #fff;
+       background-color: e7e7e7;
+       }
+       
+       p { font-size: 150% }
+           
+       </style> 
+                   
+    </head>
+    <div class="container-fluid">
+        <p align="Center"><strong>Plantillas de convenio WW</strong></p>
+<br/>
+    <apex:form id="ppTable" rendered="{!SBQQ__Quote__c.Tipo_de_documentacion__c == 'Documentación Remota' || SBQQ__Quote__c.Tipo_de_documentacion__c == 'En Piso-Sipweb'}">
+        <div class="col-md-12">
+            <apex:pageMessages />
+            <apex:repeat value="{!mapLines}" var="tarifa">
+                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">   
+                <div class="panel panel-default" > 
+                  <div class="panel-body">
+                <table class="table table-hover table-striped" style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                    <thead>
+                        <apex:outputText >
+                        <tr>
+                            <th colspan="1" style="width: 20%">
+                                Tarifa:   
+                            </th>
+                            <th colspan="1" style="width: 14%"><apex:outputText value="{!mapTarifas[tarifa].strtarifa}"/></th>
+                            <th colspan="1"></th>
+                        </tr>
+                        <tr>
+                            <th colspan="1" style="width: 20%">
+                                Peso Maximo:  
+                            </th>
+                            <th colspan="1" style="width: 14%">
+                                <apex:outputText value="{0, number, ###,##0.##}">
+                                        <apex:param value="{!mapTarifas[tarifa].decPesoMaximo}" />   
+                                </apex:outputText>
+                                 <apex:outputText >
+                                     
+                                </apex:outputText>
+                                 kg
+                            </th>
+                            <th colspan="1"></th>
+                        </tr>
+                        <tr>
+                            <th colspan="1" style="width: 20%">
+                                Volumen maximo: 
+                            </th>
+                            <th colspan="1" style="width: 14%">
+                                <apex:outputText value="{0, number, ###,###.0000}">
+                                <apex:param value="{!mapTarifas[tarifa].decVolMaximo}"/>                                   
+                                </apex:outputText>
+                                <apex:outputText >
+                                     
+                                </apex:outputText>
+                                m3
+                            </th>
+                            <th colspan="1"></th>
+                        </tr>
+               			  </apex:outputText>
+                    </thead>
+                    <tbody>
+                        <apex:outputText >
+                        <tr>
+                              <th colspan="1">RANGO KM</th>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                              <th>FLETE</th>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                  <th>RAD</th>
+                              </apex:outputText>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                              <apex:outputText rendered="{!blnEAD}">
+                                  <th>EAD</th> 
+                                </apex:outputText>
+                              </apex:outputText>
+                           
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                  <th>ACUSE</th>
+                              </apex:outputText>
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                                  <th>SEGURO</th>
+                              </apex:outputText>
+                              <th>SUBTOTAL</th>
+                              <th align="center"  style="text-align: center" colspan="2">Accion</th>
+                        </tr>
+                        </apex:outputText>
+                        <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
+                           <apex:outputText >
+                        <tr>
+                            <td colspan="1" style="width: 10%">{!objTLine.Rango_KM__c}</td>
+                            <td colspan="1" style="width: 10%">
+                                <apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                <apex:inputField value="{!objTLine.FLETE__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                            </td>
+                            <apex:outputText rendered="{!mapTarifas[tarifa].strtarifa != '2D' || mapTarifas[tarifa].strtarifa != 'SEG-A12'|| mapTarifas[tarifa].strtarifa != 'SEG-DS'}">
+                                <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                    <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                        <apex:inputField value="{!objTLine.RAD__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                                    </td>
+                                </apex:outputText>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!blnEAD}">
+                                <td colspan="1" style="width: 10%">
+                                    <apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                    <apex:inputField value="{!objTLine.EAD__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                                </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                <td colspan="1" style="width: 10%">
+                                    <apex:outputField value="{!objTLine.ACK__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                    <apex:inputField value="{!objTLine.ACK__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>
+                                </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                                <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLine.SEG__c}" /> </td>
+                            </apex:outputText>
+                            <td colspan="1" style="width: 10%">
+                                <apex:outputField value="{!objTLine.CustomerPrice__c}" />
+                                <!--<apex:outputField value="{!objTLine.CustomerPrice__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                <apex:inputField value="{!objTLine.CustomerPrice__c}" rendered="{!objTLine.EditMode__c}" ></apex:inputField>-->
+                            </td>
+                            <td align="center" colspan="1" style="width: 10%">
+                                <apex:commandButton value="Cancelar" action="{!editTemplate}" rendered="{!objTLine.EditMode__c}" reRender="ppTable">
+                                    <apex:param name="indexDeducItem" value="{!objTLine.Id}" assignTo="{!indexDeducItem}"/>
+                                </apex:commandButton>
+                                <apex:commandButton value="Editar" action="{!editTemplate}" rendered="{!NOT(objTLine.EditMode__c)}" reRender="ppTable">
+                                    <apex:param name="indexDeducItem" value="{!objTLine.Id}" assignTo="{!indexDeducItem}"/>
+                                </apex:commandButton>
+                            </td>
+                            <td align="center" colspan="1" style="width: 10%">
+                                <apex:commandButton value="Guardar" action="{!updateTemplate}" rendered="{!objTLine.EditMode__c}" reRender="ppTable">
+                                    <apex:param name="indexDeducItem" value="{!objTLine.Id}" assignTo="{!indexDeducItem}"/>
+                                </apex:commandButton>
+                            </td>
+                        </tr>
+                            </apex:outputText>
+                    </apex:repeat>
+                        <br/>
+                   </tbody>
+              </table>
+                    </div>
+                </div>
+                </apex:outputText>
+          </apex:repeat>
+            <apex:repeat value="{!mapLinesZP}" rendered="{!blnZP == true}" var="tarifa">
+                <div class="panel panel-default" > 
+                  <div class="panel-body">
+                <table class="table table-hover table-striped" style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;">
+                    <thead>
+                        <tr>
+                            <th colspan="1" style="width: 20%">
+                                Tarifa:   
+                            </th>
+                            <th colspan="1" style="width: 14%"><apex:outputText value="    {!mapTarifas[tarifa].strtarifa}"/></th>
+                            <th colspan="1"></th>
+                        </tr>
+                        <tr>
+                            <th colspan="1" style="width: 20%">
+                                Peso Maximo:  
+                            </th>
+                            <th colspan="1" style="width: 14%">
+                                <apex:outputText value="{0, number, ###,##0.##}">
+                                        <apex:param value="{!mapTarifas[tarifa].decPesoMaximo}" />   
+                                </apex:outputText>
+                                 <apex:outputText >
+                                     
+                                </apex:outputText>
+                                 kg
+                            </th>
+                            <th colspan="1"></th>
+                        </tr>
+                        <tr>
+                            <th colspan="1" style="width: 20%">
+                                Volumen maximo: 
+                            </th>
+                            <th colspan="1" style="width: 14%">
+                                 <apex:outputText value="{0, number, ###,###.0000}">
+                                <apex:param value="{!mapTarifas[tarifa].decVolMaximo}"/>                                   
+                                </apex:outputText>
+                                <apex:outputText >
+                                     
+                                </apex:outputText>
+                                m3
+                            </th>
+                            <th colspan="1"></th>
+                        </tr>
+                   
+                    </thead>
+                    <tbody>
+                        <tr>
+                              <th colspan="1">RANGO KM</th>
+                              <th>FLETE</th>
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                  <th>RAD</th>
+                              </apex:outputText>
+                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD ZONA PLUS'), TRUE, FALSE)}">
+                                  <th>ZONA PLUS</th>                               
+                              </apex:outputText>
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                  <th>ACUSE</th>
+                              </apex:outputText>
+                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                                  <th>SEGURO</th>
+                              </apex:outputText>
+                              <th>SUBTOTAL</th>
+                              <th align="center"  style="text-align: center" colspan="2">Accion</th>
+                        </tr>
+                        <br/>
+                    <apex:repeat value="{!mapLinesZP[tarifa]}" rendered="{!blnZP == true}" var="objTLineZP">
+                         
+                      <tr>
+                        <td colspan="1" style="width: 10%">{!objTLineZP.Rango_KM__c}</td>
+                        <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLineZP.FLETE__c}" rendered="{!NOT(objTLineZP.EditMode__c)}">
+                          
+                        </apex:outputField>
+                        <apex:inputField value="{!objTLineZP.FLETE__c}" rendered="{!objTLineZP.EditMode__c}" ></apex:inputField>
+                          </td>
+                          <apex:outputText >
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                            <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLineZP.RAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                            <apex:inputField value="{!objTLineZP.RAD__c}" rendered="{!objTLineZP.EditMode__c}" ></apex:inputField>
+                        </td>
+                            </apex:outputText>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD ZONA PLUS'), TRUE, FALSE)}">
+                            <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLineZP.EAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                            <apex:inputField value="{!objTLineZP.EAD__c}" rendered="{!objTLineZP.EditMode__c}" ></apex:inputField>
+                       </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                            <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLineZP.ACK__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                            <apex:inputField value="{!objTLineZP.ACK__c}" rendered="{!objTLineZP.EditMode__c}" ></apex:inputField>
+                       </td>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                            <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLineZP.SEG__c}" /> </td>
+                        </apex:outputText>
+                        <td colspan="1" style="width: 10%"><apex:outputField value="{!objTLineZP.CustomerPrice__c}" /></td>
+                          <td align="center" colspan="1" style="width: 10%">
+                              <apex:commandButton value="Cancelar" action="{!editTemplate}" rendered="{!objTLineZP.EditMode__c}" reRender="ppTable">
+                                  <apex:param name="indexDeducItem" value="{!objTLineZP.Id}" assignTo="{!indexDeducItem}"/>
+                              </apex:commandButton>
+                              <apex:commandButton value="Editar" action="{!editTemplate}" rendered="{!NOT(objTLineZP.EditMode__c)}" reRender="ppTable">
+                                  <apex:param name="indexDeducItem" value="{!objTLineZP.Id}" assignTo="{!indexDeducItem}"/>
+                              </apex:commandButton>
+                          </td>
+                          <td align="center" colspan="1" style="width: 10%">
+                              <apex:commandButton value="Guardar" action="{!updateTemplate}" rendered="{!objTLineZP.EditMode__c}" reRender="ppTable">
+                                  <apex:param name="indexDeducItem" value="{!objTLineZP.Id}" assignTo="{!indexDeducItem}"/>
+                              </apex:commandButton>
+                          </td>
+                      </tr>
+                        
+                    </apex:repeat>
+                    </tbody>
+              </table>
+                    </div>
+                </div>
+            </apex:repeat>
+        </div>
+        </apex:form>
+        </div>
+    
+</apex:page>
