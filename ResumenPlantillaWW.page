@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 05-20-2021
+  @last modified on  : 07-29-2021
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log 
   Ver   Date         Author                               Modification
@@ -372,28 +372,28 @@
                               <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center">SUBTOTAL</th>
                         </tr>
                         <apex:repeat value="{!mapLinesZP[tarifa]}" rendered="{!blnZP == true}" var="objTLineZP">
-                      <tr>
-                        <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLineZP.Rango_Km__C}</td>
-                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.FLETE__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
-                         </td>
-                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD')}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.RAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
-                           </td>
-                        </apex:outputText>
-                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD ZONA PLUS')}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.EAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
-                       </td>
-                        </apex:outputText>
-                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse')}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.ACK__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
-                       </td>
-                        </apex:outputText>
-                        <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro')}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.SEG__c}" /> </td>
-                        </apex:outputText>
-                          <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.CustomerPrice__c}" /></td>
-                      </tr>
-                    </apex:repeat>             
+                            <tr>
+                                <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLineZP.Rango_Km__C}</td>
+                                <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.FLETE__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                                </td>
+                                <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD')}">
+                                    <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.RAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                                </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD ZONA PLUS')}">
+                                <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.EAD__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                                </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse')}">
+                                    <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.ACK__c}" rendered="{!NOT(objTLineZP.EditMode__c)}"></apex:outputField>
+                            </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro')}">
+                                    <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.SEG__c}" /> </td>
+                                </apex:outputText>
+                                <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLineZP.CustomerPrice__c}" /></td>
+                            </tr>
+                        </apex:repeat>             
               </table>
                       <br/>
                     </div>
