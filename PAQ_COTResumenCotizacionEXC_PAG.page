@@ -2,7 +2,7 @@
   @description       :
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             :
-  @last modified on  : 08-10-2020
+  @last modified on  : 10-14-2021
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log
   Ver   Date         Author                               Modification
@@ -32,7 +32,8 @@
 
         </style>
     </head>
-    <apex:outputPanel id="PanelC">
+    <div class="page-break2">
+        <apex:outputPanel id="PanelC">
         <!--header-->
         <apex:pageMessages />
         <table Id="customers" cellspacing="0" width="100%">
@@ -164,7 +165,7 @@
                                 <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> ENTREGA A DOMICILIO </td>
                             </tr>
                         </apex:outputText>
-                        <apex:outputText rendered="{!blnZP && blnEAD}">
+                        <apex:outputText rendered="{!OR(blnZP, blnCostosZP)}">
                             <tr >
                                 <td width="50%" align="left"  style="font-size:9px; padding-left: 10px"> ZONA PLUS </td>
                             </tr>
@@ -472,13 +473,13 @@
                 <apex:outputText rendered="{!blnACK}">
                     <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Acuse interno</td>
                 </apex:outputText>
-                <apex:outputText rendered="{!blnZP}">
+                <apex:outputText rendered="{!blnCostosZP}">
                     <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">Zona plus</td>
                 </apex:outputText>
                 <apex:outputText rendered="{!T7ZP}">
                     <td align="center"   style="font-size:9px; background-color:rgb(31, 73, 125); color: white;">T7 ZP</td>
                 </apex:outputText>
-                <apex:outputText rendered="{!OR(blnACK, blnZP, T7ZP)}">
+                <apex:outputText rendered="{!OR(blnACK, blnCostosZP, T7ZP)}">
                     <apex:repeat value="{!listRangeDestiny}" var="strRange">
                         <tr>
                             <apex:outputText rendered="{!blnACK}">
@@ -488,9 +489,9 @@
                                     </apex:outputText>
                                 </td>
                             </apex:outputText>
-                            <apex:outputText rendered="{!blnZP}">
+                            <apex:outputText rendered="{!blnCostosZP}">
                                 <td width="10%" align="center"   style="font-size:9px; background-color:white; color: black;">
-                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnCostosZP}">
                                         <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
                                     </apex:outputText>
                                 </td>
@@ -676,7 +677,7 @@
         </apex:outputPanel>
         
     </apex:outputPanel>
-    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
         <apex:outputPanel id="PropuestaT7ZP" rendered="{!T7ZP}">
             <table style="border-collapse: collapse; margin-left: 0%;" width="100%">
                 <tr>
@@ -800,4 +801,7 @@
                 </apex:outputText>
             </table>
         </apex:outputPanel>
+        <div style="page-break-before: always;"/>
+    </div>
+    
 </apex:page>
