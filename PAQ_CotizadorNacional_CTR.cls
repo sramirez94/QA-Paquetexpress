@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 09-24-2020
+ * @last modified on  : 05-26-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -413,6 +413,40 @@ public class PAQ_CotizadorNacional_CTR {
         }
         return wp;
     }
+    @RemoteAction
+    public static DmlWrapper EliminaPartidasAnteriores(String strQuoteId, List<SBQQ__QuoteLine__c> listQuoteItem, SBQQ__Quote__c objQuote){
+        /*Salvador Ramírez (sramirez@freewayconsulting.com): Se elabora esta función para uso especificamente del cotizador de costo base más excedente debido a los problemas que había para editar sus partidas de presupuesto puesto que no siempre coincidía el ID al que pertenecía.
+                                                            Esta función elimina primero las partidas de presupuesto que existen en la cotización, actualiza la cabecera de la cotización y posteriormente crea las partidas con la nueva información.*/
+        DmlWrapper wp = new DmlWrapper();
+        List<SBQQ__QuoteLine__c> QT = [SELECT Id FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se consultan las partidas de presupuesto existentes
+        for(Database.DeleteResult delRes : Database.delete(QT, false)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se hace un recorrido sobre ellas para eliminarlas
+            if(!delRes.isSuccess()){
+                wp.blnSuccess = false;
+                for(Database.Error errDel: delRes.getErrors())
+                    wp.listErrors.add('Error eliminando partida de cotización: ' + errDel.getMessage());
+            } else {
+                wp.blnSuccess = true;
+            }
+        }
+        Database.UpsertResult quoteInsResult = Database.upsert(objQuote, false); //Salvador Ramírez (sramirez@freewayconsulting.com): Se actualiza la cabecera de la cotización (SBQQ__Quote__c), esto ya que el subtotal, el total, los servicios y demás valores que se eligen en la cotización pueden variar
+        if(quoteInsResult.isSuccess()){
+			wp.objQuote = queryQuote(quoteInsResult.getId());
+            wp.blnSuccess = true;
+		}
+        else{
+            wp.blnSuccess = false;
+            for(Database.Error errorInsQuote: quoteInsResult.getErrors())
+                wp.listErrors.add('Error actualizando Cotización: ' + errorInsQuote.getMessage());
+        }
+        for(Database.SaveResult qItemInsResult : Database.insert(listQuoteItem, false)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las nuevas partidas de cotización
+            if(!qItemInsResult.isSuccess()) {
+                wp.blnSuccess = false;
+                for (Database.Error errorInsItemQuote : qItemInsResult.getErrors())
+                    wp.listErrors.add('Error creando partida de cotización: ' + errorInsItemQuote.getMessage());
+            }
+        }
+        return wp;
+    }
 
     @RemoteAction
     public static DmlWrapper updateQuoteConv(SBQQ__Quote__c objQuote, List<SBQQ__QuoteLine__c> listQuoteItem, Lead objLead, Opportunity objOpp, List<String> listDeleteQuoteLine, List<PAQ_SpecialService__c> listSS, List<String> listDELSS){
@@ -591,6 +625,7 @@ public class PAQ_CotizadorNacional_CTR {
 
         return wp;
     }
+    
     @RemoteAction
     public static DmlWrapper checkCostoTender(String strOrigin, String strTender){
         System.debug('Entra a función');
@@ -873,6 +908,8 @@ public class PAQ_CotizadorNacional_CTR {
         , PAQ_QGuides__c
         , SBQQ__SpecialPrice__c
         , SBQQ__Description__c
+        , PaqPorGuia__c
+        , PaqPromPorGuia__c 
         FROM SBQQ__QuoteLine__c
         WHERE SBQQ__Quote__c =: strQuoteId
         ORDER BY CreatedDate ASC];
