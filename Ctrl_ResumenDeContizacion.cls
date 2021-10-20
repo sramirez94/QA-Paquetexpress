@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 05-19-2021
+ * @last modified on  : 10-19-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -388,8 +388,10 @@ public class Ctrl_ResumenDeContizacion {
                     blnCotizaT7 = true;
                     this.T7ZP = true;
                 } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
-                    decTotNormal += quoteItem.FLETE__c;
-                    decTotProp += quoteItem.GUIA__c;
+                    if(quoteItem.FLETE__c != null)
+                        decTotNormal += quoteItem.FLETE__c;
+                    if(quoteItem.GUIA__c != null)
+                        decTotProp += quoteItem.GUIA__c;
                     this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
                     this.listRangeProp.add(quoteItem.Rango_KM__c);
                     if(quoteItem.GUIA__c > 0 && quoteItem.FLETE__c > 0)
