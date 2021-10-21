@@ -877,7 +877,7 @@ public class GrabadoDocEnLinea {
                                     QL.Flete__c     = this.wp.mapTarifarioT.get(Tarifa).get(rango).Flete__c;
                                 }
                                 TLine.Weight__c = 1;
-                                TLine.Vol__c    = 1;
+                                TLine.Vol__c    = 0;
                                 TLine.Tarifa__c = strTarifa;
                                 QL.Weight__c    = 1;
                                 QL.Tarifa__c    = strTarifa;
@@ -1160,12 +1160,12 @@ public class GrabadoDocEnLinea {
                                         servicesTrifDtlSub.slabNo               = 'T7V';
                                         serviceTrif.serviceId                   = 'SHP-G';
                                         serviceTrif.refServiceId                = 'PACKETS';
-                                        if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
+                                        if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 0){
                                             //Salvador 28/07/2021: Desconozco la causa por la que este código estaba implementado, así que se comentan por si después son necesarias
-                                            /*if(strRange.contains('('))
+                                            if(strRange.contains('('))
                                                 serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c).setScale(2);
-                                            else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c).setscale(2);*/
-                                            serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
+                                            else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c).setscale(2);
+                                            //serviceTrif.trifAmount              = this.mapTLines.get(strTarifa).get(strRange).FLETE__c;
                                         }else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).FLETE__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
                                         serviceTrif.discount                    = 0;
                                         serviceTrif.trifAmntBase                = 0;
@@ -1177,12 +1177,12 @@ public class GrabadoDocEnLinea {
                                             serviceTrif.serviceId                   = 'EAD-1';
                                             serviceTrif.refServiceId                = 'EAD';
 
-                                            if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
-                                                serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
+                                            if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 0){
+                                                //serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
                                                 //Salvador 28/07/2021: Desconozco la causa por la que este código estaba implementado, así que se comentan por si después son necesarias
-                                                /*if(strRange.contains('('))
+                                                if(strRange.contains('('))
                                                     serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c * 0.11).setscale(2);
-                                                else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);*/
+                                                else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);
                                             } else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).EAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
                                             serviceTrif.discount                    = 0;
                                             serviceTrif.trifAmntBase                = 0;
@@ -1194,12 +1194,12 @@ public class GrabadoDocEnLinea {
                                             serviceTrif.serviceId                   = 'RAD-1';
                                             serviceTrif.refServiceId                = 'RAD';
                                             if(this.blnRAD){
-                                                if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 1){
+                                                if(this.blnclientenuevo && this.mapTLines.get(strTarifa).get(strRange).Vol__c == 0){
                                                     //Salvador 28/07/2021: Desconozco la causa por la que este código estaba implementado, así que se comentan por si después son necesarias
-                                                    /*if(strRange.contains('('))
+                                                    if(strRange.contains('('))
                                                         serviceTrif.trifAmount          = (this.wp.mapTarifarioT.get('TARIFA T7V').get(this.mapRangeByDest.get(strRange)).Flete__c * 0.11).setScale(2);
-                                                    else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);*/
-                                                    serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
+                                                    else serviceTrif.trifAmount         = (this.wp.mapTarifarioT.get('TARIFA T7V').get(strRange).Flete__c * 0.11).setScale(2);
+                                                    //serviceTrif.trifAmount              =this.mapTLines.get(strTarifa).get(strRange).FLETE__c * 0.11;
                                                 }else serviceTrif.trifAmount             = (this.mapTLines.get(strTarifa).get(strRange).RAD__c / this.mapTLines.get(strTarifa).get(strRange).Vol__c).setScale(2);
                                             } else serviceTrif.trifAmount           = 0.01;
                                             serviceTrif.discount                    = 0;
