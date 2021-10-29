@@ -694,7 +694,7 @@ public class GrabadoDocEnLinea {
                             this.listSS.add(itemSS.Name);
                     }
             
-                    for(String strName : this.listSS){
+                    /*for(String strName : this.listSS){
                         if(this.wp.mapSS.containsKey(strName)){
                             for(String keyRange : listRangeDestiny){
                                 if( !this.wp.mapSS.get(strName).mapRanges.containsKey(keyRange)){
@@ -709,7 +709,7 @@ public class GrabadoDocEnLinea {
                             }
                             this.wp.mapSS.put(strName, service);
                         }
-                    }
+                    }*/
                 }
                 if (String.isNotBlank(cotizacion.Acuse__c))
                     this.blnACK = true;
@@ -915,9 +915,7 @@ public class GrabadoDocEnLinea {
                                             String tarifa       = '';
                                             tarifa              = strTarifa.remove('SEG-');
                                             TL.KG_Adicional__c 	= this.wp.mapTarifarioEXP.get(tarifa).get(strRange).Kg_adicional__c;
-                                            /*if(!this.wp.blnSoloTarifasExp)
-                                                TL.FleteE__c       	= this.wp.mapTarifarioEXP.get(tarifa).get(strRange).GuiaDeArranque1Kg__c;
-                                            else*/ TL.Flete__c       	= this.wp.mapTarifarioEXP.get(tarifa).get(strRange).GuiaDeArranque1Kg__c;
+                                            TL.Flete__c       	= this.wp.mapTarifarioEXP.get(tarifa).get(strRange).GuiaDeArranque1Kg__c;
                                             this.mapTLinesExp.get(decBloque).get(strTarifa).put(strRange, TL);
                                             if(!this.mapExpAdic.containsKey(strRange))
                                                 this.mapExpAdic.get(strTarifa).put(strRange, TL.KG_ADICIONAL__c);
@@ -948,9 +946,7 @@ public class GrabadoDocEnLinea {
                             intContador ++;
                         }
                     }
-                    //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Mapa exp: ' + this.mapTLinesExp));
                 }
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Mapa exp: ' + this.mapTLinesExp));
                 if(this.wp.blnSoloTarifasExp && !this.blnclientenuevo){
                     data.trifType = this.trifType;
                 } else {
@@ -960,7 +956,6 @@ public class GrabadoDocEnLinea {
                         data.trifType           = 'C';
                     }
                 }
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas: ' + this.mapTLines));
                 for(String strRange : this.listRangeDestiny){
                     blnRango                                = false;
                     blnDest                                 = false;
