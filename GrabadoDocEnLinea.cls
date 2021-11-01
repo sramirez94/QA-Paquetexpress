@@ -765,17 +765,23 @@ public class GrabadoDocEnLinea {
                     for(Decimal decTarifa: this.listDecTarifas){ //Recorre las tarifas que ya están registradas para planchar hacia abajo
                         if(decTarifa < 7){
                             for(String strTarifa : this.listTarifas){
-                                if(!this.mapTLines.containsKey(strTarifa))
+                                if(!this.mapTLines.containsKey(strTarifa)){
+                                    System.debug('va a cargar tarifa en maptlines: ' + strtarifa);
                                     this.mapTLines.put(strTarifa, new Map<String, TempleateLine__c>());
-                                if(!this.mapQuotes.containsKey(strTarifa))
+                                }
+                                if(!this.mapQuotes.containsKey(strTarifa)){
+                                    System.debug('va a cargar tarifa en mapquotes: ' + strTarifa);
                                     this.mapQuotes.put(strTarifa, new Map<String, SBQQ__QuoteLine__c>());
+                                }
                                 for(String strRange : this.listRanges){
                                     if(!this.mapTLines.get(strTarifa).containsKey(strRange) && obtieneNumeroTarifa(strTarifa) < decTarifa && this.mapdecTLines.get(decTarifa).containsKey(strRange)){
+                                        System.debug('1. numero de tarifa str: ' + obtieneNumeroTarifa(strTarifa) + '. dectarifa: ' + decTarifa);
                                         this.mapdecTLines.get(decTarifa).get(strRange).Tarifa__c    = strTarifa;
                                         this.mapTarifas.get(decTarifa).get(strRange).Tarifa__c      = strTarifa;
                                         this.mapTLines.get(strTarifa).put(strRange, this.mapdecTLines.get(decTarifa).get(strRange));
                                         this.mapQuotes.get(strTarifa).put(strRange, this.mapTarifas.get(decTarifa).get(strRange));
                                     } else if(!this.mapTLines.get(strTarifa).containsKey(strRange) && obtieneNumeroTarifa(strTarifa) < decTarifa && !this.mapdecTLines.get(decTarifa).containsKey(strRange)){
+                                        System.debug('2. numero de tarifa str: ' + obtieneNumeroTarifa(strTarifa) + '. dectarifa: ' + decTarifa);
                                         TempleateLine__c TL     = new TempleateLine__c();
                                         SBQQ__QuoteLine__c QL   = new SBQQ__QuoteLine__c();
                                         String rango            = '';
@@ -1515,10 +1521,10 @@ public class GrabadoDocEnLinea {
                 header.security                         = sec;
                 odc.header                              = header;
                 
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM, 'Terminó el proceso')); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
-                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc))); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
+                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM, 'Terminó el proceso')); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
+                ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc))); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
                 //Salvador Ramírez (sranmirez@freewayconsulting.com): Si no se va a pedir el grabado y solo se quiere analizar el json que se genere deben comentarse los siguientes if (requeridocrearusuario(), blnrequierecrearusuario y this.blngrabartarifas)
-                if(requeridoCrearUsuario(cotizacion))
+                /*if(requeridoCrearUsuario(cotizacion))
                     blnRequiereCrearUsuario = true;
                 if(blnRequiereCrearUsuario){
                     if(cotizacion.Modelo_de_tarifas__c == 'Costos fijos por Tarifas: Por Destinos / Por rangos de km'){
@@ -1541,7 +1547,7 @@ public class GrabadoDocEnLinea {
                     if(blnGraboTarifas){
                         NotificaGrabadoUsuario(cotizacion.Id);
                     }
-                }
+                }*/
             }else {
                 publicarEvento(false, 'Imposible continuar, datos insuficientes');
             }
