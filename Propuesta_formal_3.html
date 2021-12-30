@@ -1,0 +1,1489 @@
+<apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_Propuesta_formal_1" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false"> 
+    <html> 
+        <head> 
+             
+            <style type="text/css"> 
+                @page { size: Legal landscape; margin: 10mm; 
+                @top-center { content: " "; font-family: sans-serif; font-size: 90pt;} 
+                @bottom-center { content: "Page " counter(page) " of " counter(pages); } }
+                <!--table,td,th {border:0.5px solid black;}-->
+                
+                .page-break { display:block; page-break-after:always; } 
+                
+                .objetivo {
+                font-family: sans-serif; font-size: 15pt; color: white;
+                background-image: url({!$Resource.Diapositiva2});
+                background-repeat: no-repeat;
+                background-position: right;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .cotizacion {
+                font-family: sans-serif; font-size: 15pt; color: black;
+                background: url({!$Resource.Diapositiva5}) no-repeat;
+                background-position:top center;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .tarifa {
+                font-family: sans-serif; font-size: 12pt; color: black; text-align:center;
+                background: url({!$Resource.Diapositiva5_2}) no-repeat;
+                background-position:top center;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .consideraciones {
+                font-family: sans-serif; font-size: 15pt; color: black; line-height: 30px;
+                background: url({!$Resource.Diapositiva6}) no-repeat;
+                background-position: top center;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .gracias {
+                font-family: sans-serif; font-size: 15pt; color: black;
+                background: url({!$Resource.Diapositiva7}) no-repeat;
+                background-position:top center;
+                background-size:contain;}
+               
+            </style> 
+        </head> 
+        <body> 
+            
+            <div class="page-break">
+               <img src="{!URLFOR($Resource.Diapositiva1)}" width="100%" height="auto"/>
+            </div> 
+            
+            <div class="objetivo">
+                <div align="justify" style="width:500px; height:700px; position:relative; top:350px; left: 650px">
+                    Establecer una sociedad comercial entre {!wp.objQuote.Lead__r.Name}
+                	y PAQUETEXPRESS® ofreciendo el portafolio de
+                	servicios con soluciones logísticas integrales
+                	garantizando el cumplimiento de sus expectativas de
+                	promesa de entrega, con cercanía y ayuda mutua. 
+                    </div>
+            </div> 
+            
+            <div class="page-break">
+               <img src="{!URLFOR($Resource.Diapositiva3)}" width="100%" height="auto"/>
+            </div>  
+            <div class="page-break">
+               <img src="{!URLFOR($Resource.Diapositiva4)}" width="100%" height="auto"/>
+            </div> 
+            
+            <!-- AQUÍ EMPIEZA EL BLOQUE DE DIAPOSITIVA 5 QUE SOLO SE MUESTRA PARA PROPUESTA PP Y WW-->
+<apex:outputPanel rendered="{!IF((ServicioEstandar || ServiciosEspeciales) && (wp.objQuote.Tipo_de_documentacion__c='Guías prepagadas' || wp.objQuote.Tipo_de_documentacion__c='Documentación Remota'),'true','false')}">
+        <div class="tarifa">
+            <div style= "width: 850px; height:700px; position:relative; top: 120px">
+
+                <!-- TABLA DE COBERTURA PAQUETEXPRESS -->
+                <apex:outputText rendered="{!ServicioEstandar}">
+                    <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+
+                        <tr style="height: 10px"></tr>
+                        <tr>
+                            <td colspan="12" align="Center"  style="font-size:11px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIO ESTÁNDAR - COBERTURA PAQUETEXPRESS</b></td>
+
+                        </tr>
+                        <tr>
+                            <th rowspan="3" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Rango KM</th>
+                            <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                                <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">TS</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T0</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T1</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T2</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T4</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T5</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T6</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T7<apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDimension'}">-P</apex:outputText></th>
+                                    <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDimension'}"><th align="center"  style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;"> T7-V </th></apex:outputText>
+                                </apex:outputText>
+
+                            </apex:repeat>
+                        </tr>
+
+                        <tr>
+                            <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                                <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">Sobre</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">5 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">10 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">20 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">30 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">40 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">50 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">60 kg</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDelivery'}">
+                                            <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!if(condestino == false,true,false)}">
+                                                <apex:param value="{!mapT7W[tari]}" />
+                                            </apex:outputText>
+                                            <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!if(condestino == true,true,false)}">
+                                                <apex:param value="{!mapT7W[desti]}" />
+                                            </apex:outputText> Kg </apex:outputText>
+                                        <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDimension'}">Costo por Kg</apex:outputText></th>
+                                    <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDimension'}"><th align="center"  style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">Costo por m3</th></apex:outputText>
+                                </apex:outputText>
+                            </apex:repeat>
+                        </tr>
+
+                        <tr>
+                            <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                                <apex:outputText rendered="{!keyFee=='TARIFA SOBRE'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">estándar</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T0'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.01 m3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T1'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.0225 m3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T2'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.048 m3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T3'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.075 m3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T4'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.144 m3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T5'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.245 m3</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='TARIFA T6'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.32 m3</th>
+                                </apex:outputText>
+
+                                <apex:outputText rendered="{!keyFee=='TARIFA T7'}">
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDelivery'}">
+                                            <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!if(condestino == false,true,false)}">
+                                                <apex:param value="{!mapT7V[tari]}" />
+                                            </apex:outputText>
+                                            <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!if(condestino == true,true,false)}">
+                                                <apex:param value="{!mapT7V[desti]}" />
+                                            </apex:outputText> m3 </apex:outputText>
+                                        <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDimension'}">1 Kg</apex:outputText></th>
+                                    <apex:outputText rendered="{!wp.objQuote.TipoCotizacion__c == 'byDimension'}"><th align="center"  style="font-size:12px; padding:0px 15px 0px 15px; background-color:rgb(31, 73, 125); color: white;">1 m3</th></apex:outputText>
+                                </apex:outputText>
+                            </apex:repeat>
+                        </tr>
+                        <apex:outputText rendered="{!T7ZP==false}">
+                            <apex:repeat value="{!listRangeInfo}" var="keyRange">
+                                <tr>
+                                    <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                                    <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee != 'SEG-DS' && keyFee != 'SEG-2D' && keyFee != 'SEG-A12' && keyFee != 'TARIFA T7'}">
+                                            <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                <td align="Center"  style="font-size:12px;">
+                                                </td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                <td align="Center"  style="font-size:12px;">
+                                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                        $<apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c}"/>
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{! keyFee == 'TARIFA T7' && wp.objQuote.TipoCotizacion__c != 'byDimension'}">
+                                            <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                <td align="Center"  style="font-size:12px;">
+                                                </td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                <td align="Center"  style="font-size:12px;">
+                                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                        $<apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c}"/>
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{! keyFee == 'TARIFA T7' && wp.objQuote.TipoCotizacion__c == 'byDimension'}">
+                                            <apex:outputText rendered="{!mapQuotes['TARIFA T7-P'][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                <td align="Center"  style="font-size:12px;">
+                                                </td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!mapQuotes['TARIFA T7-P'][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                <td align="center" style="font-size:12px; padding: 0">
+                                                    <apex:outputText value="{0, number, $###,###,##0.00}" >
+                                                        <apex:param value="{!mapQuotes['TARIFA T7-P'][keyRange].SBQQ__CustomerPrice__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!mapQuotes['TARIFA T7-V'][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                <td align="Center"  style="font-size:12px;">
+                                                </td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!mapQuotes['TARIFA T7-V'][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                <td align="center" style="font-size:12px; padding: 0">
+                                                    <apex:outputText value="{0, number, $###,###,##0.00}" >
+                                                        <apex:param value="{!mapQuotes['TARIFA T7-V'][keyRange].SBQQ__CustomerPrice__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                        </apex:outputText>
+                                    </apex:repeat>
+
+                                </tr>
+                            </apex:repeat>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!T7ZP}">
+                            <apex:repeat value="{!listRangeInfo}" var="keyRange">
+                                <apex:outputText rendered="{!if(wp.objQuote.TipoCotizacion__c != 'byDimension',true,false)}">
+                                    <tr>
+                                        <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+
+                                        <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                                            <apex:outputText rendered="{!keyFee != 'SEG-DS' && keyFee != 'SEG-2D' && keyFee != 'SEG-A12' && keyFee != 'TARIFA T7'}">
+                                                <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                    </td>
+                                                </apex:outputText>
+                                                <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                            $<apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c}"/>
+                                                        </apex:outputText>
+                                                    </td>
+                                                </apex:outputText>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{! keyFee == 'TARIFA T7' && wp.objQuote.TipoCotizacion__c != 'byDimension'}">
+                                                <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                    </td>
+                                                </apex:outputText>
+                                                <apex:outputText rendered="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                            $<apex:param value="{!mapQuotes[keyFee][keyRange].SBQQ__CustomerPrice__c}"/>
+                                                        </apex:outputText>
+                                                    </td>
+                                                </apex:outputText>
+                                            </apex:outputText>
+                                        </apex:repeat>
+                                    </tr>
+                                </apex:outputText>
+                            </apex:repeat>
+                            <apex:repeat value="{!listRangeDestiny2}" var="keyRange">
+                                <apex:outputText rendered="{!if(wp.objQuote.TipoCotizacion__c == 'byDimension',true,false)}">
+                                    <tr>
+                                        <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+
+                                        <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                                            <apex:outputText rendered="{! keyFee == 'TARIFA T7' && wp.objQuote.TipoCotizacion__c == 'byDimension'}">
+                                                <apex:outputText rendered="{!mapQuotes['TARIFA T7-P'][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                    </td>
+                                                </apex:outputText>
+                                                <apex:outputText rendered="{!mapQuotes['TARIFA T7-P'][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                    <td align="center" style="font-size:12px; padding: 0">
+                                                        <apex:outputText value="{0, number, $###,###,##0.00}" >
+                                                            <apex:param value="{!mapQuotes['TARIFA T7-P'][keyRange].SBQQ__CustomerPrice__c}" />
+                                                        </apex:outputText>
+                                                    </td>
+                                                </apex:outputText>
+                                                <apex:outputText rendered="{!mapQuotes['TARIFA T7-V'][keyRange].SBQQ__CustomerPrice__c==0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                    </td>
+                                                </apex:outputText>
+                                                <apex:outputText rendered="{!mapQuotes['TARIFA T7-V'][keyRange].SBQQ__CustomerPrice__c!=0}">
+                                                    <td align="center" style="font-size:12px; padding: 0">
+                                                        <apex:outputText value="{0, number, $###,###,##0.00}" >
+                                                            <apex:param value="{!mapQuotes['TARIFA T7-V'][keyRange].SBQQ__CustomerPrice__c}" />
+                                                        </apex:outputText>
+                                                    </td>
+                                                </apex:outputText>
+                                            </apex:outputText>
+                                        </apex:repeat>
+                                    </tr>
+                                </apex:outputText>
+                            </apex:repeat>
+                        </apex:outputText>
+                    </table>
+                </apex:outputText>
+                <br />
+
+                <apex:outputText rendered="{!if(CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true && T7ZP==false,true,false)}">
+                    <!-- TABLA DE COBERTURA ZONA PULS -->
+                    <div  style= "width:850px; height:200px;">
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                            <table align="center" style="border-collapse: collapse;"  border="solid 0.5px">
+
+                                <tr style="height: 10px"></tr>
+                                <tr>
+                                    <td colspan="11" align="Center"  style="font-size:12px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIO ESTÁNDAR - COBERTURA ZONA PLUS</b></td>
+
+                                </tr>
+                                <tr>
+                                    <th rowspan="3" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Rango KM</th>
+                                    <apex:repeat value="{!listFeeInfo2}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">TS</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T0</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T1</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T2</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T4</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T5</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T6</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T7</th>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+
+                                <tr>
+                                    <apex:repeat value="{!listFeeInfo2}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">Sobre</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">5 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">10 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">20 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">30 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">40 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">50 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">60 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">kg</th>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+
+                                <tr>
+                                    <apex:repeat value="{!listFeeInfo2}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">estándar</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.01 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.0225 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.048 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.075 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.144 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.245 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.32 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">m3</th>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+                                <apex:repeat value="{!listRangeInfo2}" var="keyRange">
+                                    <tr>
+                                        <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+
+                                        <apex:repeat value="{!listFee}" var="keyFee">
+                                            <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                                                <apex:outputText rendered="{!mapQuotesZP[keyFee][keyRange].SBQQ__CustomerPrice__c != 0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                            $<apex:param value="{!mapQuotesZP[keyFee][keyRange].SBQQ__CustomerPrice__c}" />
+                                                        </apex:outputText>
+                                                    </td>
+                                                </apex:outputText>
+                                            </apex:outputText>
+                                        </apex:repeat>
+                                    </tr>
+                                </apex:repeat>
+
+
+                            </table>
+                        </apex:outputText>
+                    </div>
+                </apex:outputText>
+
+                <apex:outputText rendered="{!if(CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false && T7ZP,true,false)}">
+                    <!-- TABLA DE COBERTURA ZONA PULS T7-->
+                    <div style= "width: 850px; height:200px;">
+                        <apex:outputText rendered="{!T7ZP}">
+                            <table align="center" style="border-collapse: collapse;"  border="solid 0.5px">
+                                <tr style="height: 10px"></tr>
+                                <tr>
+                                    <td colspan="11" align="Center"  style="font-size:12px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIO ESTÁNDAR - ZONA PLUS PARA TARIMAS</b></td>
+                                </tr>
+                                <tr>
+                                    <th align="Center" rowspan="3" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">Rango KM</th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T7</th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">EAD T7</th>
+                                </tr>
+                                <tr>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = false}">
+                                            <apex:param value="{!mapT7W[tari]}" />
+                                        </apex:outputText>
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = true}">
+                                            <apex:param value="{!mapT7W[desti]}" />
+                                        </apex:outputText> kg
+                                    </th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">1 Kg</th>
+                                </tr>
+                                <tr>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = false}">
+                                            <apex:param value="{!mapT7V[tari]}" />
+                                        </apex:outputText>
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = true}">
+                                            <apex:param value="{!mapT7V[desti]}" />
+                                        </apex:outputText> m3
+                                    </th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.005 m3</th>
+                                </tr>
+                                <apex:repeat value="{!listRangeProp}" var="keyRange">
+                                    <apex:outputText rendered="{!if(mapPropuestaT7ZP[keyRange].SBQQ__Description__c == 'Propuesta',true,false)}">
+                                        <tr>
+                                            <apex:outputText rendered="{!keyRange!='Más de 2400'}">
+                                                <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!keyRange='Más de 2400'}">
+                                                <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Más de 2400</td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!T7ZP}">
+                                                <td align="center" style="font-size:12px; ">
+                                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                        $<apex:param value="{!mapQuotesT7ZPByRange[keyRange].SBQQ__CustomerPrice__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                                <td align="center" style="font-size:12px; ">
+                                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                        $<apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                        </tr>
+                                    </apex:outputText>
+                                </apex:repeat>
+                                <!--apex:repeat value="{!listRangeT7}" var="keyRange">
+                                <apex:outputText rendered="{!if(mapQuotesT7ZP[keyRange].SBQQ__Description__c == 'Destino',true,false)}">
+                                <tr>
+                                    <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange} {!mapQuotesT7ZP[keyRange].Name}</td>
+                                    <apex:outputText rendered="{!T7ZP}">
+                                        <td align="center" style="font-size:12px; ">
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                    <td align="center" style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            $<apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                    </apex:outputText>
+                                </tr>
+                                </apex:outputText>
+                                </apex:repeat-->
+
+                            </table>
+                        </apex:outputText>
+                    </div>
+                </apex:outputText>
+
+                <apex:outputText rendered="{!if(CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true && T7ZP,true,false)}">
+                    <!-- TABLA DE COBERTURA ZONA PULS -->
+                    <div  style= "width:410px; height:200px; float: left;">
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                            <table align="right" style="border-collapse: collapse;"  border="solid 0.5px">
+
+                                <tr style="height: 10px"></tr>
+                                <tr>
+                                    <td colspan="11" align="Center"  style="font-size:12px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIO ESTÁNDAR - COBERTURA ZONA PLUS</b></td>
+
+                                </tr>
+                                <tr>
+                                    <th rowspan="3" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Rango KM</th>
+                                    <apex:repeat value="{!listFeeInfo2}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">TS</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T0</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T1</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T2</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T4</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T5</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T6</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T7</th>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+
+                                <tr>
+                                    <apex:repeat value="{!listFeeInfo2}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">Sobre</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">5 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">10 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">20 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">30 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">40 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">50 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">60 kg</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">kg</th>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+
+                                <tr>
+                                    <apex:repeat value="{!listFeeInfo2}" var="keyFee">
+                                        <apex:outputText rendered="{!keyFee='TARIFA SOBRE'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">estándar</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T0'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.01 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T1'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.0225 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T2'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.048 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T3'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.075 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T4'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.144 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T5'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.245 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T6'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.32 m3</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!keyFee='TARIFA T7'}">
+                                            <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">m3</th>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+                                <apex:repeat value="{!listRangeInfo2}" var="keyRange">
+                                    <tr>
+                                        <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+
+                                        <apex:repeat value="{!listFee}" var="keyFee">
+                                            <apex:outputText rendered="{!keyFee != 'TARIFA T7'}">
+                                                <apex:outputText rendered="{!mapQuotesZP[keyFee][keyRange].SBQQ__CustomerPrice__c != 0}">
+                                                    <td align="Center"  style="font-size:12px;">
+                                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                            $<apex:param value="{!mapQuotesZP[keyFee][keyRange].SBQQ__CustomerPrice__c}" />
+                                                        </apex:outputText>
+                                                    </td>
+                                                </apex:outputText>
+                                            </apex:outputText>
+                                        </apex:repeat>
+                                    </tr>
+                                </apex:repeat>
+
+
+                            </table>
+                        </apex:outputText>
+                    </div>
+
+                    <!-- TABLA DE COBERTURA ZONA PULS T7-->
+                    <div style= "width: 410px; height:200px; float: right;">
+                        <apex:outputText rendered="{!T7ZP}">
+                            <table align="left" style="border-collapse: collapse;"  border="solid 0.5px">
+                                <tr style="height: 10px"></tr>
+                                <tr>
+                                    <td colspan="11" align="Center"  style="font-size:12px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIO ESTÁNDAR - ZONA PLUS PARA TARIMAS</b></td>
+                                </tr>
+                                <tr>
+                                    <th align="Center" rowspan="3" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">Rango KM</th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">T7</th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">EAD T7</th>
+                                </tr>
+                                <tr>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = false}">
+                                            <apex:param value="{!mapT7W[tari]}" />
+                                        </apex:outputText>
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = true}">
+                                            <apex:param value="{!mapT7W[desti]}" />
+                                        </apex:outputText> kg
+                                    </th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">1 Kg</th>
+                                </tr>
+                                <tr>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = false}">
+                                            <apex:param value="{!mapT7V[tari]}" />
+                                        </apex:outputText>
+                                        <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!condestino = true}">
+                                            <apex:param value="{!mapT7V[desti]}" />
+                                        </apex:outputText> m3
+                                    </th>
+                                    <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.005 m3</th>
+                                </tr>
+                                <apex:repeat value="{!listRangeProp}" var="keyRange">
+                                    <apex:outputText rendered="{!if(mapPropuestaT7ZP[keyRange].SBQQ__Description__c == 'Propuesta',true,false)}">
+                                        <tr>
+                                            <apex:outputText rendered="{!keyRange!='Más de 2400'}">
+                                                <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!keyRange='Más de 2400'}">
+                                                <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Más de 2400</td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!T7ZP}">
+                                                <td align="center" style="font-size:12px; ">
+                                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                        $<apex:param value="{!mapQuotesT7ZPByRange[keyRange].SBQQ__CustomerPrice__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                                <td align="center" style="font-size:12px; ">
+                                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                        $<apex:param value="{!mapPropuestaT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                        </tr>
+                                    </apex:outputText>
+                                </apex:repeat>
+                                <!--apex:repeat value="{!listRangeT7}" var="keyRange">
+                                <apex:outputText rendered="{!if(mapQuotesT7ZP[keyRange].SBQQ__Description__c == 'Destino',true,false)}">
+                                <tr>
+                                    <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange} {!mapQuotesT7ZP[keyRange].Name}</td>
+                                    <apex:outputText rendered="{!T7ZP}">
+                                        <td align="center" style="font-size:12px; ">
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                    <td align="center" style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            $<apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                    </apex:outputText>
+                                </tr>
+                                </apex:outputText>
+                                </apex:repeat-->
+
+                            </table>
+                        </apex:outputText>
+                    </div>
+                </apex:outputText>
+
+                <!--SERVICIOS ESPECIALES -->
+                <apex:outputPanel rendered="{!ServiciosEspeciales}">
+                    <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                        <tr style="height: 25px"></tr>
+                        <tr>
+                            <td colspan="35" align="Center"  style="font-size:12px; padding-top: 5px; padding-bottom: 5px"><b>SERVICIOS ESPECIALES</b></td>
+                        </tr>
+                        <tr>
+                            <th align="left" rowspan="2" style="font-size:12px; background-color:rgb(31, 73, 125); padding-left: 10px; padding-right: 10px; color: white;">Rango de KM </th>
+                            <apex:repeat value="{!listServ}" var="keySS">
+                                <th align="center" colspan="2" style=" font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keySS}</th>
+                            </apex:repeat>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!listServ}" var="keySS">
+                                <th align="center" style=" font-size:12px; padding-left: 10px; padding-right: 10px; background-color:rgb(31, 73, 125); color: white;">Forma</th>
+                                <th align="center" style=" font-size:12px; padding-left: 10px; padding-right: 10px; background-color:rgb(31, 73, 125); color: white;">Tarifa Propuesta</th>
+                            </apex:repeat>
+                        </tr>
+                        <apex:repeat value="{!listRangeD}" var="keyRange">
+                            <tr>
+                                <td align="left" style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                                <apex:outputText rendered="{!wp.mapSS['Maniobras'].mapRanges[keyRange].Amount__c != 0}">
+                                    <td align="center"  style="border-bottom: 1px solid black; font-size:12px; ">{!wp.mapSS['Maniobras'].mapRanges[keyRange].Option__c} </td>
+                                    <td align="center"  style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, $###,###,##0.00}">
+                                            <apex:param value="{!wp.mapSS['Maniobras'].mapRanges[keyRange].Amount__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.mapSS['EAD con cita'].mapRanges[keyRange].Amount__c != 0}">
+                                    <td align="center"  style="font-size:12px; ">{!wp.mapSS['EAD con cita'].mapRanges[keyRange].Option__c} </td>
+                                    <td align="center"  style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, $###,###,##0.00}">
+                                            <apex:param value="{!wp.mapSS['EAD con cita'].mapRanges[keyRange].Amount__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.mapSS['EAD a Detalle'].mapRanges[keyRange].Amount__c != 0}">
+                                    <td align="center"  style="font-size:12px; ">{!wp.mapSS['EAD a Detalle'].mapRanges[keyRange].Option__c} </td>
+                                    <td align="center"  style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, $###,###,##0.00}">
+                                            <apex:param value="{!wp.mapSS['EAD a Detalle'].mapRanges[keyRange].Amount__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.mapSS['Special Packing'].mapRanges[keyRange].Amount__c != 0}">
+                                    <td align="center"  style="font-size:12px; ">{!wp.mapSS['Special Packing'].mapRanges[keyRange].Option__c} </td>
+                                    <td align="center"  style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, $###,###,##0.00}">
+                                            <apex:param value="{!wp.mapSS['Special Packing'].mapRanges[keyRange].Amount__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.mapSS['Pick&Pack'].mapRanges[keyRange].Amount__c != 0}">
+                                    <td align="center"  style="font-size:12px; ">{!wp.mapSS['Pick&Pack'].mapRanges[keyRange].Option__c} </td>
+                                    <td align="center"  style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, $###,###,##0.00}">
+                                            <apex:param value="{!wp.mapSS['Pick&Pack'].mapRanges[keyRange].Amount__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.mapSS['Cruce Fronterizo'].mapRanges[keyRange].Amount__c != 0}">
+                                    <td align="center"  style="font-size:12px; ">{!wp.mapSS['Cruce Fronterizo'].mapRanges[keyRange].Option__c} </td>
+                                    <td align="center"  style="font-size:12px; ">
+                                        <apex:outputText value="{0, number, $###,###,##0.00}">
+                                            <apex:param value="{!wp.mapSS['Cruce Fronterizo'].mapRanges[keyRange].Amount__c}" />
+                                        </apex:outputText>
+                                    </td>
+                                </apex:outputText>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </apex:outputPanel>
+
+            </div>
+
+            <div style="width: 350px; height:550px; position:absolute; top: 3150px; left: 900px; text-align: left">
+                <ul>
+                    <li>Convenio: {!wp.objQuote.Tipo_de_documentacion__c}</li>
+                    <li>Servicio: {!wp.objQuote.PAQ_TipoServicio__c}</li>
+                    <li>Destinos: Nacionales</li>
+                    <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c != null}">
+                            Servicios adicionales que incluye:
+                        </apex:outputText>
+                        <ul>
+                            <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=true}">
+                                <li>Recolección a domicilio</li>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=true}">
+                                <li>Entrega a domicilio</li>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                                <li>Zona plus</li>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                                <li>Seguro</li>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                <li>Acuse {!wp.objQuote.Acuse__c}</li>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!T7ZP}">
+                                <li>Zona Plus para Tarimas</li>
+                            </apex:outputText>
+                        </ul>
+                    </li>
+                    <li>Tarifas antes de impuestos</li>
+                    <li>Tarifas se cobran por bulto documentado</li>
+                    <li>Vigencia al 31 de diciembre del {!YEAR(TODAY())}</li>
+                    <li>Servicios, tarifas y destinos no cotizados, serán cobrados  al costo de tarifario de piso, sin descuentos.</li>
+                    <li><apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false || wp.objQuote.Acuse__c == null),true,false)}">
+                            Servicios opcionales no incluidos:
+                            <ul>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false}">
+                                    <li>Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                                    </li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false}">
+                                    <li>Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                                    </li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false}">
+                                    <li>Entrega en Zona plus $220.50 más IVA por paquete (Aplica en Tarifas no mayores a T6).
+                                    </li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                                    <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                                    </li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                                    <li>Acuse $68.50 más IVA.
+                                    </li>
+                                </apex:outputText>
+                            </ul>
+                        </apex:outputText>
+                    </li>
+                </ul>
+
+                <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                        Servicios opcionales no incluidos:
+                        <ul>
+                            <li>Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.</li>
+                            <li>Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.</li>
+                            <li>Entrega en Zona plus $220.50 más IVA por paquete.</li>
+                            <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                            <li>Acuse $68.50 más IVA.</li>
+                        </ul>
+                    </apex:outputText>
+                </li>
+            </div>
+
+        </div>
+    </apex:outputPanel>
+
+    <!--Aquí empieza el bloque para Servicio Express Garantizado/Guías Prepagadas-->
+
+    <apex:outputPanel rendered="{!IF(ServicioExpress && wp.objQuote.Tipo_de_documentacion__c='Guías prepagadas','true','false')}">
+        <div class="tarifa">
+
+            <div style= "width: 850px; height:700px; position:relative; top: 150px">
+                <apex:repeat value="{!listFeeInfo}" var="keyFee">
+                    <apex:outputPanel rendered="{!keyFee == 'SEG-DS' || keyFee == 'SEG-2D' || keyFee == 'SEG-A12'}">
+                        <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                            <tr>
+                                <apex:outputText rendered="{!keyFee='SEG-DS'}">
+                                    <th colspan="3" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">ONE' DAY</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='SEG-2D'}">
+                                    <th colspan="3" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">TWO' DAYS</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee='SEG-A12'}">
+                                    <th colspan="3" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">MID' DAY</th>
+                                </apex:outputText>
+                            </tr>
+                            <tr>
+                                <th align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Rango KM</th>
+                                <th align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Peso Máximo (kg-vol)</th>
+                                <th align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Tarifa Propuesta</th>
+                            </tr>
+
+                            <apex:repeat value="{!listRangeInfo}" var="keyRange">
+                                <tr>
+                                    <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                                    <apex:repeat value="{!listEXP}" var="keyFee" >
+                                        <apex:outputText rendered="{!mapQuotesEXP[keyFee][keyRange].DominantWeight__c != null}">
+                                            <td align="Center"  style="font-size:12px;">
+                                                <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                                    <apex:param value="{!mapQuotesEXP[keyFee][keyRange].DominantWeight__c}"/>
+                                                </apex:outputText> Kg
+                                            </td>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!mapQuotesEXP[keyFee][keyRange].SBQQ__CustomerPrice__c != 0}">
+                                            <td align="Center"  style="font-size:12px;">
+                                                <apex:outputText value="{0, number, ###,###,##0.00}" >
+                                                    $<apex:param value="{!mapQuotesEXP[keyFee][keyRange].SBQQ__CustomerPrice__c}"/>
+                                                </apex:outputText>
+                                            </td>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </div>
+
+            <apex:outputPanel rendered="{!ServicioExpress && NOT(ServicioEstandar)}">
+                <div style="width: 350px; height:300px; position:absolute; top: 3150px; left: 900px; text-align: left">
+                    <ul>
+                        <li>Convenio: {!wp.objQuote.Tipo_de_documentacion__c}</li>
+                        <li>Servicio: {!wp.objQuote.PAQ_TipoServicio__c}</li>
+                        <li>Destinos: Nacionales</li>
+                        <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c != null}">
+                                Servicios adicionales que incluye:
+                            </apex:outputText>
+                            <ul>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                                    <li>Seguro</li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                    <li>Acuse {!wp.objQuote.Acuse__c}</li>
+                                </apex:outputText>
+                            </ul>
+                        </li>
+                        <li>Tarifas antes de impuestos</li>
+                        <li>Tarifas se cobran por bulto documentado</li>
+                        <li>Vigencia al 31 de diciembre del {!YEAR(TODAY())}</li>
+                        <li>Servicios, tarifas y destinos no cotizados, serán cobrados  al costo de tarifario de piso, sin descuentos.</li>
+                        <li><apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false || wp.objQuote.Acuse__c == null),true,false)}">
+                                Servicios opcionales no incluidos:
+                                <ul>
+                                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                                        <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                                        </li>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                                        <li>Acuse $67.50 más IVA</li>
+                                    </apex:outputText>
+                                </ul>
+                            </apex:outputText>
+                        </li>
+                    </ul>
+
+                    <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                            Servicios opcionales no incluidos:
+                            <ul>
+                                <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse $67.50 más IVA.</li>
+                            </ul>
+                        </apex:outputText>
+                    </li>
+                </div>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!ServicioExpress && ServicioEstandar }">
+                <div style="width: 350px; height:300px; position:absolute; top: 3900px; left: 900px; text-align: left">
+                    <ul>
+                        <li>Convenio: {!wp.objQuote.Tipo_de_documentacion__c}</li>
+                        <li>Servicio: {!wp.objQuote.PAQ_TipoServicio__c}</li>
+                        <li>Destinos: Nacionales</li>
+                        <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c != null}">
+                                Servicios adicionales que incluye:
+                            </apex:outputText>
+                            <ul>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                                    <li>Seguro</li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                                    <li>Acuse {!wp.objQuote.Acuse__c}</li>
+                                </apex:outputText>
+                            </ul>
+                        </li>
+                        <li>Tarifas antes de impuestos</li>
+                        <li>Tarifas se cobran por bulto documentado</li>
+                        <li>Vigencia al 31 de diciembre del {!YEAR(TODAY())}</li>
+                        <li>Servicios, tarifas y destinos no cotizados, serán cobrados  al costo de tarifario de piso, sin descuentos.</li>
+                        <li><apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false || wp.objQuote.Acuse__c == null),true,false)}">
+                                Servicios opcionales no incluidos:
+                                <ul>
+                                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                                        <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                                        </li>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!IF(CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse Empresa')=false && CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse Interno')=false && CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse XT')=false,true,false)}">
+                                        <li>Acuse $67.50 más IVA.
+                                        </li>
+                                    </apex:outputText>
+                                </ul>
+                            </apex:outputText>
+                        </li>
+                    </ul>
+
+                    <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                            Servicios opcionales no incluidos:
+                            <ul>
+                                <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse $67.50 más IVA.</li>
+                            </ul>
+                        </apex:outputText>
+                    </li>
+                </div>
+            </apex:outputPanel>
+
+        </div>
+    </apex:outputPanel>
+
+    <!--Aquí empieza el bloque para SEG/Documentación Remota-->
+
+    <apex:outputPanel rendered="{!IF(ServicioExpress && wp.objQuote.Tipo_de_documentacion__c='Documentación Remota','true','false')}">
+        <div class="tarifa">
+
+            <div style= "width: 850px; height:700px; position:relative; top: 120px">
+                <apex:repeat value="{!lEXP}" var="keyFee">
+                    <apex:variable var="count" value="{!1}" />
+                    <apex:outputPanel > <br />
+                        <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                            <tr>
+                                <apex:outputText rendered="{!keyFee=='SEG-DS'}">
+                                    <th colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">ONE DAY</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='SEG-2D'}">
+                                    <th colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">TWO DAYS</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!keyFee=='SEG-A12'}">
+                                    <th colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">MID DAY</th>
+                                </apex:outputText>
+                            </tr>
+                            <tr>
+                                <th rowspan="2" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;" width="10%">Rango KM</th>
+                                <apex:repeat value="{!mapQuotesOD[keyFee]}" var="guide">
+                                    <th colspan="2" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Guía de Arranque ({!count})</th>
+                                    <apex:outputText rendered="{!lastGuide[keyFee] == guide}">
+                                        <th rowspan="2" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Kg adicional</th>
+                                        <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                            <th rowspan="2" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Acuse adicional</th>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!blnSEG}">
+                                            <th rowspan="2" align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Seguro adicional (millar)</th>
+                                        </apex:outputText>
+                                    </apex:outputText>
+                                    <apex:variable var="count" value="{!count+1}" />
+                                </apex:repeat>                    </tr>
+                            <tr>
+                                <apex:repeat value="{!mapQuotesOD[keyFee]}" var="guide">
+                                    <th align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Peso (kg-vol)</th>
+                                    <th align="Center"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">Tarifa propuesta</th>
+                                </apex:repeat>
+                            </tr>
+
+                            <apex:repeat value="{!listRangeInfo}" var="keyRange">
+                                <tr>
+                                    <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
+                                    <apex:repeat value="{!mapQuotesOD[keyFee]}" var="guide">
+                                        <td align="center" style="font-size:12px; ">
+                                            <apex:outputText value="{0, number, ###,###,##0.000}">
+                                                <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].GUIA__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td align="center" style="font-size:12px; ">
+                                            <apex:outputText value="{0, number, $###,###,##0.00}">
+                                                <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].FLETE__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <apex:outputText rendered="{!lastGuide[keyFee] == guide}">
+                                            <td align="center" style="font-size:12px; ">
+                                                <apex:outputText value="{0, number, $###,###,##0.00}">
+                                                    <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].KG_ADICIONAL__c}" />
+                                                </apex:outputText>
+                                            </td>
+                                            <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                                <td align="center" style="font-size:12px; ">
+                                                    <apex:outputText value="{0, number, $###,###,##0.00}">
+                                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].ACK__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!blnSEG}">
+                                                <td align="center" style="font-size:12px; ">
+                                                    <apex:outputText value="{0, number,$###,###,##0.00}" >
+                                                        <apex:param value="{!mapQuotesOD[keyFee][guide][keyRange].SEG__c}" />
+                                                    </apex:outputText>
+                                                </td>
+                                            </apex:outputText>
+                                        </apex:outputText>
+                                    </apex:repeat>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </div>
+
+            <apex:outputPanel rendered="{!ServicioExpress && NOT(ServicioEstandar) && NOT(ServiciosEspeciales)}">
+                <div style="width: 350px; height:300px; position:absolute; top: 3150px; left: 900px; text-align: left">
+                    <ul>
+                        <li>Convenio: {!wp.objQuote.Tipo_de_documentacion__c}</li>
+                        <li>Servicio: {!wp.objQuote.PAQ_TipoServicio__c}</li>
+                        <li>Destinos: Nacionales</li>
+                        <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c != null}">
+                                Servicios adicionales que incluye:
+                            </apex:outputText>
+                            <ul>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                                    <li>Seguro</li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                    <li>Acuse {!wp.objQuote.Acuse__c}</li>
+                                </apex:outputText>
+                            </ul>
+                        </li>
+                        <li>Tarifas antes de impuestos</li>
+                        <li>Tarifas se cobran por bulto documentado</li>
+                        <li>Vigencia al 31 de diciembre del {!YEAR(TODAY())}</li>
+                        <li>Servicios, tarifas y destinos no cotizados, serán cobrados  al costo de tarifario de piso, sin descuentos.</li>
+                        <li><apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false || wp.objQuote.Acuse__c == null),true,false)}">
+                                Servicios opcionales no incluidos:
+                                <ul>
+                                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                                        <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                                        </li>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                                        <li>Acuse $67.50 más IVA</li>
+                                    </apex:outputText>
+                                </ul>
+                            </apex:outputText>
+                        </li>
+                    </ul>
+
+                    <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                            Servicios opcionales no incluidos:
+                            <ul>
+                                <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse $67.50 más IVA.</li>
+                            </ul>
+                        </apex:outputText>
+                    </li>
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{!ServicioExpress && (ServicioEstandar || ServiciosEspeciales)}">
+                <div style="width: 350px; height:300px; position:absolute; top: 3900px; left: 900px; text-align: left">
+                    <ul>
+                        <li>Convenio: {!wp.objQuote.Tipo_de_documentacion__c}</li>
+                        <li>Servicio: {!wp.objQuote.PAQ_TipoServicio__c}</li>
+                        <li>Destinos: Nacionales</li>
+                        <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c != null}">
+                                Servicios adicionales que incluye:
+                            </apex:outputText>
+                            <ul>
+                                <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                                    <li>Seguro</li>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                                    <li>Acuse {!wp.objQuote.Acuse__c}</li>
+                                </apex:outputText>
+                            </ul>
+                        </li>
+                        <li>Tarifas antes de impuestos</li>
+                        <li>Tarifas se cobran por bulto documentado</li>
+                        <li>Vigencia al 31 de diciembre del {!YEAR(TODAY())}</li>
+                        <li>Servicios, tarifas y destinos no cotizados, serán cobrados  al costo de tarifario de piso, sin descuentos.</li>
+                        <li><apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false || wp.objQuote.Acuse__c == null),true,false)}">
+                                Servicios opcionales no incluidos:
+                                <ul>
+                                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                                        <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                                        </li>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                                        <li>Acuse $67.50 más IVA</li>
+                                    </apex:outputText>
+                                </ul>
+                            </apex:outputText>
+                        </li>
+                    </ul>
+
+                    <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                            Servicios opcionales no incluidos:
+                            <ul>
+                                <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse $67.50 más IVA.</li>
+                            </ul>
+                        </apex:outputText>
+                    </li>
+                </div>
+            </apex:outputPanel>
+        </div>
+    </apex:outputPanel>
+
+    <!-- AQUÍ EMPIEZA EL BLOQUE DE DIAPOSITIVA 5 QUE SOLO SE MUESTRA PARA PROPUESTA SIPWEB-->
+
+    <apex:outputPanel rendered="{!IF(wp.objQuote.Tipo_de_documentacion__c='En Piso-Sipweb','true','false')}">
+        <div class="cotizacion">
+            <div style= "width: 400px; height:550px; position: relative; top: 150px; left: 100px">
+                <table align="center">
+                    <tr>
+                        <th align="Center" style="padding:15px; background-color:rgb(220, 230, 241)">Servicio</th>
+                        <th align="Center" style="padding:15px; background-color:rgb(220, 230, 241)">Descuento</th>
+                    </tr>
+                    <apex:outputText rendered="{!wp.perPack != null && wp.perPack != 0}">
+                        <tr>
+                            <td>Paquetes Standard</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perPack}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!wp.perSob != 0 && wp.perSob != null}">
+                        <tr>
+                            <td>Sobres Standard </td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perSob}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=true}">
+                        <tr>
+                            <td>Recolección Standard</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perRAD}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=true || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true }">
+                        <tr>
+                            <td>Entrega a domicilio Standard: </td>
+                            <td>  </td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=true}">
+                        <tr>
+                            <td>*Cobertura Paquetexpress</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perEAD}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=true}">
+                        <tr>
+                            <td>*Cobertura Zona Plus</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perZP}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                        <tr>
+                            <td>Seguro</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perSEG}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse Empresa')=true}">
+                        <tr>
+                            <td>Acuse</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perACK}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse Interno')=true}">
+                        <tr>
+                            <td>Acuse</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perACK}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse XT')=true}">
+                        <tr>
+                            <td>Acuse</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!wp.perACK}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!blnDS}">
+                        <tr>
+                            <td>OneDay</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!discDS}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!bln2D}">
+                        <tr>
+                            <td>2Days</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!disc2D}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!blnA12}">
+                        <tr>
+                            <td>MidDay</td>
+                            <td align="Center"><b>
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!discA12}" />
+                                    </apex:outputText> %
+                                </b></td>
+                        </tr>
+                    </apex:outputText>
+                </table>
+            </div>
+
+            <div style= "font-size: 12pt; position:absolute; top: 3120px; left: 700px; width: 480px; height:550px" >
+                <table>
+                    <tr><td align="Center">CONSIDERACIONES: </td></tr>
+                    <tr><td>  </td></tr>
+                    <tr><td>   </td></tr>
+                    <tr><td>   </td></tr>
+                    <tr><td>   </td></tr>
+                    <tr><td>Convenio: Sipweb</td></tr>
+                    <tr><td>Destinos: Nacionales</td></tr>
+                    <tr><td>Estos descuentos aplican a las Tarifas de mostrador vigentes en cada año calendario.</td></tr>
+                    <tr><td>Para entregas a domicilio con cobertura Paquetexpress, el costo final después de descuentos no podrá ser menor al costo mínimo que corresponde a la sucursal donde se otorgará el servicio.</td></tr>
+                    <tr><td>Servicios no cotizados, serán cobrados al costo de tarifario de piso, sin descuentos.</td></tr>
+                    <tr><td>   </td></tr>
+                    <tr><td>   </td></tr>
+                    <tr><td>   </td></tr>
+                    <tr><td>   </td></tr>
+                </table>
+                <apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false),true,false)}">
+                    SERVICIOS OPCIONALES NO INCLUIDOS:
+                    <ul>
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false}">
+                            <li>Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                            </li>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false}">
+                            <li>Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                            </li>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false}">
+                            <li>Entrega en Zona plus $220.50 más IVA por paquete.
+                            </li>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                            <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                            </li>
+                        </apex:outputText>
+                        <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                            <li>Acuse $68.50 más IVA.
+                            </li>
+                        </apex:outputText>
+                    </ul>
+                </apex:outputText>
+
+                <apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                    SERVICIOS OPCIONALES NO INCLUIDOS:
+                    <ul>
+                        <li><apex:outputText rendered="{!IF(blnDS=false && bln2D=false && blnA12=false,true,false)}">
+                                Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y
+                                $67.50 en ciudades chicas y medianas.
+                            </apex:outputText>
+                        </li>
+                        <li><apex:outputText rendered="{!IF(blnDS=false && bln2D=false && blnA12=false,true,false)}">
+                                Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y
+                                $67.50 en ciudades chicas y medianas.
+                            </apex:outputText>
+                        </li>
+                        <li><apex:outputText rendered="{!IF(blnDS=false && bln2D=false && blnA12=false,true,false)}">
+                                Entrega en Zona plus $220.50 más IVA por paquete.
+                            </apex:outputText></li>
+                        <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                        <li>Acuse $68.50 más IVA.</li>
+                    </ul>
+                </apex:outputText>
+            </div>
+        </div>
+    </apex:outputPanel>
+
+    <!-- AQUÍ EMPIEZA EL BLOQUE DE CONSIDERACIONES ESPECIALES-->
+            
+            <apex:outputPanel rendered="{!IF(ISBLANK(wp.objLead.Consideraciones_especiales__c)=false,true,false)}">
+            <div class="consideraciones">
+                <div align="justify" style="width: 650px; height: 700px; position:relative; top: 150px; left:550px">
+                	<apex:outputField value="{!wp.objLead.Consideraciones_especiales__c}" />
+                </div>
+            </div> 
+            </apex:outputPanel>  
+               
+            <div class="gracias">
+                <div style= "width: 300px; height:720px; position:relative; left: 675px; text-align:center">
+                    <br/><br/><br/><br/><br/><br/><br/>
+                    <br/><br/><br/><br/><br/><br/><br/>
+                    <br/><br/><br/><br/><br/><br/>  
+                    {! $User.FirstName & ' ' & $User.LastName }
+                </div>    
+            </div> 
+        </body> 
+    </html> 
+</apex:page>
