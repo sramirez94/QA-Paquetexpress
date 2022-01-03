@@ -2,13 +2,13 @@
   @description       : Pantalla para visualizar las tarifas grabadas en sipweb en base al webservice proporcionado por ellos.
   @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
   @group             : 
-  @last modified on  : 05-12-2021
+  @last modified on  : 06-08-2021
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log 
   Ver   Date         Author                               Modification
   1.0   04-27-2021   Salvador Ramírez López             Initial Version
 -->
-<apex:page extensions="PAQ_ConveniosSipweb_CTR" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" standardcontroller="Account">
+<apex:page extensions="PAQ_ConveniosSipweb_CTR" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" readOnly="true" standardcontroller="Account">
 <!-- estilos personalizados -->
 <apex:stylesheet value="{!URLFOR($Resource.PAQ_Resources,'css/custom-styles.css')}" />
 <!-- jquery  -->
@@ -35,7 +35,7 @@
         <!--<apex:pageBlockSection collapsible="false" columns="2"  >-->
           <table style="border-collapse: collapse;" width="40%" align = "left">
             <thead class="thead-light">
-              <th colspan="15" class="center">Convenios obtenidos en sipweb</th>
+              <th colspan="15" class="center">Tarifas obtenidas WW</th>
               <tbody>
                 <tr>
                   <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cliente</td>
@@ -50,7 +50,7 @@
                   <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cotización</td>
                 </tr>
                 <!--<apex:outputText rendered="{!blnPtpConfig}">-->
-                  <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                  <!--<apex:repeat value="{!listRangeDestiny}" var="strRange">
                     <apex:repeat value="{!listServicio}" var="strService">
                       <apex:repeat value="{!listFactor}" var="strFactor">
                         <tr>
@@ -67,6 +67,20 @@
                         </tr>
                       </apex:repeat>
                     </apex:repeat>
+                  </apex:repeat>-->
+                  <apex:repeat value="{!listTarifasC}" var="strTarifa">
+                    <tr>
+                      <td align="left" style="font-size:15px; ">{!clntId}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].RangoKm}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Tarifa}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Servicio}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Factor}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Peso_Vol_Inicial}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Monto}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Monto_Excedente}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].Multipieza}</td>
+                      <td align="left" style="font-size:15px; ">{!mapTarifasC[strTarifa].cotizacion}</td>
+                    </tr>
                   </apex:repeat>
       
       
@@ -123,52 +137,60 @@
       </apex:pageBlock>
     </apex:pageBlock>
     <apex:pageBlock mode="maindetail" rendered="{!blnCostosFijos}">
-      <table style="border-collapse: collapse;" width="40%" align = "left">
-        <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cliente</td>
-        <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Rango Km</td>
-        <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Servicio</td>
-        <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Tarifa</td>
-        <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Monto</td>
-        <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cotización</td>
-        <apex:repeat value="{!listRangeDestiny}" var="strRange">
+      <apex:outputText rendered="{!blnTarifas}">
+        <table style="border-collapse: collapse;" width="40%" align = "left">
           <tr>
-            <td align="center"  style="font-size:15px; ">{!clntId}</td>
-            <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].RangoKm}</td>
-            <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Servicio}</td>
-            <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Tarifa}</td>
-            <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Monto}</td>
-            <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Cotizacion}</td>
+            <th colspan="15" class="center">Tarifas obtenidas WW</th>
           </tr>
-        </apex:repeat>
-      </table>
-
-      <table style="border-collapse: collapse;" width="40%" align = "right">
-        <thead class="thead-light">
-          <th colspan="15" class="center">Servicios de los convenios</th>
-          <tbody>
+          <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cliente</td>
+          <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Rango Km</td>
+          <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Servicio</td>
+          <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Tarifa</td>
+          <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Monto</td>
+          <td align="center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cotización</td>
+          <apex:repeat value="{!listRangeDestiny}" var="strRange">
             <tr>
-              <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Rango Km</td>
-              <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Servicio</td>
-              <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Monto</td>
-              <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;"></td>
-              <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;"></td>
+              <td align="center"  style="font-size:15px; ">{!clntId}</td>
+              <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].RangoKm}</td>
+              <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Servicio}</td>
+              <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Tarifa}</td>
+              <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Monto}</td>
+              <td align="center"  style="font-size:15px; ">{!maptarifas2[strRange].Cotizacion}</td>
             </tr>
-            <apex:repeat value="{!listRangeServ}" var="strRange">
+          </apex:repeat>
+        </table>
+      </apex:outputText>
+      <apex:outputText rendered="{!blnServicios}">
+        <table style="border-collapse: collapse;" width="40%" align = "right">
+          <thead class="thead-light">
+            <th colspan="15" class="center">Servicios de los convenios</th>
+            <tbody>
               <tr>
-                <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].rango}</td>
-                <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].Servicio}</td>
-                <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].Monto}</td>
-                <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].servicesCant}</td>
-                <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].Cotizacion}</td>
+                <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Rango Km</td>
+                <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Servicio</td>
+                <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Monto</td>
+                <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;"></td>
+                <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;"></td>
               </tr>
-            </apex:repeat>
-          </tbody>
-        </thead>
-      </table>
-      <br/><br/><br/><br/><br/><br/><br/><br/>
+              <apex:repeat value="{!listRangeServ}" var="strRange">
+                <tr>
+                  <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].rango}</td>
+                  <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].Servicio}</td>
+                  <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].Monto}</td>
+                  <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].servicesCant}</td>
+                  <td align="Center" style="font-size:15px; ">{!mapServicios[strRange].Cotizacion}</td>
+                </tr>
+              </apex:repeat>
+            </tbody>
+          </thead>
+        </table>
+        <br/><br/><br/><br/><br/><br/><br/><br/>
+      </apex:outputText>
+      
       <apex:outputText rendered="{!blnTarifasExp}">
         <table style="border-collapse: collapse;" width="40%" align = "right">
           <thead class="thead-light">
+            <th colspan="15" class="center">Tarifas express</th>
             <tbody>
               <tr>
                 <td align="Center"   style="font-size:15px; background-color:rgb(31, 73, 125); color: white;">Cliente</td>
