@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
  * @group             : 
- * @last modified on  : 01-03-2022
+ * @last modified on  : 01-04-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -114,108 +114,123 @@ public class PAQ_ConveniosSipweb_CTR {
         this.listTarifas                            = new List<String>();
         this.listTarifasC                           = new list<String>();
         this.mapTarifas2                            = new Map<String, wpTarifa>();
-        if(test.isRunningTest()){
+        /*if(test.isRunningTest()){
             wpServicios wpS = new wpServicios();
             wpTarifa wpT = new wpTarifa();
-        }
+        }*/
         if(!test.isRunningTest())
             CargaInfoSipweb();
     }
     public void CargaInfoSipweb(){
-        String strRangeDest = '';
-        String strKeyServ   = '';
+        String strRangeDest                             = '';
+        String strKeyServ                               = '';
+        String RangoKm                                  = '';
+        String serviceId                                = '';
+        String factor                                   = '';
+        Decimal trifAmountExce                          = 0;
+        wpTarifa wpT                                    = new wpTarifa();
+        wpServicios wpS                                 = new wpServicios();
+        ObjDocEnLinea.ptpServicesTrif ptpConfig         = new ObjDocEnLinea.ptpServicesTrif();
+        ObjDocEnLinea.serviceTrifCbe servicesTrifCbe    = new ObjDocEnLinea.serviceTrifCbe();
+        ObjDocEnLinea.serviceTrif serviceTrif           = new ObjDocEnLinea.serviceTrif();
         try{
             if(ObtieneInfoResponse(objCuenta)){
+                ptpConfig = this.rg.body.response.data.ptpConfig[0];
                 if(rg.body.response.messages != null && rg.body.response.messages[0] != null){
                     ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, rg.body.response.messages[0].description));
                     return;
                 }
                 if(rg.body.response.data != null || test.isrunningtest() ){
-                    if(rg.body.response.data.kmConfig == null && rg.body.response.data.ptpConfig == null){
+                    if(rg.body.response.data.kmConfig == null && ptpConfig == null){
                         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'El cliente consultado no cuenta con tarifas grabadas en documentación en línea.'));
                         return;
                     }
                     this.clntId = rg.body.response.data.clntId;
                     if(rg.body.response.data.trifType == 'C'){
                         this.blnCostoBaseGMP = true;
-                        if(this.rg.body.response.data.ptpConfig != null){
+                        if(ptpConfig != null){
                             String strMultipieza = '';
                             this.blnPtpConfig = true;
-                            this.data = this.rg.body.response.data;
+                            //this.data = this.rg.body.response.data;
                             this.strTipoTarifa = this.rg.body.response.data.trifType;
-                            this.data.ptpConfig = this.rg.body.response.data.ptpConfig;
-                            this.clntId = this.data.clntId;
-                            for(Integer x = 0;x < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif.size();x++){
-                                if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif != null && this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif.size() > 0){
-                                    for(Integer z = 0; z < this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif.size();z ++){
-                                        if(this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EXT' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'EAD' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'RAD' || this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId == 'PACKETS'){
+                            //this.data.ptpConfig = this.rg.body.response.data.ptpConfig;
+                            //this.clntId = this.data.clntId;
+                            if(rg.body.response.data.pieceMulti != '')
+                                strMultipieza = 'SI';
+                            else strMultipieza = 'NO';
+                            for(Integer x = 0;x < ptpConfig.ptpServicesTrif.size();x++){
+                                ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif    = ptpConfig.ptpServicesTrif[x];
+                                RangoKm                                             = ptpservidesTrif.orgnSite + ' - ' + ptpservidesTrif.destSite;
+                                if(ptpservidesTrif.serviceTrif != null && ptpservidesTrif.serviceTrif.size() > 0){
+                                    for(Integer z = 0; z < ptpservidesTrif.serviceTrif.size();z ++){
+                                        serviceTrif                             = ptpservidesTrif.serviceTrif[z];
+                                        if(serviceTrif.refServiceId == 'ACK' || serviceTrif.refServiceId == 'EXT' || serviceTrif.refServiceId == 'EAD' || serviceTrif.refServiceId == 'RAD' || serviceTrif.refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
-                                            strKeyServ = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].refServiceId + ' - ' + this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].factor;
+                                            strKeyServ = RangoKm + ' - ' + serviceTrif.refServiceId + ' - ' + serviceTrif.factor;
                                             if(!this.listRangeServ.contains(strKeyServ))
                                                 this.listRangeServ.add(strKeyServ);
-    
+                                            wpS                 = new wpServicios();
+                                            wpS.Servicio        = serviceTrif.serviceId;
+                                            wpS.Monto           = serviceTrif.trifAmount;
+                                            wpS.servicesCant    = serviceTrif.servicesCant;
+                                            wpS.cotizacion      = serviceTrif.quotation;
+                                            wpS.rango           = RangoKm;
                                             if(!this.mapServicios.containsKey(strKeyServ)){
-                                                this.mapServicios.put(strKeyServ, new wpServicios());
-                                            }
-                                            if(this.mapServicios.containsKey(strKeyServ)){
-                                                this.mapServicios.get(strKeyServ).Servicio = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].serviceId;
-                                                this.mapServicios.get(strKeyServ).Monto = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].trifAmount;
-                                                this.mapServicios.get(strKeyServ).servicesCant = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].servicesCant;
-                                                this.mapServicios.get(strKeyServ).cotizacion = this.rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].serviceTrif[z].quotation;
-                                                this.mapServicios.get(strKeyServ).rango = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
+                                                this.mapServicios.put(strKeyServ, wpS);
                                             }
                                         }
                                     }
                                 }
-                                if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe != null && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size() > 0){
-                                for(Integer i = 0; i < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe.size(); i ++){
-                                    for(Integer y = 0; y < rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif.size(); y ++){
-                                        if(rg.body.response.data.pieceMulti != '')
-                                            strMultipieza = 'SI';
-                                        else strMultipieza = 'NO';
-                                        if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-DS' && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-2D' && rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-A12'){
-                                            strRangeDest = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                            if(!this.listTarifasC.contains(strRangeDest))
-                                                this.listTarifasC.add(strRangeDest);
+                                if(ptpservidesTrif.servicesTrifCbe != null && ptpservidesTrif.servicesTrifCbe.size() > 0){
+                                    for(Integer i = 0; i < ptpservidesTrif.servicesTrifCbe.size(); i ++){
+                                        //RangoKm         = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
+                                        servicesTrifCbe = ptpservidesTrif.servicesTrifCbe[i];
+                                        serviceId       = servicesTrifCbe.serviceId;
+                                        factor          = servicesTrifCbe.factor;
+                                        trifAmountExce  = servicesTrifCbe.trifAmountExce;
+                                        for(Integer y = 0; y < servicesTrifCbe.serviceTrif.size(); y ++){
+                                            serviceTrif     = new ObjDocEnLinea.serviceTrif();
+                                            serviceTrif     = servicesTrifCbe.serviceTrif[y];
+                                            strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + serviceTrif.factorValue;
+                                            if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
+                                                if(!this.listTarifasC.contains(strRangeDest))
+                                                    this.listTarifasC.add(strRangeDest);
                                                 if(!this.mapTarifasC.containsKey(strRangeDest)){
-                                                this.mapTarifasC.put(strRangeDest, new wpTarifa());
-                                                this.mapTarifasC.get(strRangeDest).Peso_Vol_Inicial = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                                this.mapTarifasC.get(strRangeDest).Monto            = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                this.mapTarifasC.get(strRangeDest).Monto_Excedente  = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                this.mapTarifasC.get(strRangeDest).Multipieza       = strMultipieza;
-                                                this.mapTarifasC.get(strRangeDest).cotizacion       = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
-                                                this.mapTarifasC.get(strRangeDest).RangoKm          = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
-                                                this.mapTarifasC.get(strRangeDest).Tarifa           = rg.body.response.data.trifType;
-                                                this.mapTarifasC.get(strRangeDest).Servicio         = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId;
-                                                this.mapTarifasC.get(strRangeDest).factor           = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factor;
-                                            }
-                                           
-                                        } else {
-                                            this.blnTarifasExp = true;
-                                            if(!this.listRangeDestinyExp.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite))
-                                                this.listRangeDestinyExp.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite);
-                                            if(!this.listServicioExp.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.listServicioExp.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId);
-                                            
-                                            if(!this.listBloquesExp.contains(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue))
-                                                this.listBloquesExp.add(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue);
+                                                    wpT                  = new wpTarifa();
+                                                    wpT.Peso_Vol_Inicial = serviceTrif.factorValue;
+                                                    wpT.Monto            = serviceTrif.trifAmount;
+                                                    wpT.Monto_Excedente  = trifAmountExce;
+                                                    wpT.Multipieza       = strMultipieza;
+                                                    wpT.cotizacion       = serviceTrif.quotation;
+                                                    wpT.RangoKm          = RangoKm;
+                                                    wpT.Tarifa           = this.strTipoTarifa;
+                                                    wpT.Servicio         = serviceId;
+                                                    wpT.factor           = serviceTrif.factor;
+                                                    this.mapTarifasC.put(strRangeDest, wpT);
+                                                }   
+                                            } else {
+                                                this.blnTarifasExp = true;
+                                                if(!this.listRangeDestinyExp.contains(RangoKm))
+                                                    this.listRangeDestinyExp.add(RangoKm);
+                                                if(!this.listServicioExp.contains(serviceId))
+                                                    this.listServicioExp.add(serviceId);
+                                                
+                                                if(!this.listBloquesExp.contains(serviceTrif.factorValue))
+                                                    this.listBloquesExp.add(serviceTrif.factorValue);
 
-                                            if(!this.mapTarifasExp.containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite))
-                                                this.mapTarifasExp.put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite, new Map<String, Map<Decimal, wpTarifa>>());
-                                            if(!this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<Decimal, wpTarifa>());
-                                            //if(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor == 'CUM' || rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].factor == 'KG'){
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).put(
-                                                    rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue, new wpTarifa());
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Peso_Vol_Inicial = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Monto = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Monto_Excedente = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Multipieza = strMultipieza;
-                                                this.mapTarifasExp.get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).cotizacion = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
-                                            //}
+                                                if(!this.mapTarifasExp.containsKey(RangoKm))
+                                                    this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
+                                                if(!this.mapTarifasExp.get(RangoKm).containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId))
+                                                    this.mapTarifasExp.get(RangoKm).put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<Decimal, wpTarifa>());
+                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).put(serviceTrif.factorValue, new wpTarifa());
+                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Peso_Vol_Inicial = serviceTrif.factorValue;
+                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Monto = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
+                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Monto_Excedente = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
+                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Multipieza = strMultipieza;
+                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).cotizacion = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
+                                            }
                                         }
                                     }
-                                }
                                 }
                             }
                         }
@@ -253,6 +268,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                         else strMultipieza = 'NO';
                                         if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-DS' && rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-2D' && rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-A12'){
                                             strRangeDest = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
+                                            System.debug('2');
                                             if(!this.listTarifasC.contains(strRangeDest))
                                                 this.listTarifasC.add(strRangeDest);
                                             if(!this.mapTarifasC.containsKey(strRangeDest)){
@@ -263,7 +279,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                                 this.mapTarifasC.get(strRangeDest).Multipieza       = strMultipieza;
                                                 this.mapTarifasC.get(strRangeDest).cotizacion       = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
                                                 this.mapTarifasC.get(strRangeDest).RangoKm          = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
-                                                this.mapTarifasC.get(strRangeDest).Tarifa           = rg.body.response.data.trifType;
+                                                this.mapTarifasC.get(strRangeDest).Tarifa           = this.strTipoTarifa;
                                                 this.mapTarifasC.get(strRangeDest).Servicio         = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId;
                                                 this.mapTarifasC.get(strRangeDest).factor           = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factor;
                                             }
