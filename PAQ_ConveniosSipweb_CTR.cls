@@ -158,12 +158,13 @@ public class PAQ_ConveniosSipweb_CTR {
                         if(ptpConfig != null){
                             this.blnPtpConfig   = true;
                             lstptpServicesTrif  = ptpConfig.ptpServicesTrif;
-                            for(Integer x = 0;x < lstptpServicesTrif.size();x++){
-                                ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif    = lstptpServicesTrif[x];
-                                RangoKm                                             = ptpservidesTrif.orgnSite + ' - ' + ptpservidesTrif.destSite;
-                                if(ptpservidesTrif.serviceTrif != null && ptpservidesTrif.serviceTrif.size() > 0){
-                                    for(ObjDocEnLinea.serviceTrif s : ptpservidesTrif.serviceTrif){
-                                        refServiceId                            = s.refServiceId;
+                            for(ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif : lstptpServicesTrif){
+                                RangoKm         = ptpservidesTrif.orgnSite + ' - ' + ptpservidesTrif.destSite;
+                                lstServiceTrif  = null;
+                                lstServiceTrif  = ptpservidesTrif.serviceTrif;
+                                if(lstServiceTrif != null && lstServiceTrif.size() > 0){
+                                    for(ObjDocEnLinea.serviceTrif s : lstServiceTrif){
+                                        refServiceId = s.refServiceId;
                                         if(refServiceId == 'ACK' || refServiceId == 'EXT' || refServiceId == 'EAD' || refServiceId == 'RAD' || refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
                                             strKeyServ = RangoKm + ' - ' + refServiceId + ' - ' + s.factor;
@@ -188,7 +189,9 @@ public class PAQ_ConveniosSipweb_CTR {
                                         serviceId       = sCbe.serviceId;
                                         factor          = sCbe.factor;
                                         trifAmountExce  = sCbe.trifAmountExce;
-                                        for(ObjDocEnLinea.serviceTrif s : sCbe.serviceTrif){
+                                        lstServiceTrif  = null;
+                                        lstServiceTrif  = sCbe.serviceTrif;
+                                        for(ObjDocEnLinea.serviceTrif s : lstServiceTrif){
                                             factorValue     = s.factorValue;
                                             strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
                                             if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
@@ -268,7 +271,6 @@ public class PAQ_ConveniosSipweb_CTR {
                                     trifAmountExce  = sCbe.trifAmountExce;
                                     lstServiceTrif  = sCbe.serviceTrif;
                                     for(ObjDocEnLinea.serviceTrif s : lstServiceTrif){
-                                        //serviceTrif = sCbe.serviceTrif[y];
                                         factorValue = s.factorValue;
                                         if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
                                             strRangeDest = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
