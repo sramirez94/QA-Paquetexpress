@@ -17,11 +17,9 @@ public class PAQ_ConveniosSipweb_CTR {
     public ObjDocEnLinea.dataDRemota data                                       {get;set;}
     public ObjDocEnLinea.kmServicesTrifList kmServicesTrif                      {get;set;}
     public list<ObjDocEnLinea.kmServicesTrifList> listkmServicesTrif            {get;set;}
-    public ObjDocEnLinea.servicesTrifDtlSub servicesTrifDtlSub                  {get;set;}
     public List<ObjDocEnLinea.servicesTrifDtlSub> listServicesTrifDtlS          {get;set;}
     public ObjDocEnLinea.ptpServicesTrif ptpServicesTrif                        {get;set;}
     public List<ObjDocEnLinea.ptpServicesTrif> listptpServicesTrif              {get;set;}
-    public ObjDocEnLinea.servicesTrifDtl servicesTrifDtl                        {get;set;}
     public ObjDocEnLinea.serviceTrif serviceTrif                                {get;set;}
     public ObjDocEnLinea.kmServicesTrif kmServicesTrif1                         {get;set;}
     public ObjDocEnLinea.ptpServicesTrifSub ptpServicesTrifSub                  {get;set;}
@@ -75,14 +73,9 @@ public class PAQ_ConveniosSipweb_CTR {
         this.blnServicios                           = false;
         this.blnTarifas                             = false;
         this.strTipoTarifa                          = '';
-        body                                        = new ObjDocEnLinea.bodyDRemota();
-        data                                        = new ObjDocEnLinea.dataDRemota();
-        kmServicesTrif                              = new ObjDocEnLinea.kmServicesTrifList();
-        servicesTrifDtl                             = new ObjDocEnLinea.servicesTrifDtl();
         serviceTrif                                 = new ObjDocEnLinea.serviceTrif();
         kmServicesTrif1                             = new ObjDocEnLinea.kmServicesTrif();
         ptpServicesTrifSub                          = new ObjDocEnLinea.ptpServicesTrifSub();
-        servicesTrifDtlSub                          = new ObjDocEnLinea.servicesTrifDtlSub();
         ptpServicesTrif                             = new ObjDocEnLinea.ptpServicesTrif();
         ptpServTrif                                 = new ObjDocEnLinea.serviceTrif();
         serviceTrifCbe                              = new ObjDocEnLinea.serviceTrifCbe();
@@ -243,7 +236,7 @@ public class PAQ_ConveniosSipweb_CTR {
                         if(kmConfig != null){
                             this.blnKmConfig    = true;
                             for(ObjDocEnLinea.kmServicesTrifList k : kmConfig.kmServicesTrif){
-                                RangoKm         = k.fromKm + ' - ' + k.toKm;
+                                RangoKm = k.fromKm + ' - ' + k.toKm;
                                 if(k.serviceTrif != null && k.serviceTrif.size() > 0){
                                     for(ObjDocEnLinea.serviceTrif s : k.serviceTrif){
                                         refServiceId    = s.refServiceId;
