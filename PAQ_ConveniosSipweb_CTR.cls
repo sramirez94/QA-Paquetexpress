@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
  * @group             : 
- * @last modified on  : 01-04-2022
+ * @last modified on  : 01-05-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -122,53 +122,60 @@ public class PAQ_ConveniosSipweb_CTR {
             CargaInfoSipweb();
     }
     public void CargaInfoSipweb(){
-        String strRangeDest                             = '';
-        String strKeyServ                               = '';
-        String RangoKm                                  = '';
-        String serviceId                                = '';
-        String factor                                   = '';
-        Decimal trifAmountExce                          = 0;
-        wpTarifa wpT                                    = new wpTarifa();
-        wpServicios wpS                                 = new wpServicios();
-        ObjDocEnLinea.ptpServicesTrif ptpConfig         = new ObjDocEnLinea.ptpServicesTrif();
-        ObjDocEnLinea.serviceTrifCbe servicesTrifCbe    = new ObjDocEnLinea.serviceTrifCbe();
-        ObjDocEnLinea.serviceTrif serviceTrif           = new ObjDocEnLinea.serviceTrif();
+        String strRangeDest                                         = '';
+        String strKeyServ                                           = '';
+        String RangoKm                                              = '';
+        String serviceId                                            = '';
+        String factor                                               = '';
+        String strMultipieza                                        = '';
+        String refServiceId                                         = '';
+        Decimal factorValue                                         = 0;
+        Decimal trifAmountExce                                      = 0;
+        wpTarifa wpT                                                = new wpTarifa();
+        wpServicios wpS                                             = new wpServicios();
+        ObjDocEnLinea.ptpServicesTrif ptpConfig                     = new ObjDocEnLinea.ptpServicesTrif();
+        ObjDocEnLinea.kmServicesTrif kmConfig                       = new ObjDocEnLinea.kmServicesTrif();
+        ObjDocEnLinea.serviceTrifCbe servicesTrifCbe                = new ObjDocEnLinea.serviceTrifCbe();
+        ObjDocEnLinea.serviceTrif serviceTrif                       = new ObjDocEnLinea.serviceTrif();
+        ObjDocEnLinea.kmServicesTrifList kmServicesTrif             = new ObjDocEnLinea.kmServicesTrifList();
+        List<ObjDocEnLinea.serviceTrifCbe> lstservicesTrifCbe       = new List<ObjDocEnLinea.serviceTrifCbe>();
+        List<ObjDocEnLinea.ptpServicesTrifSub> lstptpServicesTrif   = new List<ObjDocEnLinea.ptpServicesTrifSub>();
         try{
             if(ObtieneInfoResponse(objCuenta)){
-                ptpConfig = this.rg.body.response.data.ptpConfig[0];
+                ptpConfig   = this.rg.body.response.data.ptpConfig[0];
+                kmConfig    = this.rg.body.response.data.kmConfig[0];
                 if(rg.body.response.messages != null && rg.body.response.messages[0] != null){
                     ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, rg.body.response.messages[0].description));
                     return;
                 }
                 if(rg.body.response.data != null || test.isrunningtest() ){
-                    if(rg.body.response.data.kmConfig == null && ptpConfig == null){
+                    if(kmConfig == null && ptpConfig == null){
                         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'El cliente consultado no cuenta con tarifas grabadas en documentación en línea.'));
                         return;
                     }
                     this.clntId = rg.body.response.data.clntId;
-                    if(rg.body.response.data.trifType == 'C'){
+                    this.strTipoTarifa  = this.rg.body.response.data.trifType;
+                    if(rg.body.response.data.pieceMulti != '')
+                        strMultipieza = 'SI';
+                    else strMultipieza = 'NO';
+                    if(this.strTipoTarifa == 'C'){
                         this.blnCostoBaseGMP = true;
                         if(ptpConfig != null){
-                            String strMultipieza = '';
-                            this.blnPtpConfig = true;
-                            //this.data = this.rg.body.response.data;
-                            this.strTipoTarifa = this.rg.body.response.data.trifType;
-                            //this.data.ptpConfig = this.rg.body.response.data.ptpConfig;
-                            //this.clntId = this.data.clntId;
-                            if(rg.body.response.data.pieceMulti != '')
-                                strMultipieza = 'SI';
-                            else strMultipieza = 'NO';
-                            for(Integer x = 0;x < ptpConfig.ptpServicesTrif.size();x++){
-                                ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif    = ptpConfig.ptpServicesTrif[x];
+                            this.blnPtpConfig   = true;
+                            lstptpServicesTrif  = ptpConfig.ptpServicesTrif;
+                            for(Integer x = 0;x < lstptpServicesTrif.size();x++){
+                                ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif    = lstptpServicesTrif[x];
                                 RangoKm                                             = ptpservidesTrif.orgnSite + ' - ' + ptpservidesTrif.destSite;
                                 if(ptpservidesTrif.serviceTrif != null && ptpservidesTrif.serviceTrif.size() > 0){
                                     for(Integer z = 0; z < ptpservidesTrif.serviceTrif.size();z ++){
                                         serviceTrif                             = ptpservidesTrif.serviceTrif[z];
-                                        if(serviceTrif.refServiceId == 'ACK' || serviceTrif.refServiceId == 'EXT' || serviceTrif.refServiceId == 'EAD' || serviceTrif.refServiceId == 'RAD' || serviceTrif.refServiceId == 'PACKETS'){
+                                        refServiceId                            = serviceTrif.refServiceId;
+                                        if(refServiceId == 'ACK' || refServiceId == 'EXT' || refServiceId == 'EAD' || refServiceId == 'RAD' || refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
-                                            strKeyServ = RangoKm + ' - ' + serviceTrif.refServiceId + ' - ' + serviceTrif.factor;
-                                            if(!this.listRangeServ.contains(strKeyServ))
+                                            strKeyServ = RangoKm + ' - ' + refServiceId + ' - ' + serviceTrif.factor;
+                                            if(!this.listRangeServ.contains(strKeyServ)){
                                                 this.listRangeServ.add(strKeyServ);
+                                            }
                                             wpS                 = new wpServicios();
                                             wpS.Servicio        = serviceTrif.serviceId;
                                             wpS.Monto           = serviceTrif.trifAmount;
@@ -181,23 +188,24 @@ public class PAQ_ConveniosSipweb_CTR {
                                         }
                                     }
                                 }
-                                if(ptpservidesTrif.servicesTrifCbe != null && ptpservidesTrif.servicesTrifCbe.size() > 0){
-                                    for(Integer i = 0; i < ptpservidesTrif.servicesTrifCbe.size(); i ++){
-                                        //RangoKm         = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].orgnSite + ' - ' + rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].destSite;
-                                        servicesTrifCbe = ptpservidesTrif.servicesTrifCbe[i];
+                                lstservicesTrifCbe = ptpservidesTrif.servicesTrifCbe;
+                                if(lstservicesTrifCbe != null && lstservicesTrifCbe.size() > 0){
+                                    for(Integer i = 0; i < lstservicesTrifCbe.size(); i ++){
+                                        servicesTrifCbe = lstservicesTrifCbe[i];
                                         serviceId       = servicesTrifCbe.serviceId;
                                         factor          = servicesTrifCbe.factor;
                                         trifAmountExce  = servicesTrifCbe.trifAmountExce;
                                         for(Integer y = 0; y < servicesTrifCbe.serviceTrif.size(); y ++){
                                             serviceTrif     = new ObjDocEnLinea.serviceTrif();
                                             serviceTrif     = servicesTrifCbe.serviceTrif[y];
-                                            strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + serviceTrif.factorValue;
+                                            factorValue     = serviceTrif.factorValue;
+                                            strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
                                             if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
                                                 if(!this.listTarifasC.contains(strRangeDest))
                                                     this.listTarifasC.add(strRangeDest);
                                                 if(!this.mapTarifasC.containsKey(strRangeDest)){
                                                     wpT                  = new wpTarifa();
-                                                    wpT.Peso_Vol_Inicial = serviceTrif.factorValue;
+                                                    wpT.Peso_Vol_Inicial = factorValue;
                                                     wpT.Monto            = serviceTrif.trifAmount;
                                                     wpT.Monto_Excedente  = trifAmountExce;
                                                     wpT.Multipieza       = strMultipieza;
@@ -214,98 +222,106 @@ public class PAQ_ConveniosSipweb_CTR {
                                                     this.listRangeDestinyExp.add(RangoKm);
                                                 if(!this.listServicioExp.contains(serviceId))
                                                     this.listServicioExp.add(serviceId);
-                                                
                                                 if(!this.listBloquesExp.contains(serviceTrif.factorValue))
                                                     this.listBloquesExp.add(serviceTrif.factorValue);
-
                                                 if(!this.mapTarifasExp.containsKey(RangoKm))
                                                     this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
-                                                if(!this.mapTarifasExp.get(RangoKm).containsKey(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                    this.mapTarifasExp.get(RangoKm).put(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<Decimal, wpTarifa>());
-                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).put(serviceTrif.factorValue, new wpTarifa());
-                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Peso_Vol_Inicial = serviceTrif.factorValue;
-                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Monto = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Monto_Excedente = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).Multipieza = strMultipieza;
-                                                this.mapTarifasExp.get(RangoKm).get(rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceId).get(serviceTrif.factorValue).cotizacion = rg.body.response.data.ptpConfig[0].ptpServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
+                                                if(!this.mapTarifasExp.get(RangoKm).containsKey(serviceId))
+                                                    this.mapTarifasExp.get(RangoKm).put(serviceId, new Map<Decimal, wpTarifa>());
+                                                wpT                     = new wpTarifa();
+                                                wpT.Peso_Vol_Inicial    = serviceTrif.factorValue;
+                                                wpT.Monto               = serviceTrif.trifAmount;
+                                                wpT.Monto_Excedente     = trifAmountExce;
+                                                wpT.Multipieza          = strMultipieza;
+                                                wpT.cotizacion          = serviceTrif.quotation;
+                                                this.mapTarifasExp.get(RangoKm).get(serviceId).put(serviceTrif.factorValue, wpT);
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        if(this.rg.body.response.data.kmConfig != null){
-                            String strMultipieza = '';
-                            this.data = this.rg.body.response.data;
-                            this.strTipoTarifa = this.rg.body.response.data.trifType;
+                        if(kmConfig != null){
+                            this.data           = this.rg.body.response.data;
+                            this.strTipoTarifa  = this.rg.body.response.data.trifType;
                             this.data.ptpConfig = this.rg.body.response.data.ptpConfig;
-                            this.blnKmConfig = true;
-                            for(Integer x = 0;x < this.rg.body.response.data.kmConfig[0].kmServicesTrif.size();x++){
-                                if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif != null && this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif.size() > 0){
-                                    for(Integer z = 0; z < this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif.size();z ++){
-                                        if(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'ACK' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EXT' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'EAD' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'RAD' || this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId == 'PACKETS'){
-                                            this.blnServicios = true;
-                                            if(!this.listRangeServ.contains(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId))
-                                                this.listRangeServ.add(this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId);
-            
-                                            if(!this.mapServicios.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId)){
-                                                this.mapServicios.put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId, new wpServicios());
+                            this.blnKmConfig    = true;
+                            for(Integer x = 0;x < kmConfig.kmServicesTrif.size();x++){
+                                kmServicesTrif  = kmConfig.kmServicesTrif[x];
+                                RangoKm         = kmServicesTrif.fromKm + ' - ' + kmServicesTrif.toKm;
+                                if(kmServicesTrif.serviceTrif != null && kmServicesTrif.serviceTrif.size() > 0){
+                                    for(Integer z = 0; z < kmServicesTrif.serviceTrif.size();z ++){
+                                        serviceTrif     = kmServicesTrif.serviceTrif[z];
+                                        refServiceId    = serviceTrif.refServiceId;
+                                        serviceId       = serviceTrif.serviceId;
+                                        if(refServiceId == 'ACK' || refServiceId == 'EXT' || refServiceId == 'EAD' || refServiceId == 'RAD' || refServiceId == 'PACKETS'){
+                                            this.blnServicios   = true;
+                                            strKeyServ          = RangoKm + ' - ' + refServiceId;
+                                            if(!this.listRangeServ.contains(strKeyServ)){
+                                                this.listRangeServ.add(strKeyServ);
                                             }
-                                            if(this.mapServicios.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId)){
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).Servicio = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].serviceId;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).Monto = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].trifAmount;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).servicesCant = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].servicesCant;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).cotizacion = this.rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].quotation;
-                                                this.mapServicios.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].serviceTrif[z].refServiceId).rango = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
+                                            wpS                 = new wpServicios();
+                                            wpS.Servicio        = serviceId;
+                                            wpS.Monto           = serviceTrif.trifAmount;
+                                            wpS.servicesCant    = serviceTrif.servicesCant;
+                                            wpS.cotizacion      = serviceTrif.quotation;
+                                            wpS.rango           = RangoKm;
+                                            if(!this.mapServicios.containsKey(strKeyServ)){
+                                                this.mapServicios.put(strKeyServ, wpS);
                                             }
                                         }
                                     }
                                 }
-                                for(Integer i = 0; i < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe.size(); i ++){
-                                    for(Integer y = 0; y < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif.size(); y ++){
-                                        if(rg.body.response.data.pieceMulti != '')
-                                            strMultipieza = 'SI';
-                                        else strMultipieza = 'NO';
-                                        if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-DS' && rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-2D' && rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId != 'SEG-A12'){
-                                            strRangeDest = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].factor + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                            System.debug('2');
-                                            if(!this.listTarifasC.contains(strRangeDest))
+                                for(Integer i = 0; i < kmServicesTrif.servicesTrifCbe.size(); i ++){
+                                    servicesTrifCbe = kmServicesTrif.servicesTrifCbe[i];
+                                    serviceId       = servicesTrifCbe.serviceId;
+                                    factor          = servicesTrifCbe.factor;
+                                    trifAmountExce  = servicesTrifCbe.trifAmountExce;
+                                    for(Integer y = 0; y < servicesTrifCbe.serviceTrif.size(); y ++){
+                                        serviceTrif = servicesTrifCbe.serviceTrif[y];
+                                        factorValue = serviceTrif.factorValue;
+                                        if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
+                                            strRangeDest = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
+                                            if(!this.listTarifasC.contains(strRangeDest)){
                                                 this.listTarifasC.add(strRangeDest);
+                                            }
+                                            wpT = new wpTarifa();
+                                            wpT.Peso_Vol_Inicial = factorValue;
+                                            wpT.Monto            = serviceTrif.trifAmount;
+                                            wpT.Monto_Excedente  = trifAmountExce;
+                                            wpT.Multipieza       = strMultipieza;
+                                            wpT.cotizacion       = serviceTrif.quotation;
+                                            wpT.RangoKm          = RangoKm;
+                                            wpT.Tarifa           = this.strTipoTarifa;
+                                            wpT.Servicio         = serviceId;
+                                            wpT.factor           = serviceTrif.factor;
                                             if(!this.mapTarifasC.containsKey(strRangeDest)){
-                                                this.mapTarifasC.put(strRangeDest, new wpTarifa());
-                                                this.mapTarifasC.get(strRangeDest).Peso_Vol_Inicial = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                                this.mapTarifasC.get(strRangeDest).Monto            = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                this.mapTarifasC.get(strRangeDest).Monto_Excedente  = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                this.mapTarifasC.get(strRangeDest).Multipieza       = strMultipieza;
-                                                this.mapTarifasC.get(strRangeDest).cotizacion       = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
-                                                this.mapTarifasC.get(strRangeDest).RangoKm          = rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm;
-                                                this.mapTarifasC.get(strRangeDest).Tarifa           = this.strTipoTarifa;
-                                                this.mapTarifasC.get(strRangeDest).Servicio         = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId;
-                                                this.mapTarifasC.get(strRangeDest).factor           = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factor;
+                                                this.mapTarifasC.put(strRangeDest, wpT);
                                             }
                                         } else {
                                             this.blnTarifasExp = true;
-                                            if(!this.listRangeDestinyExp.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm))
-                                                this.listRangeDestinyExp.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm);
-                                            if(!this.listServicioExp.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.listServicioExp.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId);
-                                            
-                                            if(!this.listBloquesExp.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue))
-                                                this.listBloquesExp.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue);
-        
-                                            if(!this.mapTarifasExp.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm))
-                                                this.mapTarifasExp.put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm, new Map<String, Map<Decimal, wpTarifa>>());
-                                            if(!this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<Decimal, wpTarifa>());
-
-                                            this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).put(
-                                                rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue, new wpTarifa());
-                                            this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Peso_Vol_Inicial = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                            this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Monto = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                            this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Monto_Excedente = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                            this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Multipieza = strMultipieza;
-                                            this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).cotizacion = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
-
+                                            if(!this.listRangeDestinyExp.contains(RangoKm)){
+                                                this.listRangeDestinyExp.add(RangoKm);
+                                            }
+                                            if(!this.listServicioExp.contains(serviceId)){
+                                                this.listServicioExp.add(serviceId);
+                                            }
+                                            if(!this.listBloquesExp.contains(factorValue)){
+                                                this.listBloquesExp.add(factorValue);
+                                            }
+                                            if(!this.mapTarifasExp.containsKey(RangoKm)){
+                                                this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
+                                            }
+                                            if(!this.mapTarifasExp.get(RangoKm).containsKey(serviceId)){
+                                                this.mapTarifasExp.get(RangoKm).put(serviceId, new Map<Decimal, wpTarifa>());
+                                            }
+                                            wpT                     = new wpTarifa();
+                                            wpT.Peso_Vol_Inicial    = factorValue;
+                                            wpT.Monto               = serviceTrif.trifAmount;
+                                            wpT.Monto_Excedente     = trifAmountExce;
+                                            wpT.Multipieza          = strMultipieza;
+                                            wpT.cotizacion          = serviceTrif.quotation;
+                                            this.mapTarifasExp.get(RangoKm).get(serviceId).put(factorValue, wpT);
                                         }
                                     }
                                 }
@@ -492,6 +508,7 @@ public class PAQ_ConveniosSipweb_CTR {
                     }
                 }
             }
+            System.debug('costo base: ' + blnCostoBaseGMP + '. costos fijos: ' + blnCostosFijos);
         }catch(Exception ex){
             System.debug('Error en el constructor ' +ex.getLineNumber()+' '+EX.getMessage());
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Error al iniciar. Contacte a un consultor de salesforce.'));
