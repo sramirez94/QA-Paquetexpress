@@ -131,6 +131,7 @@ public class PAQ_ConveniosSipweb_CTR {
         String refServiceId                                         = '';
         Decimal factorValue                                         = 0;
         Decimal trifAmountExce                                      = 0;
+        Decimal trifAmount                                          = 0;
         wpTarifa wpT                                                = new wpTarifa();
         wpServicios wpS                                             = new wpServicios();
         ObjDocEnLinea.ptpServicesTrif ptpConfig                     = new ObjDocEnLinea.ptpServicesTrif();
@@ -163,12 +164,12 @@ public class PAQ_ConveniosSipweb_CTR {
                         if(ptpConfig != null){
                             this.blnPtpConfig   = true;
                             lstptpServicesTrif  = ptpConfig.ptpServicesTrif;
-                            for(Integer x = 0;x < lstptpServicesTrif.size();x++){
-                                ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif    = lstptpServicesTrif[x];
-                                RangoKm                                             = ptpservidesTrif.orgnSite + ' - ' + ptpservidesTrif.destSite;
+                            for(ObjDocEnLinea.ptpServicesTrifSub ptpservidesTrif : lstptpServicesTrif){
+                                RangoKm = ptpservidesTrif.orgnSite + ' - ' + ptpservidesTrif.destSite;
                                 if(ptpservidesTrif.serviceTrif != null && ptpservidesTrif.serviceTrif.size() > 0){
                                     for(ObjDocEnLinea.serviceTrif s : ptpservidesTrif.serviceTrif){
-                                        refServiceId                            = s.refServiceId;
+                                        refServiceId    = s.refServiceId;
+                                        trifAmount      = s.trifAmount;
                                         if(refServiceId == 'ACK' || refServiceId == 'EXT' || refServiceId == 'EAD' || refServiceId == 'RAD' || refServiceId == 'PACKETS'){
                                             this.blnServicios = true;
                                             strKeyServ = RangoKm + ' - ' + refServiceId + ' - ' + s.factor;
@@ -177,7 +178,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                             }
                                             wpS                 = new wpServicios();
                                             wpS.Servicio        = s.serviceId;
-                                            wpS.Monto           = s.trifAmount;
+                                            wpS.Monto           = trifAmount;
                                             wpS.servicesCant    = s.servicesCant;
                                             wpS.cotizacion      = s.quotation;
                                             wpS.rango           = RangoKm;
@@ -187,6 +188,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                         }
                                     }
                                 }
+                                lstservicesTrifCbe = null;
                                 lstservicesTrifCbe = ptpservidesTrif.servicesTrifCbe;
                                 if(lstservicesTrifCbe != null && lstservicesTrifCbe.size() > 0){
                                     for(ObjDocEnLinea.serviceTrifCbe sCbe : lstservicesTrifCbe){
@@ -195,6 +197,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                         trifAmountExce  = sCbe.trifAmountExce;
                                         for(ObjDocEnLinea.serviceTrif s : sCbe.serviceTrif){
                                             factorValue     = s.factorValue;
+                                            trifAmount      = s.trifAmount;
                                             strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
                                             if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
                                                 if(!this.listTarifasC.contains(strRangeDest))
@@ -202,14 +205,14 @@ public class PAQ_ConveniosSipweb_CTR {
                                                 if(!this.mapTarifasC.containsKey(strRangeDest)){
                                                     wpT                  = new wpTarifa();
                                                     wpT.Peso_Vol_Inicial = factorValue;
-                                                    wpT.Monto            = s.trifAmount;
+                                                    wpT.Monto            = trifAmount;
                                                     wpT.Monto_Excedente  = trifAmountExce;
                                                     wpT.Multipieza       = strMultipieza;
                                                     wpT.cotizacion       = s.quotation;
                                                     wpT.RangoKm          = RangoKm;
                                                     wpT.Tarifa           = this.strTipoTarifa;
                                                     wpT.Servicio         = serviceId;
-                                                    wpT.factor           = s.factor;
+                                                    wpT.factor           = factor;
                                                     this.mapTarifasC.put(strRangeDest, wpT);
                                                 }
                                             } else {
@@ -218,19 +221,19 @@ public class PAQ_ConveniosSipweb_CTR {
                                                     this.listRangeDestinyExp.add(RangoKm);
                                                 if(!this.listServicioExp.contains(serviceId))
                                                     this.listServicioExp.add(serviceId);
-                                                if(!this.listBloquesExp.contains(s.factorValue))
-                                                    this.listBloquesExp.add(s.factorValue);
+                                                if(!this.listBloquesExp.contains(factorValue))
+                                                    this.listBloquesExp.add(factorValue);
                                                 if(!this.mapTarifasExp.containsKey(RangoKm))
                                                     this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
                                                 if(!this.mapTarifasExp.get(RangoKm).containsKey(serviceId))
                                                     this.mapTarifasExp.get(RangoKm).put(serviceId, new Map<Decimal, wpTarifa>());
                                                 wpT                     = new wpTarifa();
-                                                wpT.Peso_Vol_Inicial    = s.factorValue;
-                                                wpT.Monto               = s.trifAmount;
+                                                wpT.Peso_Vol_Inicial    = factorValue;
+                                                wpT.Monto               = trifAmount;
                                                 wpT.Monto_Excedente     = trifAmountExce;
                                                 wpT.Multipieza          = strMultipieza;
                                                 wpT.cotizacion          = s.quotation;
-                                                this.mapTarifasExp.get(RangoKm).get(serviceId).put(s.factorValue, wpT);
+                                                this.mapTarifasExp.get(RangoKm).get(serviceId).put(factorValue, wpT);
                                             }
                                         }
                                     }
@@ -238,9 +241,6 @@ public class PAQ_ConveniosSipweb_CTR {
                             }
                         }
                         if(kmConfig != null){
-                            this.data           = this.rg.body.response.data;
-                            this.strTipoTarifa  = this.rg.body.response.data.trifType;
-                            this.data.ptpConfig = this.rg.body.response.data.ptpConfig;
                             this.blnKmConfig    = true;
                             for(ObjDocEnLinea.kmServicesTrifList k : kmConfig.kmServicesTrif){
                                 RangoKm         = k.fromKm + ' - ' + k.toKm;
@@ -248,6 +248,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                     for(ObjDocEnLinea.serviceTrif s : k.serviceTrif){
                                         refServiceId    = s.refServiceId;
                                         serviceId       = s.serviceId;
+                                        trifAmount      = s.trifAmount;
                                         if(refServiceId == 'ACK' || refServiceId == 'EXT' || refServiceId == 'EAD' || refServiceId == 'RAD' || refServiceId == 'PACKETS'){
                                             this.blnServicios   = true;
                                             strKeyServ          = RangoKm + ' - ' + refServiceId;
@@ -256,7 +257,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                             }
                                             wpS                 = new wpServicios();
                                             wpS.Servicio        = serviceId;
-                                            wpS.Monto           = s.trifAmount;
+                                            wpS.Monto           = trifAmount;
                                             wpS.servicesCant    = s.servicesCant;
                                             wpS.cotizacion      = s.quotation;
                                             wpS.rango           = RangoKm;
@@ -266,14 +267,13 @@ public class PAQ_ConveniosSipweb_CTR {
                                         }
                                     }
                                 }
-                                for(Integer i = 0; i < kmServicesTrif.servicesTrifCbe.size(); i ++){
-                                    servicesTrifCbe = kmServicesTrif.servicesTrifCbe[i];
-                                    serviceId       = servicesTrifCbe.serviceId;
-                                    factor          = servicesTrifCbe.factor;
-                                    trifAmountExce  = servicesTrifCbe.trifAmountExce;
-                                    for(Integer y = 0; y < servicesTrifCbe.serviceTrif.size(); y ++){
-                                        serviceTrif = servicesTrifCbe.serviceTrif[y];
-                                        factorValue = serviceTrif.factorValue;
+                                for(ObjDocEnLinea.serviceTrifCbe sCbe : kmServicesTrif.servicesTrifCbe){
+                                    serviceId       = sCbe.serviceId;
+                                    factor          = sCbe.factor;
+                                    trifAmountExce  = sCbe.trifAmountExce;
+                                    for(ObjDocEnLinea.serviceTrif s : sCbe.serviceTrif){
+                                        factorValue = s.factorValue;
+                                        trifAmount  = s.trifAmount;
                                         if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
                                             strRangeDest = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
                                             if(!this.listTarifasC.contains(strRangeDest)){
@@ -281,14 +281,14 @@ public class PAQ_ConveniosSipweb_CTR {
                                             }
                                             wpT = new wpTarifa();
                                             wpT.Peso_Vol_Inicial = factorValue;
-                                            wpT.Monto            = serviceTrif.trifAmount;
+                                            wpT.Monto            = trifAmount;
                                             wpT.Monto_Excedente  = trifAmountExce;
                                             wpT.Multipieza       = strMultipieza;
-                                            wpT.cotizacion       = serviceTrif.quotation;
+                                            wpT.cotizacion       = s.quotation;
                                             wpT.RangoKm          = RangoKm;
                                             wpT.Tarifa           = this.strTipoTarifa;
                                             wpT.Servicio         = serviceId;
-                                            wpT.factor           = serviceTrif.factor;
+                                            wpT.factor           = factor;
                                             if(!this.mapTarifasC.containsKey(strRangeDest)){
                                                 this.mapTarifasC.put(strRangeDest, wpT);
                                             }
@@ -311,10 +311,10 @@ public class PAQ_ConveniosSipweb_CTR {
                                             }
                                             wpT                     = new wpTarifa();
                                             wpT.Peso_Vol_Inicial    = factorValue;
-                                            wpT.Monto               = serviceTrif.trifAmount;
+                                            wpT.Monto               = s.trifAmount;
                                             wpT.Monto_Excedente     = trifAmountExce;
                                             wpT.Multipieza          = strMultipieza;
-                                            wpT.cotizacion          = serviceTrif.quotation;
+                                            wpT.cotizacion          = s.quotation;
                                             this.mapTarifasExp.get(RangoKm).get(serviceId).put(factorValue, wpT);
                                         }
                                     }
