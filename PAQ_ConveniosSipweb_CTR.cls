@@ -195,7 +195,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                             factorValue     = s.factorValue;
                                             strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
                                             if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
-                                                if(!this.listTarifasC.contains(strRangeDest))
+                                                /*if(!this.listTarifasC.contains(strRangeDest))
                                                     this.listTarifasC.add(strRangeDest);
                                                 if(!this.mapTarifasC.containsKey(strRangeDest)){
                                                     wpT                  = new wpTarifa();
@@ -209,7 +209,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                                     wpT.Servicio         = serviceId;
                                                     wpT.factor           = s.factor;
                                                     this.mapTarifasC.put(strRangeDest, wpT);
-                                                }
+                                                }*/
                                             } else {
                                                 this.blnTarifasExp = true;
                                                 if(!this.listRangeDestinyExp.contains(RangoKm))
@@ -270,52 +270,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                     factor          = sCbe.factor;
                                     trifAmountExce  = sCbe.trifAmountExce;
                                     lstServiceTrif  = sCbe.serviceTrif;
-                                    for(ObjDocEnLinea.serviceTrif s : lstServiceTrif){
-                                        factorValue = s.factorValue;
-                                        if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
-                                            strRangeDest = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
-                                            if(!this.listTarifasC.contains(strRangeDest)){
-                                                this.listTarifasC.add(strRangeDest);
-                                            }
-                                            wpT = new wpTarifa();
-                                            wpT.Peso_Vol_Inicial = factorValue;
-                                            wpT.Monto            = s.trifAmount;
-                                            wpT.Monto_Excedente  = trifAmountExce;
-                                            wpT.Multipieza       = strMultipieza;
-                                            wpT.cotizacion       = s.quotation;
-                                            wpT.RangoKm          = RangoKm;
-                                            wpT.Tarifa           = this.strTipoTarifa;
-                                            wpT.Servicio         = serviceId;
-                                            wpT.factor           = factor;
-                                            if(!this.mapTarifasC.containsKey(strRangeDest)){
-                                                this.mapTarifasC.put(strRangeDest, wpT);
-                                            }
-                                        } else {
-                                            this.blnTarifasExp = true;
-                                            if(!this.listRangeDestinyExp.contains(RangoKm)){
-                                                this.listRangeDestinyExp.add(RangoKm);
-                                            }
-                                            if(!this.listServicioExp.contains(serviceId)){
-                                                this.listServicioExp.add(serviceId);
-                                            }
-                                            if(!this.listBloquesExp.contains(factorValue)){
-                                                this.listBloquesExp.add(factorValue);
-                                            }
-                                            if(!this.mapTarifasExp.containsKey(RangoKm)){
-                                                this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
-                                            }
-                                            if(!this.mapTarifasExp.get(RangoKm).containsKey(serviceId)){
-                                                this.mapTarifasExp.get(RangoKm).put(serviceId, new Map<Decimal, wpTarifa>());
-                                            }
-                                            wpT                     = new wpTarifa();
-                                            wpT.Peso_Vol_Inicial    = factorValue;
-                                            wpT.Monto               = s.trifAmount;
-                                            wpT.Monto_Excedente     = trifAmountExce;
-                                            wpT.Multipieza          = strMultipieza;
-                                            wpT.cotizacion          = s.quotation;
-                                            this.mapTarifasExp.get(RangoKm).get(serviceId).put(factorValue, wpT);
-                                        }
-                                    }
+                                    Test1(lstServiceTrif, RangoKm, strMultipieza, strRangeDest, serviceId, factor, trifAmountExce, factorValue);
                                 }
                             }
                         }
@@ -587,6 +542,58 @@ public class PAQ_ConveniosSipweb_CTR {
             CargaInfoSipweb();
         }catch (exception ex){
             System.debug('AsignaResponseTest ' + ex.getLineNumber() + ' ' + ex.getMessage());
+        }
+    }
+    public void Test1(List<ObjDocEnLinea.serviceTrif> lstServiceTrif, String RangoKm, String strMultipieza, String strRangeDest, String serviceId, String factor, Decimal trifAmountExce, Decimal factorValue){
+        try{
+            for(ObjDocEnLinea.serviceTrif s : lstServiceTrif){
+                factorValue = s.factorValue;
+                if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
+                    strRangeDest = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
+                    if(!this.listTarifasC.contains(strRangeDest)){
+                        this.listTarifasC.add(strRangeDest);
+                    }
+                    wpTarifa wpT = new wpTarifa();
+                    wpT.Peso_Vol_Inicial = s.factorValue;
+                    wpT.Monto            = s.trifAmount;
+                    wpT.Monto_Excedente  = trifAmountExce;
+                    wpT.Multipieza       = strMultipieza;
+                    wpT.cotizacion       = s.quotation;
+                    wpT.RangoKm          = RangoKm;
+                    wpT.Tarifa           = this.strTipoTarifa;
+                    wpT.Servicio         = serviceId;
+                    wpT.factor           = factor;
+                    if(!this.mapTarifasC.containsKey(strRangeDest)){
+                        this.mapTarifasC.put(strRangeDest, wpT);
+                    }
+                } else {
+                    this.blnTarifasExp = true;
+                    if(!this.listRangeDestinyExp.contains(RangoKm)){
+                        this.listRangeDestinyExp.add(RangoKm);
+                    }
+                    if(!this.listServicioExp.contains(serviceId)){
+                        this.listServicioExp.add(serviceId);
+                    }
+                    if(!this.listBloquesExp.contains(s.factorValue)){
+                        this.listBloquesExp.add(s.factorValue);
+                    }
+                    if(!this.mapTarifasExp.containsKey(RangoKm)){
+                        this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
+                    }
+                    if(!this.mapTarifasExp.get(RangoKm).containsKey(serviceId)){
+                        this.mapTarifasExp.get(RangoKm).put(serviceId, new Map<Decimal, wpTarifa>());
+                    }
+                    wpTarifa wpT                     = new wpTarifa();
+                    wpT.Peso_Vol_Inicial    = s.factorValue;
+                    wpT.Monto               = s.trifAmount;
+                    wpT.Monto_Excedente     = trifAmountExce;
+                    wpT.Multipieza          = strMultipieza;
+                    wpT.cotizacion          = s.quotation;
+                    this.mapTarifasExp.get(RangoKm).get(serviceId).put(s.factorValue, wpT);
+                }
+            }
+        }catch (Exception ex){
+            System.debug('Error: ' + ex.getMessage() + '. Line: ' + ex.getLineNumber());
         }
     }
     public class wpTarifa{
