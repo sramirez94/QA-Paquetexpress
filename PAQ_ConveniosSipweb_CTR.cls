@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
  * @group             : 
- * @last modified on  : 01-05-2022
+ * @last modified on  : 01-06-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -137,8 +137,10 @@ public class PAQ_ConveniosSipweb_CTR {
         List<ObjDocEnLinea.serviceTrif> lstServiceTrif              = new List<ObjDocEnLinea.serviceTrif>();
         try{
             if(ObtieneInfoResponse(objCuenta)){
-                ptpConfig   = this.rg.body.response.data.ptpConfig[0];
-                kmConfig    = this.rg.body.response.data.kmConfig[0];
+                if(this.rg.body.response.data.ptpConfig != null)
+                    ptpConfig   = this.rg.body.response.data.ptpConfig[0];
+                if(this.rg.body.response.data.kmConfig != null)
+                    kmConfig    = this.rg.body.response.data.kmConfig[0];
                 if(rg.body.response.messages != null && rg.body.response.messages[0] != null){
                     ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, rg.body.response.messages[0].description));
                     return;
@@ -343,28 +345,32 @@ public class PAQ_ConveniosSipweb_CTR {
                                 }
                                 if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe != null && rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe.size() != 0){
                                     for(Integer i = 0; i < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe.size(); i ++){
-                                        if(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId == 'SEG-DS' || rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId == 'SEG-2D' || rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId == 'SEG-A12'){
+                                        serviceId   = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId;
+                                        if(serviceId == 'SEG-DS' || serviceId == 'SEG-2D' || serviceId == 'SEG-A12'){
                                             this.blnTarifasExp = true;
                                             for(Integer y = 0; y < rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif.size(); y ++){
-                                                if(!this.listRangeDestinyExp.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm))
-                                                    this.listRangeDestinyExp.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm);
-                                                if(!this.listServicioExp.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                    this.listServicioExp.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId);
-                                                
-                                                if(!this.listBloquesExp.contains(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue))
-                                                    this.listBloquesExp.add(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue);
+                                                factorValue = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
+                                                if(!this.listRangeDestinyExp.contains(RangoKm))
+                                                    this.listRangeDestinyExp.add(RangoKm);
+                                                if(!this.listServicioExp.contains(serviceId)){
+                                                    this.listServicioExp.add(serviceId);
+                                                }
+                                                if(!this.listBloquesExp.contains(factorValue))
+                                                    this.listBloquesExp.add(factorValue);
         
-                                                if(!this.mapTarifasExp.containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm))
-                                                    this.mapTarifasExp.put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm, new Map<String, Map<Decimal, wpTarifa>>());
-                                                if(!this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).containsKey(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId))
-                                                    this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).put(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId, new Map<Decimal, wpTarifa>());
-                                                    this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).put(
-                                                        rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue, new wpTarifa());
-                                                this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Peso_Vol_Inicial = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue;
-                                                this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Monto = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
-                                                this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Monto_Excedente = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
-                                                this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).Multipieza = 'NO';
-                                                this.mapTarifasExp.get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].fromKm + ' - ' + rg.body.response.data.kmConfig[0].kmServicesTrif[x].toKm).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceId).get(rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].factorValue).cotizacion = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
+                                                if(!this.mapTarifasExp.containsKey(RangoKm))
+                                                    this.mapTarifasExp.put(RangoKm, new Map<String, Map<Decimal, wpTarifa>>());
+                                                if(!this.mapTarifasExp.get(RangoKm).containsKey(serviceId))
+                                                    this.mapTarifasExp.get(RangoKm).put(serviceId, new Map<Decimal, wpTarifa>());
+                                                wpT = new wpTarifa();
+                                                wpT.Peso_Vol_Inicial    = factorValue;
+                                                wpT.Monto               = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].trifAmount;
+                                                wpT.Monto_Excedente     = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].trifAmountExce;
+                                                wpT.Multipieza          = 'NO';
+                                                wpT.cotizacion          = rg.body.response.data.kmConfig[0].kmServicesTrif[x].servicesTrifCbe[i].serviceTrif[y].quotation;
+                                                if(!this.mapTarifasExp.get(RangoKm).get(serviceId).containsKey(factorValue)){
+                                                    this.mapTarifasExp.get(RangoKm).get(serviceId).put(factorValue, wpT);
+                                                }
                                             }
                                         }
                                     }
@@ -462,7 +468,23 @@ public class PAQ_ConveniosSipweb_CTR {
                     }
                 }
             }
-            System.debug('costo base: ' + blnCostoBaseGMP + '. costos fijos: ' + blnCostosFijos);
+            /*Salvador 06/01/2022: Se llenan los rangos y tarifas en donde pudiera haber un defase entre las tarifas que no pudiera haber*/
+            wpt = new wpTarifa();
+            for(String strRange : this.listRangeDestinyExp){
+                if(!this.mapTarifasExp.containsKey(strRange)){
+                    this.mapTarifasExp.put(strRange, new Map<String, Map<Decimal, wpTarifa>>());
+                }
+                for(String strServ : this.listServicioExp){
+                    if(!this.mapTarifasExp.get(strRange).containsKey(strServ)){
+                        this.mapTarifasExp.get(strRange).put(strServ, new Map<Decimal, wpTarifa>());
+                    }
+                    for(Decimal decFactVal : this.listBloquesExp){
+                        if(!this.mapTarifasExp.get(strRange).get(strServ).containsKey(decFactVal)){
+                            this.mapTarifasExp.get(strRange).get(strServ).put(decFactVal, wpT);
+                        }
+                    }
+                }
+            }
         }catch(Exception ex){
             System.debug('Error en el constructor ' +ex.getLineNumber()+' '+EX.getMessage());
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Error al iniciar. Contacte a un consultor de salesforce.'));
