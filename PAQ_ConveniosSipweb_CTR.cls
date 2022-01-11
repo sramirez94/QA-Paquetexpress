@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
  * @group             : 
- * @last modified on  : 01-06-2022
+ * @last modified on  : 01-11-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -197,7 +197,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                             factorValue     = s.factorValue;
                                             strRangeDest    = RangoKm + ' - ' + serviceId + ' - ' + factor + ' - ' + factorValue;
                                             if(serviceId != 'SEG-DS' && serviceId != 'SEG-2D' && serviceId != 'SEG-A12'){
-                                                /*if(!this.listTarifasC.contains(strRangeDest))
+                                                if(!this.listTarifasC.contains(strRangeDest))
                                                     this.listTarifasC.add(strRangeDest);
                                                 if(!this.mapTarifasC.containsKey(strRangeDest)){
                                                     wpT                  = new wpTarifa();
@@ -211,7 +211,7 @@ public class PAQ_ConveniosSipweb_CTR {
                                                     wpT.Servicio         = serviceId;
                                                     wpT.factor           = s.factor;
                                                     this.mapTarifasC.put(strRangeDest, wpT);
-                                                }*/
+                                                }
                                             } else {
                                                 this.blnTarifasExp = true;
                                                 if(!this.listRangeDestinyExp.contains(RangoKm))
