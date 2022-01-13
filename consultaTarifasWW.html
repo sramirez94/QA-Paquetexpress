@@ -2,70 +2,97 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 01-10-2022
+  @last modified on  : 01-13-2022
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 -->
 <template>
     <!--<div class="container" lwc:dom="manual">
     </div>-->
     <form>
-        <lightning-card  variant="Narrow"  title="Tarifas obtenidas WW" icon-name="standard:account">
-            <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" width="40%" align = "left">
-                <thead>
-                    <tr class="slds-line-height_reset">
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="Cliente">
-                                Cliente
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="RangoKM">
-                                Rango KM
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="TipoTarifa">
-                                Tipo de tarifa
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="Servicio">
-                                Servicio
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="Factor">
-                                Factor
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="PesoVolInicial">
-                                Peso vol. Inicial
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="Monto">
-                                Monto
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="MontoExc">
-                                Monto excedente
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="Multipieza">
-                                Multipieza
-                            </div>
-                        </th>
-                        <th align="center" class="" scope="col">
-                            <div class="slds-truncate" title="Cotizacion">
-                                Cotización
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-            </table>
-        </lightning-card>
+        <template if:false={renderJSON}>
+            <div class="spinner">
+                <lightning-spinner alternative-text="Loading" variant="brand" size="short">
+                    Obteniendo tarifas WW del cliente
+                </lightning-spinner>
+            </div>
+        </template>
+        <template if:true={renderJSON}>
+            <lightning-card  variant="Narrow"  title="Tarifas obtenidas WW" icon-name="standard:account">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" width="40%" align = "left">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="Cliente">
+                                    Cliente
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="RangoKM">
+                                    Rango KM
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="TipoTarifa">
+                                    Tipo de tarifa
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="Servicio">
+                                    Servicio
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="Factor">
+                                    Factor
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="PesoVolInicial">
+                                    Peso vol. Inicial
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="Monto">
+                                    Monto
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="MontoExc">
+                                    Monto excedente
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="Multipieza">
+                                    Multipieza
+                                </div>
+                            </th>
+                            <th align="center" class="" scope="col">
+                                <div class="slds-truncate" title="Cotizacion">
+                                    Cotización
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template if:true={ptpConfig}>
+                            <template for:each={ptpConfig} for:item="ptp">
+                                <tr key={ptp.Id} align="center">
+                                    <td>{ptp.Cliente}</td>
+                                    <td>{ptp.RangoKM}</td>
+                                    <td>{ptp.Tarifa}</td>
+                                    <td>{ptp.Servicio}</td>
+                                    <td>{ptp.Factor}</td>
+                                    <td>{ptp.Peso_Vol_Inicial}</td>
+                                    <td>{ptp.Monto}</td>
+                                    <td>{ptp.Monto_Excedente}</td>
+                                    <td>{ptp.Multipieza}</td>
+                                    <td>{ptp.Cotizacion}</td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </lightning-card>
+        </template>
     </form>
 </template>
