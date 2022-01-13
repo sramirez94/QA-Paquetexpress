@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 07-29-2021
+  @last modified on  : 10-14-2021
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log 
   Ver   Date         Author                               Modification
@@ -59,128 +59,124 @@
             <apex:repeat value="{!mapLines}" var="tarifa">
 			<apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">                
                 <div class="panel panel-default" > 
-                  <div class="panel-body">
-                <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
-                          padding-top: 5px; padding-bottom: 5px" width="100%;">
-                      <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
-                    <tr>
-                        <th colspan="1" style="border:0.5px solid black; width: 100%">
-                            Tarifa:   
-                            <apex:outputText style="width: 10%">         
-                            
-                            </apex:outputText>
-                        <apex:outputText value="{!mapTarifas[tarifa].strtarifa}"/>
-                        </th>
-                    </tr>
-                          <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-V'),'true','false')}">
-                    <tr>
-                        <th colspan="1" style="border:0.5px solid black; width: 100%">
-                            Peso Maximo:  
-                        
-                        
-                            <apex:outputText value="{0, number, ###,##0.##}">
-                                        <apex:param value="{!mapTarifas[tarifa].decPesoMaximo}" />   
-                                </apex:outputText>
-                            kg
-                        </th>
-                    </tr>
-                          </apex:outputText>
-                          <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12' || mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
-                    <tr>
-                        <th colspan="1" style="border:0.5px solid black; width: 100%">
-                            Volumen maximo: 
-                       
-                           <apex:outputText value="{0, number, ###,###.0000}">
-                                <apex:param value="{!mapTarifas[tarifa].decVolMaximo}"/>                                   
-                                </apex:outputText>
-                            m3
-                        </th>
-                    </tr>
-                          </apex:outputText>
-                    </apex:outputText>
-                   
-                   </table>
-                      
-                  <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;
-                          padding-top: 5px; padding-bottom: 5px" width="100%;">
-                       <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
-                       
-                        <tr >
-                              <th  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 20%">RANGO KM</th>
-                            <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
-                            <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 18%">Guia de arranque ($)</th>
-                            <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 22%">Guia de arranque (kg)</th>
-                            <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 18%">KG adicional</th>
-                            </apex:outputText>
-                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
-                              <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">FLETE</th>
-                            
-                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
-                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">RAD</th>
-                              </apex:outputText>
-                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
-                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">EAD</th>                               
-                              </apex:outputText>
-                            </apex:outputText>
-                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
-                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
-                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">
-                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
-                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
-                                  <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText>
-                                  </th>
-                              </apex:outputText>
-                            </apex:outputText>
-                              <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
-                                  <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SEGURO</th>
-                              </apex:outputText>
-                             <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
-                              <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SUBTOTAL</th>
-                            </apex:outputText>
-                            </tr>
-                      <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
-                      <tr>
-                         <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLine.Rango_Km__C}</td>
-                          <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
-                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.fleteE__c}"></apex:outputField></td>
-                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.Guia__c}"></apex:outputField></td>
-                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.KG_ADICIONAL__c}"></apex:outputField></td>
-                              <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACKES__c}"></apex:outputField></td>
-                           
-                          </apex:outputText>  
-                          <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
-                                <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                                </td>
-                             <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
-                                 <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                                 </td>
-                             </apex:outputText>
-                             <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
-                                 <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                                 </td>
-                             </apex:outputText>
-                              
-                             <apex:outputText rendered="{!objTLine.ACK__c != null}">
-                                 <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
-                                    <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
-                                      <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACK__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
-                                      </td>
+                    <div class="panel-body">
+                    <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: 5px; padding-bottom: 5px" width="100%;">
+                        <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
+                            <tr>
+                                <th colspan="1" style="border:0.5px solid black; width: 100%">
+                                    Tarifa:   
+                                    <apex:outputText style="width: 10%">         
+                                    
                                     </apex:outputText>
-                                  </apex:outputText>
-                              </apex:outputText>
-                           </apex:outputText>
-                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
-                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.SEG__c}" /> </td>
+                                <apex:outputText value="{!mapTarifas[tarifa].strtarifa}"/>
+                                </th>
+                            </tr>
+                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-V'),'true','false')}">
+                            <tr>
+                                <th colspan="1" style="border:0.5px solid black; width: 100%">
+                                    Peso Maximo:  
+                                
+                                
+                                    <apex:outputText value="{0, number, ###,##0.##}">
+                                                <apex:param value="{!mapTarifas[tarifa].decPesoMaximo}" />   
+                                        </apex:outputText>
+                                    kg
+                                </th>
+                            </tr>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12' || mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                            <tr>
+                                <th colspan="1" style="border:0.5px solid black; width: 100%">
+                                    Volumen maximo: 
+                            
+                                <apex:outputText value="{0, number, ###,###.0000}">
+                                        <apex:param value="{!mapTarifas[tarifa].decVolMaximo}"/>                                   
+                                        </apex:outputText>
+                                    m3
+                                </th>
+                            </tr>
+                            </apex:outputText>
                         </apex:outputText>
-                           <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
-                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.CustomerPrice__c}" /></td>
-                           </apex:outputText>
-                    </tr>
-                    </apex:repeat>
-                        <br/>
-                      </apex:outputText>
+                    </table>
                       
-              </table> 
+                    <table class="table table-hover table-striped" style="border-collapse: collapse; border:0.5px solid black; font-family: Arial, Helvetica, sans-serif; font-size:12px;padding-top: 5px; padding-bottom: 5px" width="100%;">
+                        <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7' && SBQQ__Quote__c.TipoCotizacion__c == 'byDimension'),'true','false')}">
+                       
+                            <tr >
+                                <th  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 20%">RANGO KM</th>
+                                <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
+                                    <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 18%">Guia de arranque ($)</th>
+                                    <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 22%">Guia de arranque (kg)</th>
+                                    <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 18%">KG adicional</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                                    <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">FLETE</th>
+                                    
+                                    <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                        <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">RAD</th>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                                        <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">EAD</th>                               
+                                    </apex:outputText>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                                    <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                        <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">
+                                        <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                                        <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                                        <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText>
+                                        </th>
+                                    </apex:outputText>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                                    <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SEGURO</th>
+                                </apex:outputText>
+                                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                                    <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; width: 14%">SUBTOTAL</th>
+                                </apex:outputText>
+                            </tr>
+                            <apex:repeat value="{!mapLines[tarifa]}" var="objTLine">
+                                <tr>
+                                    <td colspan="1" style="border:0.5px solid black; width: 20%">{!objTLine.Rango_Km__C}</td>
+                                    <apex:outputText rendered="{!if(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12','true','false')}">
+                                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.fleteE__c}"></apex:outputField></td>
+                                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.Guia__c}"></apex:outputField></td>
+                                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.KG_ADICIONAL__c}"></apex:outputField></td>
+                                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACKES__c}"></apex:outputField></td>
+                                    
+                                    </apex:outputText>  
+                                    <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.FLETE__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                            </td>
+                                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'RAD'), TRUE, FALSE)}">
+                                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.RAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                            </td>
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'EAD'), TRUE, FALSE)}">
+                                            <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.EAD__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                            </td>
+                                        </apex:outputText>
+                                        
+                                        <apex:outputText rendered="{!objTLine.ACK__c != null}">
+                                            <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Acuse'), TRUE, FALSE)}">
+                                                <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'TARIFA T7-P'),'true','false')}">
+                                                <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.ACK__c}" rendered="{!NOT(objTLine.EditMode__c)}"></apex:outputField>
+                                                </td>
+                                                </apex:outputText>
+                                            </apex:outputText>
+                                        </apex:outputText>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!IF(CONTAINS(objtempleate.ServiciosAdicionales__c,'Seguro'), TRUE, FALSE)}">
+                                        <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.SEG__c}" /> </td>
+                                    </apex:outputText>
+                                    <apex:outputText rendered="{!if(NOT(mapTarifas[tarifa].strtarifa == 'SEG-DS' || mapTarifas[tarifa].strtarifa == 'SEG-2D' || mapTarifas[tarifa].strtarifa == 'SEG-A12'),'true','false')}">
+                                    <td colspan="1" style="border:0.5px solid black" align="center"><apex:outputField value="{!objTLine.CustomerPrice__c}" /></td>
+                                    </apex:outputText>
+                                </tr>
+                            </apex:repeat>
+                            <br/>
+                        </apex:outputText>
+                    </table> 
                     </div>
                 </div>
                 	        
