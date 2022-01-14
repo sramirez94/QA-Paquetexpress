@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 10-14-2021
+  @last modified on  : 01-13-2022
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log 
   Ver   Date         Author                               Modification
@@ -242,7 +242,13 @@
                     </tr>
                     <tr>
                     <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
-                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
+                        -Costo adicional de Seguro $
+                        </apex:outputText>
+                        <apex:outputText value="{0, number, ###,##0.00}">
+                            <apex:param value="{!wp.mapCS['SEG']}" /> 
+                        </apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                            por cada mil de valor declarado.
                         </apex:outputText>
                     </td>
                     </tr>
@@ -454,10 +460,16 @@
                         </td>                   	
                     </tr>
                     <tr>
-                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
-                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
-                        </apex:outputText>
-                    </td>
+                        <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                            -Costo adicional de Seguro $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <apex:param value="{!wp.mapCS['SEG']}" /> 
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                                por cada mil de valor declarado.
+                            </apex:outputText>
+                        </td>
                     </tr>
                     <tr>
                     <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
@@ -651,10 +663,16 @@
                         </td>                   	
                     </tr>
                     <tr>
-                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
-                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
-                        </apex:outputText>
-                    </td>
+                        <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                            -Costo adicional de Seguro $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <apex:param value="{!wp.mapCS['SEG']}" /> 
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                                por cada mil de valor declarado.
+                            </apex:outputText>
+                        </td>
                     </tr>
                     <tr>
                     <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
@@ -881,10 +899,16 @@
                         </td>                   	
                     </tr>
                     <tr>
-                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
-                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
-                        </apex:outputText>
-                    </td>
+                        <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                            -Costo adicional de Seguro $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <apex:param value="{!wp.mapCS['SEG']}" /> 
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                                por cada mil de valor declarado.
+                            </apex:outputText>
+                        </td>
                     </tr>
                     <tr>
                     <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
@@ -1045,10 +1069,16 @@
                         </td>                   	
                     </tr>
                     <tr>
-                    <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
-                        -Costo adicional de Seguro $11.00 por cada mil de valor declarado.
-                        </apex:outputText>
-                    </td>
+                        <td > <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                            -Costo adicional de Seguro $
+                            </apex:outputText>
+                            <apex:outputText value="{0, number, ###,##0.00}">
+                                <apex:param value="{!wp.mapCS['SEG']}" /> 
+                            </apex:outputText>
+                            <apex:outputText rendered="{!CONTAINS(SBQQ__Quote__c.Servicios_adicionales__c,'Seguro')=false}">
+                                por cada mil de valor declarado.
+                            </apex:outputText>
+                        </td>
                     </tr>
                     <tr>
                     <td> -Estatus de entrega vía electrónica consultando nuestra página www.paquetexpress.com.mx</td>
