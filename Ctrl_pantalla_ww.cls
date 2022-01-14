@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 08-30-2021
+ * @last modified on  : 01-13-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -112,7 +112,6 @@ public class Ctrl_pantalla_ww {
     public Map<String, Block> mapService                                    {get; set;}
     public Map<Decimal, Map<String, Decimal>> mapDiscounts                  {get; set;}
     public Map<Decimal, Map<String, Decimal>> mapDiscountsT7ZP              {get; set;}
-    public Decimal decSEG                                                   {get; set;}
     public Map<Decimal, String> mapTarifasName                              {get; set;}
     public Map<String, String> mapTarifasKey                                {get; set;}
     public string Id                                                        {get; set;}
@@ -305,7 +304,6 @@ public class Ctrl_pantalla_ww {
         this.blnSEG                 = false;
         this.blnACK                 = false;
         this.blnBloquesT7           = false;
-        this.decSEG                 = 0;
         //this.mapBlocks              = new Map<String, Block>();
         this.mapPruebas             = new Map<String, Decimal>();
         this.mapDiscounts           = new Map<Decimal, Map<String, Decimal>>();
@@ -521,8 +519,9 @@ public class Ctrl_pantalla_ww {
         
  //CAALCULOS PARA Costos fijos por Tarifas: Por Destinos / Por rangos de km
  /*codigo nuevo inicio---------------------------------------------------------------------------------------------------------*/
-     this.wp.objQuote = queryQuote(sc.getId());  
-     this.wp.listQuoteItem = queryQuoteItem(sc.getId());     
+        this.wp.mapCS = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
+        this.wp.objQuote = queryQuote(sc.getId());  
+        this.wp.listQuoteItem = queryQuoteItem(sc.getId());     
         if(this.wp.objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km' || this.wp.objQuote.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por Rangos de km')
             this.blnCostoBaseGMP = true;
         
