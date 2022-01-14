@@ -297,15 +297,14 @@ public class TempleateTriggerHandler {
                     if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota')){
                         if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
                             for(Incremento_Anual__c IncYear : listIncremento){
-                                if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota') 
-                                && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c))
+                                if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota') && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c))
                                 {
                                     for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
                                         if(incEXE.Incremento_Anual__c == incYear.id){
-                                        incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;                                    
+                                            incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
                                         }
                                     }
-                                        if(IncYear.Incremento_anual_remota__c == NULL){
+                                    if(IncYear.Incremento_anual_remota__c == NULL){
                                         IncYear.Incremento_anual_remota__c = 0;
                                     }
                                     objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
@@ -323,14 +322,14 @@ public class TempleateTriggerHandler {
                                 {                                          
                                     for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
                                         if(incEXE.Incremento_Anual__c == incYear.id){
-                                            incyear.Incremento_anual_remota__c= incEXE.Incremento_remota__c;                                    
+                                            incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
                                         }
                                     }
-                                        if(IncYear.Incremento_anual_remota__c == NULL){
-                                            IncYear.Incremento_anual_remota__c = 0;
+                                    if(IncYear.Incremento_anual_remota__c == NULL){
+                                        IncYear.Incremento_anual_remota__c = 0;
                                     }
 
-                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c /  100)) + objQline.SBQQ__CustomerPrice__c;							
+                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
                                     
                                     if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
                                         mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;	
