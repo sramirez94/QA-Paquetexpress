@@ -1,40 +1,30 @@
 import { LightningElement, api, wire, track } from 'lwc';
-import { getRecord } from 'lightning/uiRecordApi';
+//import { getRecord } from 'lightning/uiRecordApi';
 import CargaInfoSipweb from '@salesforce/apex/consultaTarifasWW_CTR.CargaInfoSipweb';
-const fields = ['Account.Id_SIpWeb__c']
-const ptpConfig = [];
-const kmConfig = [];
+//const fields = ['Account.Id_SIpWeb__c']
+const ptpConfig         = [];
+const kmConfig          = [];
+const expressServices   = [];
 export default class ConsultaTarifasWW extends LightningElement {
-    @api recordId;
+    //@api recordId;
+    @api propertyValue;
     ptpConfig           = ptpConfig;
     kmConfig            = kmConfig;
+    expressServices     = expressServices;
     renderJSON          = false;
     renderCFT           = false;
     renderCBMEGMP       = false;
+    renderXpress        = false;
     strError;
     strResponse;
     objResponse;
-    account;
     Id_SIpWeb;
-    @wire(getRecord, { recordId: '$recordId', fields : fields})
-    wiredRecord({ error, data }) {
-        debugger;
-        if (error) {
-            let message = 'Unknown error';
-            if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
-            } else if (typeof error.body.message === 'string') {
-                message = error.body.message;
-            }
-        } else if (data){
-            this.account = data;
-            this.Id_SIpWeb = this.account.fields.Id_SIpWeb__c.value;
-        }
+    renderedCallback(){
         this.getConveniosWW();
     }
     getConveniosWW(){
         CargaInfoSipweb({
-            idSipweb : this.Id_SIpWeb
+            idSipweb : this.propertyValue
         })
             .then(Respuesta => {
                 if(Respuesta !== null && Respuesta !== ''){
@@ -63,41 +53,45 @@ export default class ConsultaTarifasWW extends LightningElement {
                                 let ptpServicesTrif     = arrayPtpConfig.ptpServicesTrif[i];
                                 if(ptpServicesTrif){
                                     let strRange    = ptpServicesTrif.orgnSite + '-' + ptpServicesTrif.destSite;
-                                    for(let j = 0; ptpServicesTrif.servicesTrifCbe.length; j++){
-                                        let servicesTrifCbe = ptpServicesTrif.servicesTrifCbe[j];
-                                        if(servicesTrifCbe){
-                                            let serviceId       = servicesTrifCbe.serviceId;
-                                            let factor          = servicesTrifCbe.factor;
-                                            let trifAmountExce  = servicesTrifCbe.trifAmountExce;
-                                            for(let k = 0; servicesTrifCbe.serviceTrif.length;k++){
-                                                let serviceTrif = servicesTrifCbe.serviceTrif[k];
-                                                if(serviceTrif){
-                                                    let Tarifa = {
-                                                        Id : 'ptp' + i,
-                                                        Cliente : strCliente,
-                                                        label: strCliente,
-                                                        fieldName: 'ptp' + i,
-                                                        RangoKM : strRange,
-                                                        Tarifa : strTarifa,
-                                                        Servicio : serviceId,
-                                                        Factor : factor,
-                                                        Peso_Vol_Inicial : serviceTrif.factorValue,
-                                                        Monto : serviceTrif.trifAmount,
-                                                        Monto_Excedente : trifAmountExce,
-                                                        Multipieza : Multipieza,
-                                                        Cotizacion : serviceTrif.quotation
-                                                        //type: 'text'
-                                                    };
-                                                    ptpConfig.push(Tarifa);
-                                                } else {
-                                                    break;
+                                    if(ptpServicesTrif.servicesTrifCbe){
+                                        for(let j = 0; ptpServicesTrif.servicesTrifCbe.length; j++){
+                                            let servicesTrifCbe = ptpServicesTrif.servicesTrifCbe[j];
+                                            if(servicesTrifCbe){
+                                                let serviceId       = servicesTrifCbe.serviceId;
+                                                let factor          = servicesTrifCbe.factor;
+                                                let trifAmountExce  = servicesTrifCbe.trifAmountExce;
+                                                if(servicesTrifCbe.serviceTrif){
+                                                    for(let k = 0; servicesTrifCbe.serviceTrif.length;k++){
+                                                        let serviceTrif = servicesTrifCbe.serviceTrif[k];
+                                                        if(serviceTrif){
+                                                            let Tarifa = {
+                                                                Id : 'ptp' + i,
+                                                                Cliente : strCliente,
+                                                                label: strCliente,
+                                                                fieldName: 'ptp' + i,
+                                                                RangoKM : strRange,
+                                                                Tarifa : strTarifa,
+                                                                Servicio : serviceId,
+                                                                Factor : factor,
+                                                                Peso_Vol_Inicial : serviceTrif.factorValue,
+                                                                Monto : serviceTrif.trifAmount,
+                                                                Monto_Excedente : trifAmountExce,
+                                                                Multipieza : Multipieza,
+                                                                Cotizacion : serviceTrif.quotation
+                                                                //type: 'text'
+                                                            };
+                                                            ptpConfig.push(Tarifa);
+                                                        } else {
+                                                            break;
+                                                        }
+                                                    }
                                                 }
+                                            } else {
+                                                break;
                                             }
-                                        } else {
-                                            break;
                                         }
+                                        //ptpConfig.sort();
                                     }
-                                    ptpConfig.sort();
                                 } else {
                                     break;
                                 }
@@ -176,6 +170,44 @@ export default class ConsultaTarifasWW extends LightningElement {
                                             break;
                                         }
                                     }
+                                    if(kmServicesTrif.servicesTrifCbe){
+                                        for(let j = 0; kmServicesTrif.servicesTrifCbe.length; j++){
+                                            let servicesTrifCbe = kmServicesTrif.servicesTrifCbe[j];
+                                            if(servicesTrifCbe){
+                                                let MontoExc = servicesTrifCbe.trifAmountExce;
+                                                for(let k = 0;servicesTrifCbe.serviceTrif.length; k++){
+                                                    let serviceTrif = servicesTrifCbe.serviceTrif[k];
+                                                    if(serviceTrif){
+                                                        let Tarifa = {
+                                                            id: 'km' + k,
+                                                            Cliente : strCliente,
+                                                            RangoKM : strRange,
+                                                            tipoTar : strTarifa,
+                                                            Servicio : servicesTrifCbe.serviceId,
+                                                            Factor :serviceTrif.factor,
+                                                            PesoVol : serviceTrif.factorValue,
+                                                            Monto : serviceTrif.trifAmount,
+                                                            Monto_Excedente : MontoExc,
+                                                            Multipieza : Multipieza,
+                                                            Cotizacion : serviceTrif.quotation
+                                                        }
+                                                        expressServices.push(Tarifa);
+                                                    } else {
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                    
+                                    if(expressServices){
+                                        this.renderXpress = true;
+                                    }
+                                    console.log('renderXpress: ' + this.renderXpress);
                                 } else {
                                     break;
                                 }
