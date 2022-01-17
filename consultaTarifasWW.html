@@ -1,9 +1,8 @@
 <!--
-  @description       : 
-  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
-  @group             : 
-  @last modified on  : 01-13-2022
-  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+  @description       : Componente para visualizar las tarifas que tiene un cliente de documentación en línea
+  @author            : Salvador Ramírez López (sramirez@freewayconsulting.com)
+  @Project           : Paquetexpress
+  @CreatedDate       : 01-17-2022
 -->
 <template>
     <!--<div class="container" lwc:dom="manual">
@@ -17,8 +16,8 @@
             </div>
         </template>
         <template if:true={renderJSON}>
-            <lightning-card  variant="Narrow"  title="Tarifas obtenidas WW" icon-name="standard:account">
-                <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" width="40%" align = "left">
+            <lightning-card  variant="Narrow"  title="Tarifas obtenidas WW" icon-name="standard:account" style="width: 40%;" >
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" style="width: 40%;" align="left">
                     <template if:true={renderCBMEGMP}>
                         <thead>
                             <tr class="slds-line-height_reset">
@@ -160,9 +159,8 @@
                         </tbody>
                     </template>
                 </table>
-                <br/>
                 <template if:true={renderCFT}>
-                    <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" width="40%" align = "right">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" style="width: 40%;" align="right">
                         <thead>
                             <tr class="slds-line-height_reset">
                                 <th align="center" class="" scope="col">
@@ -217,6 +215,26 @@
                                 </th>
                             </tr>
                         </thead>
+                        <tbody>
+                            <template if:true={renderXpress}>
+                                <template if:true={expressServices}>
+                                    <template for:each={expressServices} for:item="xprs">
+                                        <tr key={xprs.id}>
+                                            <td>{xprs.Cliente}</td>
+                                            <td>{xprs.RangoKM}</td>
+                                            <td>{xprs.tipoTar}</td>
+                                            <td>{xprs.Servicio}</td>
+                                            <td>{xprs.Factor}</td>
+                                            <td>{xprs.PesoVol}</td>
+                                            <td>{xprs.Monto}</td>
+                                            <td>{xprs.Monto_Excedente}</td>
+                                            <td>{xprs.Multipieza}</td>
+                                            <td>{xprs.Cotizacion}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </template>
+                        </tbody>
                     </table>
                 </template>
             </lightning-card>
