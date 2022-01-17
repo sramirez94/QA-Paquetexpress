@@ -19,79 +19,206 @@
         <template if:true={renderJSON}>
             <lightning-card  variant="Narrow"  title="Tarifas obtenidas WW" icon-name="standard:account">
                 <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" width="40%" align = "left">
-                    <thead>
-                        <tr class="slds-line-height_reset">
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="Cliente">
-                                    Cliente
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="RangoKM">
-                                    Rango KM
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="TipoTarifa">
-                                    Tipo de tarifa
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="Servicio">
-                                    Servicio
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="Factor">
-                                    Factor
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="PesoVolInicial">
-                                    Peso vol. Inicial
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="Monto">
-                                    Monto
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="MontoExc">
-                                    Monto excedente
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="Multipieza">
-                                    Multipieza
-                                </div>
-                            </th>
-                            <th align="center" class="" scope="col">
-                                <div class="slds-truncate" title="Cotizacion">
-                                    Cotización
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template if:true={ptpConfig}>
-                            <template for:each={ptpConfig} for:item="ptp">
-                                <tr key={ptp.Id} align="center">
-                                    <td>{ptp.Cliente}</td>
-                                    <td>{ptp.RangoKM}</td>
-                                    <td>{ptp.Tarifa}</td>
-                                    <td>{ptp.Servicio}</td>
-                                    <td>{ptp.Factor}</td>
-                                    <td>{ptp.Peso_Vol_Inicial}</td>
-                                    <td>{ptp.Monto}</td>
-                                    <td>{ptp.Monto_Excedente}</td>
-                                    <td>{ptp.Multipieza}</td>
-                                    <td>{ptp.Cotizacion}</td>
-                                </tr>
+                    <template if:true={renderCBMEGMP}>
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Cliente
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="RangoKM">
+                                        Rango KM
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="TipoTarifa">
+                                        Tipo de tarifa
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Servicio">
+                                        Servicio
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Factor">
+                                        Factor
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="PesoVolInicial">
+                                        Peso vol. Inicial
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Monto">
+                                        Monto
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="MontoExc">
+                                        Monto excedente
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Multipieza">
+                                        Multipieza
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cotizacion">
+                                        Cotización
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template if:true={ptpConfig}>
+                                <template for:each={ptpConfig} for:item="ptp">
+                                    <tr key={ptp.Id} align="center">
+                                        <td>{ptp.Cliente}</td>
+                                        <td>{ptp.RangoKM}</td>
+                                        <td>{ptp.Tarifa}</td>
+                                        <td>{ptp.Servicio}</td>
+                                        <td>{ptp.Factor}</td>
+                                        <td>{ptp.Peso_Vol_Inicial}</td>
+                                        <td>{ptp.Monto}</td>
+                                        <td>{ptp.Monto_Excedente}</td>
+                                        <td>{ptp.Multipieza}</td>
+                                        <td>{ptp.Cotizacion}</td>
+                                    </tr>
+                                </template>
                             </template>
-                        </template>
-                    </tbody>
+                            <template if:true={kmConfig}>
+                                <template for:each={kmConfig} for:item="km">
+                                    <tr key={km.Id} align="center">
+                                        <td>{km.Cliente}</td>
+                                        <td>{km.RangoKM}</td>
+                                        <td>{km.Tarifa}</td>
+                                        <td>{km.Servicio}</td>
+                                        <td>{km.Factor}</td>
+                                        <td>{km.Peso_Vol_Inicial}</td>
+                                        <td>{km.Monto}</td>
+                                        <td>{km.Monto_Excedente}</td>
+                                        <td>{km.Multipieza}</td>
+                                        <td>{km.Cotizacion}</td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </template>
+                    <template if:true={renderCFT}>
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Cliente
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="RangoKM">
+                                        Rango KM
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Servicio">
+                                        Servicio
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Monto">
+                                        Tarifa
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Monto">
+                                        Monto
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cotizacion">
+                                        Cotización
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template if:true={kmConfig}>
+                                <template for:each={kmConfig} for:item="km">
+                                    <tr key={km.Id} align="center">
+                                        <td align="center">{km.Cliente}</td>
+                                        <td align="center">{km.RangoKM}</td>
+                                        <td align="center">{km.Servicio}</td>
+                                        <td align="center">{km.Tarifa}</td>
+                                        <td align="center">{km.Monto}</td>
+                                        <td align="center">{km.Cotizacion}</td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </template>
                 </table>
+                <br/>
+                <template if:true={renderCFT}>
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label" width="40%" align = "right">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Cliente
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Rango KM
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Tipo Tar
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Servicio
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Factor
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Peso Vol
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Monto
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Monto exc.
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Multipieza
+                                    </div>
+                                </th>
+                                <th align="center" class="" scope="col">
+                                    <div class="slds-truncate" title="Cliente">
+                                        Cotización
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                    </table>
+                </template>
             </lightning-card>
         </template>
     </form>
