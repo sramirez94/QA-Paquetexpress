@@ -124,6 +124,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                             }
                         }
                         if(arrayKmConfig){
+                            let ContadorKm = 0;
                             for(let i = 0; arrayKmConfig.kmServicesTrif.length;i++){
                                 let kmServicesTrif = arrayKmConfig.kmServicesTrif[i];
                                 if(kmServicesTrif){
@@ -139,7 +140,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                     let serviceTrif = servicesTrifCbe.serviceTrif[k];
                                                     if(serviceTrif){
                                                         let Tarifa = {
-                                                            id : 'km' + i,
+                                                            id : ContadorKm,
                                                             Cliente : strCliente,
                                                             RangoKM : RangoKM,
                                                             Tarifa : strTarifa,
@@ -150,8 +151,9 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                             Monto_Excedente : trifAmountExce,
                                                             Multipieza : Multipieza,
                                                             Cotizacion : serviceTrif.quotation
-                                                        }
+                                                        };
                                                         kmConfig.push(Tarifa);
+                                                        ContadorKm++;
                                                     } else {
                                                         break;
                                                     }
@@ -169,13 +171,16 @@ export default class ConsultaTarifasWW extends LightningElement {
                             }
                         }
                     } else {
-                        this.renderCFT = true;
+                        this.renderCFT  = true;
+                        let contador    = 0;
+                        debugger;
                         if(arrayPtpConfig){
                             if(arrayPtpConfig.ptpServicesTrif){
                                 for(let i = 0; arrayPtpConfig.ptpServicesTrif.length; i++){
                                     let ptpServicesTrif = arrayPtpConfig.ptpServicesTrif[i];
                                     if(ptpServicesTrif){
                                         let strRange = ptpServicesTrif.orgnSite + '-' + ptpServicesTrif.destSite;
+                                        console.log('rango: ' + strRange);
                                         if(ptpServicesTrif.servicesTrifDtl){
                                             for(let j = 0;ptpServicesTrif.servicesTrifDtl.length;j++){
                                                 let servicesTrifDtl = ptpServicesTrif.servicesTrifDtl[j];
@@ -186,7 +191,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                             let serviceTrif = servicesTrifDtl.serviceTrif[k];
                                                             if(serviceTrif){
                                                                 let Tarifa = {
-                                                                    id : 'ptp' + k,
+                                                                    id : contador,
                                                                     Cliente : strCliente,
                                                                     RangoKM : strRange,
                                                                     Servicio : serviceTrif.serviceId,
@@ -195,6 +200,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                                     Cotizacion : serviceTrif.quotation
                                                                 }
                                                                 ptpConfig.push(Tarifa);
+                                                                contador++;
                                                             } else {
                                                                 break;
                                                             }
@@ -202,6 +208,24 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                     } else {
                                                         break;
                                                     }
+                                                } else {
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para recabar información de servicios adicionales.
+                                        if(ptpServicesTrif.serviceTrif){
+                                            for(let j = 0; ptpServicesTrif.serviceTrif.length; j++){
+                                                let serviceTrif = ptpServicesTrif.serviceTrif[j];
+                                                if(serviceTrif){
+                                                    let ServicioAdic = {
+                                                        id : 'Adic' + j,
+                                                        RangoKM : strRange,
+                                                        Servicio : serviceTrif.serviceId,
+                                                        Monto : serviceTrif.trifAmount
+                                                    }
+                                                    servAdic.push(ServicioAdic);
+                                                    this.renderServAdic = true;
                                                 } else {
                                                     break;
                                                 }
