@@ -304,6 +304,9 @@ public class TempleateTriggerHandler {
                                             incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
                                         }
                                     }
+                                    if(objQLine.KG_ADICIONAL__c != null && objQLine.KG_ADICIONAL__c != 0){
+                                        objQLine.KG_ADICIONAL__c = (objQLine.KG_ADICIONAL__c * (IncYear.Incremento_anual_remota__c / 100)) + objQLine.KG_ADICIONAL__c;
+                                    }
                                     if(IncYear.Incremento_anual_remota__c == NULL){
                                         IncYear.Incremento_anual_remota__c = 0;
                                     }
@@ -328,7 +331,9 @@ public class TempleateTriggerHandler {
                                     if(IncYear.Incremento_anual_remota__c == NULL){
                                         IncYear.Incremento_anual_remota__c = 0;
                                     }
-
+                                    if(objQLine.KG_ADICIONAL__c != null && objQLine.KG_ADICIONAL__c != 0){
+                                        objQLine.KG_ADICIONAL__c = (objQLine.KG_ADICIONAL__c * (IncYear.Incremento_anual_remota__c / 100)) + objQLine.KG_ADICIONAL__c;
+                                    }
                                     objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
                                     
                                     if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
