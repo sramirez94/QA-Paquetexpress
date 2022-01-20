@@ -1,6 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 //import { getRecord } from 'lightning/uiRecordApi';
 import CargaInfoSipweb from '@salesforce/apex/consultaTarifasWW_CTR.CargaInfoSipweb';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 //const fields = ['Account.Id_SIpWeb__c']
 const ptpConfig         = [];
 const kmConfig          = [];
@@ -29,27 +30,29 @@ export default class ConsultaTarifasWW extends LightningElement {
         CargaInfoSipweb({
             idSipweb : this.propertyValue
         })
-            .then(Respuesta => {
-                if(Respuesta !== null && Respuesta !== ''){
-                    //Salvador Ramírez (sramirez@freewayconsulting.com): Si la respuesta de la cotización devolvió algo
-                    this.objResponse    = JSON.parse(Respuesta); //Salvador Ramírez (sramirez@freewayconsulting.com): Se recibe el response y se le da formato de JSON
-                    let arrayPtpConfig  = [];
-                    let arrayKmConfig   = [];
-                    let strCliente      = this.objResponse.body.response.data.clntId;
-                    let strTarifa       = this.objResponse.body.response.data.trifType;
+        .then(Respuesta => {
+            if(Respuesta !== null && Respuesta !== ''){
+                //Salvador Ramírez (sramirez@freewayconsulting.com): Si la respuesta de la cotización devolvió algo
+                this.objResponse    = JSON.parse(Respuesta); //Salvador Ramírez (sramirez@freewayconsulting.com): Se recibe el response y se le da formato de JSON
+                if(this.objResponse.body.response.success){
+                    let arrayPtpConfig  = []; //Salvador Ramírez (sramirez@freewayconsulting.com): Los datos que vienen ordenados por destino
+                    let arrayKmConfig   = []; //Salvador Ramírez (sramirez@freewayconsulting.com): Los datos que vienen ordenados por rangos de km
+                    let strCliente      = this.objResponse.body.response.data.clntId; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el id de sipweb del cliente
+                    let strTarifa       = this.objResponse.body.response.data.trifType; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el tipo de tarifa (A o C)
                     let Multipieza      = '';
                     if(this.objResponse.body.response.data.ptpConfig){
-                        arrayPtpConfig  = this.objResponse.body.response.data.ptpConfig[0];
+                        //Salvador Ramírez (sramirez@freewayconsulting.com): Si vienen datos ordenados por destinos
+                        arrayPtpConfig  = this.objResponse.body.response.data.ptpConfig[0]; //Salvador Ramírez (sramirez@freewayconsulting.com): Siempre esta lista solo tendrá 1 elemento por eso se referencia al 0
                     }
                     if(this.objResponse.body.response.data.kmConfig){
-                        arrayKmConfig   = this.objResponse.body.response.data.kmConfig[0];
+                        //Salvador Ramírez (sramirez@freewayconsulting.com): Si vienen datos ordenados por rangos de km
+                        arrayKmConfig   = this.objResponse.body.response.data.kmConfig[0]; //Salvador Ramírez (sramirez@freewayconsulting.com): Esta lista siempre tiene 1 elemento por eso se referencia al objeto 0
                     }
                     if(this.objResponse.body.response.data.pieceMulti !== ''){
                         Multipieza = 'SI';
                     } else {
                         Multipieza = 'NO';
                     }
-                    debugger;
                     if(strTarifa === 'C'){
                         this.renderCBMEGMP = true;
                         if(arrayPtpConfig){
@@ -95,7 +98,6 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                     break;
                                                 }
                                             }
-                                            //ptpConfig.sort();
                                         }
                                         //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para recabar información de servicios adicionales.
                                         if(ptpServicesTrif.serviceTrif){
@@ -114,9 +116,9 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                     break;
                                                 }
                                             }
-                                        } else {
+                                        } /*else {
                                             break;
-                                        }
+                                        }*/
                                     } else {
                                         break;
                                     }
@@ -171,16 +173,15 @@ export default class ConsultaTarifasWW extends LightningElement {
                             }
                         }
                     } else {
-                        this.renderCFT  = true;
-                        let contador    = 0;
-                        debugger;
+                        this.renderCFT      = true;
+                        let contador        = 0;
+                        let contadorAdic    = 0;
                         if(arrayPtpConfig){
                             if(arrayPtpConfig.ptpServicesTrif){
                                 for(let i = 0; arrayPtpConfig.ptpServicesTrif.length; i++){
                                     let ptpServicesTrif = arrayPtpConfig.ptpServicesTrif[i];
                                     if(ptpServicesTrif){
                                         let strRange = ptpServicesTrif.orgnSite + '-' + ptpServicesTrif.destSite;
-                                        console.log('rango: ' + strRange);
                                         if(ptpServicesTrif.servicesTrifDtl){
                                             for(let j = 0;ptpServicesTrif.servicesTrifDtl.length;j++){
                                                 let servicesTrifDtl = ptpServicesTrif.servicesTrifDtl[j];
@@ -219,19 +220,35 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                 let serviceTrif = ptpServicesTrif.serviceTrif[j];
                                                 if(serviceTrif){
                                                     let ServicioAdic = {
-                                                        id : 'Adic' + j,
+                                                        id : 'Adic' + contadorAdic,
                                                         RangoKM : strRange,
                                                         Servicio : serviceTrif.serviceId,
                                                         Monto : serviceTrif.trifAmount
                                                     }
                                                     servAdic.push(ServicioAdic);
+                                                    contadorAdic++;
                                                     this.renderServAdic = true;
                                                 } else {
                                                     break;
                                                 }
                                             }
-                                        } else {
-                                            break;
+                                        }
+                                        if(ptpServicesTrif.otherServiceTrif){
+                                            for(let i = 0;ptpServicesTrif.otherServiceTrif.length; i++){
+                                                let otherServiceTrif = ptpServicesTrif.otherServiceTrif[i];
+                                                if(otherServiceTrif){
+                                                    let ServicioAdic = {
+                                                        id: 'Adic' + contadorAdic,
+                                                        RangoKM : strRange,
+                                                        Servicio : otherServiceTrif.serviceId,
+                                                        Monto : otherServiceTrif.trifAmount
+                                                    };
+                                                    servAdic.push(ServicioAdic);
+                                                    contadorAdic++;
+                                                } else {
+                                                    break;
+                                                }
+                                            }
                                         }
                                     } else {
                                         break;
@@ -275,34 +292,36 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                 let servicesTrifCbe = kmServicesTrif.servicesTrifCbe[j];
                                                 if(servicesTrifCbe){
                                                     let MontoExc = servicesTrifCbe.trifAmountExce;
-                                                    for(let k = 0;servicesTrifCbe.serviceTrif.length; k++){
-                                                        let serviceTrif = servicesTrifCbe.serviceTrif[k];
-                                                        if(serviceTrif){
-                                                            let Tarifa = {
-                                                                id: 'km' + k,
-                                                                Cliente : strCliente,
-                                                                RangoKM : strRange,
-                                                                tipoTar : strTarifa,
-                                                                Servicio : servicesTrifCbe.serviceId,
-                                                                Factor :serviceTrif.factor,
-                                                                PesoVol : serviceTrif.factorValue,
-                                                                Monto : serviceTrif.trifAmount,
-                                                                Monto_Excedente : MontoExc,
-                                                                Multipieza : Multipieza,
-                                                                Cotizacion : serviceTrif.quotation
+                                                    if(servicesTrifCbe.serviceTrif){
+                                                        for(let k = 0;servicesTrifCbe.serviceTrif.length; k++){
+                                                            let serviceTrif = servicesTrifCbe.serviceTrif[k];
+                                                            if(serviceTrif){
+                                                                let Tarifa = {
+                                                                    id: 'km' + k,
+                                                                    Cliente : strCliente,
+                                                                    RangoKM : strRange,
+                                                                    tipoTar : strTarifa,
+                                                                    Servicio : servicesTrifCbe.serviceId,
+                                                                    Factor :serviceTrif.factor,
+                                                                    PesoVol : serviceTrif.factorValue,
+                                                                    Monto : serviceTrif.trifAmount,
+                                                                    Monto_Excedente : MontoExc,
+                                                                    Multipieza : Multipieza,
+                                                                    Cotizacion : serviceTrif.quotation
+                                                                }
+                                                                expressServices.push(Tarifa);
+                                                            } else {
+                                                                break;
                                                             }
-                                                            expressServices.push(Tarifa);
-                                                        } else {
-                                                            break;
                                                         }
                                                     }
                                                 } else {
                                                     break;
                                                 }
                                             }
-                                        } else {
+                                        }/* else {
                                             break;
-                                        }
+                                        }*/
                                         
                                         if(expressServices){
                                             this.renderXpress = true;
@@ -314,11 +333,28 @@ export default class ConsultaTarifasWW extends LightningElement {
                             }
                         }
                     }
-                    
                     this.renderJSON = true; //Salvador Ramírez (sramirez@freewayconsulting.com): Se indica que se está renderizando
+                } else {
+                    if(this.objResponse.body.response.messages){
+                        for(let i = 0; this.objResponse.body.response.messages.length; i++){
+                            let messages = this.objResponse.body.response.messages[i];
+                            if(messages){
+                                const evt = new ShowToastEvent({
+                                    title   : 'Error en consulta de tarifas WW',
+                                    message : 'Error: ' + messages.description,
+                                    variant : 'error',
+                                    mode    : 'dismissable'
+                                });
+                                this.dispatchEvent(evt);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
                 }
-            }).catch(error => {
-                console.log('Error: ' + error);
-            })
+            }
+        }).catch(error => {
+            console.log('Error: ' + error);
+        })
     }
 }
