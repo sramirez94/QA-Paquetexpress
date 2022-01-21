@@ -295,8 +295,8 @@ public class TempleateTriggerHandler {
                     }
                     // codigo para el incremento documentacion en linea.          
                     if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota')){
-                        if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
-                            for(Incremento_Anual__c IncYear : listIncremento){
+                        if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)
+                            for(Incremento_Anual__c IncYear : listIncremento){                             
                                 if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota') && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c))
                                 {
                                     for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
@@ -310,8 +310,9 @@ public class TempleateTriggerHandler {
                                     if(IncYear.Incremento_anual_remota__c == NULL){
                                         IncYear.Incremento_anual_remota__c = 0;
                                     }
-                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
-                                    
+                                    if(objQLine.SBQQ__CustomerPrice__c > 0){
+                                        objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
+                                    }
                                     if(objQLine.ZonaPlus__c)
                                         decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
                                     
@@ -342,7 +343,7 @@ public class TempleateTriggerHandler {
                                     if(objQLine.ZonaPlus__c)
                                         decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
                                 } 
-                            } 
+                            }
                     }
                     // fin del codigo del incremento anual.       
                     objTempleateLine = new TempleateLine__c(
@@ -357,7 +358,7 @@ public class TempleateTriggerHandler {
                         , Destiny__c = objQLine.Destiny__c
                         , Pack_Seg__c = objQLine.Pack_Seg__c
                         , Zona_Plus__c = objQLine.ZonaPlus__c
-                        ,Guia__c = objQLine.GUIA__c
+                        , Guia__c = objQLine.GUIA__c
                         , ACK__c = 0
                         , EAD__c = 0
                         , RAD__c = 0
