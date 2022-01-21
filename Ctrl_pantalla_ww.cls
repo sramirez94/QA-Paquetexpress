@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 01-13-2022
+ * @last modified on  : 01-14-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -146,25 +146,26 @@ public class Ctrl_pantalla_ww {
     
     
     //plantillas
-    public String 				                 indexDeducItem 	       {get; set;}
-    public String                                strIdQuote                {get; set;}
-    public String                                strTempleateId            {get; set;}
-    public List<TempleateLine__c>                listPlantillaLineItems    {get; set;}
-    public Templeate__c                          objtempleate              {get; set;}
-    public SBQQ__Quote__c                        objquote                  {get; set;}
-    public List<PAQ_SpecialService__c>           listservices              {get; set;}
-    public Map<String, Tarifas>                  mapTarifas                {get; set;}
-    public Map<String, name>                     mapName                   {get; set;}
-    public Map<String, List<TempleateLine__c>>   mapLines	               {get; set;}
-    public Map<String, List<TempleateLine__c>>   mapLinesZP                {get; set;}
-    public List<PAQ_SpecialService__c>           listSSS                   {get; set;}
-    public Set<STring>                           setTarifas                {get; set;}
-    public Set<STring>                           setName                   {get; set;}
-    public String                                strTipoQuote              {get; set;}
-    public Map<String, List<PAQ_SpecialService__c>> mapss				   {get; set;}
-    public String lastGuide2 {get; set;}
-    public Integer IntAnioVigencia                                         {get;set;}
-    public String strFechaVigencia                                         {get;set;}
+    public String 				                 indexDeducItem 	            {get; set;}
+    public String                                strIdQuote                     {get; set;}
+    public String                                strTempleateId                 {get; set;}
+    public List<TempleateLine__c>                listPlantillaLineItems         {get; set;}
+    public Templeate__c                          objtempleate                   {get; set;}
+    public SBQQ__Quote__c                        objquote                       {get; set;}
+    public List<PAQ_SpecialService__c>           listservices                   {get; set;}
+    public Map<String, Tarifas>                  mapTarifas                     {get; set;}
+    public Map<String, name>                     mapName                        {get; set;}
+    public Map<String, List<TempleateLine__c>>   mapLines	                    {get; set;}
+    public Map<String, Map<String, Map<String, TempleateLine__c>>> mapLinesExp  {get; set;}
+    public Map<String, List<TempleateLine__c>>   mapLinesZP                     {get; set;}
+    public List<PAQ_SpecialService__c>           listSSS                        {get; set;}
+    public Set<STring>                           setTarifas                     {get; set;}
+    public Set<STring>                           setName                        {get; set;}
+    public String                                strTipoQuote                   {get; set;}
+    public Map<String, List<PAQ_SpecialService__c>> mapss				        {get; set;}
+    public String lastGuide2                                                    {get; set;}
+    public Integer IntAnioVigencia                                              {get;set;}
+    public String strFechaVigencia                                              {get;set;}
 
 
     public Ctrl_pantalla_ww(ApexPages.StandardController sc){
@@ -459,9 +460,10 @@ public class Ctrl_pantalla_ww {
                   this.blnZP = true;
               else this.blnZP = false;
                    this.listPlantillaLineItems.add(line);
-         }
+        }
 		this.strTempleateId = objtempleate.Id;      
         this.mapLines       = new Map<String, List< TempleateLine__c>>();
+        this.mapLinesExp    = new Map<String, Map<String, Map<String, TempleateLine__c>>>();
         this.mapLinesZP     = new Map<String, List<TempleateLine__c>>();
         this.mapss          = new Map<String, List<PAQ_SpecialService__c>>();
         this.setTarifas     = new Set<String>();
@@ -469,8 +471,8 @@ public class Ctrl_pantalla_ww {
     
         try {
         for(PAQ_SpecialService__c liness:  listSSS){
-        setName.add(liness.Name);
-           if(!mapss.containsKey(liness.Name))
+            setName.add(liness.Name);
+            if(!mapss.containsKey(liness.Name))
                 mapss.put(liness.Name, new List<PAQ_SpecialService__c>{liness});
             else
                     mapss.get(liness.Name).add(liness);
@@ -479,32 +481,51 @@ public class Ctrl_pantalla_ww {
         for(TempleateLine__c line : listPlantillaLineItems){
             setTarifas.add(line.Tarifa__c);
             if(!line.Zona_Plus__c){
-                if(line.Tarifa__c == 'TARIFA T7'){
-                    if(line.ACK__c >= 66){
-                        line.ACK__c = 65;
-                     }else{
-                           line.ACK__c = line.ACK__c;  
-                         }
-                 }
-                if(line.Tarifa__c == 'TARIFA T7-V' ){
-                   if(line.ACK__c >= 66){
-                       line.ACK__c = 65;
-                    }else{
-                           line.ACK__c = line.ACK__c;  
-                        }  
-                 }
-                if(line.Tarifa__c == 'TARIFA T7-P'){
-                     line.ACK__c = 0;                
-                 }
-                if(line.Tarifa__c == 'SEG-2D' || line.Tarifa__c == 'SEG-DS' || line.Tarifa__c == 'SEG-A12'){
-                     line.FLETE__c = line.FLETE__c;
-                 }
-                 if(!mapLines.containsKey(line.Tarifa__c))
-                      mapLines.put(line.Tarifa__c, new List<TempleateLine__c>{line});
-                 else{
-                      if(!mapLines.get(line.Tarifa__c).contains(line))
-                    	  mapLines.get(line.Tarifa__c).add(line);
+                if(line.Tarifa__c =='SEG-DS' || line.Tarifa__c =='SEG-2D' || line.Tarifa__c =='SEG-A12'){
+                    //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): Si es una tarifa express
+                    if(String.isNotBlank(line.Destiny__c)){
+                        //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): Si la iteración entra en un destino asigna el nombre del destino en vez del rango de km
+                        line.Rango_KM__c = line.Destiny__c;
                     }
+                    if(!this.mapLinesExp.containsKey(line.Tarifa__c)){
+                        //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): Si la tarifa no existe entonces genera el nuevo registro
+                        this.mapLinesExp.put(line.Tarifa__c, new Map<String, Map<String, TempleateLine__c>>{String.valueOf(line.Guia__c) => new Map<String, TempleateLine__c>{line.Rango_KM__c => line}});
+                    } else if(!this.mapLinesExp.get(line.Tarifa__c).containsKey(String.valueOf(line.Guia__c))){
+                        //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): Si lo que no existe es el bloque
+                        this.mapLinesExp.get(line.Tarifa__c).put(String.valueOf(line.Guia__c), new Map<String, TempleateLine__c>{line.Rango_KM__c => line});
+                    } else if(!this.mapLinesExp.get(line.Tarifa__c).get(String.valueOf(line.Guia__c)).containsKey(line.Rango_KM__c)){
+                        //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): si no existe el rango de km
+                        this.mapLinesExp.get(line.Tarifa__c).get(String.valueOf(line.Guia__c)).put(line.Rango_KM__c, line);
+                    }
+                } else {
+                    //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): Si es cualquier otra tarifa que no sea express
+                    if(line.Tarifa__c == 'TARIFA T7'){
+                        if(line.ACK__c >= 66){
+                            line.ACK__c = 65;
+                         }else{
+                               line.ACK__c = line.ACK__c;  
+                             }
+                     }
+                    if(line.Tarifa__c == 'TARIFA T7-V' ){
+                       if(line.ACK__c >= 66){
+                            line.ACK__c = 65;
+                        }else{
+                            line.ACK__c = line.ACK__c;  
+                        }  
+                    }
+                    if(line.Tarifa__c == 'TARIFA T7-P'){
+                         line.ACK__c = 0;                
+                    }
+                    if(line.Tarifa__c == 'SEG-2D' || line.Tarifa__c == 'SEG-DS' || line.Tarifa__c == 'SEG-A12'){
+                        line.FLETE__c = line.FLETE__c;
+                    }
+                    if(!mapLines.containsKey(line.Tarifa__c))
+                          mapLines.put(line.Tarifa__c, new List<TempleateLine__c>{line});
+                    else{
+                        if(!mapLines.get(line.Tarifa__c).contains(line))
+                            mapLines.get(line.Tarifa__c).add(line);
+                    }
+                }
             }else{
                 if(!mapLinesZP.containsKey(line.Tarifa__c))
                     mapLinesZP.put(line.Tarifa__c, new List<TempleateLine__c>{line});
