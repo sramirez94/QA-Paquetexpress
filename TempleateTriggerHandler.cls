@@ -92,6 +92,11 @@ public class TempleateTriggerHandler {
                 }
             }
 
+            List<Incremento_Anual__c> listIncremento = queryIncremento(setIdincremento);
+            List<Excepciones_de_incremento__c> listIncrementoExe = queryIncrementoExe();
+            TempleateLine__c objTempleateLine;
+            Decimal decCustomerPricePAQ = 0;
+
             for(SBQQ__QuoteLine__c objQLine : queryQuoteLines(setIdQuotes)) {
                 strRangeDest = '';
                 if(!(objQLine.Tarifa__c == 'TARIFA T7' && objQLine.ZonaPlus__c)){
@@ -116,6 +121,26 @@ public class TempleateTriggerHandler {
                         strRangeDest = objQLine.Destiny__c;
                     else strRangeDest = objQLine.Rango_KM__c;
                     if(this.blnCostoBaseGMP){
+                        if(objQLine.CreatedDate.year() < System.today().year() && listIncremento.size() > 0){
+                            for(Incremento_Anual__c incYear : listIncremento){
+                                if(/*Integer.valueOf(incyear.Anio__c) == objQline.CreatedDate.year()*/objQline.CreatedDate.year() < Integer.valueOf(incyear.Anio__c)){
+                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
+                                        if(incEXE.Incremento_Anual__c == incYear.id){
+                                            incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
+                                        }
+                                    }
+                                    if(objQLine.KG_ADICIONAL__c != null && objQLine.KG_ADICIONAL__c != 0){
+                                        objQLine.KG_ADICIONAL__c = (objQLine.KG_ADICIONAL__c * (IncYear.Incremento_anual_remota__c / 100)) + objQLine.KG_ADICIONAL__c;
+                                    }
+                                    if(IncYear.Incremento_anual_remota__c == NULL){
+                                        IncYear.Incremento_anual_remota__c = 0;
+                                    }
+                                    if(objQLine.Flete__c > 0){
+                                        objQLine.Flete__c = (objQLine.Flete__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.Flete__c;
+                                    }
+                                }
+                            }
+                        }
                         if(!this.mapGuide.containsKey(objQLine.PackWeightAVG__c))
                             this.mapGuide.put(objQLine.PackWeightAVG__c, objQLine.PackVolAVG__c);
                         if(!mapRangesByBlock.containsKey(objQLine.PackWeightAVG__c))
@@ -143,12 +168,6 @@ public class TempleateTriggerHandler {
                     }
                 }
             }
-             
-        
-            List<Incremento_Anual__c> listIncremento = queryIncremento(setIdincremento);
-            List<Excepciones_de_incremento__c> listIncrementoExe = queryIncrementoExe();
-            TempleateLine__c objTempleateLine;
-            Decimal decCustomerPricePAQ = 0;
             
            //aqui comienza el desarrollo para los calculos de plantillas de costo base y guia multipieza
             if(this.blnCostoBaseGMP){
@@ -683,6 +702,7 @@ public class TempleateTriggerHandler {
         ,KG_ADICIONAL__c
         , Destiny__c
         , SBQQ__Description__c
+        , CreatedDate
 		FROM SBQQ__QuoteLine__c
 		WHERE SBQQ__Quote__c IN: setIdQuotes];
 	}
