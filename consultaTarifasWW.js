@@ -8,7 +8,6 @@ const kmConfig          = [];
 const expressServices   = [];
 const servAdic          = [];
 export default class ConsultaTarifasWW extends LightningElement {
-    //@api recordId;
     @api propertyValue;
     ptpConfig           = ptpConfig;
     kmConfig            = kmConfig;
@@ -19,6 +18,7 @@ export default class ConsultaTarifasWW extends LightningElement {
     renderCBMEGMP       = false;
     renderXpress        = false;
     renderServAdic      = false;
+    blnLoading          = false;
     strError;
     strResponse;
     objResponse;
@@ -35,6 +35,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                 //Salvador Ramírez (sramirez@freewayconsulting.com): Si la respuesta de la cotización devolvió algo
                 this.objResponse    = JSON.parse(Respuesta); //Salvador Ramírez (sramirez@freewayconsulting.com): Se recibe el response y se le da formato de JSON
                 if(this.objResponse.body.response.success){
+                    this.blnLoading     = true;
                     let arrayPtpConfig  = []; //Salvador Ramírez (sramirez@freewayconsulting.com): Los datos que vienen ordenados por destino
                     let arrayKmConfig   = []; //Salvador Ramírez (sramirez@freewayconsulting.com): Los datos que vienen ordenados por rangos de km
                     let strCliente      = this.objResponse.body.response.data.clntId; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el id de sipweb del cliente
@@ -244,6 +245,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                         Monto : otherServiceTrif.trifAmount
                                                     };
                                                     servAdic.push(ServicioAdic);
+                                                    this.renderServAdic = true;
                                                     contadorAdic++;
                                                 } else {
                                                     break;
@@ -262,6 +264,26 @@ export default class ConsultaTarifasWW extends LightningElement {
                                     let kmServicesTrif = arrayKmConfig.kmServicesTrif[i];
                                     if(kmServicesTrif){
                                         let strRange = kmServicesTrif.fromKm + '-' + kmServicesTrif.toKm;
+
+                                        if(kmServicesTrif.serviceTrif){
+                                            for(let i = 0;kmServicesTrif.serviceTrif.length;i++){
+                                                let serviceTrif = kmServicesTrif.serviceTrif[i];
+                                                if(serviceTrif){
+                                                    let Tarifa = {
+                                                        id : 'Adic' + contadorAdic,
+                                                        RangoKM : strRange,
+                                                        Servicio : serviceTrif.serviceId,
+                                                        Monto : serviceTrif.trifAmount,
+                                                        Cotizacion : serviceTrif.quotation
+                                                    };
+                                                    servAdic.push(Tarifa);
+                                                    this.renderServAdic = true;
+                                                } else {
+                                                    break;
+                                                }
+                                            }
+                                        }
+
                                         for(let j = 0;kmServicesTrif.servicesTrifDtl.length; j++){
                                             let servicesTrifDtl = kmServicesTrif.servicesTrifDtl[j];
                                             if(servicesTrifDtl){
@@ -314,6 +336,8 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                                 break;
                                                             }
                                                         }
+                                                    } else {
+                                                        break;
                                                     }
                                                 } else {
                                                     break;
@@ -334,6 +358,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                         }
                     }
                     this.renderJSON = true; //Salvador Ramírez (sramirez@freewayconsulting.com): Se indica que se está renderizando
+                    this.blnLoading = false;
                 } else {
                     if(this.objResponse.body.response.messages){
                         for(let i = 0; this.objResponse.body.response.messages.length; i++){
