@@ -18,9 +18,129 @@
             </header>
         </div>
     </article>
-    <article class="slds-card" style="margin-right: 70%;">
+    <article class="slds-card" style="margin-right: 60%;">
         <div class="slds-card__body">
-            <lightning-combobox name="Period" label="Periodo" value={value} placeholder="Seleccionar periodo" options={options} onchange={handleChange} ></lightning-combobox>
+            <lightning-combobox name="Period" label="Periodo" value={value} placeholder="Seleccionar periodo" options={options} onchange={handleChange} style="display:inline-flexbox; margin-left: 2%; margin-right: 2%;" ></lightning-combobox>
+            <br/>
+            <lightning-button variant="brand" label="Consultar" title="Primary action" onclick={handleClick} class="slds-m-left_x-small" style="display:inline-flexbox; float: right;position: relative;margin-right: 2%"></lightning-button>
+            <br/><br/>
         </div>
     </article>
+    <template if:true={showSpinner}>
+        <div class="spinner">
+            <lightning-spinner alternative-text="Loading" variant="brand" size="short">
+                Obteniendo tarifas WW del cliente
+            </lightning-spinner>
+        </div>
+    </template>
+    
+    <template if:true={renderComisiones}>
+        <br/>
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col">
+                <span></span>
+            </div>
+            <div class="slds-col">
+                <article class="slds-card">
+                    <lightning-card title="Ventas del periodo">
+                        <p class="slds-p-horizontal_small" style="font-size: 30px;text-align: center;">$50,000.00</p>
+                    </lightning-card>
+                </article>
+                
+            </div>
+            <div class="slds-col">
+                <span></span>
+            </div>
+            <div class="slds-col">
+                <article class="slds-card">
+                    <lightning-card title="Cobranza del periodo">
+                        <p class="slds-p-horizontal_small" style="font-size: 30px; text-align: center;">{decTotalCobranza}</p>
+                    </lightning-card>
+                </article>
+            </div>
+            <div class="slds-col">
+                <span></span>
+            </div>
+            <div class="slds-col">
+                <article class="slds-card">
+                    <lightning-card title="Comisiones del periodo">
+                        <!--<p class="slds-p-horizontal_small" style="font-size: 30px; text-align: center;">
+                            <lightning-formatted-number value={decTotalComisiones} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                        </p>-->
+                        <p><lightning-formatted-number value="12.34" format-style="currency" currency-code="USD"></lightning-formatted-number></p>
+                    </lightning-card>
+                </article>
+            </div>
+            <div class="slds-col">
+                <span></span>
+            </div>
+        </div>
+        <br/>
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Comisión periodo
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Clave de cte.
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Nombre cte.
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Tipo cte. Clave
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Rango de flete
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Total antes de impuestos
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Comisión
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Bono
+                        </div>
+                    </th>
+                    <th align="center" class="" scope="col">
+                        <div class="slds-truncate" title="Cliente">
+                            Total comisión
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={arrayComisiones} for:item="com">
+                    <tr key={com.Id}>
+                        <td>{com.Periodo}</td>
+                        <td>{com.ClaveCliente}</td>
+                        <td>{com.NombreCte}</td>
+                        <td>{com.TipoCteCve}</td>
+                        <td>{com.RangoFlete}</td>
+                        <td>{com.TotalAntesImpuestos}</td>
+                        <td>{com.Comision}</td>
+                        <td>{com.Bono}</td>
+                        <td>{com.TotalComision}</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </template>
 </template>
