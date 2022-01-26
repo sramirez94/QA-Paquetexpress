@@ -4,12 +4,19 @@ import { getRecord } from 'lightning/uiRecordApi';
 import FederationIdentifier from '@salesforce/schema/user.FederationIdentifier';
 import GetComisiones from '@salesforce/apex/CtrlConsultaComisiones.CallValidaEjecutivoComisiones';
 import Id from '@salesforce/user/Id';
+var arrayComisiones = [];
 export default class PAQ_ConsultaComisiones_CMP extends LightningElement {
     @api recordId;
     strIdentifier;
     User;
     value = '';
-    UserId = Id; //CallValidaEjecutivoComisiones(String FechaIni, String FechaFin, String FederationId)
+    UserId = Id;
+    arrayComisiones = arrayComisiones;
+    renderComisiones = false;
+    showSpinner = false;
+    decTotalComisiones = 0;
+    decTotalCobranza = 0;
+    decTotalVentas = 0;
     @wire(getRecord, {recordId: Id, fields: [FederationIdentifier]})
     userDetails({error, data}){
         if(data){
@@ -44,6 +51,8 @@ export default class PAQ_ConsultaComisiones_CMP extends LightningElement {
         //Función que se encargará de mandar a ejecutar el servicio
         if(this.value !== '' && this.value !== undefined && this.value !== null){
             //Salvador Ramírez (sramirez@freewayconsulting.com): Si se seleccionó un valor en el picklist
+            this.showSpinner    = true;
+            //arrayComisiones     = [];
             let arrayFechas     = [];
             let strInitDate     = '';
             let strendDate      = '';
@@ -51,7 +60,7 @@ export default class PAQ_ConsultaComisiones_CMP extends LightningElement {
             strInitDate = arrayFechas[0]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene la primer fecha
             strendDate  = arrayFechas[1]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene la segunda fecha
             this.showMessage('Comienza la consulta de comisiones', true);
-            this.getComisionesEjecutivo(strInitDate, strendDate, this.strIdentifier);
+            this.getComisionesEjecutivo(strInitDate.replace('-','').slice(0,-3), strendDate.replace('-','').slice(0,-3), this.strIdentifier);
         } else {
             this.showMessage('Error. Debe seleccionar un periodo a consultar', false);
         }
@@ -60,10 +69,45 @@ export default class PAQ_ConsultaComisiones_CMP extends LightningElement {
         GetComisiones({
             FechaIni : Fecha_Ini,
             FechaFin : Fecha_Fin,
-            FedeerationId : FedIdentifier
+            FederationId : FedIdentifier
         }).then(Respuesta => {
+            //debugger;
             if(Respuesta){
-                console.log('ejecutado. Respuesta: ' + Respuesta);
+                let objResponse = JSON.parse(Respuesta);
+                if(objResponse.body.response.success){
+                    if(objResponse.body.response.data && objResponse.body.response.data.length > 0){
+                        for(let i = 0;objResponse.body.response.data.length;i++){
+                            let data = objResponse.body.response.data[i];
+                            if(data){
+                                this.decTotalComisiones += data.totalComision;
+                                this.decTotalCobranza += data.totalAntesDeImpuestos;
+                                let comision = {
+                                    Id : 'com' + i,
+                                    Periodo : data.comisionPeriodo,
+                                    ClaveCliente: data.clienteClave,
+                                    NombreCte : data.nombre,
+                                    TipoCteCve : data.tipoClienteClave,
+                                    RangoFlete : data.rangoFlete,
+                                    TotalAntesImpuestos : data.totalAntesDeImpuestos,
+                                    Comision : data.comision,
+                                    Bono : data.bono,
+                                    TotalComision : data.totalComision
+                                };
+                                arrayComisiones.push(comision);
+                            } else {
+                                break;
+                            }
+                        }
+                    } else {
+                        arrayComisiones = [];
+                    }
+                }
+                if(arrayComisiones.length > 0){
+                    this.renderComisiones = true;
+                } else {
+                    this.renderComisiones = false;
+                }
+                this.showSpinner = false;
             } else {
                 console.log('Error');
             }
