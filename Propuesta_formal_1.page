@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 10-22-2021
+  @last modified on  : 01-31-2022
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 -->
 <apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_Propuesta_formal_1" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
@@ -893,23 +893,23 @@
                             Servicios opcionales no incluidos:
                             <ul>
                                 <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false}">
-                                    <li>Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                                    <li>Recolección a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.
                                     </li>
                                 </apex:outputText>
                                 <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false}">
-                                    <li>Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                                    <li>Entrega a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.
                                     </li>
                                 </apex:outputText>
                                 <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false}">
-                                    <li>Entrega en Zona plus $220.50 más IVA por paquete (Aplica en Tarifas no mayores a T6).
+                                    <li>Entrega en Zona plus $241.01 más IVA por paquete (Aplica en Tarifas no mayores a T6).
                                     </li>
                                 </apex:outputText>
                                 <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                                    <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                                    <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
                                     </li>
                                 </apex:outputText>
                                 <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
-                                    <li>Acuse $68.50 más IVA.
+                                    <li>Acuse $74.87 más IVA.
                                     </li>
                                 </apex:outputText>
                             </ul>
@@ -920,11 +920,11 @@
                 <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
                         Servicios opcionales no incluidos:
                         <ul>
-                            <li>Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.</li>
-                            <li>Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.</li>
-                            <li>Entrega en Zona plus $220.50 más IVA por paquete.</li>
-                            <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                            <li>Acuse $68.50 más IVA.</li>
+                            <li>Recolección a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.</li>
+                            <li>Entrega a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.</li>
+                            <li>Entrega en Zona plus $241.01 más IVA por paquete.</li>
+                            <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                            <li>Acuse $74.87 más IVA.</li>
                         </ul>
                     </apex:outputText>
                 </li>
@@ -1428,23 +1428,23 @@
                     SERVICIOS OPCIONALES NO INCLUIDOS:
                     <ul>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false}">
-                            <li>Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                            <li>Recolección a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false}">
-                            <li>Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y $67.50 en ciudades chicas y medianas.
+                            <li>Entrega a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false}">
-                            <li>Entrega en Zona plus $220.50 más IVA por paquete.
+                            <li>Entrega en Zona plus $241.01 más IVA por paquete.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                            <li> Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.
+                            <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
-                            <li>Acuse $68.50 más IVA.
+                            <li>Acuse $74.87 más IVA.
                             </li>
                         </apex:outputText>
                     </ul>
@@ -1454,20 +1454,20 @@
                     SERVICIOS OPCIONALES NO INCLUIDOS:
                     <ul>
                         <li><apex:outputText rendered="{!IF(blnDS=false && bln2D=false && blnA12=false,true,false)}">
-                                Recolección a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y
-                                $67.50 en ciudades chicas y medianas.
+                                Recolección a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y
+                                $73.78 en ciudades chicas y medianas.
                             </apex:outputText>
                         </li>
                         <li><apex:outputText rendered="{!IF(blnDS=false && bln2D=false && blnA12=false,true,false)}">
-                                Entrega a domicilio $103.50 en ciudades macro, $83.50 en ciudades grandes y
-                                $67.50 en ciudades chicas y medianas.
+                                Entrega a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y
+                                $73.78 en ciudades chicas y medianas.
                             </apex:outputText>
                         </li>
                         <li><apex:outputText rendered="{!IF(blnDS=false && bln2D=false && blnA12=false,true,false)}">
-                                Entrega en Zona plus $220.50 más IVA por paquete.
+                                Entrega en Zona plus $241.01 más IVA por paquete.
                             </apex:outputText></li>
-                        <li>Seguro $11.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                        <li>Acuse $68.50 más IVA.</li>
+                        <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
+                        <li>Acuse $74.87 más IVA.</li>
                     </ul>
                 </apex:outputText>
             </div>
