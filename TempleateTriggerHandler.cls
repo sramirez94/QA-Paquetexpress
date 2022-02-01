@@ -121,9 +121,10 @@ public class TempleateTriggerHandler {
                         strRangeDest = objQLine.Destiny__c;
                     else strRangeDest = objQLine.Rango_KM__c;
                     if(this.blnCostoBaseGMP){
+                        //Incremento anual para cotizaciones de costo base más excedente y multipieza
                         if(objQLine.CreatedDate.year() < System.today().year() && listIncremento.size() > 0){
                             for(Incremento_Anual__c incYear : listIncremento){
-                                if(/*Integer.valueOf(incyear.Anio__c) == objQline.CreatedDate.year()*/objQline.CreatedDate.year() < Integer.valueOf(incyear.Anio__c)){
+                                if(objQline.CreatedDate.year() < Integer.valueOf(incyear.Anio__c)){
                                     for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
                                         if(incEXE.Incremento_Anual__c == incYear.id){
                                             incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
@@ -137,6 +138,9 @@ public class TempleateTriggerHandler {
                                     }
                                     if(objQLine.Flete__c > 0){
                                         objQLine.Flete__c = (objQLine.Flete__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.Flete__c;
+                                    }
+                                    if(objQline.ZonaPlus__c && objQLine.Tarifa__c != 'TARIFA T7' && objQLine.EAD__c > 0){
+                                        objQLine.EAD__c = (objQLine.EAD__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.EAD__c;
                                     }
                                 }
                             }
