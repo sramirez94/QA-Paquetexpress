@@ -1,28 +1,21 @@
 import { LightningElement, api, wire, track } from 'lwc';
-//import { getRecord } from 'lightning/uiRecordApi';
 import CargaInfoSipweb from '@salesforce/apex/consultaTarifasWW_CTR.CargaInfoSipweb';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-//const fields = ['Account.Id_SIpWeb__c']
-const ptpConfig         = [];
-const kmConfig          = [];
-const expressServices   = [];
-const servAdic          = [];
 export default class ConsultaTarifasWW extends LightningElement {
     @api propertyValue;
-    ptpConfig           = ptpConfig;
-    kmConfig            = kmConfig;
-    expressServices     = expressServices;
-    servAdic            = servAdic;
-    renderJSON          = false;
-    renderCFT           = false;
-    renderCBMEGMP       = false;
-    renderXpress        = false;
-    renderServAdic      = false;
-    blnLoading          = false;
-    strError;
-    strResponse;
-    objResponse;
-    Id_SIpWeb;
+    ptpConfig           = [];//Salvador Ramírez (sramirez@freewayconsulting.com): Arreglo que guardará los datos de tarifas de punto a punto
+    kmConfig            = [];//Salvador Ramírez (sramirez@freewayconsulting.com): Arreglo que guardará los datos de tarifas por rango de km
+    expressServices     = [];//Salvador Ramírez (sramirez@freewayconsulting.com): Arreglo que guardará los datos de los servicios express
+    servAdic            = [];//Salvador Ramírez (sramirez@freewayconsulting.com): Arreglo que guardará los datos de los servicios adicionales
+    renderJSON          = false;//Salvador Ramírez (sramirez@freewayconsulting.com): Indicará si se terminó de renderizar el JSON
+    renderCFT           = false;//Salvador Ramírez (sramirez@freewayconsulting.com): Indica si es una cotización de costos fijos por tarifa
+    renderCBMEGMP       = false;//Salvador Ramírez (sramirez@freewayconsulting.com): Indica si es una cotización de costo base más excedente o multipieza
+    renderXpress        = false;//Salvador Ramírez (sramirez@freewayconsulting.com): Indica si se debe mostrar la tabla de servicios express
+    renderServAdic      = false;//Salvador Ramírez (sramirez@freewayconsulting.com): Indica si se debe mostrar la tabla de servicios adicionales
+    blnLoading          = false;//Salvador Ramírez (sramirez@freewayconsulting.com): Indica si la información aún se encuentra cargando, es para que el spinner se mantenga visualizando
+    strError            = '';
+    strResponse         = '';
+    objResponse         = null;
     renderedCallback(){
         this.getConveniosWW();
     }
@@ -41,6 +34,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                     let strCliente      = this.objResponse.body.response.data.clntId; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el id de sipweb del cliente
                     let strTarifa       = this.objResponse.body.response.data.trifType; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el tipo de tarifa (A o C)
                     let Multipieza      = '';
+                    console.log('guardado: ' + this.kmConfig.length);
                     if(this.objResponse.body.response.data.ptpConfig){
                         //Salvador Ramírez (sramirez@freewayconsulting.com): Si vienen datos ordenados por destinos
                         arrayPtpConfig  = this.objResponse.body.response.data.ptpConfig[0]; //Salvador Ramírez (sramirez@freewayconsulting.com): Siempre esta lista solo tendrá 1 elemento por eso se referencia al 0
@@ -89,7 +83,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                                     Cotizacion : serviceTrif.quotation
                                                                     //type: 'text'
                                                                 };
-                                                                ptpConfig.push(Tarifa);
+                                                                this.ptpConfig.push(Tarifa);
                                                             } else {
                                                                 break;
                                                             }
@@ -109,9 +103,10 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                         id : 'Adic' + j,
                                                         RangoKM : strRange,
                                                         Servicio : serviceTrif.serviceId,
+                                                        ServicesCant : serviceTrif.servicesCant,
                                                         Monto : serviceTrif.trifAmount
                                                     }
-                                                    servAdic.push(ServicioAdic);
+                                                    this.servAdic.push(ServicioAdic);
                                                     this.renderServAdic = true;
                                                 } else {
                                                     break;
@@ -132,6 +127,26 @@ export default class ConsultaTarifasWW extends LightningElement {
                                 let kmServicesTrif = arrayKmConfig.kmServicesTrif[i];
                                 if(kmServicesTrif){
                                     let RangoKM = kmServicesTrif.fromKm +'-'+ kmServicesTrif.toKm;
+                                    //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para los costos de zona plus
+                                    if(kmServicesTrif.serviceTrif){
+                                        for(let j = 0; kmServicesTrif.serviceTrif.length;j++){
+                                            let serviceTrif = kmServicesTrif.serviceTrif[j];
+                                            if(serviceTrif){
+                                                let ServicioAdic = {
+                                                    id : 'Adic' + j,
+                                                    RangoKM : RangoKM,
+                                                    Servicio : serviceTrif.serviceId,
+                                                    Monto : serviceTrif.trifAmount,
+                                                    ServicesCant : serviceTrif.servicesCant
+                                                };
+                                                this.servAdic.push(ServicioAdic);
+                                                this.renderServAdic = true;
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para las tarifas normales (De la Sobre a la 7)
                                     if(kmServicesTrif.servicesTrifCbe){
                                         for(let j = 0; kmServicesTrif.servicesTrifCbe.length; j++){
                                             let servicesTrifCbe = kmServicesTrif.servicesTrifCbe[j];
@@ -155,7 +170,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                             Multipieza : Multipieza,
                                                             Cotizacion : serviceTrif.quotation
                                                         };
-                                                        kmConfig.push(Tarifa);
+                                                        this.kmConfig.push(Tarifa);
                                                         ContadorKm++;
                                                     } else {
                                                         break;
@@ -201,7 +216,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                                     Monto : serviceTrif.trifAmount,
                                                                     Cotizacion : serviceTrif.quotation
                                                                 }
-                                                                ptpConfig.push(Tarifa);
+                                                                this.ptpConfig.push(Tarifa);
                                                                 contador++;
                                                             } else {
                                                                 break;
@@ -224,9 +239,10 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                         id : 'Adic' + contadorAdic,
                                                         RangoKM : strRange,
                                                         Servicio : serviceTrif.serviceId,
-                                                        Monto : serviceTrif.trifAmount
+                                                        Monto : serviceTrif.trifAmount,
+                                                        ServicesCant : serviceTrif.servicesCant
                                                     }
-                                                    servAdic.push(ServicioAdic);
+                                                    this.servAdic.push(ServicioAdic);
                                                     contadorAdic++;
                                                     this.renderServAdic = true;
                                                 } else {
@@ -244,7 +260,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                         Servicio : otherServiceTrif.serviceId,
                                                         Monto : otherServiceTrif.trifAmount
                                                     };
-                                                    servAdic.push(ServicioAdic);
+                                                    this.servAdic.push(ServicioAdic);
                                                     this.renderServAdic = true;
                                                     contadorAdic++;
                                                 } else {
@@ -274,9 +290,10 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                         RangoKM : strRange,
                                                         Servicio : serviceTrif.serviceId,
                                                         Monto : serviceTrif.trifAmount,
-                                                        Cotizacion : serviceTrif.quotation
+                                                        Cotizacion : serviceTrif.quotation,
+                                                        ServicesCant : serviceTrif.servicesCant
                                                     };
-                                                    servAdic.push(Tarifa);
+                                                    this.servAdic.push(Tarifa);
                                                     this.renderServAdic = true;
                                                 } else {
                                                     break;
@@ -300,7 +317,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                             Monto : serviceTrif.trifAmount,
                                                             Cotizacion : serviceTrif.quotation
                                                         };
-                                                        kmConfig.push(Tarifa);
+                                                        this.kmConfig.push(Tarifa);
                                                     } else {
                                                         break;
                                                     }
@@ -331,7 +348,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                                     Multipieza : Multipieza,
                                                                     Cotizacion : serviceTrif.quotation
                                                                 }
-                                                                expressServices.push(Tarifa);
+                                                                this.expressServices.push(Tarifa);
                                                             } else {
                                                                 break;
                                                             }
@@ -343,11 +360,8 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                     break;
                                                 }
                                             }
-                                        }/* else {
-                                            break;
-                                        }*/
-                                        
-                                        if(expressServices){
+                                        }
+                                        if(this.expressServices && this.expressServices.length > 0){
                                             this.renderXpress = true;
                                         }
                                     } else {
