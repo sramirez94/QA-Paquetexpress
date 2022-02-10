@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 05-26-2021
+  @last modified on  : 10-29-2021
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log 
   Ver   Date         Author                               Modification
@@ -1578,14 +1578,15 @@
                     $scope.OD.FeeSelect.available.splice(index, 1);
                     $scope.OD.FeeSelect.selected.push(fee);
                     $scope.OD.FeeSelect.selected.sort(function (a, b) {
-                        if (a.order > b.order) {
+                        /*if (a.order > b.order) {
                             return 1;
                         }
                         if (a.order < b.order) {
                             return -1;
                         }
                         // a must be equal to b
-                        return 0;
+                        return 0;*/
+                        return(a.order - b.order);
                     });
                     if(notEmpty(fee.id) && fee.id != 'DS' && fee.id != '2D' && fee.id != 'A12')
                         $scope.OD.mapQuotes[fee.id].blnShow = true;
@@ -2244,11 +2245,12 @@
                                                 , Rango_KM__c: strRange
                                                 , ZonaPlus__c: false
                                                 , Pack_Seg__c: $scope.OD.fltSEG
-                                                , Id: $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id
+                                                //, Id: $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id
                                                 , SBQQ__VolumeDiscount__c: $scope.OD.mapQuotes[keyFee].fltFeeTotalDesc * 100
                                                 , SBQQ__Quote__c: Quote.Id
                                             };
-
+                                            if($scope.OD.mapQuotes[keyFee].ranges[keyRange].Id)
+                                                QuoteItem.Id = $scope.OD.mapQuotes[keyFee].ranges[keyRange].Id;
                                             if (!getId(labelRange, $scope.OD.OriginalListRange))
                                                 QuoteItem.Destiny__c = keyRange;
 
@@ -2292,10 +2294,11 @@
                                                     , Rango_KM__c: strRange
                                                     , ZonaPlus__c: true
                                                     , SBQQ__VolumeDiscount__c: $scope.ODZP.mapQuotes[keyFee].fltFeeTotalDesc * 100
-                                                    , Id: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id
+                                                    //, Id: $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id
                                                     , SBQQ__Quote__c: Quote.Id
                                                 };
-
+                                                if($scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id)
+                                                    QuoteItemZP.Id = $scope.ODZP.mapQuotes[keyFee].ranges[keyRange].Id;
                                                 if (!getId(labelRange, $scope.OD.OriginalListRange))
                                                     QuoteItemZP.Destiny__c = keyRange;
 
@@ -2407,7 +2410,7 @@
                                             , Rango_KM__c: $scope.OD.mapQuotesT7ZP.Tender[strTender].strRange
                                             , ZonaPlus__c: true
                                             , Pack_Seg__c: 0
-                                            , Id: $scope.OD.mapQuotesT7ZP.Tender[strTender].Id
+                                            //, Id: $scope.OD.mapQuotesT7ZP.Tender[strTender].Id
                                             , SBQQ__VolumeDiscount__c: 0
                                             , SBQQ__Quote__c: Quote.Id
                                             , Destiny__c : strTender
@@ -2450,7 +2453,7 @@
                                             , SBQQ__Quote__c: Quote.Id
                                             , Destiny__c : ''
                                             , SBQQ__Description__c : 'Propuesta'
-                                            , Id : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].Id
+                                            //, Id : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].Id
                                             , Flete__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
                                             , Guia__c : $scope.OD.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
                                         };
@@ -2501,7 +2504,7 @@
                                             , Tarifa__c: labelFee
                                             , Rango_KM__c: strRange
                                             , Pack_Seg__c: $scope.OD.fltSEG
-                                            , Id: range.Id
+                                            //, Id: range.Id
                                             , SBQQ__VolumeDiscount__c: block.intTotalDisc * 100
                                             , SBQQ__Quote__c: Quote.Id
                                             , Weight__c: range.fltWeight
@@ -2581,8 +2584,8 @@
                                                         MainDesinations__c: $scope.SS.service[keyService].mainDestinies
                                                         ,
                                                         Potencial__c: $scope.SS.service[keyService].potential
-                                                        ,
-                                                        Id: $scope.SS.ranges[keyRange].Service[keyService].Id
+                                                        /*,
+                                                        Id: $scope.SS.ranges[keyRange].Service[keyService].Id*/
                                                     };
                                                     if (!getId(labelRange, $scope.OD.OriginalListRange))
                                                         SpecialService.Destiny__c = keyRange;
@@ -2618,6 +2621,7 @@
                             else if (Quote.Id)
                                 if (Quote.SBQQ__Status__c === 'Draft' || Quote.SBQQ__Status__c === 'Rejected')
                                     callUpdateQuoteConv($scope, Quote, listQuoteItem, $scope.Wrapper.objLead, $scope.Wrapper.objOpp, listDelete, listSS, listDELSS);
+                                    //EliminarPartidasAnteriores($scope, Quote.Id, Quote,listQuoteItem,  $scope.Wrapper.objLead, $scope.Wrapper.objOpp, listDelete, null, null);
                                 else
                                     $scope.DML.listErrors.push('El Estatus actual de la cotización no permite modificaciones');
                             else
@@ -4039,6 +4043,7 @@
                 };
 
                 $scope.updateFees = function(strOpp, strList){
+                    debugger;
                     switch (strOpp) {
                         case 'add':
                             if(strList=== 'fee')
@@ -4904,7 +4909,7 @@
                 Visualforce.remoting.Manager.invokeAction(
                         '{!$RemoteAction.PAQ_CotizadorNacional_CTR.getHierarchyUser}'
                         , function (result, event) {
-                          //  debugger;
+                            debugger;
                             if (event.status) {
                                 $scope.Wrapper.mapHierarchy = result.mapHierarchy;
                                 j$.each(result.mapHierarchy,
@@ -6060,6 +6065,32 @@
                             j$.unblockUI();
                         }
                         ,{escape: false, timeout: 120000}
+                );
+            }
+            function EliminarPartidasAnteriores($scope, QuoteId, objQuote, listQuoteItem, leadObj, oppObj, listDeleteItems, listSS, listDELSS){
+                j$.blockUI({ message: '<h3><span class="glyphicon glyphicon-time"></span> Por favor espere... </h3>' });
+                $scope.sent = true;
+                $scope.SuccessMessage = '';
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.PAQ_CotizadorNacional_CTR.EliminaPartidasAnteriores}'
+                    , QuoteId
+                    , listQuoteItem
+                    , objQuote
+                    , function (result, event) {
+                        if (event.status){
+                            //if($scope.DML.blnSuccess)
+                            $scope.DML.blnSuccess = true;
+                            $scope.DML.listErrors = [];
+                            $scope.OD.blnBotonActivo = false;
+                            $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
+                            $scope.$apply();
+                            j$.unblockUI();
+                        } else {
+                            $scope.DML.listErrors.push(logErrorMessage(event.message.split(',')));
+                            $scope.$apply();
+                            j$.unblockUI();
+                        }
+                    }//,{escape: false, timeout: 120000}
                 );
             }
         })();
