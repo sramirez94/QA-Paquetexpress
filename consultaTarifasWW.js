@@ -123,68 +123,70 @@ export default class ConsultaTarifasWW extends LightningElement {
                         }
                         if(arrayKmConfig){
                             let ContadorKm = 0;
-                            for(let i = 0; arrayKmConfig.kmServicesTrif.length;i++){
-                                let kmServicesTrif = arrayKmConfig.kmServicesTrif[i];
-                                if(kmServicesTrif){
-                                    let RangoKM = kmServicesTrif.fromKm +'-'+ kmServicesTrif.toKm;
-                                    //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para los costos de zona plus
-                                    if(kmServicesTrif.serviceTrif){
-                                        for(let j = 0; kmServicesTrif.serviceTrif.length;j++){
-                                            let serviceTrif = kmServicesTrif.serviceTrif[j];
-                                            if(serviceTrif){
-                                                let ServicioAdic = {
-                                                    id : 'Adic' + j,
-                                                    RangoKM : RangoKM,
-                                                    Servicio : serviceTrif.serviceId,
-                                                    Monto : serviceTrif.trifAmount,
-                                                    ServicesCant : serviceTrif.servicesCant
-                                                };
-                                                this.servAdic.push(ServicioAdic);
-                                                this.renderServAdic = true;
-                                            } else {
-                                                break;
+                            if(arrayKmConfig.kmServicesTrif.length > 0){
+                                for(let i = 0; arrayKmConfig.kmServicesTrif.length;i++){
+                                    let kmServicesTrif = arrayKmConfig.kmServicesTrif[i];
+                                    if(kmServicesTrif){
+                                        let RangoKM = kmServicesTrif.fromKm +'-'+ kmServicesTrif.toKm;
+                                        //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para los costos de zona plus
+                                        if(kmServicesTrif.serviceTrif){
+                                            for(let j = 0; kmServicesTrif.serviceTrif.length;j++){
+                                                let serviceTrif = kmServicesTrif.serviceTrif[j];
+                                                if(serviceTrif){
+                                                    let ServicioAdic = {
+                                                        id : 'Adic' + j,
+                                                        RangoKM : RangoKM,
+                                                        Servicio : serviceTrif.serviceId,
+                                                        Monto : serviceTrif.trifAmount,
+                                                        ServicesCant : serviceTrif.servicesCant
+                                                    };
+                                                    this.servAdic.push(ServicioAdic);
+                                                    this.renderServAdic = true;
+                                                } else {
+                                                    break;
+                                                }
                                             }
                                         }
-                                    }
-                                    //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para las tarifas normales (De la Sobre a la 7)
-                                    if(kmServicesTrif.servicesTrifCbe){
-                                        for(let j = 0; kmServicesTrif.servicesTrifCbe.length; j++){
-                                            let servicesTrifCbe = kmServicesTrif.servicesTrifCbe[j];
-                                            if(servicesTrifCbe){
-                                                let serviceId       = servicesTrifCbe.serviceId;
-                                                let factor          = servicesTrifCbe.factor;
-                                                let trifAmountExce  = servicesTrifCbe.trifAmountExce;
-                                                for(let k = 0; servicesTrifCbe.serviceTrif.length;k++){
-                                                    let serviceTrif = servicesTrifCbe.serviceTrif[k];
-                                                    if(serviceTrif){
-                                                        let Tarifa = {
-                                                            id : ContadorKm,
-                                                            Cliente : strCliente,
-                                                            RangoKM : RangoKM,
-                                                            Tarifa : strTarifa,
-                                                            Servicio : serviceId,
-                                                            Factor : factor,
-                                                            Peso_Vol_Inicial : serviceTrif.factorValue,
-                                                            Monto : serviceTrif.trifAmount,
-                                                            Monto_Excedente : trifAmountExce,
-                                                            Multipieza : Multipieza,
-                                                            Cotizacion : serviceTrif.quotation
-                                                        };
-                                                        this.kmConfig.push(Tarifa);
-                                                        ContadorKm++;
-                                                    } else {
-                                                        break;
+                                        //Salvador Ramírez (sramirez@freewayconsulting.com): Recorrido para las tarifas normales (De la Sobre a la 7)
+                                        if(kmServicesTrif.servicesTrifCbe){
+                                            for(let j = 0; kmServicesTrif.servicesTrifCbe.length; j++){
+                                                let servicesTrifCbe = kmServicesTrif.servicesTrifCbe[j];
+                                                if(servicesTrifCbe){
+                                                    let serviceId       = servicesTrifCbe.serviceId;
+                                                    let factor          = servicesTrifCbe.factor;
+                                                    let trifAmountExce  = servicesTrifCbe.trifAmountExce;
+                                                    for(let k = 0; servicesTrifCbe.serviceTrif.length;k++){
+                                                        let serviceTrif = servicesTrifCbe.serviceTrif[k];
+                                                        if(serviceTrif){
+                                                            let Tarifa = {
+                                                                id : ContadorKm,
+                                                                Cliente : strCliente,
+                                                                RangoKM : RangoKM,
+                                                                Tarifa : strTarifa,
+                                                                Servicio : serviceId,
+                                                                Factor : factor,
+                                                                Peso_Vol_Inicial : serviceTrif.factorValue,
+                                                                Monto : serviceTrif.trifAmount,
+                                                                Monto_Excedente : trifAmountExce,
+                                                                Multipieza : Multipieza,
+                                                                Cotizacion : serviceTrif.quotation
+                                                            };
+                                                            this.kmConfig.push(Tarifa);
+                                                            ContadorKm++;
+                                                        } else {
+                                                            break;
+                                                        }
                                                     }
+                                                } else {
+                                                    break;
                                                 }
-                                            } else {
-                                                break;
                                             }
+                                        } else {
+                                            break;
                                         }
                                     } else {
                                         break;
                                     }
-                                } else {
-                                    break;
                                 }
                             }
                         }
