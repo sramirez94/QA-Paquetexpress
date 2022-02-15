@@ -5,12 +5,18 @@ global class GrabadoBtnController {
     public string tipoDocumentacion {get;set;}
     public Id cuenta {get;set;}
     public string idSipWeb{get;set;}
+    public string strMensajeUsuario {get; set;}
     public date fechaVigencia{get;set;}
     public Boolean grabadoUnico{get;set;}
     public Boolean confirmacionGrabadoUnico{get;set;}
+    public Boolean blnLlamadaDocLinea {get;set;}
+    public String strTipoCliente    {get;set;}
     
     public GrabadoBtnController(ApexPages.StandardController controller) {
         try{
+            this.strMensajeUsuario  = '';
+            this.blnLlamadaDocLinea = false;
+            this.strTipoCliente     = '';
         cas =  (SBQQ__Quote__c) controller.getRecord();
         Id = cas.Id;
         System.debug('Cotización: ' + cas); 
@@ -27,7 +33,15 @@ global class GrabadoBtnController {
         try{
         PageReference pageRef = new PageReference('/'+Id);
         pageRef.setRedirect(true);
-        if(tipoDocumentacion=='Tarifario abierto de piso'){    
+        if(tipoDocumentacion=='Tarifario abierto de piso' || tipoDocumentacion == 'En Piso-Sipweb' || tipoDocumentacion == 'Guías prepagadas'){    
+            if(test.isRunningTest()){
+                DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
+                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
+                DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
+                DefinicionesServiciosGrabado.requestDataODC ddP = new DefinicionesServiciosGrabado.requestDataODC();
+                DefinicionesServiciosGrabado.requestODC req = new DefinicionesServiciosGrabado.requestODC();
+                DefinicionesServiciosGrabado.bodyRequestODC bdp = new DefinicionesServiciosGrabado.bodyRequestODC();
+            }
             if(System.isScheduled()||!(grabadoUnico && confirmacionGrabadoUnico)){
                 if(fechaVigencia>=Date.today()||fechaVigencia==null)
                     iniciarGrabado(cas);
@@ -279,6 +293,7 @@ global class GrabadoBtnController {
                 bdp.request = req;
                 rdp.body = bdp;
                 System.debug('Se terminó de formar el JSON');
+                system.debug('Json:::' + JSON.serialize(rdp));
                 if(!System.isScheduled()){
                     if(!cotizacion.Electronicas__c){
                         if(envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion))
@@ -421,14 +436,18 @@ global class GrabadoBtnController {
                     ubicacion = cotizacion.SBQQ__Account__r.Plaza_Facturacion__r.Name;
                 if(null!=ubicacion && !String.isEmpty(ubicacion))
                     site = ubicacion.replaceAll(ubicacion.replaceAll('[^0-9]',''),'');
-                System.debug('Site: '+site+' Ubicacion:'+ubicacion);
+                System.debug('Site: '+ this.strTipoCliente);
                 du.authBy = userSipweb;
                 du.clntId= cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
                 du.clntUser= cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
                 du.clntPass= '1234';
                 du.clntAprvSite= site;
                 du.clntAprvBrnc= ubicacion;
-                du.clntTarifType= 'A';
+                if(this.blnLlamadaDocLinea){
+                    du.clntTarifType = this.strTipoCliente;
+                } else {
+                    du.clntTarifType= 'A';
+                }
                 du.clntAddSrvcDips= 'Y';
                 du.setShipmentLetterQty= '3';
                 du.clntInvcPerd= '0';
@@ -448,6 +467,12 @@ global class GrabadoBtnController {
                 rwu.header = hu;
                 return envioGrabadoPOST(JSON.serialize(rwu),endpoint,cotizacion);}
             else{
+                if(this.blnLlamadaDocLinea){
+                    if(this.strMensajeUsuario.contains('ES MIEMBRO DE CLIENTE DE DOCUMENTACION EN LINEA')){
+                        publicarEvento(false, this.strMensajeUsuario);
+                        return false;
+                    }
+                }
                 System.debug('crearUsuarioWeb: No se requiere crear usuario');
                 return true;
             }
@@ -458,6 +483,7 @@ global class GrabadoBtnController {
         }
     }
     public Boolean requeridoCrearUsuario(SBQQ__Quote__c cotizacion){
+        this.strMensajeUsuario = '';
         try{
             System.debug('Verificando si existe el usuario');
             String endpoint = Label.APIVerificarUsuario;
@@ -490,11 +516,12 @@ global class GrabadoBtnController {
             HTTPResponse res = consultaAPIPOST(jsonFormateado,endpoint);
             DefinicionesServiciosGrabado.verificarUsuarioR vuR = (DefinicionesServiciosGrabado.verificarUsuarioR)JSON.deserialize(res.getBody().replace('time','timeR'), DefinicionesServiciosGrabado.verificarUsuarioR.class);
             System.debug('requeridoCrearUsuario: ¿Se require crear usuario?: '+vur.body.response.success);
+            this.strMensajeUsuario = vuR.body.response.messages[0].description;
             return Boolean.valueOf(vur.body.response.success);
         }
         catch(Exception ex){
             System.debug('requeridoCrearUsuario: '+ex.getLineNumber()+' '+ex.getMessage());
-            publicarEvento(false,'Error al verificar el usuario');
+            publicarEvento(false,'Error al verificar el usuario '+ex.getLineNumber()+' '+ex.getMessage());
             return false;
         }
     }
@@ -527,8 +554,8 @@ global class GrabadoBtnController {
             SBQQ__Quote__c cot = null;
             //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Respuesta: ' + respuesta));
             DefinicionesServiciosGrabado.responseGrabado rg = (DefinicionesServiciosGrabado.responseGrabado)JSON.deserializeStrict(respuesta, DefinicionesServiciosGrabado.responseGrabado.class);
-            //System.debug('procesarRespuestaGrabado: ¿Procesado correctamente?: '+rg.body.response.success);
-            //System.debug('mensajes: ' + rg.body.response.messages);
+            System.debug('procesarRespuestaGrabado: ¿Procesado correctamente?: '+rg.body.response.success);
+            System.debug('mensajes: ' + rg.body.response.messages);
             if(cotizacion!=null && Boolean.valueOf(rg.body.response.success))
                 cot = [SELECT Id, Grabado_exitoso__c,ProcesadoTareaGrabado__c FROM SBQQ__Quote__c WHERE Id=:cotizacion.Id LIMIT 1];
             if(null!=cot){
