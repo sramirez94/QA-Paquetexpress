@@ -1,0 +1,89 @@
+<aura:component controller="AccountMapController">
+	<aura:handler event="c:AccountsLoaded" action="{!c.accountsLoaded}"/>
+    <aura:handler event="c:LeadsReload" action="{!c.LeadsReload}"/>
+    <aura:handler event="c:LeadsLoaded" action="{!c.LeadsLoaded}"/>
+    <aura:handler event="c:LeadsLoaded2" action="{!c.LeadsLoaded2}"/>
+    <aura:handler event="c:EventsLoaded" action="{!c.eventsLoaded}"/>
+    <aura:handler event="c:EventsLoaded2" action="{!c.eventsLoaded2}"/>
+    <aura:handler event="c:EventsLoaded3" action="{!c.eventsLoaded3}"/>
+    <aura:handler event="c:DescAccounts" action="{!c.DescAccounts}"/>
+	<aura:handler event="c:AccountSelected" action="{!c.accountSelected}"/>
+    <aura:handler event="c:leadSelected" action="{!c.leadSelected}"/>
+    <aura:handler event="c:accountMyLocationSelected" action="{!c.accountMyLocationSelected}"/>
+    <aura:handler event="c:VisitCreation" action="{!c.VisitCreation}"/>
+    <aura:handler event="c:AccountsReload" action="{!c.accountsReload}"/>
+    <aura:handler event="c:changeLocation" action="{!c.ChangeLocationAccount}"/>
+    <aura:handler event="c:CreateAcc" action="{!c.CreateAcc}"/>
+    <aura:handler event="c:MyActualLocation" action="{!c.MyActualLocation}"/>
+    <aura:registerEvent name="EnVisita" type="c:EnVisita"/>
+    <aura:registerEvent name="coorOfMyActualLocation" type="c:coorOfMyActualLocation"/>
+    <aura:attribute name="map" type="Object"/>
+    <aura:attribute name="account" type="Object"/>
+    <aura:attribute name="event" type="Object"/>
+    <aura:attribute name="lead" type="Object"/>
+    <aura:attribute name="latitude" type="Decimal"/>
+    <aura:attribute name="longitude" type="Decimal"/>
+    <aura:attribute name="markers" type="List"/>
+    <aura:attribute name="mylocation" type="Object"/>
+
+    <ltng:require styles="/resource/leaflet/leaflet.css"
+        scripts="/resource/leaflet/leaflet.js"
+        afterScriptsLoaded="{!c.jsLoaded}" />
+
+    <div id="map" style="min-height: 327px;"></div>
+    
+    <div id="cargandoubicacion" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-danger alert-dismissible" role="alert">
+      <strong>Cargando Ubicación GPS!</strong> Su dispositivo está intentando obtener su ubicación. Revise que el GPS este activado.
+      <button type="button" class="close" onclick="{!c.ocultarcargandoubicacion}" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div id="ubicacioncargada" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-success alert-dismissible" role="alert">
+      <strong>Ubicación Encontrada!</strong> Su ubicación GPS ha sido encontrada por el Dispositivo, identificada en el Pin Verde, en {!v.latitude} y {!v.longitude}
+      <button type="button" class="close" onclick="{!c.ocultarubicacioncargada}" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>    
+    
+    <div id="mensajeexito" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-success alert-dismissible" role="alert">
+      <strong>Visita Guardada!</strong> La visita ha sido guardada, puede visualizarla en la pestaña de visitas.
+      <button type="button" class="close" onclick="{!c.ocultarmensajeexito}" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div id="mensajeexito2" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-success alert-dismissible" role="alert">
+      <strong>Nuevas Coordenadas Guardada!</strong> Se han guardado las nuevas coordenadas.
+      <button type="button" class="close" onclick="{!c.ocultarmensajeexito2}" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div id="mensajenocerca" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-danger alert-dismissible" role="alert">
+      <strong>Aún no está cerca!</strong> Antes de iniciar una visita, usted debería estar a una distancia de 200 metros de su cliente.
+      <button type="button" class="close" onclick="{!c.ocultarmensajenocerca}"  aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div id="mensajeerror" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-danger alert-dismissible" role="alert">
+      <strong>Cuidado!</strong> Antes de iniciar una visita, usted debería seleccionar primero una cuenta o un prospecto.
+      <button type="button" class="close" onclick="{!c.ocultarmensajeerror}"  aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    
+    <div id="mensajenobusqueda" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-danger alert-dismissible" role="alert">
+      <strong>Introduzca al menos (3) caracteres!</strong> Por favor introduzca al menos (3) caracteres para obtener mejores resultados de Búsqueda.
+      <button type="button" class="close" onclick="{!c.ocultarmensajenobusqueda}"  aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div id="mensajenoseencontraron" style="margin-top:5px; margin-bottom:0px; display:none;" class="alert alert-danger alert-dismissible" role="alert">
+      <strong>No se encontraron resultados!</strong> Por favor probar con otra búsqueda.
+      <button type="button" class="close" onclick="{!c.ocultarmensajenoseencontraron}"  aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+</aura:component>
