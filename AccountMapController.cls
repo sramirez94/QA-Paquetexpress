@@ -1,3 +1,6 @@
+/**
+ * Modificada: 18/02/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Caso 6315. Se mejora el registro de la actualización de coordenadas de las cuentas y de los prospectos
+**/
 public with sharing class AccountMapController {
   
     @AuraEnabled
@@ -75,12 +78,10 @@ public with sharing class AccountMapController {
             } else {
                 return 'exitonolograda';
             }
-              
         } else {
             return 'nocerca';
-        }  
+        }
     }
-    
     @AuraEnabled
     public static String endVisit() {
         Id idusuario=UserInfo.getUserId();
@@ -93,8 +94,6 @@ public with sharing class AccountMapController {
         update usuario;
     return 'exito';
     }
-    
-    
     @AuraEnabled
     public static String checkVisit() {
         Id idusuario=UserInfo.getUserId();
@@ -106,17 +105,22 @@ public with sharing class AccountMapController {
             return 'no';
         }
     }
-    
-    
     @AuraEnabled
     public static String changeLocation(Id account, Decimal lat, Decimal lng) {
-      Account cuentaseleccionada=[SELECT Id, Name, Location__Latitude__s, Location__Longitude__s from Account WHERE Id=:account LIMIT 1];
+        Account cuentaseleccionada=[SELECT Id, Name, Location__Latitude__s, Location__Longitude__s from Account WHERE Id=:account LIMIT 1];
         cuentaseleccionada.Location__Latitude__s=lat;
         cuentaseleccionada.Location__Longitude__s=lng;
-        update cuentaseleccionada;
-        return 'exito';
+        String result = '';
+        Database.SaveResult resCuenta = Database.update(cuentaseleccionada, false);
+        if(!resCuenta.isSuccess()){
+            for(Database.Error errCuenta : resCuenta.getErrors()){
+                result += errCuenta.getMessage();
+            }
+        } else {
+            result = 'exito';
+        }
+        return result;
     }
-    
     @AuraEnabled
     public static String changeLocation2(Id lead, Decimal lat, Decimal lng) {
         Lead prospectoseleccionado=[SELECT Id, Name, Location__Latitude__s, Location__Longitude__s from Lead WHERE Id=:lead LIMIT 1];
@@ -125,5 +129,4 @@ public with sharing class AccountMapController {
         update prospectoseleccionado;
         return 'exito';
     }
-    
 }
