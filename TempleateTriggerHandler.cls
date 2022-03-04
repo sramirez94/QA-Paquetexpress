@@ -24,45 +24,47 @@ public class TempleateTriggerHandler {
     }
 
 	public void syncQuote(List<Templeate__c> listNewTempleates){
-        try{  
+        try{
+            //Variables declaradas solo para el uso en el método
             this.strId = listNewTempleates[0].Quote__c;
-            String strRangeDest = '';
-            List<TempleateLine__c> listTempleateLines = new List<TempleateLine__c>();
-            Set<Id> setIdQuotes = new Set<Id>();
-            Set<Id> setIdincremento = new Set<Id>();
-            Map<Id, List<SBQQ__QuoteLine__c>> mapQLines = new Map<Id, List<SBQQ__QuoteLine__c>>();
-            Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotesT7 = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
-            Map<String, Map<String, SBQQ__QuoteLine__c>> mapQLinesPAQ = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
-            Map<Id, SBQQ__Quote__c> mapQuotes = new Map<Id, SBQQ__Quote__c>();
-            Map<String, Decimal> mapACK = new Map<String, Decimal>();
-            Map<String, Decimal> mapACKK = new Map<String, Decimal>();
-            Map<String, Decimal> mapZPL = new Map<String, Decimal>();
-            Map<String, Decimal> mapZPLL = new Map<String, Decimal>();
-            Map<String, Decimal> mapResiduo = new Map<String, Decimal>();
-            Map<String, Map<String, Decimal>> mapFlete = new Map<String, Map<String, Decimal>>();
-            Map<String, Map<String, Decimal>> mapSubTotalZP = new Map<String, Map<String, Decimal>>(); //Primero se probará, cuando quede resuelto borrar este comentario
-            Map<String, Decimal> mapRAD = new Map<String, Decimal>();
-            Map<String, Decimal> mapEAD = new Map<String, Decimal>();
-            Decimal decSEG          = 0;
-            this.blnCostoBaseGMP    = false;
-            this.blnRAD             = false;
-            this.blnEAD             = false;
-            this.blnACK             = false;
-            this.blnSEG             = false;
-            this.blnZP              = false;
-            this.mapGuide           = new Map<Decimal, Decimal>();
-            this.mapBlocksServ      = new Map<Decimal, Map<String, map<String, Decimal>>>();
-            this.mapBlocks          = new Map<String, Block>();
-            this.mapRangesByBlock   = new Map<Decimal, Map<String, Decimal>>();
-            this.mapService         = new Map<String, Block>{'ADD' => new Block('ADD',0,0,0), 'ACK' => new Block('ACK',0,0,0), 'ZP' => new Block('ZP',0,0,0)};
-            this.mapBlockAdic       = new map<String, map<String, Decimal>>();
-            this.mapTotalByRange    = new Map<String, QuoteWP>();
-            this.listRangeDestiny   = new List<String>();
-            this.mapRespaldo        = new Map<String, Map<String, Decimal>>();
-        
-            for(Templeate__c objTempleate : listNewTempleates)
+            String strRangeDest                                         = '';
+            List<TempleateLine__c> listTempleateLines                   = new List<TempleateLine__c>();
+            Set<Id> setIdQuotes                                         = new Set<Id>();
+            Set<Id> setIdincremento                                     = new Set<Id>();
+            Map<Id, List<SBQQ__QuoteLine__c>> mapQLines                 = new Map<Id, List<SBQQ__QuoteLine__c>>();
+            Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotesT7    = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
+            Map<String, Map<String, SBQQ__QuoteLine__c>> mapQLinesPAQ   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
+            Map<Id, SBQQ__Quote__c> mapQuotes                           = new Map<Id, SBQQ__Quote__c>();
+            Map<String, Decimal> mapACK                                 = new Map<String, Decimal>();
+            Map<String, Decimal> mapACKK                                = new Map<String, Decimal>();
+            Map<String, Decimal> mapZPL                                 = new Map<String, Decimal>();
+            Map<String, Decimal> mapResiduo                             = new Map<String, Decimal>();
+            Map<String, Map<String, Decimal>> mapFlete                  = new Map<String, Map<String, Decimal>>();
+            Map<String, Map<String, Decimal>> mapSubTotalZP             = new Map<String, Map<String, Decimal>>();
+            Map<String, Decimal> mapRAD                                 = new Map<String, Decimal>();
+            Map<String, Decimal> mapEAD                                 = new Map<String, Decimal>();
+            Map<String, Decimal> mapFleteSobre                          = new Map<String, Decimal>();
+            Map<String, Decimal> mapFleteSobreZP                        = new Map<String, Decimal>();
+            Decimal decSEG                                              = 0;
+            //Variables globales
+            this.blnCostoBaseGMP                                        = false;
+            this.blnRAD                                                 = false;
+            this.blnEAD                                                 = false;
+            this.blnACK                                                 = false;
+            this.blnSEG                                                 = false;
+            this.blnZP                                                  = false;
+            this.mapGuide                                               = new Map<Decimal, Decimal>();
+            this.mapBlocksServ                                          = new Map<Decimal, Map<String, map<String, Decimal>>>();
+            this.mapBlocks                                              = new Map<String, Block>();
+            this.mapRangesByBlock                                       = new Map<Decimal, Map<String, Decimal>>();
+            this.mapService                                             = new Map<String, Block>{'ADD' => new Block('ADD',0,0,0), 'ACK' => new Block('ACK',0,0,0), 'ZP' => new Block('ZP',0,0,0)};
+            this.mapBlockAdic                                           = new map<String, map<String, Decimal>>();
+            this.mapTotalByRange                                        = new Map<String, QuoteWP>();
+            this.listRangeDestiny                                       = new List<String>();
+            this.mapRespaldo                                            = new Map<String, Map<String, Decimal>>();
+            for(Templeate__c objTempleate : listNewTempleates){
                 setIdQuotes.add(objTempleate.Quote__c);
-            
+            }
             for(SBQQ__Quote__c objQuote : queryQuote(setIdQuotes)){
                 mapQuotes.put(objQuote.Id, objQuote);
                 if((objQuote.Modelo_de_tarifas__c == 'Guía multipieza: Por Destinos / Por rangos de km') || (objQuote.Modelo_de_tarifas__c == 'Costo base más excedente: Por Destinos / Por rangos de km'))
@@ -71,7 +73,7 @@ public class TempleateTriggerHandler {
                     this.blnByDimension = true;
                 if(objQuote.Acuse__c != null && String.isNotBlank(objQuote.Acuse__c))
                     this.blnACK = true;
-                if(String.isNotBlank(objQuote.Servicios_adicionales__c)){          
+                if(String.isNotBlank(objQuote.Servicios_adicionales__c)){
                     for (String strKeyService : objQuote.Servicios_adicionales__c.split(';')){
                         switch on strKeyService {
                             when 'RAD' {
@@ -88,15 +90,12 @@ public class TempleateTriggerHandler {
                             }
                         }
                     }
-                    
                 }
             }
-
             List<Incremento_Anual__c> listIncremento = queryIncremento(setIdincremento);
             List<Excepciones_de_incremento__c> listIncrementoExe = queryIncrementoExe();
             TempleateLine__c objTempleateLine;
             Decimal decCustomerPricePAQ = 0;
-
             for(SBQQ__QuoteLine__c objQLine : queryQuoteLines(setIdQuotes)) {
                 strRangeDest = '';
                 if(!(objQLine.Tarifa__c == 'TARIFA T7' && objQLine.ZonaPlus__c)){
@@ -120,12 +119,15 @@ public class TempleateTriggerHandler {
                     if(objQLine.Destiny__c != null)
                         strRangeDest = objQLine.Destiny__c;
                     else strRangeDest = objQLine.Rango_KM__c;
+                    if(!this.listRangeDestiny.contains(strRangeDest)){
+                        this.listRangeDestiny.add(strRangeDest);
+                    }
                     if(this.blnCostoBaseGMP){
                         //Incremento anual para cotizaciones de costo base más excedente y multipieza
                         if(objQLine.CreatedDate.year() < System.today().year() && listIncremento.size() > 0){
                             for(Incremento_Anual__c incYear : listIncremento){
                                 if(objQline.CreatedDate.year() < Integer.valueOf(incyear.Anio__c)){
-                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
+                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){
                                         if(incEXE.Incremento_Anual__c == incYear.id){
                                             incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
                                         }
@@ -151,28 +153,47 @@ public class TempleateTriggerHandler {
                             mapRangesByBlock.put(objQLine.PackWeightAVG__c, new Map<String, Decimal>{strRangeDest => objQLine.FLETE__c});
                         else if(!mapRangesByBlock.get(objQLine.PackWeightAVG__c).containsKey(strRangeDest))
                             mapRangesByBlock.get(objQLine.PackWeightAVG__c).put(strRangeDest, objQLine.FLETE__c);
-                        if(!this.mapService.get('ADD').mapRanges.containsKey(strRangeDest))
+                        if(!this.mapService.get('ADD').mapRanges.containsKey(strRangeDest)){
                             this.mapService.get('ADD').mapRanges.put(strRangeDest, objQLine.KG_ADICIONAL__c);
-        
-                        if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
+                        }
+                        if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest)){
                             this.mapService.get('ACK').mapRanges.put(strRangeDest, objQLine.ACK__c);
-        
+                        }
                         if(objQLine.ZonaPlus__c && objQLine.Tarifa__c != 'TARIFA T7')
                             this.mapService.get('ZP').mapRanges.put(strRangeDest, objQLine.EAD__c);
-                        if(!this.listRangeDestiny.contains(strRangeDest))
-                            this.listRangeDestiny.add(strRangeDest);
                     } else {
                         //Se realiza un caso especial para cuando la cotización solo contenga servicio de entrega a domicilio y ningún otro o solo tenga EAD y todos los servicios excepto RAD
                         if((objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && !blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && blnSEG && blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && blnSEG && !blnACK) || (objQline.ZonaPlus__c && blnEAD && !blnRAD && !blnSEG && blnACK)){
-                            if(!mapSubTotalZP.containsKey(objQLine.Tarifa__c))
+                            if(!mapSubTotalZP.containsKey(objQLine.Tarifa__c)){
                                 mapSubTotalZP.put(objQLine.Tarifa__c, new Map<String, Decimal>());
-                            if(!mapSubTotalZP.get(objQLine.Tarifa__c).containsKey(strRangeDest))
+                            }
+                            if(!mapSubTotalZP.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
                                 mapSubTotalZP.get(objQLine.Tarifa__c).put(strRangeDest, objQline.SBQQ__CustomerPrice__c);
+                            }
+                            if(!mapFleteSobreZP.containsKey(strRangeDest)){
+                                mapFleteSobreZP.put(strRangeDest, objQline.SBQQ__CustomerPrice__c);
+                            }
+                        } else if(!objQLine.ZonaPlus__c && blnEAD && !blnRAD){
+                            //Se respalda primero el cálculo del flete de la tarifa sobre. En este caso es escencial ya que primero se deben tomar los costos de zona plus
+                            //Pero por cuestiones de la forma en que se guardan los datos no es posible.
+                            if(objQLine.Tarifa__c == 'TARIFA SOBRE'){
+                                if(!mapFleteSobre.containsKey(strRangeDest)){
+                                    mapFleteSobre.put(strRangeDest, (objQline.SBQQ__CustomerPrice__c / 1.11));
+                                }
+                            }
                         }
                     }
                 }
             }
-            
+            //Si es una cotización de costos fijos por tarifa y solo tiene EAD pero no RAD
+            if((!blnCostoBaseGMP) && blnEAD && !blnRAD && mapFleteSobreZP != null && mapFleteSobre != null){
+                for(String strRange : listRangeDestiny){
+                    //Se calcula el valor de la zona plus ya que es necesaria para calcular los fletes de las tarifas incluso si no es de zona plus
+                    if(!mapZPL.containsKey(strRange) && mapFleteSobreZP.containsKey(strRange) && mapFleteSobre.containsKey(strRange)){
+                        mapZPL.put(strRange, (mapFleteSobreZP.get(strRange) - mapFleteSobre.get(strRange)));
+                    }
+                }
+            }
            //aqui comienza el desarrollo para los calculos de plantillas de costo base y guia multipieza
             if(this.blnCostoBaseGMP){
                 Integer blockCounter = 1;
@@ -259,7 +280,7 @@ public class TempleateTriggerHandler {
             //mapeo de plantillas dependiendo si son por rango de kilometros o destinos y le asigna el subtotal.
             Integer contador = 0;
             String strTarifaResp = '';
-            for(Templeate__c objTempleate : listNewTempleates){         
+            for(Templeate__c objTempleate : listNewTempleates){
                 for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){
                     if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
                         decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c;
@@ -267,62 +288,56 @@ public class TempleateTriggerHandler {
                     else if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Destiny__c)){
                         decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Destiny__c).SBQQ__CustomerPrice__c;
                     }
-                
-                    // codigo para el incremento anual guias prepagadas.        
-                    if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas')){ 
-                        if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)             
-                            for(Incremento_Anual__c IncYear : listIncremento){                       
-                                if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas' && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c) )
-                                {                                          
-                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
-                                        if(incEXE.Incremento_Anual__c == incYear.id){
-                                            incyear.Incremento_anual_prepago__c = incEXE.Incremento_prepago__c;                                    
-                                        }
-                                    }
-                                    if(IncYear.Incremento_anual_prepago__c == NULL){
-                                        IncYear.Incremento_anual_prepago__c = 0;
-                                    }
-
-                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_prepago__c /  100)) + objQline.SBQQ__CustomerPrice__c;							
-                                    
-                                    if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
-                                        mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;	
-                                        
-                                    }
-                                    if(objQLine.ZonaPlus__c)
-                                        decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_prepago__c) / 100) + decCustomerPricePAQ;
-                                } 												
-                            }
-                        else if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() <= System.today().year() && objTempleate.Fecha_sugar__c != null)            
-                            for(Incremento_Anual__c IncYear : listIncremento){                       
-                                if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas' && objTempleate.Fecha_sugar__c.year() < Integer.valueOf(IncYear.Anio__c))
-                                {                                          
-                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
-                                        if(incEXE.Incremento_Anual__c == incYear.id){
-                                            incyear.Incremento_anual_prepago__c = incEXE.Incremento_prepago__c;                                    
-                                        }
-                                    }
-                                    if(IncYear.Incremento_anual_prepago__c == NULL){
-                                        IncYear.Incremento_anual_prepago__c = 0;
-                                    }
-
-                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_prepago__c /  100)) + objQline.SBQQ__CustomerPrice__c;							
-                                    
-                                    if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
-                                        mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;	   
-                                    }
-                                    if(objQLine.ZonaPlus__c)
-                                        decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_prepago__c) / 100) + decCustomerPricePAQ;
-                                } 
-                            } 
-                    }
-                    // codigo para el incremento documentacion en linea.          
-                    if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota')){
+                    // codigo para el incremento anual guias prepagadas.
+                    if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas')){
                         if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)
-                            for(Incremento_Anual__c IncYear : listIncremento){                             
+                            for(Incremento_Anual__c IncYear : listIncremento){
+                                if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas' && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c) )
+                                {
+                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){
+                                        if(incEXE.Incremento_Anual__c == incYear.id){
+                                            incyear.Incremento_anual_prepago__c = incEXE.Incremento_prepago__c;
+                                        }
+                                    }
+                                    if(IncYear.Incremento_anual_prepago__c == NULL){
+                                        IncYear.Incremento_anual_prepago__c = 0;
+                                    }
+                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_prepago__c /  100)) + objQline.SBQQ__CustomerPrice__c;
+                                    if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
+                                        mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;
+                                    }
+                                    if(objQLine.ZonaPlus__c)
+                                        decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_prepago__c) / 100) + decCustomerPricePAQ;
+                                }
+                            }
+                        else if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() <= System.today().year() && objTempleate.Fecha_sugar__c != null)
+                            for(Incremento_Anual__c IncYear : listIncremento){
+                                if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas' && objTempleate.Fecha_sugar__c.year() < Integer.valueOf(IncYear.Anio__c))
+                                {
+                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){
+                                        if(incEXE.Incremento_Anual__c == incYear.id){
+                                            incyear.Incremento_anual_prepago__c = incEXE.Incremento_prepago__c;
+                                        }
+                                    }
+                                    if(IncYear.Incremento_anual_prepago__c == NULL){
+                                        IncYear.Incremento_anual_prepago__c = 0;
+                                    }
+                                    objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_prepago__c /  100)) + objQline.SBQQ__CustomerPrice__c;
+                                    if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
+                                        mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;
+                                    }
+                                    if(objQLine.ZonaPlus__c)
+                                        decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_prepago__c) / 100) + decCustomerPricePAQ;
+                                }
+                            }
+                    }
+                    // codigo para el incremento documentacion en linea.
+                    if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota')){
+                        if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null){
+                            for(Incremento_Anual__c IncYear : listIncremento){
                                 if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota') && objTempleate.FechaCreacionCotizacion__c.year() < Integer.valueOf(IncYear.Anio__c))
                                 {
-                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
+                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){
                                         if(incEXE.Incremento_Anual__c == incYear.id){
                                             incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
                                         }
@@ -338,16 +353,16 @@ public class TempleateTriggerHandler {
                                     }
                                     if(objQLine.ZonaPlus__c)
                                         decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
-                                    
                                     if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c))
                                         mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;
                                 }
-                            }                
-                        else if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() <= System.today().year() && objTempleate.Fecha_sugar__c != null)            
-                            for(Incremento_Anual__c IncYear : listIncremento){                       
+                            }
+                        }
+                        else if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() <= System.today().year() && objTempleate.Fecha_sugar__c != null){
+                            for(Incremento_Anual__c IncYear : listIncremento){
                                 if(mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Documentación Remota' && objTempleate.Fecha_sugar__c.year() < Integer.valueOf(IncYear.Anio__c))
-                                {                                          
-                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){                            
+                                {
+                                    for(Excepciones_de_incremento__c incEXE: listIncrementoExe){
                                         if(incEXE.Incremento_Anual__c == incYear.id){
                                             incyear.Incremento_anual_remota__c = incEXE.Incremento_remota__c;
                                         }
@@ -359,16 +374,16 @@ public class TempleateTriggerHandler {
                                         objQLine.KG_ADICIONAL__c = (objQLine.KG_ADICIONAL__c * (IncYear.Incremento_anual_remota__c / 100)) + objQLine.KG_ADICIONAL__c;
                                     }
                                     objQLine.SBQQ__CustomerPrice__c = (objQLine.SBQQ__CustomerPrice__c * (IncYear.Incremento_anual_remota__c / 100)) + objQline.SBQQ__CustomerPrice__c;
-                                    
                                     if(mapQuotesT7.containsKey(objQLine.Tarifa__c) && mapQuotesT7.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
-                                        mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;	
+                                        mapQuotesT7.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c = objQLine.SBQQ__CustomerPrice__c;
                                     }
                                     if(objQLine.ZonaPlus__c)
                                         decCustomerPricePAQ = ((decCustomerPricePAQ * IncYear.Incremento_anual_remota__c) / 100) + decCustomerPricePAQ;
-                                } 
+                                }
                             }
+                        }
                     }
-                    // fin del codigo del incremento anual.       
+                    // fin del codigo del incremento anual.
                     objTempleateLine = new TempleateLine__c(
                         Templeate__c = objTempleate.Id
                         , Quantity__c = objQLine.SBQQ__Quantity__c
@@ -405,14 +420,12 @@ public class TempleateTriggerHandler {
                                 && mapQuotesT7.containsKey(objQLine.Tarifa__c+'-V') && mapQuotesT7.get(objQLine.Tarifa__c+'-V').containsKey(objQLine.Rango_KM__c))
                             objTempleateLine.CustomerPrice__c = getDominantPrice(mapQuotesT7.get(objQLine.Tarifa__c+'-P').get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c, mapQuotesT7.get(objQLine.Tarifa__c+'-V').get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c);
                     }
-                                
-                    if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){             
+                    if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){
                         objTempleateLine.ACK__c  = Ctrl_pantalla_ww.getAcuse(objQLine.SBQQ__CustomerPrice__c, objQLine.ZonaPlus__c, decCustomerPricePAQ);
                     }
                     else if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){
                         objTempleateLine.ACK__c = 0;
                     }
-                    
                     if(objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
                         if(!mapACK.containsKey(objQLine.Rango_KM__c))
                             mapACK.put(objQLine.Rango_KM__c, objTempleateLine.ACK__c);
@@ -424,7 +437,6 @@ public class TempleateTriggerHandler {
                     else{
                         objTempleateLine.ACK__c = 0;
                     }
-                    
                     if(!this.blnCostoBaseGMP){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es una cotización de costo base más excedente o de guía multipieza (Es por costos fijos por tarifa)
                         strRangeDest = '';
                         if(objTempleateLine.Destiny__c != null)
@@ -433,7 +445,7 @@ public class TempleateTriggerHandler {
                         if(!(objTempleateLine.Tarifa__C == 'TARIFA T7' && objTempleateLine.Zona_Plus__c)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no es una tarifa t7 que sea zona plus
                             if(strTarifaResp == '') //Salvador Ramírez (sramirez@freewayconsulting.com): Si aún no se respalda la tarifa anterior
                                 contador = 0; //Salvador Ramírez (sramirez@freewayconsulting.com): El contador se queda en 0
-                            else if(strTarifaResp != objTempleateLine.Tarifa__c) //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya se respaldó la tarifa anterior se compara con la actual 
+                            else if(strTarifaResp != objTempleateLine.Tarifa__c) //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya se respaldó la tarifa anterior se compara con la actual
                                 contador++; //Salvador Ramírez (sramirez@freewayconsulting.com): Si es diferente se le suma 1 al contador, esto para solo para saber si es la primer tarifa en pasar o son superiores, esto para saber si el flete debe dividirse entre 1.22 o 1.11
                             if((objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7') || !this.blnZP){
                                 if(this.blnRAD && this.blnEAD)
@@ -452,9 +464,7 @@ public class TempleateTriggerHandler {
                                                 mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.Flete__c);
                                             } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
                                         } else {
-                                            //if(!objTempleateLine.Zona_Plus__c){
-                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
-                                            //}
+                                            objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
                                         }
                                     } else {
                                         if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si el mapa ya tiene la tarifa pero no tiene el rango de km
@@ -481,12 +491,14 @@ public class TempleateTriggerHandler {
                                             if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
                                                 objTempleateLine.Flete__c = (objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c) / 1.11;
                                                 mapFlete.get(objTempleateLine.Tarifa__c).put(strRangeDest, objTempleateLine.Flete__c);
-                                            } else objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                            } else {
+                                                objTempleateLine.Flete__c =  mapFlete.get(objTempleateLine.Tarifa__c).get(strRangeDest);
+                                            }
                                         } else {
-                                            //if(!objTempleateLine.Zona_Plus__c){
-                                                if(mapSubTotalZP.containsKey(objTempleateLine.Tarifa__c) && mapSubTotalZP.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest))
-                                                    objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
-                                            //}
+                                            if(mapSubTotalZP.containsKey(objTempleateLine.Tarifa__c) && mapSubTotalZP.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
+                                                System.debug('valor del mapa: ' + mapZPL.get(strRangeDest));
+                                                objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
+                                            }
                                         }
                                     } else if(!blnEAD && blnRAD){
                                         if(mapRAD.containsKey(strRangeDest))
@@ -524,9 +536,7 @@ public class TempleateTriggerHandler {
                                         } else objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
                                     }
                                 } else if(!this.blnZP) {
-                                    //if((!this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG) || (this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG)){
-                                        objTempleateLine.RAD__c = objTempleateLine.Flete__c * 0.11;
-                                    //}
+                                    objTempleateLine.RAD__c = objTempleateLine.Flete__c * 0.11;
                                 }
                             }
                             if(this.blnEAD){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando EAD
@@ -545,8 +555,7 @@ public class TempleateTriggerHandler {
                                             } else  objTempleateLine.EAD__c = mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
                                         }
                                     } else if(!this.blnZP){
-                                        //if(this.blnEAD && this.blnRAD && this.blnACK && this.blnSEG)
-                                            objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c - objTempleateLine.RAD__c;
+                                        objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c - objTempleateLine.RAD__c;
                                     }
                                 }
                             }
@@ -584,7 +593,7 @@ public class TempleateTriggerHandler {
                             }
                         }
                         //TARIFA ESTANDAR Y TARIFA ZONA PLUS JUNTAS
-                        else if(!objTempleateLine.Zona_Plus__c){//ESTANDAR  
+                        else if(!objTempleateLine.Zona_Plus__c){//ESTANDAR
                             if( objTempleateLine.Tarifa__c != 'TARIFA T7-P'){
                                 if(this.blnCostoBaseGMP){
                                     strRangeDest = '';
@@ -607,8 +616,8 @@ public class TempleateTriggerHandler {
                                     objTempleateLine.PackVolAVG__c = objQLine.PackVolAVG__c;
                                     objTempleateLine.CustomerPrice__c = objQLine.FLETE__c;
                                 }
-                            }                                        
-                        }       
+                            }
+                        }
                         else if(mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){//ZONA PLUS
                             strRangeDest = '';
                             if(objQLine.Destiny__c != null)
@@ -654,8 +663,6 @@ public class TempleateTriggerHandler {
 		}
 		return listINC;
 	}
-    
-    
     public List<Excepciones_de_incremento__c> queryIncrementoExe(){
 		List<Excepciones_de_incremento__c> listINCEXE = new List<Excepciones_de_incremento__c>();
 		try{
@@ -666,7 +673,6 @@ public class TempleateTriggerHandler {
 		}
 		return listINCEXE;
 	}
-    
 
 	public List<SBQQ__Quote__c> queryQuote(Set<Id> setIdQuotes){
 		return  [SELECT
@@ -708,7 +714,7 @@ public class TempleateTriggerHandler {
         , SBQQ__Description__c
         , CreatedDate
 		FROM SBQQ__QuoteLine__c
-		WHERE SBQQ__Quote__c IN: setIdQuotes];
+		WHERE SBQQ__Quote__c IN: setIdQuotes ];
 	}
     public class Block{
         public String       strName             {get; set;}
