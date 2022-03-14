@@ -29,12 +29,9 @@ public class TempleateTriggerHandler {
             this.strId = listNewTempleates[0].Quote__c;
             String strRangeDest                                         = '';
             List<TempleateLine__c> listTempleateLines                   = new List<TempleateLine__c>();
-            //Salvador Ramírez (sramirez@freewayconsulting.com) 04/03/2022: Lista con las tarifas predeterminadas
-            List<String> listFee                                        = new List<String>{'TARIFA SOBRE', 'TARIFA T0', 'TARIFA T1', 'TARIFA T2', 'TARIFA T3', 'TARIFA T4', 'TARIFA T5', 'TARIFA T6', 'TARIFA T7-P','TARIFA T7-V'};
             Set<Id> setIdQuotes                                         = new Set<Id>();
             Set<Id> setIdincremento                                     = new Set<Id>();
-            //Map<String, List<SBQQ__QuoteLine__c>> mapQLines             = new Map<String, List<SBQQ__QuoteLine__c>>();
-            Map<String, Map<String, SBQQ__QuoteLine__c>> mapQLines      = new Map<String, new Map<String, SBQQ__QuoteLine__c>>();
+            Map<Id, List<SBQQ__QuoteLine__c>> mapQLines                 = new Map<Id, List<SBQQ__QuoteLine__c>>();
             Map<String, Map<String, SBQQ__QuoteLine__c>> mapQuotesT7    = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
             Map<String, Map<String, SBQQ__QuoteLine__c>> mapQLinesPAQ   = new Map<String, Map<String, SBQQ__QuoteLine__c>>();
             Map<Id, SBQQ__Quote__c> mapQuotes                           = new Map<Id, SBQQ__Quote__c>();
@@ -63,8 +60,7 @@ public class TempleateTriggerHandler {
             this.mapService                                             = new Map<String, Block>{'ADD' => new Block('ADD',0,0,0), 'ACK' => new Block('ACK',0,0,0), 'ZP' => new Block('ZP',0,0,0)};
             this.mapBlockAdic                                           = new map<String, map<String, Decimal>>();
             this.mapTotalByRange                                        = new Map<String, QuoteWP>();
-            //Salvador Ramírez (sramirez@freewayconsulting.com) 04/03/2022: Lista con los rangos de KM predeterminados
-            this.listRangeDestiny                                       = new List<String>{'0-400', '401-800', '801-1200', '1201-1600', '1601-2000', '2001-2400', 'Más de 2400'};
+            this.listRangeDestiny                                       = new List<String>();
             this.mapRespaldo                                            = new Map<String, Map<String, Decimal>>();
             for(Templeate__c objTempleate : listNewTempleates){
                 setIdQuotes.add(objTempleate.Quote__c);
@@ -103,18 +99,10 @@ public class TempleateTriggerHandler {
             for(SBQQ__QuoteLine__c objQLine : queryQuoteLines(setIdQuotes)) {
                 strRangeDest = '';
                 if(!(objQLine.Tarifa__c == 'TARIFA T7' && objQLine.ZonaPlus__c)){
-                    if(objQLine.Destiny__c != null)
-                        strRangeDest = objQLine.Destiny__c;
-                    else strRangeDest = objQLine.Rango_KM__c;
-                    if(!mapQLines.containsKey(objQLine.Tarifa__c)){
-                        mapQLines.put(objQLine.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>{strRangeDest, objQline});
-                    } else if(mapQLines.get(objQLine.Tarifa__c).containsKey(strRange)){
-                        
-                    }
-                    /*if (mapQLines.containsKey(objQLine.SBQQ__Quote__c))
+                    if (mapQLines.containsKey(objQLine.SBQQ__Quote__c))
                         mapQLines.get(objQLine.SBQQ__Quote__c).add(objQLine);
                     else
-                        mapQLines.put(objQLine.SBQQ__Quote__c, new List<SBQQ__QuoteLine__c>{ objQLine });*/
+                        mapQLines.put(objQLine.SBQQ__Quote__c, new List<SBQQ__QuoteLine__c>{ objQLine });
                     if(!objQLine.ZonaPlus__c && !mapQLinesPAQ.containsKey(objQLine.Tarifa__c))
                         mapQLinesPAQ.put(objQLine.Tarifa__c, new Map<String, SBQQ__QuoteLine__c>{objQLine.Rango_KM__c => objQLine});
                     else if(!objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c))
@@ -128,12 +116,11 @@ public class TempleateTriggerHandler {
                     }
                     if(objQline.SEG__c > 0 && objQline.SEG__c != null)
                         decSEG = objQline.SEG__c;
+                    if(objQLine.Destiny__c != null)
+                        strRangeDest = objQLine.Destiny__c;
+                    else strRangeDest = objQLine.Rango_KM__c;
                     if(!this.listRangeDestiny.contains(strRangeDest)){
                         this.listRangeDestiny.add(strRangeDest);
-                    }
-                    //Salvador Ramírez (sramirez@freewayconsulting.com) 04/03/2022: Si alguna tarifa de las que vienen en la cotización no está en las predeterminadas se agrega
-                    if(!listFee.contains(objQLine.Tarifa__c)){
-                        listFee.add(objQLine.Tarifa__c);
                     }
                     if(this.blnCostoBaseGMP){
                         //Incremento anual para cotizaciones de costo base más excedente y multipieza
@@ -293,23 +280,14 @@ public class TempleateTriggerHandler {
             //mapeo de plantillas dependiendo si son por rango de kilometros o destinos y le asigna el subtotal.
             Integer contador = 0;
             String strTarifaResp = '';
-
-            for(String strTarifa : listFee){
-                for(String strRange : listRangeDestiny){
-                    if(mapQLines.containsKey(strTarifa) && mapQLines.get(strTarifa).containsKey(strRange)){
-                        if(mapQLines.get(strTarifa).get(strRange).ZonaPlus__c && mapQLinesPAQ.containsKey(strTarifa) && mapQLinesPAQ.containsKey(strTarifa) && mapQLinesPAQ.get(strTarifa).containsKey(strRange)){
-                            decCustomerPricePAQ = mapQLinesPAQ.get(strTarifa).get(strRange).SBQQ__CustomerPrice__c;
-                        }
-                    }
-                }
-            }
-
-
-
-
-            for(Templeate__c objTempleate : listNewTempleates){//Este for se va a eliminar
+            for(Templeate__c objTempleate : listNewTempleates){
                 for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){
-
+                    if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
+                        decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Rango_KM__c).SBQQ__CustomerPrice__c;
+                    }
+                    else if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Destiny__c)){
+                        decCustomerPricePAQ = mapQLinesPAQ.get(objQLine.Tarifa__c).get(objQLine.Destiny__c).SBQQ__CustomerPrice__c;
+                    }
                     // codigo para el incremento anual guias prepagadas.
                     if((mapQuotes.get(objTempleate.Quote__c).Tipo_de_documentacion__c == 'Guías prepagadas')){
                         if(listIncremento.size() > 0 && objTempleate.FechaCreacionCotizacion__c.year() < System.today().year() && objTempleate.Fecha_sugar__c == null)
