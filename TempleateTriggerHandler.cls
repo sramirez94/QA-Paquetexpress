@@ -540,17 +540,6 @@ public class TempleateTriggerHandler {
                                             }
                                         }
                                     }
-                                    /*if(objQline.ZonaPlus__c){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando zona plus
-                                        if(!mapZPL.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay un costo de zona plus para ese rango
-                                            System.debug('Customer: ' + objQLine.SBQQ__CustomerPrice__c);
-                                            System.debug('Flete: ' + objTempleateLine.FLETE__c);
-                                            System.debug('RAD: ' + objTempleateLine.RAD__c);
-                                            System.debug('Acuse: ' + objTempleateLine.ACK__c);
-                                            System.debug('Seguro: ' + objTempleateLine.SEG__c);
-                                            objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.RAD__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c; //Salvador Ramírez (sramirez@freewayconsulting.com): se calcula de acuerdo a las reglas de paquetexpress
-                                            mapZPL.put(strRangeDest, objTempleateLine.EAD__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el costo en su rango de km
-                                        } else objTempleateLine.EAD__c = mapZPL.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si el rango de km ya tiene un costo de zona plus se asigna al rango actual.
-                                    }*/
                                     strTarifaResp = objTempleateLine.Tarifa__c;//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda la tarifa para la siguiente vuelta del recorrido
                                 }
                             } else {
@@ -692,7 +681,7 @@ public class TempleateTriggerHandler {
                                 ,KG_ADICIONAL__c = objQline.KG_ADICIONAL__c
                             );
                             if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){
-                                objTempleateLine.ACK__c  = Ctrl_pantalla_ww.getAcuse(objQLine.SBQQ__CustomerPrice__c, objQLine.ZonaPlus__c, decCustomerPricePAQ);
+                                objTempleateLine.ACK__c  = Ctrl_pantalla_ww.getAcuse(objQLine.SBQQ__CustomerPrice__c, objQLine.ZonaPlus__c, objQLine.SBQQ__CustomerPrice__c);
                             }
                             else if(String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('Acuse')){
                                 objTempleateLine.ACK__c = 0;
@@ -710,16 +699,26 @@ public class TempleateTriggerHandler {
                             }
                             if(!this.blnCostoBaseGMP){
                                 if(!(objTempleateLine.Tarifa__C == 'TARIFA T7' && objTempleateLine.Zona_Plus__c)){
+                                    if(!mapZPL.containsKey(strRange)){
+                                        mapZPL.put(strRange, ((objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c) * .50));
+                                    }
                                     if(!blnRAD && blnEAD){
-                                        System.debug('Subtotal: ' + mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRange) + '. Seg: ' + objTempleateLine.SEG__c + ', acuse: ' + objTempleateLine.ACK__c + '. ZP: ' + mapZPL.get(strRange) + '. Tarifa: ' + objTempleateLine.Tarifa__c + '. Rango: ' + strRange);
                                         objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRange) - objTempleateLine.SEG__c - objTempleateLine.ACK__c - mapZPL.get(strRange);
                                     } else {
                                         if(mapFlete.containsKey(objTempleateLine.Tarifa__c) && mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRange)){
                                             objTempleateLine.Flete__c = mapFlete.get(objTempleateLine.Tarifa__c).get(strRange);
+                                        } else {
+                                            if(!blnRAD){
+                                                objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c - mapZPL.get(strRange);
+                                            } else {
+                                                objTempleateLine.Flete__c = (objQLine.SBQQ__CustomerPrice__c - objTempleateLine.SEG__c - objTempleateLine.ACK__c - mapZPL.get(strRange)) / 1.11;
+                                            }
                                         }
                                     }
                                     if(mapRAD.containsKey(strRange)){
                                         objTempleateLine.RAD__c = mapRAD.get(strRange);
+                                    } else {
+                                        objTempleateLine.RAD__c = objTempleateLine.Flete__c * 0.11;
                                     }
                                     if(!mapZPL.containsKey(strRange)){
                                         objTempleateLine.EAD__C = objTempleateLine.CustomerPrice__c - objTempleateLine.Flete__c - objTempleateLine.RAD__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c;
