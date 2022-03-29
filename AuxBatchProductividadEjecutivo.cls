@@ -587,7 +587,7 @@ public class AuxBatchProductividadEjecutivo {
         return pe;
     }*/
     
-    public static Decimal getPromedioTendenciaGlobal (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioTendenciaGlobal (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioTendenciaGlobal = 0;
         
         if(sumatoriasProd[0].get('expr0') != null){
@@ -595,9 +595,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioTendenciaGlobal;
-    }
+    }*/
     
-    public static Decimal getPromedioTendenciaInternacional (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioTendenciaInternacional (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
         Decimal promedioTendenciaInternacional = 0;
         
         if(sumatoriasProd[0].get('expr1') != null){
@@ -605,9 +605,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioTendenciaInternacional;
-    }
+    }*/
     
-    public static Decimal getPromedioTendenciaExpress (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioTendenciaExpress (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioTendenciaExpress = 0;
         
         if(sumatoriasProd[0].get('expr2') != null){
@@ -615,9 +615,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioTendenciaExpress;
-    }
+    }*/
     
-    public static Decimal getPromedioTendenciaVentaNueva (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioTendenciaVentaNueva (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioVentaNueva = 0;
         
         if(sumatoriasProd[0].get('expr3') != null){
@@ -625,9 +625,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioVentaNueva;
-    }
+    }*/
     
-    public static Decimal getPromedioTendenciaVentaMantenimiento (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioTendenciaVentaMantenimiento (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioVentaMtto = 0;
         
         if(sumatoriasProd[0].get('expr4') != null){
@@ -635,9 +635,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioVentaMtto;
-    }
+    }*/
     
-    public static Decimal getPromedioHerramientasElectronicas (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioHerramientasElectronicas (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
         Decimal promedioHerramientasElectronicas = 0;
     
         if(sumatoriasProd[0].get('expr5') != null){
@@ -645,9 +645,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioHerramientasElectronicas;
-    }
+    }*/
     
-    public static Decimal getPromedioProspectos (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioProspectos (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioProspectos = 0;
         
         if(sumatoriasProd[0].get('expr6') != null){
@@ -655,9 +655,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioProspectos;
-    }
+    }*/
    
-    public static Decimal getPromedioOportunidades (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioOportunidades (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
         Decimal promedioOportunidades = 0;
         
         if(sumatoriasProd[0].get('expr7') != null){
@@ -665,9 +665,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioOportunidades;
-    }
+    }*/
     
-    public static Decimal getPromedioPesoKg (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioPesoKg (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioPesoKg = 0;
         
         if(sumatoriasProd[0].get('expr8') != null){
@@ -675,9 +675,9 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioPesoKg;
-    }
+    }*/
     
-    public static Decimal getPromedioVolumenM3 (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
+    /*public static Decimal getPromedioVolumenM3 (List<AggregateResult> sumatoriasProd, List<Id> usersIdList){
     	Decimal promedioVolumenM3 = 0;    
         
         if(sumatoriasProd[0].get('expr9') != null){
@@ -685,7 +685,7 @@ public class AuxBatchProductividadEjecutivo {
         }
         
         return promedioVolumenM3;
-    }
+    }*/
     
     public static List<AggregateResult> getSumatoriasProductividad (List<Id> usersIdList, String mesConsulta, String anio, Id rtId){
         List<AggregateResult> sumProductividadList = [SELECT 
