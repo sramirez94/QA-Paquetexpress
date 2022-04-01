@@ -2,39 +2,32 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 03-03-2022
+ * @last modified on  : 03-29-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 **/
 public class AuxBatchProductividadEjecutivo {
-    
+
     public static void productividadEjecutivo (Id ejecutivoId,  String mesconsulta, Date hoy, String anio, String experienciaVendedor){
-        
         system.debug('Ejecutivo: ' 				+ ejecutivoId );
         system.debug('mesconsulta: ' 			+ mesconsulta );
         system.debug('hoy: ' 					+ hoy );
         system.debug('anio: ' 					+ anio );
         system.debug('experienciaVendedor: ' 	+ experienciaVendedor );
-        
         List<User> usrList 						= [SELECT Id, plaza__c, zona__c, region__c FROM User WHERE id =: ejecutivoId];
-        
         Id rtId									= [SELECT Id, DeveloperName FROM RecordType WHERE DeveloperName ='Ejecutivo' AND sObjectType='Productividad_Ejecutivo__c' ].Id;
-        
         List<AggregateResult> sumatoriasAR 		= getSumatoriasVentasTotal (ejecutivoId, hoy);
         List<AggregateResult> sumatoriasPesoVol = getSumatoriasPesoVolumen (ejecutivoId, mesconsulta, anio);
-        List<Decimal> valoresHE					= getParticipacionHerramientasElectronicas(ejecutivoId, hoy, sumatoriasAR);	
+        List<Decimal> valoresHE					= getParticipacionHerramientasElectronicas(ejecutivoId, hoy, sumatoriasAR);
         List<Decimal> valoresLEADS				= getLeads(ejecutivoId, hoy, experienciaVendedor);
         List<Decimal> valoresOPPS				= getOpps(ejecutivoId, hoy, experienciaVendedor);
-        
-        
-        List<Productividad_Ejecutivo__c> productividadEjecutivo = [SELECT id, Tendencia_Presupuesto__c, Tendencia_Servicio_Internacional__c, 
-                                                                   Tendencia_Servicio_Express__c, Tendencia_Mantenimiento__c, Tendencia_Venta_Nueva__c, 
-                                                                   Experiencia_del_vendedor__c, Herramientas_electronicas__c,  Prospectos_generados__c, 
+        List<Productividad_Ejecutivo__c> productividadEjecutivo = [SELECT id, Tendencia_Presupuesto__c, Tendencia_Servicio_Internacional__c,
+                                                                   Tendencia_Servicio_Express__c, Tendencia_Mantenimiento__c, Tendencia_Venta_Nueva__c,
+                                                                   Experiencia_del_vendedor__c, Herramientas_electronicas__c,  Prospectos_generados__c,
                                                                    Oportunidades_generadas__c, Precio_promedio_Kg__c, Precio_promedio_M3__c
-                                                                   FROM Productividad_Ejecutivo__c 
+                                                                   FROM Productividad_Ejecutivo__c
                                                                    WHERE Ownerid =: ejecutivoId AND Mes__c =:mesconsulta AND Anio__c=: anio];
-        
+        System.debug('Productividad_Ejecutivo__c. AuxbatchProductividadEjecutivo.produtividadEjecutivo: ' + Limits.getLimitQueryRows());
         System.debug('productividadEjecutivo: ' + productividadEjecutivo);
-        
         if(productividadEjecutivo.size() == 1){
             System.debug('ENTRA IF');
             productividadEjecutivo[0].Tendencia_Presupuesto__c 				= getTendenciaGlobal(ejecutivoId, mesconsulta, anio, 'Global');
@@ -53,13 +46,11 @@ public class AuxBatchProductividadEjecutivo {
             productividadEjecutivo[0].Oportunidades_generadas__c 			= valoresOPPS[2];
             productividadEjecutivo[0].Precio_promedio_Kg__c 				= getPesoPromedio(ejecutivoId, hoy, sumatoriasPesoVol);
             productividadEjecutivo[0].Precio_promedio_M3__c 				= getVolumenPromedio(ejecutivoId, hoy, sumatoriasPesoVol);
-            
             if(usrList.size()==1){
             	productividadEjecutivo[0].Plaza_del_ejecutivo__c			= usrList[0].plaza__c;
                 productividadEjecutivo[0].Region_del_ejecutivo__c			= usrList[0].region__c;
                 productividadEjecutivo[0].Zona_del_ejecutivo__c				= usrList[0].zona__c;
             }
-            
             System.debug('UPDATE');
             system.debug('productividadEjecutivo[0].Tendencia_Presupuesto__c: ' 			+ productividadEjecutivo[0].Tendencia_Presupuesto__c);
             system.debug('productividadEjecutivo[0].Tendencia_Servicio_Internacional__c: ' 	+ productividadEjecutivo[0].Tendencia_Servicio_Internacional__c);
@@ -77,8 +68,7 @@ public class AuxBatchProductividadEjecutivo {
             system.debug('productividadEjecutivo[0].Oportunidades_generadas__c: ' 			+ productividadEjecutivo[0].Oportunidades_generadas__c);
             system.debug('productividadEjecutivo[0].Precio_promedio_Kg__c: ' 				+ productividadEjecutivo[0].Precio_promedio_Kg__c);
             system.debug('productividadEjecutivo[0].Precio_promedio_M3__c: ' 				+ productividadEjecutivo[0].Precio_promedio_M3__c);
-            
-            update productividadEjecutivo; 
+            update productividadEjecutivo;
         }else{
             System.debug('ENTRA ELSE');
             Productividad_Ejecutivo__c pe = new Productividad_Ejecutivo__c ();
@@ -103,7 +93,6 @@ public class AuxBatchProductividadEjecutivo {
             pe.Precio_promedio_M3__c 				= getVolumenPromedio(ejecutivoId, hoy, sumatoriasPesoVol);
             pe.RecordTypeId							= rtId;
             pe.OwnerId 								= ejecutivoId;
-            
             System.debug('INSERT');
             system.debug('pe.Tendencia_Presupuesto__c: ' 			+ pe.Tendencia_Presupuesto__c);
             system.debug('pe.Tendencia_Servicio_Internacional__c: ' + pe.Tendencia_Servicio_Internacional__c);
@@ -121,35 +110,32 @@ public class AuxBatchProductividadEjecutivo {
             system.debug('pe.Oportunidades_generadas__c: ' 			+ pe.Oportunidades_generadas__c);
             system.debug('pe.Precio_promedio_Kg__c: ' 				+ pe.Precio_promedio_Kg__c);
             system.debug('pe.Precio_promedio_M3__c: ' 				+ pe.Precio_promedio_M3__c);
-            
             insert pe;
         }
-        
-        
    }
-    
     public static Decimal getTendenciaGlobal (Id ejecutivoId,String mesconsulta,String anio, string comparativa){
-        
-        Decimal 	porcentajeGlobal 	= 0; 
+        Decimal 	porcentajeGlobal 	= 0;
         Id 			rtId 				= [SELECT Id, DeveloperName FROM RecordType WHERE DeveloperName  ='Ejecutivo_Ventas'].Id;
-        
         System.debug('======getTendenciaGlobal=====');
         System.debug('ejecutivoId:' + ejecutivoId);
         System.debug('mesconsulta:' + mesconsulta);
         System.debug('anio:' + anio);
         System.debug('comparativa:' + comparativa);
         System.debug('rtId:' + rtId);
-        
-        List<Resumen_Tendencia__c>  rtList = [SELECT Id, OwnerId, Venta_vs_Presupuesto__c, Tendencia_vs_Presupuesto__c, comparativa__c FROM Resumen_Tendencia__c WHERE OwnerId =:ejecutivoId AND Mes__c=:mesconsulta AND Anio__c =:anio AND recordTypeId =:rtId AND comparativa__c =: comparativa];
-        system.debug('TAMAÑO rtList: ' + rtList.size());
-        if(rtList.size()== 1){
-            System.debug('ENTRA IF rtList.size()== 1');
-            porcentajeGlobal = rtList[0].Tendencia_vs_Presupuesto__c;
+        try{
+            List<Resumen_Tendencia__c>  rtList = [SELECT Id, OwnerId, Venta_vs_Presupuesto__c, Tendencia_vs_Presupuesto__c, comparativa__c FROM Resumen_Tendencia__c WHERE OwnerId =:ejecutivoId AND Mes__c=:mesconsulta AND Anio__c =:anio AND recordTypeId =:rtId AND comparativa__c =: comparativa];
+            System.debug('Resumen_Tendencia__c. AuxbatchProductividadEjecutivo.getTendenciaGlobal: ' + Limits.getLimitQueryRows());
+            system.debug('TAMAÑO rtList: ' + rtList.size());
+            if(rtList.size()== 1){
+                System.debug('ENTRA IF rtList.size()== 1');
+                porcentajeGlobal = rtList[0].Tendencia_vs_Presupuesto__c;
+            }
+            System.debug('porcentajeGlobal: ' + porcentajeGlobal);
+            System.debug('======FIN getTendenciaGlobal=====');
+        }catch(Exception ex){
+            System.debug('AuxbatchProductividadEjecutivo.getTendenciaGlobal: ' + ex.getMessage() + '. Línea: ' + ex.getlinenumber());
         }
-        
-        System.debug('porcentajeGlobal: ' + porcentajeGlobal);
-        System.debug('======FIN getTendenciaGlobal=====');
-        return porcentajeGlobal;             
+        return porcentajeGlobal;
     }
     
     public static List<Decimal> getParticipacionHerramientasElectronicas (Id ejecutivoId, Date fecha, List<AggregateResult> sumatorias){
