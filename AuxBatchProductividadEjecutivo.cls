@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 03-29-2022
+ * @last modified on  : 04-05-2022
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 **/
 public class AuxBatchProductividadEjecutivo {
@@ -20,14 +20,18 @@ public class AuxBatchProductividadEjecutivo {
         List<Decimal> valoresHE					= getParticipacionHerramientasElectronicas(ejecutivoId, hoy, sumatoriasAR);
         List<Decimal> valoresLEADS				= getLeads(ejecutivoId, hoy, experienciaVendedor);
         List<Decimal> valoresOPPS				= getOpps(ejecutivoId, hoy, experienciaVendedor);
-        List<Productividad_Ejecutivo__c> productividadEjecutivo = [SELECT id, Tendencia_Presupuesto__c, Tendencia_Servicio_Internacional__c,
+        List<Productividad_Ejecutivo__c> productividadEjecutivo = new List<Productividad_Ejecutivo__c>();
+        try {
+            productividadEjecutivo = [SELECT id, Tendencia_Presupuesto__c, Tendencia_Servicio_Internacional__c,
                                                                    Tendencia_Servicio_Express__c, Tendencia_Mantenimiento__c, Tendencia_Venta_Nueva__c,
                                                                    Experiencia_del_vendedor__c, Herramientas_electronicas__c,  Prospectos_generados__c,
                                                                    Oportunidades_generadas__c, Precio_promedio_Kg__c, Precio_promedio_M3__c
                                                                    FROM Productividad_Ejecutivo__c
                                                                    WHERE Ownerid =: ejecutivoId AND Mes__c =:mesconsulta AND Anio__c=: anio];
-        System.debug('Productividad_Ejecutivo__c. AuxbatchProductividadEjecutivo.produtividadEjecutivo: ' + Limits.getLimitQueryRows());
-        System.debug('productividadEjecutivo: ' + productividadEjecutivo);
+        } catch (QueryException e) {
+            System.debug('Error: ' + e.getMessage() + '. AuxBatchProductividadEjecutivo.productividadEjecutivo productividadEjecutivo');
+            generaSolicitudEmail(e.getMessage(), 'AuxBatchProductividadEjecutivo consulta de productividadEjecutivo', 0);
+        }
         if(productividadEjecutivo.size() == 1){
             System.debug('ENTRA IF');
             productividadEjecutivo[0].Tendencia_Presupuesto__c 				= getTendenciaGlobal(ejecutivoId, mesconsulta, anio, 'Global');
@@ -124,7 +128,6 @@ public class AuxBatchProductividadEjecutivo {
         System.debug('rtId:' + rtId);
         try{
             List<Resumen_Tendencia__c>  rtList = [SELECT Id, OwnerId, Venta_vs_Presupuesto__c, Tendencia_vs_Presupuesto__c, comparativa__c FROM Resumen_Tendencia__c WHERE OwnerId =:ejecutivoId AND Mes__c=:mesconsulta AND Anio__c =:anio AND recordTypeId =:rtId AND comparativa__c =: comparativa];
-            System.debug('Resumen_Tendencia__c. AuxbatchProductividadEjecutivo.getTendenciaGlobal: ' + Limits.getLimitQueryRows());
             system.debug('TAMAÑO rtList: ' + rtList.size());
             if(rtList.size()== 1){
                 System.debug('ENTRA IF rtList.size()== 1');
@@ -712,7 +715,7 @@ public class AuxBatchProductividadEjecutivo {
             Messaging.SingleEmailMessage mail   = new Messaging.SingleEmailMessage();
             String strTemplate                  = 'Error ocurrido en ' + strClase + '. El error es: ' + mensaje + '. Línea: ' + strLinea;
             mail.setToAddresses(toAddress);
-            mail.setSubject('Cotización autorizada');
+            mail.setSubject('Error en batch de productividad');
             mail.setHTMLBody(strTemplate);
             mail.setWhatId('a162f000000RFQe');
             mail.setSaveAsActivity(false);
