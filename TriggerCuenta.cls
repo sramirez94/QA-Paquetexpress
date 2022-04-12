@@ -1,9 +1,5 @@
 /**
- * @description       : 
- * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
- * @group             : 
- * @last modified on  : 03-02-2022
- * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+ * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 28/03/2022. Caso: 6407. Se genera un nuevo caso para poder respaldar el nombre de la sucursal para otros procesos que lo ocuparán
 **/
 public class TriggerCuenta {
     
@@ -414,6 +410,56 @@ public class TriggerCuenta {
                 
                 
                 
+            }
+        }
+    }
+    public static void RespaldaSucursal(List<Account> accList, Map<Id, Account> accOldMap, Boolean blnIsUpdate){
+        //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se necesita respaldar el valor de la sucursal en caso que se modifiqué o inserte
+        //Esto debido a que se necesitaron crear vistas de lista para los gerentes de sucursal y se usarás reglas de colaboración
+        //Sin embargo, debido a que la sucursal es un campo lookup y la regla no lo permite, se necesitó respaldar el nombre de la sucursal.
+        String strSucursal = '';
+        Set<Id> setSucursales = new Set <Id>();
+        Map<Id, String> mapSucursales = new map<Id, String>();
+        //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si trae una sucursal (A veces generan cuentas sin sucursal)
+        for(Account acc : accList){
+            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se hace un conjunto con la sucursal de todas las cuentas que se recibieron en el trigger
+            if(acc.Sucursal__c != null){
+                setSucursales.add(acc.Sucursal__c);
+            }
+        }
+        if(setSucursales != null){
+            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si se recibieron sucursales entonces se hace una consulta para obtener esos nombres
+            for(Sucursal__c sc : [SELECT Id, NAME FROM Sucursal__c WHERE ID IN :setSucursales]){
+                if(!mapSucursales.containsKey(sc.Id)){
+                    mapSucursales.put(sc.Id, sc.Name);
+                }
+            }
+        }
+        for(Account objAcc : accList){
+            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se recorren las cuentas que se están creando o actualizando
+            if(blnIsUpdate){
+                //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si es una actualización
+                Account AccOld = accOldMap.get(objAcc.Id); //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se respalda el mapa con el registro anterior.
+                if(objAcc.Sucursal__c != null){
+                    //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si se agregó una sucursal
+                    if(objAcc.Sucursal__c != accOld.Sucursal__c){
+                        //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si la sucursal que se está agregando es diferente a la que se había antes.
+                        if(mapSucursales.containsKey(objAcc.Sucursal__c)){
+                            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si se encontró el nombre de esa sucursal se le asigna al respaldo de la sucursal. Quitandole los 3 últimos caracteres
+                            objAcc.SucursalCopia__c = mapSucursales.get(objAcc.Sucursal__c).substring(0,3);
+                        }
+                    }
+                } else {
+                    objAcc.SucursalCopia__c = '';
+                }
+            } else {
+                //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si es una inserción
+                if(mapSucursales.containsKey(objAcc.Sucursal__c)){
+                    //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Busca el nombre de la sucursal
+                    objAcc.SucursalCopia__c = mapSucursales.get(objAcc.Sucursal__c).substring(0,3);
+                } else {
+                    objAcc.SucursalCopia__c = '';
+                }
             }
         }
     }
