@@ -520,17 +520,22 @@ public class TempleateTriggerHandler {
                             }
                         } else {
                             //Salvador Ramírez (sramirez@freewayconsulting.com): Si es una cotización de costo base más excedente
+                            System.debug('Peso: ' + objQLine.PackWeightAVG__c);
                             if(!objTempleateLine.Zona_Plus__c && String.isNotBlank(mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c) && !mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c.contains('EAD Zona plus')){
                                 if(this.blnCostoBaseGMP){
                                     strRangeDest = '';
-                                    if(objQLine.Destiny__c != null)
+                                    if(objQLine.Destiny__c != null){
                                         strRangeDest = objQLine.Destiny__c;
-                                    else strRangeDest = objQLine.Rango_KM__c;
+                                    } else {
+                                        strRangeDest = objQLine.Rango_KM__c;
+                                    }
                                     objTempleateLine.FLETE__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('FLT').get(strRangeDest).setScale(2);
-                                    if(this.blnRAD)
+                                    if(this.blnRAD){
                                         objTempleateLine.RAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('RAD').get(strRangeDest).setScale(2);
-                                    if(this.blnEAD)
+                                    }
+                                    if(this.blnEAD){
                                         objTempleateLine.EAD__c   = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('EAD').get(strRangeDest).setScale(2);
+                                    }
                                     objTempleateLine.KG_ADICIONAL__c = this.mapBlocksServ.get(objQLine.PackWeightAVG__c).get('ADD').get(strRangeDest).setScale(2);
                                     objTempleateLine.FleteAdic__c    = this.mapBlockAdic.get('ADD').get(strRangeDest).setScale(2);
                                     if(this.mapBlockAdic.get('RAD').containsKey(strRangeDest) && this.blnRAD)
