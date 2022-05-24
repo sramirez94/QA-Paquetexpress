@@ -1,121 +1,115 @@
+/**
+ * @description       : Apoyo del Trigger Opportunity. Con el apoyo de esta clase se realiza la llamada al WS que genera el id de sipweb
+ * @author            : Néstor Ortiz (nortiz@freemayconsulting.com)
+ * Project            : Paquetexpress
+**/
 public class CallWS_Cuentas {
-    
     @future(callout=true)
     public static void callCuentas (String IdCuenta, String accion ){
-        
         System.debug('Accion: ' +  accion);
-        
-        Account cuenta = [SELECT Id, Id_SIpWeb__c,  Name, RFC__c, comentarios__c, industry, Giro__c, 
+        Account cuenta = [SELECT Id, Id_SIpWeb__c,  Name, RFC__c, comentarios__c, industry, Giro__c,
                           BillingCountry, BillingState, Delegacion_o_municipio__c, BillingCity, BillingStreet, Numero_de_facturacion__c, Colonia_Facturaci_n__c, BillingPostalCode, Email_de_factura__c, Phone,
                           ShippingCountry, ShippingState, ShippingCity, ShippingStreet, Colonia__c, Numero__c, ShippingPostalCode, Municipio_Delegaci_n_Sector_facturacion__c, Sucursal__r.Name
-                          
-                          FROM Account 
+                          FROM Account
                           WHERE Id =: IdCuenta];
-        
         Http http = new Http();
         HttpRequest request = new HttpRequest();
         // TEST request.setEndpoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
-        request.setEndpoint('https://sf.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
+        request.setEndpoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
+        //request.setEndpoint('https://sf.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
         request.setBody(generaJSONBody(cuenta, accion));
         HttpResponse response = http.send(request);
-        
         if (response.getStatusCode() != 200) {
             System.debug('The status code returned was not expected: ' +
             response.getStatusCode() + ' ' + response.getStatus());
         } else {
             System.debug(response.getBody());
         }
-        
         generaSolicitudEmail('REQUEST:  \n\n ' + generaJSONBody(cuenta, accion) + 'RESPONSE: \n\n  '+ response.getBody());
-        
         if(accion != 'update'){
             ObjetoCuenta cuentaObj = new ObjetoCuenta();
             cuentaObj = ObjetoCuenta.parse(response.getBody());
-            if(CuentaObj.body.response.success == true){
+            if(CuentaObj.body.response.success == true && CuentaObj.body.response.data.clntId != ''){
                 cuenta.Id_SIpWeb__c = ''+ CuentaObj.body.response.data.clntId;
                 update cuenta;
-                
+            } else if(CuentaObj.body.response.data.clntId == ''){
+                GeneraNotificacion('Error al generar id de sipweb', 'No se pudo generar el id de sipweb. Favor de revisar con su área de TI', 'Error_generacin_de_cliente', IdCuenta);
+                System.debug('No generó id de sipweb');
+                return;
             }
         }
-        
     }
-    
     public static void generaSolicitudEmail (String json){
         try{
 
             Blob body = Blob.valueOf(json);
-                
             Messaging.EmailFileAttachment attach = new Messaging.EmailFileAttachment();
             attach.setContentType('application/txt');
             attach.setFileName('JSON_RESPONSE.txt');
             attach.setInline(false);
             attach.Body = body;
-            
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             mail.setUseSignature(false);
-            mail.setToAddresses(new String[] { 'nortiz@freewayconsulting.com' });
+            mail.setToAddresses(new String[] { 'sramirez@freewayconsulting.com' });
             mail.setSubject('Response Cuentas');
             mail.setHtmlBody('RESPUESTA CUENTAS');
-            mail.setFileAttachments(new Messaging.EmailFileAttachment[] { attach }); 
-                
+            mail.setFileAttachments(new Messaging.EmailFileAttachment[] { attach });
             // Send the email
             Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
-                
-       }catch (Exception e){
+        }catch (Exception e){
                 system.debug(e);
                 System.debug(e.getlinenumber());
                 System.debug(e.getCause());
                 System.debug(e.getStackTraceString());
-            }
+        }
 
     }
-    
-    
     public static String generaJSONBody (Account cuenta, String accion){
         System.debug('Accion: ' +  accion);
         JSONGenerator gen 	= JSON.createGenerator(true);
         SecurityObj SecObj	= new SecurityObj ('SALESFORCE', CallWS_Token.callGeneraToken('SALESFORCE', '1234'));
-            DataObj   	DataObj	= new DataObj (cuenta, accion);
-     
-        gen.writeStartObject();	
-        		
+        DataObj   	DataObj	= new DataObj (cuenta, accion);
+        gen.writeStartObject();
         	gen.writeFieldName('header');
-				gen.writeStartObject();		
+				gen.writeStartObject();
 
         			gen.writeFieldName('security');
                     gen.writeObject(SecObj);
 
                 gen.writeEndObject();
-        
         	gen.writeFieldName('body');
-        
-        	gen.writeStartObject();	
+        	gen.writeStartObject();
         		gen.writeFieldName('request');
-        			gen.writeStartObject();	
+        			gen.writeStartObject();
                         gen.writeFieldName('data');
-                        gen.writeObject(DataObj);           
+                        gen.writeObject(DataObj);
                     gen.writeEndObject();
         	gen.writeEndObject();
-        	
         gen.writeEndObject();
-        System.debug(gen.getAsString());
-        
         return gen.getAsString();
     }
-    
+    public static void GeneraNotificacion(String Title, String Body, String Noti, String IdAparecer){
+        Messaging.CustomNotification notification = new Messaging.CustomNotification();
+        Set<String> users = new Set<String>();
+        CustomNotificationType notificationType = [SELECT Id FROM CustomNotificationType WHERE DeveloperName = :Noti];
+        users.add(System.UserInfo.getUserId());
+        notification.setTitle(Title);
+        notification.setBody(Body);
+        notification.SetNotificationTypeId(notificationType.Id);
+        notification.setTargetId(IdAparecer);
+        notification.send(users);
+    }
+
     public class SecurityObj{
         public String user;
         public String token;
-        
         public SecurityObj (String user, String token){
-            system.debug('TOKEN: ' + token);
             this.user 		= user;
             this.token 		= token;
         }
     }
-   
     public class DataObj {
 		public String action;
         public String clntIdSF;
@@ -130,12 +124,7 @@ public class CallWS_Cuentas {
         public String site;
         public String user;
         DireccionObj[] address;
-        	
-
-        
         public DataObj(Account cuenta, String accion){
-            System.debug('Accion: ' +  accion);
-            
         	this.action 		= accion;
             this.clntIdSF 		= cuenta.Id;
             this.clntId 		= cuenta.Id_SIpWeb__c;
@@ -147,19 +136,15 @@ public class CallWS_Cuentas {
             this.comments 		= cuenta.Comentarios__c;	//'COMENTARIOS DE PRUEBAS';
             this.groupClntId 	= 'null';
             if(cuenta.Sucursal__r.Name != null && cuenta.Sucursal__r.Name != ''){
-            	this.site 			= (cuenta.Sucursal__r.Name).substring(0,3);    
+            	this.site 			= (cuenta.Sucursal__r.Name).substring(0,3);
             }else{
                 this.site = 'MEX';
             }
-            
             this.user 			= 'USERSALESFORCE';
-            //this.address.add(new DireccionObj());
             this.address = new DireccionObj[]{new DireccionObj(cuenta, 'Fiscal')};
             this.address = new DireccionObj[]{new DireccionObj(cuenta, 'Envio')};
-            
         }
 	}
-    
     public class DireccionObj{
         public String addressCodeSF;
         public String addressType;
@@ -177,18 +162,14 @@ public class CallWS_Cuentas {
         public String celPhone;
         public String comments;
         ContactoObj[] contacto;
-        
-        //BillingCountry, BillingState, Delegacion_o_municipio__c, BillingCity, BillingStreet, Numero_de_facturacion__c, Colonia_Facturaci_n__c, BillingPostalCode, Email_de_factura__c, Phone 
-        
         public DireccionObj (Account acc, String tipo){
             if(tipo=='Fiscal'){
-                
                 this.addressCodeSF 			= '';
                 this.addressType 			= 'FISCAL';
                 this.structuredAddress 		= 'Y';
                 this.country 				= acc.BillingCountry;
                 this.state 					= acc.BillingState;
-                this.delegation 			= acc.Municipio_Delegaci_n_Sector_facturacion__c; 
+                this.delegation 			= acc.Municipio_Delegaci_n_Sector_facturacion__c;
                 this.city 					= acc.BillingCity;
                 this.strtName 				= acc.BillingStreet;// 'GABRIEL LEYVA';
                 this.drnr 					= ''+acc.Numero_de_facturacion__c; //'1023';
@@ -198,9 +179,7 @@ public class CallWS_Cuentas {
                 this.phoneNo 				= acc.Phone; //'6688162500';
                 this.celPhone 				= '';
                 this.comments 				= ''; //'PRUEBA WS';
-                this.contacto 				= new List<ContactoObj>();     
-                
-                
+                this.contacto 				= new List<ContactoObj>();
             }else if (tipo =='Envio'){
                 //ShippingCountry, ShippingState, ShippingCity, ShippingStreet, Colonia__c, Numero__c, ShippingPostalCode
                 this.addressCodeSF 			= '';
@@ -208,7 +187,7 @@ public class CallWS_Cuentas {
                 this.structuredAddress 		= 'Y';
                 this.country 				= acc.ShippingCountry;
                 this.state 					= acc.ShippingState;
-                this.delegation 			= acc.Delegacion_o_municipio__c; 
+                this.delegation 			= acc.Delegacion_o_municipio__c;
                 this.city 					= acc.ShippingCity;
                 this.strtName 				= acc.ShippingStreet;// 'GABRIEL LEYVA';
                 this.drnr 					= ''+acc.Numero__c; //'1023';
@@ -218,7 +197,7 @@ public class CallWS_Cuentas {
                 this.phoneNo 				= acc.Phone; //'6688162500';
                 this.celPhone 				= '';
                 this.comments 				= ''; //'PRUEBA WS';
-                this.contacto 				= new List<ContactoObj>();     
+                this.contacto 				= new List<ContactoObj>();
                 if(acc.Id != null){
                     List<Contact> contactList = [SELECT Id, Name, FirstName, LastName, phone, MobilePhone, accountId FROM Contact WHERE accountId =: acc.Id];
                     if(contactList.size()>0){
@@ -227,15 +206,8 @@ public class CallWS_Cuentas {
                         }
                     }
                 }
-                
             }
-
-
-            
-            
-
-        } 
-        
+        }
     }
 
     public class ContactoObj{
@@ -243,18 +215,11 @@ public class CallWS_Cuentas {
         public String contactName;
         public String phone;
         public String celPhone;
-        
         public ContactoObj (Contact c, String IdCuenta){
-            
-             
-           
             this.contactIdSF 			= IdCuenta; 							//'CONTACT_ID_SF';
             this.contactName 			= ''+c.FirstName +' '+ c.lastName; 		//'CONTACTO 1';
             this.phone 					= c.Phone; 								//'6688162500';
-            this.celPhone 				= c.MobilePhone;	 					//'6688162500';            
+            this.celPhone 				= c.MobilePhone;	 					//'6688162500';
         }
-       
     }
-    
-    
 }
