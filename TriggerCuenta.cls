@@ -1,23 +1,18 @@
 /**
- * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 28/03/2022. Caso: 6407. Se genera un nuevo caso para poder respaldar el nombre de la sucursal para otros procesos que lo ocuparán
+ * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 12/04/2022. Caso: 6596. Se genera un nuevo caso para poder generar una nueva regla de colaboración para que los gerentes de sucursal puedan visualizar las cuentas de su sucursal
 **/
 public class TriggerCuenta {
-    
 	public static void genera_Gerente_KAM(List<Account> accList){
-        
         Set<Id> sucursalesId = new Set<Id>();
 		List<Estructura__c> estructurasList = new List<Estructura__c>();
-        
         List<Estructura__c> estructuraUser = new List<Estructura__c>();
         List<User> PlazaUser = new List<User>();
         List<String> Plazas = new List<String>();
-        
         for(Account acc: accList){
             if(acc.Sucursal__c != null){
                 sucursalesId.add(acc.Sucursal__c);
-            }            
+            }
         }
-        
         if(sucursalesId.size()>0){
             estructurasList = [SELECT Id, Sucursal__c, Gerente_Sucursal__c, KAM_regional__c, Gerente_desarrollo_de_negocios__c FROM Estructura__c WHERE Sucursal__c IN: sucursalesId];
             if(estructurasList.size()>0){
@@ -29,10 +24,9 @@ public class TriggerCuenta {
                             acc.Gerente_de_Desarrollo_de_Negocios__c = est.Gerente_desarrollo_de_negocios__c;
                         }
                     }
-                }    
+                }
             }
         }
-        
         //Asigna gerente, kam y gdn para el usuario que se quiere asignar
 		for(Account acc: accList){
             if(acc.Usuario_a_asignar__c != null){
@@ -42,7 +36,6 @@ public class TriggerCuenta {
             	System.debug('Plaza del usuario: ' + PlazaUser[0].Plaza__c);
             }
         }
-        
         if(Plazas.size()>0){
             estructuraUser = [SELECT Id, Gerente_Sucursal__c, KAM_regional__c, Gerente_desarrollo_de_negocios__c, Plaza_sucursal__c FROM Estructura__c WHERE Plaza_sucursal__c IN: Plazas];
             System.debug('Plazas de estructuras encontradas: ' + estructuraUser.size());
@@ -61,22 +54,19 @@ public class TriggerCuenta {
                 }
             }
         }
-        
-        
     }
-        
     public static void AsignacionEjecutivoNuevo (List<Account> accList, Map<Id, Account> accOldMap){
-        
+
         String razonSocial;
         String RFC;
         String IdSipweb;
         String Plaza;
-        
+
 		List<String> args = new String[]{'0','number','###,###,##0.00'};
-       
+
         for(Account acc: accList){
             Account AccOld = accOldMap.get(Acc.Id);
-            
+
             System.debug('acc.AsignacionRegular_Mantenimiento__c: ' + acc.AsignacionRegular_Mantenimiento__c);
             System.debug('AccOld.AsignacionRegular_Mantenimiento__c: ' + AccOld.AsignacionRegular_Mantenimiento__c);
             System.debug('AccOld.AsignarEjecutivoACuentaEnSipweb__c ' + AccOld.AsignarEjecutivoACuentaEnSipweb__c);
@@ -86,149 +76,121 @@ public class TriggerCuenta {
             System.debug('acc.Preasignar_Ejecutivo__c: ' + acc.Preasignar_Ejecutivo__c);
             System.debug('AccOld.Preasignar_Ejecutivo__c: ' + AccOld.Preasignar_Ejecutivo__c);
             System.debug('Usuario que detona el flujo: '+ UserInfo.getProfileId());
-            
-            
+
             if(acc.OwnerId == UserInfo.getUserId() && UserInfo.getProfileId() == '00e2E0000016QlkQAE'){
                 acc.Usuario_a_asignar__c = acc.OwnerId;
             }
-            
-            
+
             if(acc.Preasignar_Ejecutivo__c != AccOld.Preasignar_Ejecutivo__c && acc.Preasignar_Ejecutivo__c == true ){
                 //system.debug('ENTRA  PREASIGNACION IF 47'); 
                 acc.OwnerId = acc.Usuario_a_asignar__c;
                 acc.Preasignar_Ejecutivo__c = false;
             }else if (acc.Preasignacion_Mantenimiento__c != AccOld.Preasignacion_Mantenimiento__c && acc.Preasignacion_Mantenimiento__c == true ){
                 system.debug('ENTRA  PREASIGNACION IF 47'); 
-                
             }else{
                 //INTERNACIONAL
                 if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.Asignacion_Internacional__c == true
                    && acc.MigracionPrepagoADocumentacionEnLinea__c == false && acc.RFC__c != '' && acc.RFC__c != null){
-                       
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
                            acc.addError('No hay suficientes registros que justifiquen su asignación');
-                       } 
-                       
+                       }
                    }
-                
                 //PREPAGO
                 if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.AsignacionNacionalPrepago__c == true
                    && acc.MigracionPrepagoADocumentacionEnLinea__c == false && acc.RFC__c != '' && acc.RFC__c != null){
-                       
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
                            acc.addError('No hay suficientes registros que justifiquen su asignación');
                        }
-                       
                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
                            acc.addError('No existen cotizaciones que justifiquen su asignación');
                        }
-                       
                    }
-                
                 // NUEVO
-                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
+                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.AsignacionRegular_Nuevo__c == true
                    && acc.MigracionPrepagoADocumentacionEnLinea__c == false && acc.RFC__c != '' && acc.RFC__c != null){
-                       System.debug('ENTRA VALIDACION NUEVO'); 
-                       
+                       System.debug('ENTRA VALIDACION NUEVO');
                        Integer posiciones  = 0;
-                       
                        if(acc.Name.length()>= 10){posiciones = 10;}else{posiciones = acc.Name.length();}
-                       
                        razonSocial = acc.Name.substring(0, posiciones);
-                       
                        if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 9);    if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 8);    }}
-                       
                        RFC			= acc.RFC__c;
-                       IdSipweb 	= acc.Id_SIpWeb__c; 
+                       IdSipweb 	= acc.Id_SIpWeb__c;
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
-                       
-                       wrapperAsignacionEjecutivoNuevo wAsigEjecNuevo = ValidaAsignacionEjecutivoNuevo (razonSocial, RFC, IdSipweb, Plaza); 
+                       wrapperAsignacionEjecutivoNuevo wAsigEjecNuevo = ValidaAsignacionEjecutivoNuevo (razonSocial, RFC, IdSipweb, Plaza);
                        acc.Validacion_Nuevo__c = wAsigEjecNuevo.valorDeRetorno;
-                       
                        System.debug('acc.Validacion_Nuevo__c: ' + acc.Validacion_Nuevo__c);
-                       
                        if(acc.Validacion_Nuevo__c == false && acc.OmitirValidacionDeInformacion__c == false){
                            acc.addError('El cliente ya cuenta con ventas mensuales promedio de $ '+ String.format(wAsigEjecNuevo.promedioVentasMensual.format(), args) +', Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
                        }
-                       
-                       
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
                            acc.addError('No hay suficientes registros que justifiquen su asignación');
                        }
-                       
                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
                            acc.addError('No existen cotizaciones que justifiquen su asignación');
                        }
-                       
-                       
+
                        if(acc.OmitirValidacionDeInformacion__c == true){
                            acc.Validacion_Nuevo__c = true;
-                           //acc.AnalisisDeValidacion__c = '<p style="color:red;">El cliente ya cuenta con ventas mensuales promedio de $ '+ String.format( wAsigEjecNuevo.promedioVentasMensual.format(), args)+ '</p>'; 
                        }
                        System.debug('Crecimiento: ' + wAsigEjecNuevo.crecimiento);
                        acc.ALERTA_Revisa_su_Venta_existente__c = '<p style="color:red;">El cliente ya cuenta con ventas mensuales promedio de $ '+ String.format(wAsigEjecNuevo.promedioVentasMensual.format(), args) + ' y crecimiento = ' + wAsigEjecNuevo.crecimiento.setScale(2) + ' %</p>';
                    }
-                
+
                 // RECUPERADO
-                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
+                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.AsignacionRegular_Recuperado__c == true
                    && acc.RFC__c != '' && acc.RFC__c != null){
-                       System.debug('ENTRA VALIDACION RECUPERADO');   
-                       
+                       System.debug('ENTRA VALIDACION RECUPERADO');
+
                        Integer posiciones  = 0;
-                       
+
                        if(acc.Name.length()>= 10){posiciones = 10;}else{posiciones = acc.Name.length();}
-                       
+
                        razonSocial = acc.Name.substring(0, posiciones);
-                       
+
                        if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 9);    if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 8);    }}
-                       
+
                        RFC			= acc.RFC__c;
-                       IdSipweb 	= acc.Id_SIpWeb__c; 
+                       IdSipweb 	= acc.Id_SIpWeb__c;
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
                        String mensaje = '';
-                       
+
                        wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado  = ValidaAsignacionEjecutivoRecuperado (razonSocial, RFC, IdSipweb, Plaza); 
                        acc.Validacion_Recuperado__c = wAsigEjecRecuperado.valorDeRetorno; 
-                       
+
                        if(acc.Validacion_Recuperado__c == false && acc.OmitirValidacionDeInformacion__c == false){
                            if(wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true){
                                System.debug('ENTRA IF');   
                                mensaje = 'El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social';
-                               acc.addError('El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social, Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
-                               
+                               acc.addError('El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social, Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }else if(wAsigEjecRecuperado.valorVentaMes != null && wAsigEjecRecuperado.otrosIdsConVenta== true){
-                               System.debug('ENTRA IF ELSE');   
+                               System.debug('ENTRA IF ELSE');
                                mensaje = 'El cliente ya cuenta con las siguientes 	ventas: ';
                                for(String key: wAsigEjecRecuperado.valorVentaMes.keySet()){
                                    mensaje+= key +' : $ '+ String.format(  wAsigEjecRecuperado.valorVentaMes.get(key).format(), args) + '. ';
                                }
                                mensaje += 'y ventas de otros Ids con el mismo nombre de cuenta. ';
-                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
+                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }else{
-                               System.debug('ENTRA ELSE');   
+                               System.debug('ENTRA ELSE');
                                mensaje = 'El cliente ya cuenta con las siguientes 	ventas: ';
                                for(String key: wAsigEjecRecuperado.valorVentaMes.keySet()){
                                    mensaje+= key +' : $ ' +String.format( wAsigEjecRecuperado.valorVentaMes.get(key).format(), args) + '. ';
                                }
-                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
+                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }
-                           
                        }
-                       System.debug('MENSAJE: ' +  mensaje);   
-                       
-                       if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
-                           acc.addError('No hay suficientes registros que justifiquen su asignación');
-                       }
-                       
-                       if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
-                           acc.addError('No existen cotizaciones que justifiquen su asignación');
-                       }
-                       
-                       if(acc.OmitirValidacionDeInformacion__c == true){
+                       System.debug('MENSAJE: ' +  mensaje);
+                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
+                            acc.addError('No hay suficientes registros que justifiquen su asignación');
+                        }
+                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
+                            acc.addError('No existen cotizaciones que justifiquen su asignación');
+                        }
+                        if(acc.OmitirValidacionDeInformacion__c == true){
                            if(wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true){
                                mensaje = 'El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social';
                            }else if(wAsigEjecRecuperado.valorVentaMes != null && wAsigEjecRecuperado.otrosIdsConVenta== true){
@@ -242,78 +204,62 @@ public class TriggerCuenta {
                            acc.Validacion_Recuperado__c = true;
                            acc.ALERTA_Revisa_su_Venta_existente__c  = '<p style="color:red;">' + mensaje +'</p>' ;
                            //acc.AnalisisDeValidacion__c  = '<p style="color:red;">' + mensaje +'</p>' ;
-                       }   
+                        }
                    }
-                
                 // MIGRACION
-                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
+                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.AsignacionRegular_Nuevo__c == true
                    && acc.MigracionPrepagoADocumentacionEnLinea__c == true && acc.RFC__c != '' && acc.RFC__c != null){
-                       System.debug('ENTRA VALIDACION MIGRACION');   
-                       
+                       System.debug('ENTRA VALIDACION MIGRACION');
                        Integer posiciones  = 0;
-                       
                        if(acc.Name.length()>= 10){posiciones = 10;}else{posiciones = acc.Name.length();}
-                       
                        razonSocial = acc.Name.substring(0, posiciones);
-                       
                        if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 9); if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 8);    }}
-                       
                        RFC			= acc.RFC__c;
-                       IdSipweb 	= acc.Id_SIpWeb__c; 
+                       IdSipweb 	= acc.Id_SIpWeb__c;
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
                        String mensaje = '';
-                       
                        wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado  =  ValidaAsignacionEjecutivoMigracion(razonSocial, RFC, IdSipweb, Plaza); 
-                       
-                       System.debug('wAsigEjecRecuperado.valorDeRetorno: ' + wAsigEjecRecuperado.valorDeRetorno);   
-                       System.debug('wAsigEjecRecuperado.otrosIdsConVenta: ' + wAsigEjecRecuperado.otrosIdsConVenta);   
-                       System.debug('wAsigEjecRecuperado.ventasUltimos6Meses: ' + wAsigEjecRecuperado.ventasUltimos6Meses);   
-                       
-                       
+                       System.debug('wAsigEjecRecuperado.valorDeRetorno: ' + wAsigEjecRecuperado.valorDeRetorno);
+                       System.debug('wAsigEjecRecuperado.otrosIdsConVenta: ' + wAsigEjecRecuperado.otrosIdsConVenta);
+                       System.debug('wAsigEjecRecuperado.ventasUltimos6Meses: ' + wAsigEjecRecuperado.ventasUltimos6Meses);
                        if(wAsigEjecRecuperado.valorDeRetorno == false && acc.OmitirValidacionDeInformacion__c == false){
                            if(wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true){
-                               System.debug('ENTRA IF');   
+                               System.debug('ENTRA IF');
                                mensaje = 'El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social';
-                               acc.addError('El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social, Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
-                               
+                               acc.addError('El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social, Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }else if(wAsigEjecRecuperado.valorVentaMes != null && wAsigEjecRecuperado.otrosIdsConVenta== true){
-                               System.debug('ENTRA IF ELSE');   
+                               System.debug('ENTRA IF ELSE');
                                mensaje = 'El cliente ya cuenta con las siguientes 	ventas: ';
                                for(String key: wAsigEjecRecuperado.valorVentaMes.keySet()){
                                    mensaje+= key +' : $ '+ String.format(wAsigEjecRecuperado.valorVentaMes.get(key).format(), args)+ '. ';
                                }
                                mensaje += 'y ventas de otros Ids con el mismo nombre de cuenta. ';
-                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
+                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }else{
-                               System.debug('ENTRA ELSE');   
+                               System.debug('ENTRA ELSE');
                                mensaje = 'El cliente ya cuenta con las siguientes 	ventas: ';
                                for(String key: wAsigEjecRecuperado.valorVentaMes.keySet()){
                                    mensaje+= key +' : $ '+ String.format( wAsigEjecRecuperado.valorVentaMes.get(key).format(), args)+ '. ';
                                }
-                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
+                               acc.addError(mensaje + 'Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }
                        }
-                       
                        if(wAsigEjecRecuperado.valorDeRetorno==true){
                            acc.Validacion_Migracion_GERENTE_KAM__c = true;
                            acc.Validacion_Migracion_GERENTE_KAM_AUX__c = false;
-                           acc.ValidacionMigracion__c = true;  
+                           acc.ValidacionMigracion__c = true;
                        }else{
                            acc.Validacion_Migracion_GERENTE_KAM_AUX__c = true;
                            acc.Validacion_Migracion_GERENTE_KAM__c = false;
                        }
-                       
-                       
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
                            acc.addError('No hay suficientes registros que justifiquen su asignación');
                        }
-                       
                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
                            acc.addError('No existen cotizaciones que justifiquen su asignación');
                        }
-                       
-                       System.debug('MENSAJE: ' +  mensaje);   
+                       System.debug('MENSAJE: ' +  mensaje);
                        if(acc.OmitirValidacionDeInformacion__c == true){
                            if((wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true) || test.isRunningTest()){
                                mensaje = 'El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social';
@@ -323,50 +269,37 @@ public class TriggerCuenta {
                                mensaje += 'y ventas de otros Ids con el mismo nombre de cuenta. ';
                            }else{
                                mensaje = 'El cliente ya cuenta con las siguientes 	ventas: ';
-                               for(String key: wAsigEjecRecuperado.valorVentaMes.keySet()){mensaje+= key +' : $ '+ +String.format( wAsigEjecRecuperado.valorVentaMes.get(key).format(), args)  + '. ';} 
+                               for(String key: wAsigEjecRecuperado.valorVentaMes.keySet()){mensaje+= key +' : $ '+ +String.format( wAsigEjecRecuperado.valorVentaMes.get(key).format(), args)  + '. ';}
                            }
-                           acc.ValidacionMigracion__c = true; 
+                           acc.ValidacionMigracion__c = true;
                            acc.ALERTA_Revisa_su_Venta_existente__c  = '<p style="color:red;">' +mensaje+'</p>' ;
                            //acc.AnalisisDeValidacion__c  = '<p style="color:red;">' +mensaje+'</p>' ;
-                       }   
+                       }
                    }
-                
                 //MANTENIMIENTO
-                if(acc.AsignarEjecutivoACuentaEnSipweb__c == true  && acc.AsignacionRegular_Mantenimiento__c == true 
+                if(acc.AsignarEjecutivoACuentaEnSipweb__c == true  && acc.AsignacionRegular_Mantenimiento__c == true
                    && acc.RFC__c != '' && acc.RFC__c != null ){
-                       System.debug('ENTRA VALIDACION MTTO');   
-                       
+                       System.debug('ENTRA VALIDACION MTTO');
                        Integer posiciones  = 0;
-                       
                        if(acc.Name.length()>= 10){posiciones = 10;}else{posiciones = acc.Name.length();}
-                       
                        razonSocial = acc.Name.substring(0, posiciones);
-                       
                        if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 9);    if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 8);    }}
-                       
                        RFC			= acc.RFC__c;
                        IdSipweb 	= acc.Id_SIpWeb__c; 
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
-                       
                        acc.PromedioMensualVentas__c = getVentaPromedioMensual (razonSocial, RFC, IdSipweb, Plaza);
-                       
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){		acc.addError('No hay suficientes registros que justifiquen su asignación');
-                       } 
-                       
+                       }
                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){ 	acc.addError('No existen cotizaciones que justifiquen su asignación');
                        }
-                       
                        if(acc.Comisi_n_por_Mantenimiento_100__c == false && acc.Comision_diferenciada__c == false && acc.AsignacionRegular_Mantenimiento__c == true){
-                       		acc.Comision_directa__c = true;    
+                       		acc.Comision_directa__c = true;
                        }
-                       
                        if(accOld.Comision_directa__c!= acc.Comision_directa__c && acc.Comision_directa__c == true && acc.AsignacionRegular_Mantenimiento__c == true && acc.Porcentaje_de_comision_directa__c == null){
                            acc.Porcentaje_de_comision_directa__c = .50;
                        }
-                       
                        system.debug('Porcentaje_de_comision_diferenciada__c: ' + acc.Porcentaje_de_comision_diferenciada__c);
                        system.debug('Porcentaje_de_comision_directa__c: ' + acc.Porcentaje_de_comision_directa__c);
-                       
                        if(acc.AsignacionRegular_Mantenimiento__c  == TRUE && ((acc.Comision_diferenciada__c  == TRUE && (acc.Porcentaje_de_comision_diferenciada__c == null || acc.Porcentaje_de_comision_directa__c != null) ))){
                            acc.addError('Si seleccionó Comisión diferenciada introduzca únicamente el porcentaje de comisión diferenciada <= 99%');
                        }else if ( acc.AsignacionRegular_Mantenimiento__c  == TRUE && acc.Comision_directa__c  == TRUE && acc.Porcentaje_de_comision_diferenciada__c != null ){
@@ -378,225 +311,157 @@ public class TriggerCuenta {
                                 || acc.Porcentaje_de_comision_diferenciada__c<= 0 || acc.Porcentaje_de_comision_directa__c<= 0){
                                     acc.addError('La comisión diferenciada debe ser <= 99% y el porcentaje de comisión directa debe ser <1.5 y mayor que 0 para ambos casos');
                                 }
-                       
-                       
                    }else{
                        //Validar si se seleccionó mantenimiento, directa. Si %directa= null, guarda 0.5
                        //acc.Porcentaje_de_comision_directa__c = null;
                        if(acc.Comisi_n_por_Mantenimiento_100__c == false && acc.Comision_diferenciada__c == false && acc.AsignacionRegular_Mantenimiento__c == true){
-                       		acc.Comision_directa__c = true;    
+                       		acc.Comision_directa__c = true;
                        }
-                       
                        if(acc.AsignacionRegular_Mantenimiento__c == true && acc.Comision_directa__c == true && acc.Porcentaje_de_comision_directa__c == null){
                            acc.Porcentaje_de_comision_directa__c = 0.5;
                        }
                    }
-                
                 if(AccOld.Sincronizar_con_SW__c != acc.Sincronizar_con_SW__c && acc.Sincronizar_con_SW__c == true){
-                    
-                    CallWS_AsignaEjecutivo.callGeneraEjecutivo(acc.Id);    
+                    CallWS_AsignaEjecutivo.callGeneraEjecutivo(acc.Id);
                     acc.AsignarEjecutivoACuentaEnSipweb__c=false;
-                    /*if(acc.AnalisisDeValidacion__c != null && acc.AnalisisDeValidacion__c != ''){
-                        acc.AnalisisDeValidacion__c += '<br/><p style="color: green;"> El ejecutivo fué sincronizado correctament en Sipweb</p> ';
-                    }else{
-                        acc.AnalisisDeValidacion__c = '<br/><p style="color: green;"> El ejecutivo fué sincronizado correctamente en Sipweb</p> ';
-                    } */
-                    
                 }
-                
                 if(AccOld.AsignarEjecutivoACuentaEnSipweb__c != acc.AsignarEjecutivoACuentaEnSipweb__c && acc.AsignarEjecutivoACuentaEnSipweb__c == true){
                     CallWS_AsignaEjecutivo.callValidaEjecutivo(acc.Id);
                 }
-                
-                
-                
             }
         }
     }
-    public static void RespaldaSucursal(List<Account> accList, Map<Id, Account> accOldMap, Boolean blnIsUpdate){
-        //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se necesita respaldar el valor de la sucursal en caso que se modifiqué o inserte
-        //Esto debido a que se necesitaron crear vistas de lista para los gerentes de sucursal y se usarás reglas de colaboración
-        //Sin embargo, debido a que la sucursal es un campo lookup y la regla no lo permite, se necesitó respaldar el nombre de la sucursal.
-        String strSucursal = '';
-        Set<Id> setSucursales = new Set <Id>();
-        Map<Id, String> mapSucursales = new map<Id, String>();
-        //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si trae una sucursal (A veces generan cuentas sin sucursal)
-        for(Account acc : accList){
-            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se hace un conjunto con la sucursal de todas las cuentas que se recibieron en el trigger
-            if(acc.Sucursal__c != null){
-                setSucursales.add(acc.Sucursal__c);
+    public static void GeneraColaboracionGerenteSucursal(List<Account> accList){
+        /*Creada: 12/04/2022. Creó: Salvador Ramírez (sramirez@freewayconsulting.com). Caso: 6596. Descripción: Método creado para generar la regla de colaboración que permita al gerente de sucursal ver la cuenta de su sucursal
+                                                                                                                aunque pertenezca a un usuario que no pertenezca a su jerarquía.*/
+        List<User> lstUser = new List<User>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Lista para los usuarios gerentes de sucursal
+        List<AccountShare> lstInsertAccountShare = new List<AccountShare>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Lista para almacenar las reglas de colaboración que se van a crear
+        Map<Id, String> mapSucursal = new Map<Id, String>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Mapa para almacenar la relación entre el usuario y la sucursal
+        Id idGerenteSucursal = null;
+        //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las relaciones entre la cuenta y su sucursal
+        for(Account acc:accList){
+            mapSucursal.put(acc.id, [SELECT NAME FROM Sucursal__c WHERE ID = :acc.Sucursal__c].Name);
+        }
+        for(Account acc: accList){
+            String strSucursal = '%' + mapSucursal.get(acc.id).substring(0,3) + '%';//Salvador Ramírez (sramirez@freewayconsulting.com): Se arma el like de la consulta
+            lstUser = [SELECT Id FROM USER WHERE UserRole.name like '%GERENTE%' AND UserRole.Name LIKE :strSucursal]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se busca al gerente de la sucursal por medio de a función
+            if(lstUser.size() > 0){
+                idGerenteSucursal = lstUser[0].Id;
+                if([SELECT Id FROM AccountShare where UserOrGroupId = :idGerenteSucursal].size() == 0){
+                    //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay una regla de colaboración para el gerente la crea
+                    AccountShare acs = new AccountShare();
+                    acs.AccountId = acc.id;
+                    acs.UserOrGroupId = idGerenteSucursal;
+                    acs.RowCause = 'Manual';
+                    acs.AccountAccessLevel = 'Edit';
+                    acs.OpportunityAccessLevel = 'Edit';
+                    acs.ContactAccessLevel = 'Edit';
+                    lstInsertAccountShare.add(acs);
+                }
             }
         }
-        if(setSucursales != null){
-            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si se recibieron sucursales entonces se hace una consulta para obtener esos nombres
-            for(Sucursal__c sc : [SELECT Id, NAME FROM Sucursal__c WHERE ID IN :setSucursales]){
-                if(!mapSucursales.containsKey(sc.Id)){
-                    mapSucursales.put(sc.Id, sc.Name);
-                }
-            }
-        }
-        for(Account objAcc : accList){
-            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se recorren las cuentas que se están creando o actualizando
-            if(blnIsUpdate){
-                //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si es una actualización
-                Account AccOld = accOldMap.get(objAcc.Id); //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Se respalda el mapa con el registro anterior.
-                if(objAcc.Sucursal__c != null){
-                    //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si se agregó una sucursal
-                    if(objAcc.Sucursal__c != accOld.Sucursal__c){
-                        //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si la sucursal que se está agregando es diferente a la que se había antes.
-                        if(mapSucursales.containsKey(objAcc.Sucursal__c)){
-                            //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si se encontró el nombre de esa sucursal se le asigna al respaldo de la sucursal. Quitandole los 3 últimos caracteres
-                            objAcc.SucursalCopia__c = mapSucursales.get(objAcc.Sucursal__c).substring(0,3);
-                        }
-                    }
-                } else {
-                    objAcc.SucursalCopia__c = '';
-                }
-            } else {
-                //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Si es una inserción
-                if(mapSucursales.containsKey(objAcc.Sucursal__c)){
-                    //Salvador Ramírez (sramirez@freewayconsultig.com). 6407: Busca el nombre de la sucursal
-                    objAcc.SucursalCopia__c = mapSucursales.get(objAcc.Sucursal__c).substring(0,3);
-                } else {
-                    objAcc.SucursalCopia__c = '';
-                }
-            }
+        if(lstInsertAccountShare.size() > 0){
+            insert lstInsertAccountShare;
         }
     }
-    
     public static wrapperAsignacionEjecutivoNuevo ValidaAsignacionEjecutivoNuevo (String razonSocial, String RFC, String IdSipweb, String Plaza){
-        
         List<Ventas__c> ventasList 			= new List<Ventas__c>();
         List<Opportunity> opportunityList	= new List<Opportunity>();
-        
         Decimal sumaVenta 				= 0;
         Decimal promedioMensualVenta 	= 0;
-        
         Decimal sumaOportunidades		= 0;
         Decimal sumaPromedioOpps		= 0;
         Decimal crecimiento 			= 0;
-        
-        //Integer mesesAPromediar = System.today().Month();
-        
-        //Date fechaInicio = date.newinstance(Date.today().Year(), 1, 1);
-        //Date fechaFin = date.newinstance(Date.today().Year(), 12, 31);
-        
         Integer numberDays = date.daysInMonth(Date.today().Year(), Date.today().Month()-1);
         Date fechaFin = Date.newInstance(Date.today().Year(), Date.today().Month()-1, numberDays);
         system.debug('END_DATE: ' +  fechaFin);
-        
         Date fechaInicio = Date.newInstance(Date.today().Year(), Date.today().Month()-6, 1);
         system.debug('START_DATE: ' +  fechaInicio);
-        
         Boolean valorDeRetorno;
-        
         System.debug('IdSipweb: ' 		+ IdSipweb);
         System.debug('razonSocial: ' 	+ razonSocial);
         System.debug('RFC: ' 			+ RFC);
         System.debug('fechaInicio: ' 	+ fechaInicio);
         System.debug('fechaFin: ' 		+ fechaFin);
 		System.debug('Plaza: ' 			+ Plaza);
-        
-			
-        ventasList= [SELECT Id, CreatedDate, Cuenta__c, totalAntesdeImpuestos__c, fechaId__c,Cuenta__r.Name, Cuenta__r.RFC__c, Cuenta__r.Id_Sipweb__c, Cuenta__r.Sucursal__r.Plaza__c   
-                     FROM Ventas__c 
-                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%' 
-                     AND Cuenta__r.RFC__c =: RFC 
-                     AND fechaId__c >=: fechaInicio 
+        ventasList= [SELECT Id, CreatedDate, Cuenta__c, totalAntesdeImpuestos__c, fechaId__c,Cuenta__r.Name, Cuenta__r.RFC__c, Cuenta__r.Id_Sipweb__c, Cuenta__r.Sucursal__r.Plaza__c
+                     FROM Ventas__c
+                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%'
+                     AND Cuenta__r.RFC__c =: RFC
+                     AND fechaId__c >=: fechaInicio
                      AND fechaId__c <=: fechaFin
                      AND Cuenta__r.Sucursal__r.Plaza__c =: Plaza
                      ORDER BY fechaId__c ASC
-                    ]; 
-        
+                    ];
         system.debug('ventasList.size(): ' + ventasList.size());
-        
         if(ventasList.size()==0){
-            
             valorDeRetorno = true;
-            
         }else{
-            
             DateTime getfechePrimeraVenta = ventasList[0].fechaId__c;
             Date fechaPrimeraVenta = date.newinstance(getfechePrimeraVenta.year(), getfechePrimeraVenta.month(), getfechePrimeraVenta.day());
             Integer mesesAPromediar = fechaPrimeraVenta.monthsBetween(fechaFin);
-            
             system.debug('fechePrimeraVenta: ' +  fechaPrimeraVenta);
             system.debug('fechaFin: ' +  fechaFin);
             system.debug('fechaInicio: ' +  fechaInicio);
             system.debug('Entra validación de mesesAPromediar: ' +  mesesAPromediar);
-            
             if(mesesAPromediar == 0){
                 mesesAPromediar = 1;
                 System.debug('Nuevo Valor de meses = 1');
             } else {
                 System.debug('El valor de meses se queda igual = ' + mesesAPromediar);
             }
-            
-            for(Ventas__c v: ventasList){sumaVenta += v.totalAntesdeImpuestos__c;                   
+            for(Ventas__c v: ventasList){sumaVenta += v.totalAntesdeImpuestos__c;
             }
-            
             System.debug('sumaVenta: ' + sumaVenta);
-            
             promedioMensualVenta = sumaVenta / mesesAPromediar;
             System.debug('promedioMensualVenta: ' + promedioMensualVenta);
-            
             Integer contador =0;
             Date fechaInicioO = System.today().addMonths(-6);
         	Date fechaFinO = System.today()+1;
-            
             System.debug('Fecha Inicio O ' + fechaInicioO);
             System.debug('Fecha Fin O ' + fechaFinO);
-            for(Opportunity opp: [SELECT Amount, AccountId, Account.Name, Account.RFC__c, CloseDate, 
+            for(Opportunity opp: [SELECT Amount, AccountId, Account.Name, Account.RFC__c, CloseDate,
                                   CreatedDate, Account.Id_Sipweb__c, Account.Sucursal__r.Plaza__c,
-                                  Potencial_mensual_MXN__c, StageName  
-                                  FROM 	Opportunity 
-                                  WHERE Account.Name LIKE: '%'+ razonSocial +'%' 
-                                  AND   Account.RFC__c =: RFC 
-                                  AND   CreatedDate >=: fechaInicioO 
-                                  AND   CreatedDate <=: fechaFinO 
-                                  AND 	Account.Sucursal__r.Plaza__c =: Plaza 
+                                  Potencial_mensual_MXN__c, StageName
+                                  FROM 	Opportunity
+                                  WHERE Account.Name LIKE: '%'+ razonSocial +'%'
+                                  AND   Account.RFC__c =: RFC
+                                  AND   CreatedDate >=: fechaInicioO
+                                  AND   CreatedDate <=: fechaFinO
+                                  AND 	Account.Sucursal__r.Plaza__c =: Plaza
                                   AND  	StageName = 'Cerrada/Ganada']){
-                                      
                                       sumaOportunidades += opp.Potencial_mensual_MXN__c;
-                                      contador++;                                         
-                                      
+                                      contador++;
                                   }
             if(contador>0){
-            	sumaPromedioOpps = sumaOportunidades / contador;    
+            	sumaPromedioOpps = sumaOportunidades / contador;
             }else{
                 sumaPromedioOpps = 0;
             }
-            
             System.debug('sumaOportunidades: ' 	+ sumaOportunidades);
             System.debug('contador: ' 			+ contador);
             System.debug('sumaPromedioOpps: ' 	+ sumaPromedioOpps);
-            
             if(promedioMensualVenta > 0){
             	crecimiento = (sumaPromedioOpps / promedioMensualVenta) -1;
             } else {
                 crecimiento = 0;
             }
             System.debug('crecimiento: ' 		+ crecimiento);
-            
             if(crecimiento >9){
                 valorDeRetorno = false;
             }else{
                 valorDeRetorno = false;
                 //valorDeRetorno = true;
             }
-            
         }
         wrapperAsignacionEjecutivoNuevo wAsigEjecNuevo = new wrapperAsignacionEjecutivoNuevo();
 		wAsigEjecNuevo.valorDeRetorno = valorDeRetorno;
         wAsigEjecNuevo.promedioVentasMensual = promedioMensualVenta;
         wAsigEjecNuevo.crecimiento = crecimiento * 100;
-        
         System.debug('valorDeRetorno: ' + valorDeRetorno);
         return wAsigEjecNuevo;
     }
-    
     public static wrapperAsignacionEjecutivoRecuperado ValidaAsignacionEjecutivoRecuperado (String razonSocial, String RFC, String IdSipweb, String Plaza){
-        
         Map<Integer, String> valorMes = new Map <Integer, String>();
         Map<String, Decimal> valorVentaMes = new Map <String, Decimal>();
         valorMes.put(1, 'ENERO');
@@ -1011,33 +876,23 @@ public class TriggerCuenta {
         
         return validaCotizaciones;
     }
-    
+    public static void ValidaRFC(List<Account> lstAcc){
+        for(Account acc : lstAcc){
+            acc.RFC__c.addError('Validar primero el RFC usa este RFC');
+        }
+    }
     public static void pre_asignaEjecutivo (Id accId, Id usuarioAAsignar){
         
     }
-    
     class wrapperAsignacionEjecutivoRecuperado{
-        
     	public Map<String, Decimal> valorVentaMes;
         public Boolean valorDeRetorno;
         public Boolean otrosIdsConVenta;
         public Boolean ventasUltimos6Meses;
-        
     }
-    
     class wrapperAsignacionEjecutivoNuevo{
-        
     	public Boolean valorDeRetorno;
         public Decimal promedioVentasMensual;
         public Decimal crecimiento;
-        
     }
-    
-        
-        
-    
-    
-
-   
-    
 }
