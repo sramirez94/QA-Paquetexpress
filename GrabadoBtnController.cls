@@ -1,3 +1,10 @@
+/**
+ * @description       : Clase para la integración con sipweb para la realización del grbado de tarifas gotizadas desde SFDX hash su sistema centralizado
+ * @author            : Rafael Villa (rvilla@freewayconsulting.com)
+ * @Prject            : PaqueteXpress
+ * *********************************************************************
+ * Modificada: 16/02/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Caso: 6315. Modificación: Se ajusta grabado de prepago ya que cuando se estaba contemplando una tarifa Sobre y una DS en ciertos rangos no se estabaguardando sa tarifa sobre
+**/
 global class GrabadoBtnController {
     public Id owner {get; set;}
     public Id Id { get; set; }
@@ -11,61 +18,57 @@ global class GrabadoBtnController {
     public Boolean confirmacionGrabadoUnico{get;set;}
     public Boolean blnLlamadaDocLinea {get;set;}
     public String strTipoCliente    {get;set;}
-    
+
     public GrabadoBtnController(ApexPages.StandardController controller) {
         try{
             this.strMensajeUsuario  = '';
             this.blnLlamadaDocLinea = false;
             this.strTipoCliente     = '';
-        cas =  (SBQQ__Quote__c) controller.getRecord();
-        Id = cas.Id;
-        System.debug('Cotización: ' + cas); 
-        idSipWeb = cas.SBQQ__Account__r.Id_SIpWeb__c;
-        owner = cas.OwnerId;
-        cuenta = cas.SBQQ__Account__c;
-        tipoDocumentacion = cas.Tipo_de_documentacion__c;
-        fechaVigencia = cas.Flujo_del_mes__c;
-        grabadoUnico = cas.Descuento_prepago_unico__c;//Confirmacion_de_Grabado_Unico__c
+            cas =  (SBQQ__Quote__c) controller.getRecord();
+            Id = cas.Id;
+            idSipWeb = cas.SBQQ__Account__r.Id_SIpWeb__c;
+            owner = cas.OwnerId;
+            cuenta = cas.SBQQ__Account__c;
+            tipoDocumentacion = cas.Tipo_de_documentacion__c;
+            fechaVigencia = cas.Flujo_del_mes__c;
+            grabadoUnico = cas.Descuento_prepago_unico__c;//Confirmacion_de_Grabado_Unico__c
             confirmacionGrabadoUnico = cas.Confirmacion_de_Grabado_Unico__c;}catch(Exception ex){System.debug('GrabadoBtnController: '+ex.getLineNumber()+' '+EX.getMessage());}
     }
-    
+
     public PageReference procesar(){
         try{
-        PageReference pageRef = new PageReference('/'+Id);
-        pageRef.setRedirect(true);
-        if(tipoDocumentacion=='Tarifario abierto de piso' || tipoDocumentacion == 'En Piso-Sipweb' || tipoDocumentacion == 'Guías prepagadas'){    
-            if(test.isRunningTest()){
-                DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
-                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
-                DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
-                DefinicionesServiciosGrabado.requestDataODC ddP = new DefinicionesServiciosGrabado.requestDataODC();
-                DefinicionesServiciosGrabado.requestODC req = new DefinicionesServiciosGrabado.requestODC();
-                DefinicionesServiciosGrabado.bodyRequestODC bdp = new DefinicionesServiciosGrabado.bodyRequestODC();
-            }
-            if(System.isScheduled()||!(grabadoUnico && confirmacionGrabadoUnico)){
-                if(fechaVigencia>=Date.today()||fechaVigencia==null)
-                    iniciarGrabado(cas);
+            PageReference pageRef = new PageReference('/'+Id);
+            pageRef.setRedirect(true);
+            if(tipoDocumentacion=='Tarifario abierto de piso' || tipoDocumentacion == 'En Piso-Sipweb' || tipoDocumentacion == 'Guías prepagadas'){
+                if(test.isRunningTest()){
+                    DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
+                    DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();
+                    DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
+                    DefinicionesServiciosGrabado.requestDataODC ddP = new DefinicionesServiciosGrabado.requestDataODC();
+                    DefinicionesServiciosGrabado.requestODC req = new DefinicionesServiciosGrabado.requestODC();
+                    DefinicionesServiciosGrabado.bodyRequestODC bdp = new DefinicionesServiciosGrabado.bodyRequestODC();
+                }
+                if(System.isScheduled()||!(grabadoUnico && confirmacionGrabadoUnico)){
+                    if(fechaVigencia>=Date.today()||fechaVigencia==null)
+                        iniciarGrabado(cas);
+                    else
+                        publicarEvento(false,'Vigencia para cotización '+ cas.Name +' expirada.');
+                }
                 else
-                    publicarEvento(false,'Vigencia para cotización '+ cas.Name +' expirada.');
+                    publicarEvento(false,'No puede volver a enviarse el grabado para la cotización');
             }
-            else
-                publicarEvento(false,'No puede volver a enviarse el grabado para la cotización');
-        }
-        else{
-            pageRef = new PageReference('/apex/GrabadoDocEnLinea?Id='+Id);
-			pageRef.setRedirect(true);
-            return pageRef;
+            else{
+                pageRef = new PageReference('/apex/GrabadoDocEnLinea?Id='+Id);
+                pageRef.setRedirect(true);
+                return pageRef;
 
-        }
-        
-            return pageRef;        
-        }catch(Exception ex){
-        PageReference pageRef = new PageReference('/'+Id);
-                return pageRef;        
-                
             }
+            return pageRef;
+        }catch(Exception ex){
+            PageReference pageRef = new PageReference('/'+Id);
+            return pageRef;
+        }
     }
-    
     public void iniciarGrabado(SBQQ__Quote__c cotizacion){
         try{
             System.debug('Id Sipweb '+cotizacion.SBQQ__Account__r.Id_SIpWeb__c);
@@ -96,13 +99,13 @@ global class GrabadoBtnController {
                     publicarEvento(false,'La cotización aún no ha sido aprobada, estatus actual: '+cotizacion.SBQQ__Status__c);
             }
             else
-                publicarEvento(false,'Sipweb Id no es válido.');            
+                publicarEvento(false,'Sipweb Id no es válido.');
         }
         catch(Exception ex){
             System.debug('iniciarGrabado: '+ex.getLineNumber()+' '+ex.getMessage());
         }
     }
-    
+
     public void validacionEnPiso(SBQQ__Quote__c cotizacion){
         try{
             if((cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c) || Test.isRunningTest())){
@@ -114,7 +117,7 @@ global class GrabadoBtnController {
                 else
                     userSipweb = user.FederationIdentifier;
                 DefinicionesServiciosGrabado.requestDctoPiso rdp = new DefinicionesServiciosGrabado.requestDctoPiso();
-                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
+                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();
                 DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
                 DefinicionesServiciosGrabado.dataDescPiso ddP = new DefinicionesServiciosGrabado.dataDescPiso();
                 DefinicionesServiciosGrabado.requestDescPiso req = new DefinicionesServiciosGrabado.requestDescPiso();
@@ -129,13 +132,13 @@ global class GrabadoBtnController {
                     ql.DiscountRecolection__c = 9;
                     pPresupuesto.add(ql);
                     SBQQ__QuoteLine__c ql2 = new SBQQ__QuoteLine__c();
-                    ql2.ZonaPlus__c = false;                    
+                    ql2.ZonaPlus__c = false;
                     ql2.DiscountDelivery__c = 9;
-                    pPresupuesto.add(ql2);   
+                    pPresupuesto.add(ql2);
                     SBQQ__QuoteLine__c ql3 = new SBQQ__QuoteLine__c();
-                    ql3.ZonaPlus__c = true;                    
+                    ql3.ZonaPlus__c = true;
                     ql2.DiscountDelivery__c = 9;
-                    pPresupuesto.add(ql3);                      
+                    pPresupuesto.add(ql3);
                     SBQQ__QuoteLine__c ql4 = new SBQQ__QuoteLine__c();
                     ql4.ZonaPlus__c = true;
                     ql4.Tarifa__c = 'TARIFA SOBRE';
@@ -145,11 +148,11 @@ global class GrabadoBtnController {
                 for(SBQQ__QuoteLine__c p:pPresupuesto){
                     if(p.DiscountRecolection__c!=null && p.DiscountRecolection__c > 0 && !listaDeControl.containsIgnoreCase('RAD')){
                         dsList.add(obtenerRegistroPiso(p.DiscountRecolection__c,'RAD'));
-                        listaDeControl = listaDeControl+'RAD';                     
+                        listaDeControl = listaDeControl+'RAD';
                         System.debug('LDC: '+listaDeControl);
                     }if(p.DiscountDelivery__c !=null && !p.ZonaPlus__c && !listaDeControl.containsIgnoreCase('EAD') && p.DiscountDelivery__c > 0){
                         dsList.add(obtenerRegistroPiso(p.DiscountDelivery__c,'EAD'));
-                        listaDeControl = listaDeControl+'EAD';                                                 
+                        listaDeControl = listaDeControl+'EAD';
                     }if(p.DiscountAcuse__c!=null&& !listaDeControl.containsIgnoreCase('ACK') && p.DiscountAcuse__c >0){
                         if(p.SBQQ__Quote__r.Acuse__c!=null){
                             String tipoAcuse;
@@ -162,13 +165,13 @@ global class GrabadoBtnController {
                                 tipoAcuse = 'Acuse Empresa';
                             listaDeControl = listaDeControl+tipoAcuse;
                             dsList.add(obtenerRegistroPiso(p.DiscountAcuse__c,tipoAcuse));
-                            listaDeControl = listaDeControl+'ACK';                     
-                            System.debug('LDC: '+listaDeControl);                        
+                            listaDeControl = listaDeControl+'ACK';
+                            System.debug('LDC: '+listaDeControl);
                         }
                     }
                     if(p.Discountflete__c!=null && p.Tarifa__c == 'TARIFA SOBRE' && !listaDeControl.containsIgnoreCase('Env') && p.Discountflete__c >0){
                         dsList.add(obtenerRegistroPiso(p.Discountflete__c,'Sobres'));
-                        listaDeControl = listaDeControl+'Env';                                             
+                        listaDeControl = listaDeControl+'Env';
                     }
                     if(p.DiscountDelivery__c!=null && p.ZonaPlus__c && !listaDeControl.containsIgnoreCase('ZP') && p.DiscountDelivery__c >0 ){
                         dsList.add(obtenerRegistroPiso(p.DiscountDelivery__c,'EAD Zona plus'));
@@ -176,35 +179,35 @@ global class GrabadoBtnController {
                     }
                     if(p.Discountflete__c!=null && p.Tarifa__c != 'TARIFA SOBRE' && !listaDeControl.containsIgnoreCase('Paq') && p.Discountflete__c >0){
                         dsList.add(obtenerRegistroPiso(p.Discountflete__c,'Paquetes'));
-                        listaDeControl = listaDeControl+'Paq';                                             
-                    }                                        
+                        listaDeControl = listaDeControl+'Paq';
+                    }
                 }
                 for(SBQQ__QuoteLine__c p:pPresupuesto){
                     if((p.Tarifa__c == 'SEG-DS' && p.SBQQ__Discount__c != null)&& !listaDeControl.containsIgnoreCase('DS') && p.SBQQ__Discount__c >0 ){
                         System.debug('Validacion SEG-DS');
                         dsList.add(obtenerRegistroPiso(p.SBQQ__Discount__c,'DIA SIGUIENTE (DS)'));
-                        listaDeControl = listaDeControl+'DS';                        
+                        listaDeControl = listaDeControl+'DS';
                     }
                     if(p.Tarifa__c == 'SEG-2D' && p.SBQQ__Discount__c != null && !listaDeControl.containsIgnoreCase('2D') && p.SBQQ__Discount__c >0 ){
-                        System.debug('Validacion SEG-2D');                        
+                        System.debug('Validacion SEG-2D');
                         dsList.add(obtenerRegistroPiso(p.SBQQ__Discount__c,'DOS DIAS (2D)'));
-                        listaDeControl = listaDeControl+'2D';                        
+                        listaDeControl = listaDeControl+'2D';
                     }
                     if((p.Tarifa__c == 'SEG-A12' && p.SBQQ__Discount__c != null )&& !listaDeControl.containsIgnoreCase('A12') && p.SBQQ__Discount__c >0 ){
-                        System.debug('Validacion SEG-A12');  
+                        System.debug('Validacion SEG-A12');
                         dsList.add(obtenerRegistroPiso(p.SBQQ__Discount__c,'ANTES DE LAS 12 (A12)'));
-                        listaDeControl = listaDeControl+'A12';                        
-                    }                                        
-                }                
+                        listaDeControl = listaDeControl+'A12';
+                    }
+                }
                 System.debug('Lista de control: '+listaDeControl);
                 System.debug('Lista generada: '+dsList);
                 sec.user = 'SALESFORCE';
                 sec.token = '325746796331582000000';
-                rdpH.security = sec;    
+                rdpH.security = sec;
                 rdp.header= rdpH;
                 ddP.user = userSipweb;
                 ddp.clntId = cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
-                ddp.discountServiceList = dsList;    
+                ddp.discountServiceList = dsList;
                 req.data = ddp;
                 bdp.request = req;
                 rdp.body = bdp;
@@ -213,12 +216,11 @@ global class GrabadoBtnController {
                 else
                     publicarEvento(false,'No se pudo realizar el grabado');
             }
-            
             else
                 System.debug('validacionEnPiso: Sipweb Id no es válido');
         }catch(Exception ex){
             System.debug('validacionEnPiso: '+ex.getLineNumber()+' '+ex.getMessage());
-            publicarEvento(false,'No se pudo realizar el grabado');            
+            publicarEvento(false,'No se pudo realizar el grabado');
         }
     }
     public void validacionGuiasPrepagadas(SBQQ__Quote__c cotizacion){
@@ -236,45 +238,48 @@ global class GrabadoBtnController {
                         userSipweb = u.FederationIdentifier;
                 }
                 DefinicionesServiciosGrabado.requestTarifaDcto rdp = new DefinicionesServiciosGrabado.requestTarifaDcto();
-                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
+                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();
                 DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
                 DefinicionesServiciosGrabado.data ddP = new DefinicionesServiciosGrabado.data();
                 DefinicionesServiciosGrabado.request req = new DefinicionesServiciosGrabado.request();
                 DefinicionesServiciosGrabado.body bdp = new DefinicionesServiciosGrabado.body();
-                
+
                 List<DefinicionesServiciosGrabado.discountZone> dzList = new List<DefinicionesServiciosGrabado.discountZone>();
                 Map<String,String> listaZonas = mapZonas();
                 List<SBQQ__QuoteLine__c> pPresupuesto = [SELECT Id,Zona_de_descuento__c,Rango_KM__c,Tarifa__c,SBQQ__TotalDiscountRate__c,	SBQQ__Discount__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c =: cotizacion.Id AND Rango_KM__c !=null ORDER BY SBQQ__Discount__c ASC];
-                System.debug('Partidas de presupuesto: '+ pPresupuesto.size());
+                String listaDeControl = '';
+                String strTarifa = '';
                 if(pPresupuesto.size()>0){
                     for(String key:listaZonas.KeySet()){
-                        String listaDeControl = ''; 
-                        DefinicionesServiciosGrabado.discountZone dz = new DefinicionesServiciosGrabado.discountZone();                        
+                        listaDeControl = '';
+                        DefinicionesServiciosGrabado.discountZone dz = new DefinicionesServiciosGrabado.discountZone();
                         List<DefinicionesServiciosGrabado.tarifaDescuento> dsList = new List<DefinicionesServiciosGrabado.tarifaDescuento>();
                         for(SBQQ__QuoteLine__c p :pPresupuesto){
-                            if(p.Tarifa__c.contains('2D')&&p.Rango_KM__c==Key)
-                                System.debug('Se encontró 2D '+p.Tarifa__c+' Rango: '+p.Rango_KM__c+' Key: '+Key+'\n'+'Lista de control: '+listaDeControl);
-                            
-                            DefinicionesServiciosGrabado.tarifaDescuento dscS = new DefinicionesServiciosGrabado.tarifaDescuento();                                                  
-                            if(p.Rango_KM__c==Key && !listaDeControl.containsIgnoreCase(p.Tarifa__c.replace('TARIFA ','').replace('SEG-','').replace('SOBRES','S').replace('SOBRE','S').replace(' ','').replace('-V','').replace('-P',''))){
+                            if(p.Tarifa__c == 'TARIFA SOBRE'){
+                                strTarifa = p.Tarifa__c;
+                            } else {
+                                strTarifa = p.Tarifa__c.replace('TARIFA ','').replace('SEG-','').replace('SOBRES','S').replace('SOBRE','S').replace(' ','').replace('-V','').replace('-P','');
+                            }
+                            DefinicionesServiciosGrabado.tarifaDescuento dscS = new DefinicionesServiciosGrabado.tarifaDescuento();
+                            if(p.Rango_KM__c==Key && !listaDeControl.containsIgnoreCase(strTarifa)){
                                 if(System.isScheduled())
-                                    dscS.discount = 0;    
+                                    dscS.discount = 0;
                                 else
                                     dscS.discount = (p.SBQQ__Discount__c * -1).setScale(2);
                                 dscS.actvFlag = 'A';
                                 dscS.slabNo = p.Tarifa__c.replace('TARIFA ','').replace('SEG-','').replace('SOBRES','S').replace('SOBRE','S').replace(' ','').replace('-V','').replace('-P','');
-                                listaDeControl = listaDeControl + dscS.slabNo+',';
-                                dsList.add(dscS);                              
-                            }                    
+                                listaDeControl += strTarifa+','; //Salvador Ramírez (sramirez@freewayconsulting.com): Se cambia el caracter por el que se hace la asignación a la lista de control para que ahora guarde todo el nombre de la tarifa
+                                dsList.add(dscS);
+                            }
                         }
                         dz.zone = listaZonas.get(key);
                         dz.actvFlag = 'A';
                         dz.discountTrfs = dsList;
-                        dzList.add(dz);                                 
+                        dzList.add(dz);
                     }
                 }
                 else
-                    publicarEvento(false,'Datos insuficientes para realizar el grabado');            
+                    publicarEvento(false,'Datos insuficientes para realizar el grabado');
                 for(DefinicionesServiciosGrabado.discountZone dz :dzList){
                     System.debug('Zona final:' +dz.zone);
                     for(DefinicionesServiciosGrabado.tarifaDescuento td :dz.discountTrfs){
@@ -283,17 +288,16 @@ global class GrabadoBtnController {
                 }
                 sec.user = 'SALESFORCE';
                 sec.token = '325746796331582000000';
-                rdpH.security = sec;    
+                rdpH.security = sec;
                 rdp.header= rdpH;
                 ddP.user = userSipweb;
                 ddP.clntId = cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
-                ddP.discountZones = dzList; 
+                ddP.discountZones = dzList;
                 ddP.quotation =cotizacion.Name;
                 req.data = ddP;
                 bdp.request = req;
                 rdp.body = bdp;
-                System.debug('Se terminó de formar el JSON');
-                system.debug('Json:::' + JSON.serialize(rdp));
+                System.debug('JSON: ' + JSON.serialize(rdp));
                 if(!System.isScheduled()){
                     if(!cotizacion.Electronicas__c){
                         if(envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion))
@@ -315,7 +319,7 @@ global class GrabadoBtnController {
             publicarEvento(false,'No se pudo realizar el grabado');
         }
     }
-    @future(callout=true)    
+    @future(callout=true)
     public static void actualizarCotizacionExpirada(String cot){
         try{
             SBQQ__Quote__c cotizacion = (SBQQ__Quote__c)JSON.deserialize(cot, SBQQ__Quote__c.class);
@@ -328,9 +332,9 @@ global class GrabadoBtnController {
                 if(!String.isEmpty(u.Id_Sipweb__c))
                     userSipweb = u.Id_Sipweb__c;
                 else
-                    userSipweb = u.FederationIdentifier;                
+                    userSipweb = u.FederationIdentifier;
                 DefinicionesServiciosGrabado.requestTarifaDcto rdp = new DefinicionesServiciosGrabado.requestTarifaDcto();
-                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
+                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();
                 DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
                 DefinicionesServiciosGrabado.data ddP = new DefinicionesServiciosGrabado.data();
                 DefinicionesServiciosGrabado.request req = new DefinicionesServiciosGrabado.request();
@@ -346,31 +350,31 @@ global class GrabadoBtnController {
                 System.debug('Partidas de presupuesto: '+ pPresupuesto.size());
                 if(pPresupuesto.size()>0){
                     for(String key:listaZonas.KeySet()){
-                        String listaDeControl = ''; 
-                        DefinicionesServiciosGrabado.discountZone dz = new DefinicionesServiciosGrabado.discountZone();                        
+                        String listaDeControl = '';
+                        DefinicionesServiciosGrabado.discountZone dz = new DefinicionesServiciosGrabado.discountZone();
                         List<DefinicionesServiciosGrabado.tarifaDescuento> dsList = new List<DefinicionesServiciosGrabado.tarifaDescuento>();
                         for(SBQQ__QuoteLine__c p :pPresupuesto){
                             if(p.Tarifa__c.contains('2D')&&p.Rango_KM__c==Key)
                                 System.debug('Se encontró 2D '+p.Tarifa__c+' Rango: '+p.Rango_KM__c+' Key: '+Key+'\n'+'Lista de control: '+listaDeControl);
-                            
-                            DefinicionesServiciosGrabado.tarifaDescuento dscS = new DefinicionesServiciosGrabado.tarifaDescuento();                                                  
+
+                            DefinicionesServiciosGrabado.tarifaDescuento dscS = new DefinicionesServiciosGrabado.tarifaDescuento();
                             if(p.Rango_KM__c==Key && !listaDeControl.containsIgnoreCase(p.Tarifa__c.replace('TARIFA ','').replace('SEG-','').replace('SOBRES','S').replace('SOBRE','S').replace(' ','').replace('-V','').replace('-P',''))){
-                                
+
                                 dscS.discount = 0;
                                 dscS.actvFlag = 'A';
                                 dscS.slabNo = p.Tarifa__c.replace('TARIFA ','').replace('SEG-','').replace('SOBRES','S').replace('SOBRE','S').replace(' ','').replace('-V','').replace('-P','');
                                 listaDeControl = listaDeControl + dscS.slabNo+',';
-                                dsList.add(dscS);                              
-                            }                    
+                                dsList.add(dscS);
+                            }
                         }
                         dz.zone = listaZonas.get(key);
                         dz.actvFlag = 'A';
                         dz.discountTrfs = dsList;
-                        dzList.add(dz);                                 
+                        dzList.add(dz);
                     }
                 }
                 else
-                    gbc.publicarEvento(false,'Datos insuficientes para realizar el grabado');            
+                    gbc.publicarEvento(false,'Datos insuficientes para realizar el grabado');
                 for(DefinicionesServiciosGrabado.discountZone dz :dzList){
                     System.debug('Zona final:' +dz.zone);
                     for(DefinicionesServiciosGrabado.tarifaDescuento td :dz.discountTrfs){
@@ -379,11 +383,11 @@ global class GrabadoBtnController {
                 }
                 sec.user = 'SALESFORCE';
                 sec.token = '325746796331582000000';
-                rdpH.security = sec;    
+                rdpH.security = sec;
                 rdp.header= rdpH;
                 ddP.user = userSipweb;
                 ddP.clntId = cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
-                ddP.discountZones = dzList; 
+                ddP.discountZones = dzList;
                 ddP.quotation =cotizacion.Name;
                 req.data = ddP;
                 bdp.request = req;
@@ -401,9 +405,9 @@ global class GrabadoBtnController {
                 else
                     gbc.publicarEvento(false,'No se pudo realizar el grabado');}
         }catch(Exception ex){
-            SBQQ__Quote__c cotizacion = (SBQQ__Quote__c)JSON.deserialize(cot, SBQQ__Quote__c.class);            
+            SBQQ__Quote__c cotizacion = (SBQQ__Quote__c)JSON.deserialize(cot, SBQQ__Quote__c.class);
             Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
-            GrabadoBtnController gbc = new GrabadoBtnController(sc);            
+            GrabadoBtnController gbc = new GrabadoBtnController(sc);
             System.debug('validacionEnPiso: '+ex.getLineNumber()+' '+ex.getMessage());
             gbc.publicarEvento(false,'No se pudo realizar el grabado');
         }
@@ -462,7 +466,7 @@ global class GrabadoBtnController {
                 hu.language= null;
                 hu.output= null;
                 hu.security = su;
-                hu.target= null;    
+                hu.target= null;
                 rwu.body = bu;
                 rwu.header = hu;
                 return envioGrabadoPOST(JSON.serialize(rwu),endpoint,cotizacion);}
@@ -478,7 +482,7 @@ global class GrabadoBtnController {
             }
         }catch(Exception ex){
             System.debug('crearUsuarioWeb: '+ex.getLineNumber()+' '+ex.getMessage());
-            publicarEvento(false,'No se pudo realizar el grabado');            
+            publicarEvento(false,'No se pudo realizar el grabado');
             return false;
         }
     }
@@ -543,9 +547,9 @@ global class GrabadoBtnController {
         request.setBody(body);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json');
-        request.setTimeout(60000);      
+        request.setTimeout(60000);
         HttpResponse res = h.send(request);
-        return res;        
+        return res;
     }
     public boolean procesarRespuestaGrabado(HTTPResponse res,SBQQ__Quote__c cotizacion){
         try{
@@ -570,7 +574,7 @@ global class GrabadoBtnController {
         }catch(Exception ex){
             System.debug('procesarRespuestaGrabado: '+ex.getLineNumber()+' '+ex.getMessage());
             return False;
-        }        
+        }
     }
     public void publicarEvento(Boolean EjecucionCorrecta, String mensaje){
         try{
@@ -581,9 +585,10 @@ global class GrabadoBtnController {
                 mensajeFinal = 'Grabado exitoso';
             else
                 mensajeFinal = mensaje;
+            System.debug('mensaje final: ' + mensajeFinal);
             inkEvents.add(new ResultadoGrabado__e(Mensaje__c=mensajeFinal, Usuario__c=System.UserInfo.getUserId()
                                                   , Ejecucion_correcta__c = EjecucionCorrecta));
-            List<Database.SaveResult> results = EventBus.publish(inkEvents);     
+            List<Database.SaveResult> results = EventBus.publish(inkEvents);
             for (Database.SaveResult sr : results) {
                 if (sr.isSuccess()) {
                     System.debug('Successfully published event.');
@@ -594,9 +599,8 @@ global class GrabadoBtnController {
                                      ' - ' +
                                      err.getMessage());
                     }
-                }       
+                }
             }
-            
         }catch(Exception ex){
             System.debug('publicarEvento: '+ex.getLineNumber()+' '+ex.getMessage());
         }
@@ -632,11 +636,11 @@ global class GrabadoBtnController {
             clavesMap.put(so.getValue(),so.getLabel());
         }
         return clavesMap;
-    }  
+    }
     public DefinicionesServiciosGrabado.discountService obtenerRegistroPiso(Decimal descuento, String Servicio){
         System.debug('Mapeando servicio '+Servicio);
         Map<String,String> mapaServicios = getCodigoServicio();
-        Map<String,String> mapaReferencias = getCodigoReferencia();        
+        Map<String,String> mapaReferencias = getCodigoReferencia();
         DefinicionesServiciosGrabado.discountService ds = new DefinicionesServiciosGrabado.discountService();
         ds.discount = descuento;//cotizacion.PAQ_DescuentoGlobal__c.setScale(2);
         ds.isNational = 1;
@@ -644,22 +648,18 @@ global class GrabadoBtnController {
         System.debug('Servicio obtenido: '+ds.refrSrvcId);
         ds.srvcId = mapaServicios.get(Servicio);
         System.debug('Referencia obtenida: '+ds.refrSrvcId);
-        ds.toDelete = 0;        
+        ds.toDelete = 0;
         return ds;
     }
     public Map<String,String> mapZonas()
     {
         List<SelectOption> optionsZona = new List<SelectOption>();
         List<SelectOption> optionsRango = new List<SelectOption>();
-        
         Schema.DescribeFieldResult fieldResultZonas = SBQQ__QuoteLine__c.Zona_de_descuento__c.getDescribe();
         Schema.DescribeFieldResult fieldResulRangos = SBQQ__QuoteLine__c.Rango_KM__c.getDescribe();
         Map<String,String> mRango = new Map<String,String>();
-        
-        
         List<Schema.PicklistEntry> zDesc = fieldResultZonas.getPicklistValues();
         List<Schema.PicklistEntry> zRango = fieldResulRangos.getPicklistValues();
-        
         for( Schema.PicklistEntry f : zDesc)
         {
             optionsZona.add(new SelectOption(f.getLabel(), f.getValue()));
@@ -672,10 +672,8 @@ global class GrabadoBtnController {
         for(SelectOption so: optionsRango){
             mRango.put(zRango[x].getValue(),Zdesc[x].getValue());
             x++;
-        } 
+        }
         System.debug('Mapa de zonas: '+mRango);
         return mRango;
     }
-    
-    
 }
