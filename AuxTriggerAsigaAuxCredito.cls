@@ -1,12 +1,11 @@
+/**
+**/
 public class AuxTriggerAsigaAuxCredito {
-    
     public static void AsignaAprobadores(List<Credito__c> creditos){
-        
         List<Estructura__c> estructuras = new List<Estructura__c>();
     	List<Id> sucursales = new List<Id>();
         List<Account> cuentas = new List<Account>();
         List<Credito__c> montos = new List<Credito__c>();
-        
         for(Credito__c credito : creditos){
             System.debug('Id de la cuenta: ' + credito.Cuenta__c);
             Id cuenta = credito.Cuenta__c;
@@ -21,7 +20,6 @@ public class AuxTriggerAsigaAuxCredito {
                           AND Estado__c = 'Aprobado'];
             }
         }
-        
         if(cuentas.size()>0){
             for(Account acc: cuentas){
                 System.debug('Nombre de la cuenta: ' + acc.Name);
@@ -30,7 +28,6 @@ public class AuxTriggerAsigaAuxCredito {
                 System.debug('Nombre de la sucursal de la cuenta: ' + acc.Sucursal__r.Name);
             }
         }
-        
         if(sucursales.size()>0){
             estructuras = [SELECT Id, Sucursal__c, Director_Comercial__c, Gerente_de_Cr_dito__c, Auxiliar_de_Cr_dito__c, Gerente_Sucursal__c FROM Estructura__c WHERE Sucursal__c IN: sucursales];
             if(estructuras.size()>0){
@@ -45,12 +42,11 @@ public class AuxTriggerAsigaAuxCredito {
                                     credito.GerenteSucursal__c = est.Gerente_Sucursal__c;
                         		}
                     		}
-                		}    
+                		}
             		}
         		}
         	}
     	}
-        
         system.debug('montos.size(): ' + montos.size());
         if(montos.size()>0){
             for(Credito__c cr: montos){
@@ -69,8 +65,29 @@ public class AuxTriggerAsigaAuxCredito {
                 }
             }
         }
-        
-        
     }
-
+    public static String EdicionEnAprobacion(Id credito, Boolean blnBloquear){
+        String result = '';
+        try{
+            Credito__c[] cr = [SELECT ID FROM Credito__c WHERE ID = :credito];
+            if(cr.size() != 0){
+                if(!blnBloquear){
+                    Approval.UnLockResult[] urList = Approval.Unlock(cr, false);
+                    for(Approval.UnLockResult ur : urList){
+                        if(!ur.IsSuccess()){for(Database.Error err : ur.getErrors()){result += err.getMessage();}}
+                    }
+                } else {
+                    Approval.LockResult[] lrList = Approval.lock(cr, false);
+                    for(Approval.LockResult lr : lrList){
+                        if(!lr.IsSuccess()){for(Database.Error err : lr.getErrors()){result += err.getMessage();}}
+                    }
+                }
+            } else {
+                result = 'No existe ningúna solicitud de crédito con el ID ' + credito;
+            }
+        } catch (Exception ex){
+            result = 'Error EdicionEnAprobacion: ' + ex.getMessage() + '. Línea: ' + ex.getLineNumber();
+        }
+        return result;
+    }
 }
