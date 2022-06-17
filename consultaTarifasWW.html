@@ -29,7 +29,7 @@
                 </div>
             </article>
             <!--Tabla de las tarifas obtenidas (izquierda)-->
-            <article class="slds-card" style="float: left;">
+            <article class="slds-card" style="float: left;padding: 0px 0px 2.5em 0px;">
                 <div class="slds-card__header slds-grid">
                     <header class="slds-media slds-media_center slds-has-flexi-truncate" >
                         <div class="slds-media__body">
@@ -41,7 +41,7 @@
                         </div>
                     </header>
                 </div>
-                <div class="slds-card__body">
+                <div class="slds-card__body" >
                     <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
                         <template if:true={renderCBMEGMP}>
                             <thead>
@@ -198,7 +198,7 @@
             </article>
             <!--Servicios adicionales-->
             <template if:true={renderServAdic}>
-                <article class="slds-card" style="float: right;position: relative;width: 40%;">
+                <article class="slds-card" style="float: right; display: block;padding: 0px 0px 2.5em 0px;">
                     <div class="slds-card__header slds-grid">
                         <header class="slds-media slds-media_center slds-has-flexi-truncate">
                             <div class="slds-media__body">
@@ -231,6 +231,10 @@
                                     </th>
                                     <th align="center" class="" scope="col">
                                         <div class="slds-truncate">
+                                        </div>
+                                    </th>
+                                    <th align="center" class="" scope="col">
+                                        <div class="slds-truncate">
                                             Cotización
                                         </div>
                                     </th>
@@ -242,6 +246,7 @@
                                         <td>{servAd.RangoKM}</td>
                                         <td>{servAd.Servicio}</td>
                                         <td>{servAd.Monto}</td>
+                                        <td>{servAd.ServicesCant}</td>
                                         <td>{servAd.Cotizacion}</td>
                                     </tr>
                                 </template>
@@ -252,7 +257,7 @@
             </template>
             <!--Tarifas express (Derecha)-->
             <template if:true={renderXpress}>
-                <article class="slds-card" style="width: 100; float: right; height: 150px; margin-top: 20px; ">
+                <article class="slds-card" style="float: right; display: block;">
                     <div class="slds-card__header slds-grid">
                         <header class="slds-media slds-media_center slds-has-flexi-truncate">
                             <div class="slds-media__body">
@@ -346,6 +351,7 @@
                     </div>
                 </article>
             </template>
+            <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
         </template>
     </form>
 </template>
