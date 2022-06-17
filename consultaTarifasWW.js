@@ -34,7 +34,6 @@ export default class ConsultaTarifasWW extends LightningElement {
                     let strCliente      = this.objResponse.body.response.data.clntId; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el id de sipweb del cliente
                     let strTarifa       = this.objResponse.body.response.data.trifType; //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el tipo de tarifa (A o C)
                     let Multipieza      = '';
-                    console.log('guardado: ' + this.kmConfig.length);
                     if(this.objResponse.body.response.data.ptpConfig){
                         //Salvador Ramírez (sramirez@freewayconsulting.com): Si vienen datos ordenados por destinos
                         arrayPtpConfig  = this.objResponse.body.response.data.ptpConfig[0]; //Salvador Ramírez (sramirez@freewayconsulting.com): Siempre esta lista solo tendrá 1 elemento por eso se referencia al 0
@@ -123,7 +122,7 @@ export default class ConsultaTarifasWW extends LightningElement {
                         }
                         if(arrayKmConfig){
                             let ContadorKm = 0;
-                            if(arrayKmConfig.kmServicesTrif.length > 0){
+                            if(arrayKmConfig.kmServicesTrif && arrayKmConfig.kmServicesTrif.length > 0){
                                 for(let i = 0; arrayKmConfig.kmServicesTrif.length;i++){
                                     let kmServicesTrif = arrayKmConfig.kmServicesTrif[i];
                                     if(kmServicesTrif){
@@ -302,30 +301,31 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                 }
                                             }
                                         }
-
-                                        for(let j = 0;kmServicesTrif.servicesTrifDtl.length; j++){
-                                            let servicesTrifDtl = kmServicesTrif.servicesTrifDtl[j];
-                                            if(servicesTrifDtl){
-                                                let strTarifa = servicesTrifDtl.slabNo;
-                                                for(let k = 0; servicesTrifDtl.serviceTrif.length; k++){
-                                                    let serviceTrif = servicesTrifDtl.serviceTrif[k];
-                                                    if(serviceTrif){
-                                                        let Tarifa = {
-                                                            Id : 'km' + k,
-                                                            Cliente : strCliente,
-                                                            RangoKM : strRange,
-                                                            Servicio : serviceTrif.serviceId,
-                                                            Tarifa : strTarifa,
-                                                            Monto : serviceTrif.trifAmount,
-                                                            Cotizacion : serviceTrif.quotation
-                                                        };
-                                                        this.kmConfig.push(Tarifa);
-                                                    } else {
-                                                        break;
+                                        if(kmServicesTrif.servicesTrifDtl){
+                                            for(let j = 0;kmServicesTrif.servicesTrifDtl.length; j++){
+                                                let servicesTrifDtl = kmServicesTrif.servicesTrifDtl[j];
+                                                if(servicesTrifDtl){
+                                                    let strTarifa = servicesTrifDtl.slabNo;
+                                                    for(let k = 0; servicesTrifDtl.serviceTrif.length; k++){
+                                                        let serviceTrif = servicesTrifDtl.serviceTrif[k];
+                                                        if(serviceTrif){
+                                                            let Tarifa = {
+                                                                Id : 'km' + k,
+                                                                Cliente : strCliente,
+                                                                RangoKM : strRange,
+                                                                Servicio : serviceTrif.serviceId,
+                                                                Tarifa : strTarifa,
+                                                                Monto : serviceTrif.trifAmount,
+                                                                Cotizacion : serviceTrif.quotation
+                                                            };
+                                                            this.kmConfig.push(Tarifa);
+                                                        } else {
+                                                            break;
+                                                        }
                                                     }
+                                                } else {
+                                                    break;
                                                 }
-                                            } else {
-                                                break;
                                             }
                                         }
                                         if(kmServicesTrif.servicesTrifCbe){
@@ -363,6 +363,25 @@ export default class ConsultaTarifasWW extends LightningElement {
                                                 }
                                             }
                                         }
+                                        if(kmServicesTrif.otherServiceTrif){
+                                            for(let j = 0; kmServicesTrif.otherServiceTrif.length;j++){
+                                                let otherServiceTrif = kmServicesTrif.otherServiceTrif[j];
+                                                if(otherServiceTrif){
+                                                    let ServicioAdic = {
+                                                        id: 'Adic' + contadorAdic,
+                                                        RangoKM : strRange,
+                                                        Servicio : otherServiceTrif.serviceId,
+                                                        Monto : otherServiceTrif.trifAmount,
+                                                        Cotizacion : otherServiceTrif.quotation
+                                                    };
+                                                    this.servAdic.push(ServicioAdic);
+                                                    this.renderServAdic = true;
+                                                    contadorAdic++;
+                                                } else {
+                                                    break;
+                                                }
+                                            }
+                                        }
                                         if(this.expressServices && this.expressServices.length > 0){
                                             this.renderXpress = true;
                                         }
@@ -395,7 +414,14 @@ export default class ConsultaTarifasWW extends LightningElement {
                 }
             }
         }).catch(error => {
-            console.log('Error: ' + error);
+            this.renderJSON = false;
+            const evt = new ShowToastEvent({
+                title   : 'Error en consulta de tarifas WW',
+                message : 'Error: ' + error,
+                variant : 'error',
+                mode    : 'dismissable'
+            });
+            this.dispatchEvent(evt);
         })
     }
 }
