@@ -1,7 +1,9 @@
 /**
  * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 12/04/2022. Caso: 6596. Se genera un nuevo caso para poder generar una nueva regla de colaboración para que los gerentes de sucursal puedan visualizar las cuentas de su sucursal
+ * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 25/05/2022. Se agrega llamado a clase ValidaRFC para llamar WS que valide que el RFC sea correcto.
 **/
 public class TriggerCuenta {
+    public Static Boolean blnRFCValido;
 	public static void genera_Gerente_KAM(List<Account> accList){
         Set<Id> sucursalesId = new Set<Id>();
 		List<Estructura__c> estructurasList = new List<Estructura__c>();
@@ -184,12 +186,8 @@ public class TriggerCuenta {
                            }
                        }
                        System.debug('MENSAJE: ' +  mensaje);
-                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
-                            acc.addError('No hay suficientes registros que justifiquen su asignación');
-                        }
-                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
-                            acc.addError('No existen cotizaciones que justifiquen su asignación');
-                        }
+                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){acc.addError('No hay suficientes registros que justifiquen su asignación');}
+                        if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){acc.addError('No existen cotizaciones que justifiquen su asignación');}
                         if(acc.OmitirValidacionDeInformacion__c == true){
                            if(wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true){
                                mensaje = 'El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social';
@@ -253,12 +251,8 @@ public class TriggerCuenta {
                            acc.Validacion_Migracion_GERENTE_KAM_AUX__c = true;
                            acc.Validacion_Migracion_GERENTE_KAM__c = false;
                        }
-                       if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
-                           acc.addError('No hay suficientes registros que justifiquen su asignación');
-                       }
-                       if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){
-                           acc.addError('No existen cotizaciones que justifiquen su asignación');
-                       }
+                       if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){acc.addError('No hay suficientes registros que justifiquen su asignación');}
+                       if(getValidacionCotizaciones (acc.Id, acc.Usuario_a_asignar__c) == false){acc.addError('No existen cotizaciones que justifiquen su asignación');}
                        System.debug('MENSAJE: ' +  mensaje);
                        if(acc.OmitirValidacionDeInformacion__c == true){
                            if((wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true) || test.isRunningTest()){
@@ -314,12 +308,8 @@ public class TriggerCuenta {
                    }else{
                        //Validar si se seleccionó mantenimiento, directa. Si %directa= null, guarda 0.5
                        //acc.Porcentaje_de_comision_directa__c = null;
-                       if(acc.Comisi_n_por_Mantenimiento_100__c == false && acc.Comision_diferenciada__c == false && acc.AsignacionRegular_Mantenimiento__c == true){
-                       		acc.Comision_directa__c = true;
-                       }
-                       if(acc.AsignacionRegular_Mantenimiento__c == true && acc.Comision_directa__c == true && acc.Porcentaje_de_comision_directa__c == null){
-                           acc.Porcentaje_de_comision_directa__c = 0.5;
-                       }
+                       if(acc.Comisi_n_por_Mantenimiento_100__c == false && acc.Comision_diferenciada__c == false && acc.AsignacionRegular_Mantenimiento__c == true){acc.Comision_directa__c = true;}
+                       if(acc.AsignacionRegular_Mantenimiento__c == true && acc.Comision_directa__c == true && acc.Porcentaje_de_comision_directa__c == null){acc.Porcentaje_de_comision_directa__c = 0.5;}
                    }
                 if(AccOld.Sincronizar_con_SW__c != acc.Sincronizar_con_SW__c && acc.Sincronizar_con_SW__c == true){
                     CallWS_AsignaEjecutivo.callGeneraEjecutivo(acc.Id);
@@ -338,30 +328,40 @@ public class TriggerCuenta {
         List<AccountShare> lstInsertAccountShare = new List<AccountShare>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Lista para almacenar las reglas de colaboración que se van a crear
         Map<Id, String> mapSucursal = new Map<Id, String>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Mapa para almacenar la relación entre el usuario y la sucursal
         Id idGerenteSucursal = null;
-        //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las relaciones entre la cuenta y su sucursal
-        for(Account acc:accList){
-            mapSucursal.put(acc.id, [SELECT NAME FROM Sucursal__c WHERE ID = :acc.Sucursal__c].Name);
-        }
-        for(Account acc: accList){
-            String strSucursal = '%' + mapSucursal.get(acc.id).substring(0,3) + '%';//Salvador Ramírez (sramirez@freewayconsulting.com): Se arma el like de la consulta
-            lstUser = [SELECT Id FROM USER WHERE UserRole.name like '%GERENTE%' AND UserRole.Name LIKE :strSucursal]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se busca al gerente de la sucursal por medio de a función
-            if(lstUser.size() > 0){
-                idGerenteSucursal = lstUser[0].Id;
-                if([SELECT Id FROM AccountShare where UserOrGroupId = :idGerenteSucursal].size() == 0){
-                    //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay una regla de colaboración para el gerente la crea
-                    AccountShare acs = new AccountShare();
-                    acs.AccountId = acc.id;
-                    acs.UserOrGroupId = idGerenteSucursal;
-                    acs.RowCause = 'Manual';
-                    acs.AccountAccessLevel = 'Edit';
-                    acs.OpportunityAccessLevel = 'Edit';
-                    acs.ContactAccessLevel = 'Edit';
-                    lstInsertAccountShare.add(acs);
+        try {
+            //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las relaciones entre la cuenta y su sucursal
+            for(Account acc:accList){
+                mapSucursal.put(acc.id, [SELECT NAME FROM Sucursal__c WHERE ID = :acc.Sucursal__c].Name.substring(0,3));
+                System.debug('Sucursal: ' + mapSucursal.get(acc.id));
+            }
+            for(Account acc: accList){
+                String strSucursal = '%' + mapSucursal.get(acc.id).substring(0,3) + '%';//Salvador Ramírez (sramirez@freewayconsulting.com): Se arma el like de la consulta
+                System.debug('Like: ' + strSucursal);
+                lstUser = [SELECT Id FROM USER WHERE UserRole.name like '%GERENTE%' AND UserRole.Name LIKE :strSucursal]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se busca al gerente de la sucursal por medio de a función
+                System.debug('Lista: ' + lstUser);
+                if(lstUser.size() > 0){
+                    System.debug('Entra');
+                    idGerenteSucursal = lstUser[0].Id;
+                    System.debug('Id gerente de sucursal: ' + idGerenteSucursal);
+                    if([SELECT Id FROM AccountShare where UserOrGroupId = :idGerenteSucursal AND AccountId = :acc.Id].size() == 0){
+                        System.debug('Entra 2');
+                        //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay una regla de colaboración para el gerente la crea
+                        AccountShare acs = new AccountShare();
+                        acs.AccountId = acc.id;
+                        acs.UserOrGroupId = idGerenteSucursal;
+                        acs.RowCause = 'Manual';
+                        acs.AccountAccessLevel = 'Edit';
+                        acs.OpportunityAccessLevel = 'Edit';
+                        acs.ContactAccessLevel = 'Edit';
+                        lstInsertAccountShare.add(acs);
+                    }
                 }
             }
-        }
-        if(lstInsertAccountShare.size() > 0){
-            insert lstInsertAccountShare;
+            if(lstInsertAccountShare.size() > 0){
+                insert lstInsertAccountShare;
+            }
+        } catch (Exception ex) {
+            System.debug('Error: ' + ex.getMessage() + '. Línea: ' + ex.getLineNumber());
         }
     }
     public static wrapperAsignacionEjecutivoNuevo ValidaAsignacionEjecutivoNuevo (String razonSocial, String RFC, String IdSipweb, String Plaza){
@@ -433,22 +433,19 @@ public class TriggerCuenta {
                                       sumaOportunidades += opp.Potencial_mensual_MXN__c;
                                       contador++;
                                   }
-            if(contador>0){
-            	sumaPromedioOpps = sumaOportunidades / contador;
+            if(contador>0){sumaPromedioOpps = sumaOportunidades / contador;
             }else{
                 sumaPromedioOpps = 0;
             }
             System.debug('sumaOportunidades: ' 	+ sumaOportunidades);
             System.debug('contador: ' 			+ contador);
             System.debug('sumaPromedioOpps: ' 	+ sumaPromedioOpps);
-            if(promedioMensualVenta > 0){
-            	crecimiento = (sumaPromedioOpps / promedioMensualVenta) -1;
+            if(promedioMensualVenta > 0){crecimiento = (sumaPromedioOpps / promedioMensualVenta) -1;
             } else {
                 crecimiento = 0;
             }
             System.debug('crecimiento: ' 		+ crecimiento);
-            if(crecimiento >9){
-                valorDeRetorno = false;
+            if(crecimiento >9){valorDeRetorno = false;
             }else{
                 valorDeRetorno = false;
                 //valorDeRetorno = true;
@@ -546,17 +543,14 @@ public class TriggerCuenta {
         wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado = new wrapperAsignacionEjecutivoRecuperado ();
         
         
-        if(ventasList6MESES.size()>0){
-        	wAsigEjecRecuperado.valorVentaMes 	= valorVentaMes;    
-        }
+        if(ventasList6MESES.size()>0){wAsigEjecRecuperado.valorVentaMes 	= valorVentaMes;    }
         
         if(ventasListOtrosIds.size()>0 ){wAsigEjecRecuperado.otrosIdsConVenta = true;	        
         }else{
 			wAsigEjecRecuperado.otrosIdsConVenta = false;           
         }
         
-        if(ventasListOtrosIds.size()>0 || ventasList6MESES.size()>0 ){
-            valorDeRetorno= false;
+        if(ventasListOtrosIds.size()>0 || ventasList6MESES.size()>0 ){valorDeRetorno= false;
         }else{
             valorDeRetorno= true;
         }
@@ -876,9 +870,16 @@ public class TriggerCuenta {
         
         return validaCotizaciones;
     }
-    public static void ValidaRFC(List<Account> lstAcc){
+    public static void validaRFC(List<Account> lstAcc, Map<Id, Account> accOldMap){
         for(Account acc : lstAcc){
-            acc.RFC__c.addError('Validar primero el RFC usa este RFC');
+            String strTipo = [SELECT NAME FROM RECORDTYPE WHERE ID = :acc.RecordTypeId].Name;
+            String strRFCOld = '';
+            if(accOldMap != null){
+                strRFCOld = accOldMap.get(acc.Id).RFC__c;
+            }
+            if(acc.RFC__c != strRFCOld){
+                validaRFC.ValidaRFC(acc.id, acc.RFC__c, strTipo);
+            }
         }
     }
     public static void pre_asignaEjecutivo (Id accId, Id usuarioAAsignar){
@@ -894,5 +895,42 @@ public class TriggerCuenta {
     	public Boolean valorDeRetorno;
         public Decimal promedioVentasMensual;
         public Decimal crecimiento;
+    }
+    public class ConsultaRFC{
+        public header header;
+        public body body;
+    }
+    public class header{
+        public Security security;
+    }
+    public class Security{
+        public String user;
+        public String password;
+        public Integer type;
+        public String token;
+    }
+    public class body{
+        public request request;
+        public response response;
+    }
+    public class request {
+        public data data;
+    }
+    public class data{
+        public String rfc;
+    }
+    public class response{
+        public Boolean success;
+        public List<messages> messages;
+        public dataresponse data;
+        public String objectDTO;
+    }
+    public class dataresponse{
+        public String rfcGenerico;
+    }
+    public class messages{
+        public String code;
+        public String description;
+        public String typeError;
     }
 }
