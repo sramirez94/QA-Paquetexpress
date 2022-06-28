@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 10-29-2021
+  @last modified on  : 02-10-2022
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
   Modifications Log 
   Ver   Date         Author                               Modification
@@ -2504,7 +2504,7 @@
                                             , Tarifa__c: labelFee
                                             , Rango_KM__c: strRange
                                             , Pack_Seg__c: $scope.OD.fltSEG
-                                            //, Id: range.Id
+                                            , Id: range.Id
                                             , SBQQ__VolumeDiscount__c: block.intTotalDisc * 100
                                             , SBQQ__Quote__c: Quote.Id
                                             , Weight__c: range.fltWeight
