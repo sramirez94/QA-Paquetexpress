@@ -230,14 +230,14 @@ public class GrabadoDocEnLinea {
         try{
             if(cotizacion.SBQQ__Account__r.Id_SIpWeb__c!=null && !String.isEmpty(cotizacion.SBQQ__Account__r.Id_SIpWeb__c)|| Test.isRunningTest()){
                 DefinicionesServiciosGrabado.requestDRemota rdp = new DefinicionesServiciosGrabado.requestDRemota();
-                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();            
+                DefinicionesServiciosGrabado.header rdpH = new DefinicionesServiciosGrabado.header();
                 DefinicionesServiciosGrabado.security sec = new DefinicionesServiciosGrabado.security();
                 DefinicionesServiciosGrabado.requestDataODC ddP = new DefinicionesServiciosGrabado.requestDataODC();
                 DefinicionesServiciosGrabado.requestODC req = new DefinicionesServiciosGrabado.requestODC();
                 DefinicionesServiciosGrabado.bodyRequestODC bdp = new DefinicionesServiciosGrabado.bodyRequestODC();
                 sec.user = 'SALESFORCE';
                 sec.token = '325746796331582000000';
-                rdpH.security = sec;    
+                rdpH.security = sec;
                 rdp.header= rdpH;
                 ddP.clntId = cotizacion.SBQQ__Account__r.Id_SIpWeb__c;
                 req.data = ddP;
@@ -259,17 +259,17 @@ public class GrabadoDocEnLinea {
         Apexpages.StandardController sc = new Apexpages.StandardController(cotizacion);
         //GrabadoBtnController gr = new GrabadoBtnController(sc);
         try{
-            if(Test.isRunningTest()){
+            /*if(Test.isRunningTest()){
                 HttpResponse res = consultaAPIPOST(body,endpoint);
-                String respuesta = res.getBody().replace('time','timeR');
+                String respuesta = res.getBody().replace('time','timeR');*/
                 //Boolean proceso =  ProcesaResponse(res,cotizacion);
                 this.blnclientenuevo = true;
                 return true;
-            } else {
+            /*} else {
                 HttpResponse res = consultaAPIPOST(body,endpoint);
                 String respuesta = res.getBody().replace('time','timeR');
                 return ProcesaResponse(res,cotizacion);
-            }
+            }*/
         }catch (Exception ex){
             System.debug('ObtieneInfoSipweb: '+ex.getLineNumber()+' '+ex.getMessage());
             publicarEvento(false, 'Error al obtener info sipweb');
@@ -348,7 +348,7 @@ public class GrabadoDocEnLinea {
         String strOrigen                    = '';
         String TarifaUsar                   = '';
         blnMostrarMensaje                   = false;
-        Boolean blnRango                    = false;   
+        Boolean blnRango                    = false;
         Boolean blnDest                     = false;
         Boolean blnRequiereCrearUsuario     = false;
         Boolean blnGraboTarifas             = false;
@@ -410,7 +410,7 @@ public class GrabadoDocEnLinea {
                 if(this.wp.blnSoloDestinos)
                     this.listRanges.clear();
                 for(TempleateLine__c line : queryTempleateLine(objtempleate.Id)){
-                    this.listPlantillaLineItems.add(line);          
+                    this.listPlantillaLineItems.add(line);
                 }
                 if(this.blnCostosFijos){
                     for(TempleateLine__c line : this.listPlantillaLineItems){
@@ -558,10 +558,8 @@ public class GrabadoDocEnLinea {
                                     mapRangesByBlock.get(cot.PackWeightAVG__c).put(strRangeDest, cot.FLETE__c);
                                 if(!this.mapService.get('ADD').mapRanges.containsKey(strRangeDest))
                                     this.mapService.get('ADD').mapRanges.put(strRangeDest, cot.KG_ADICIONAL__c);
-                
                                 if(!this.mapService.get('ACK').mapRanges.containsKey(strRangeDest))
                                     this.mapService.get('ACK').mapRanges.put(strRangeDest, cot.ACK__c);
-                
                                 if(cot.ZonaPlus__c)
                                     this.mapService.get('ZP').mapRanges.put(strRangeDest, cot.EAD__c);
                             }
@@ -693,27 +691,10 @@ public class GrabadoDocEnLinea {
                         if(!this.listSS.contains(itemSS.Name))
                             this.listSS.add(itemSS.Name);
                     }
-            
-                    /*for(String strName : this.listSS){
-                        if(this.wp.mapSS.containsKey(strName)){
-                            for(String keyRange : listRangeDestiny){
-                                if( !this.wp.mapSS.get(strName).mapRanges.containsKey(keyRange)){
-                                    this.wp.mapSS.get(strName).mapRanges.put(keyRange, new PAQ_SpecialService__c(Amount__c = 0, Option__c = '') );
-                                }
-                            }
-                        }
-                        else{
-                            SS service = new SS ('', 0);
-                            for(String keyRange : listRangeDestiny){
-                                service.mapRanges.put(keyRange, new PAQ_SpecialService__c(Amount__c = 0, Option__c = '') );
-                            }
-                            this.wp.mapSS.put(strName, service);
-                        }
-                    }*/
                 }
                 if (String.isNotBlank(cotizacion.Acuse__c))
                     this.blnACK = true;
-                if(String.isNotBlank(cotizacion.Servicios_adicionales__c)){          
+                if(String.isNotBlank(cotizacion.Servicios_adicionales__c)){
                     for (String strKeyService : cotizacion.Servicios_adicionales__c.split(';')){
                         switch on strKeyService {
                             when 'RAD' {
@@ -730,7 +711,6 @@ public class GrabadoDocEnLinea {
                             }*/
                         }
                     }
-                    
                 }
                 if(this.blnCostosFijos){
                     List<String> listRangosRespaldo = new List<String>();
@@ -748,6 +728,7 @@ public class GrabadoDocEnLinea {
                         wp.mapACK.put(objACK.Label, objACK.Amount__c);
                 }
                 if(this.blnClienteNuevo && this.blnCostosFijos){ //Salvaodr 29/01/2021: Planchado de información hacia abajo o hacia arriba (Solo aplicable para costos fijos por tarifa).
+                    this.listDecTarifas.sort();
                     boolean blnTarifasCargadas = false;
                     String strNuevoRango = '';
                     for(Tarifario__c tarifaEXP : queryFullTarifario()) //08/03/2021 Salvador: Rellena el mapa con los costos de público en general
@@ -755,7 +736,7 @@ public class GrabadoDocEnLinea {
                             wp.mapTarifarioEXP.put(tarifaEXP.Tarifa__c, new Map<String, Tarifario__c>{ tarifaEXP.Rango_km__c => tarifaEXP });
                         else if(!wp.mapTarifarioEXP.get(tarifaEXP.Tarifa__c).containsKey(tarifaEXP.Rango_km__c))
                             wp.mapTarifarioEXP.get(tarifaEXP.Tarifa__c).put(tarifaEXP.Rango_km__c, tarifaEXP);
-                    
+
                     for(String strRange : this.listrangedestiny){ //08/03/2021 Salvador: Rellena los rangos que puedan faltar en la lista de rangos por defecto, estos rangos pueden ser destinos que no están contemplados
                         if(!this.listRanges.contains(strRange))
                             this.listRanges.add(strRange);
@@ -766,22 +747,18 @@ public class GrabadoDocEnLinea {
                         if(decTarifa < 7){
                             for(String strTarifa : this.listTarifas){
                                 if(!this.mapTLines.containsKey(strTarifa)){
-                                    System.debug('va a cargar tarifa en maptlines: ' + strtarifa);
                                     this.mapTLines.put(strTarifa, new Map<String, TempleateLine__c>());
                                 }
                                 if(!this.mapQuotes.containsKey(strTarifa)){
-                                    System.debug('va a cargar tarifa en mapquotes: ' + strTarifa);
                                     this.mapQuotes.put(strTarifa, new Map<String, SBQQ__QuoteLine__c>());
                                 }
                                 for(String strRange : this.listRanges){
                                     if(!this.mapTLines.get(strTarifa).containsKey(strRange) && obtieneNumeroTarifa(strTarifa) < decTarifa && this.mapdecTLines.get(decTarifa).containsKey(strRange)){
-                                        System.debug('1. numero de tarifa str: ' + obtieneNumeroTarifa(strTarifa) + '. dectarifa: ' + decTarifa);
                                         this.mapdecTLines.get(decTarifa).get(strRange).Tarifa__c    = strTarifa;
                                         this.mapTarifas.get(decTarifa).get(strRange).Tarifa__c      = strTarifa;
                                         this.mapTLines.get(strTarifa).put(strRange, this.mapdecTLines.get(decTarifa).get(strRange));
                                         this.mapQuotes.get(strTarifa).put(strRange, this.mapTarifas.get(decTarifa).get(strRange));
                                     } else if(!this.mapTLines.get(strTarifa).containsKey(strRange) && obtieneNumeroTarifa(strTarifa) < decTarifa && !this.mapdecTLines.get(decTarifa).containsKey(strRange)){
-                                        System.debug('2. numero de tarifa str: ' + obtieneNumeroTarifa(strTarifa) + '. dectarifa: ' + decTarifa);
                                         TempleateLine__c TL     = new TempleateLine__c();
                                         SBQQ__QuoteLine__c QL   = new SBQQ__QuoteLine__c();
                                         String rango            = '';
@@ -826,9 +803,6 @@ public class GrabadoDocEnLinea {
                                         TL.Tarifa__c = strTarifa;
                                         QL.Weight__c    = 1;
                                         QL.Tarifa__c    = strTarifa;
-                                        /*if(strRange.contains('('))
-                                            strNewRange = strRange.replace(rango, '').replace(' (', '').replace(')', '');
-                                        else strNewRange = strRange;*/
                                         this.mapTLines.get(strTarifa).put(strRange, TL);
                                         this.mapQuotes.get(strTarifa).put(strRange, QL);
                                     }
@@ -887,9 +861,6 @@ public class GrabadoDocEnLinea {
                                 TLine.Tarifa__c = strTarifa;
                                 QL.Weight__c    = 1;
                                 QL.Tarifa__c    = strTarifa;
-                                /*if(strRange.contains('('))
-                                    strNewRange = strRange.replace(rango, '').replace(' (', '').replace(')', '');
-                                else strNewRange = strRange;*/
                                 if(!this.mapTLines.get(strTarifa).containsKey(strRange))
                                     this.mapTLines.get(strTarifa).put(strRange, TLine);
                                 if(!this.mapQuotes.containsKey(strTarifa))
@@ -897,7 +868,6 @@ public class GrabadoDocEnLinea {
                                 if(!this.mapQuotes.get(strTarifa).containsKey(strRange))
                                     this.mapQuotes.get(strTarifa).put(strRange, QL);
                             }
-                            
                         }
                     }
                     //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Tarifas express: ' + this.mapTLinesExp));
@@ -1501,7 +1471,6 @@ public class GrabadoDocEnLinea {
                             listkmServicesTrif.add(kmServicesTrif);
                     }
                 }
-               
                 servicesTrifDtlList                     = new List<ObjDocEnLinea.servicesTrifDtl>{servicesTrifDtl};
                 if(listkmServicesTrif != null && listkmServicesTrif.size() != 0)
                     kmServicesTrif1.kmServicesTrif          = listkmServicesTrif;
@@ -1520,7 +1489,6 @@ public class GrabadoDocEnLinea {
                 odc.body                                = body;
                 header.security                         = sec;
                 odc.header                              = header;
-                
                 ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM, 'Terminó el proceso')); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
                 ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'JSON convenio a grabar: ' + JSON.serialize(odc))); //Salvador Ramírez (sranmirez@freewayconsulting.com):Esta linea solo se descomenta cuando se quiere visualizar el json del request que se va a mandar a grabar
                 //Salvador Ramírez (sranmirez@freewayconsulting.com): Si no se va a pedir el grabado y solo se quiere analizar el json que se genere deben comentarse los siguientes if (requeridocrearusuario(), blnrequierecrearusuario y this.blngrabartarifas)
