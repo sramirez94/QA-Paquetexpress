@@ -34,8 +34,9 @@ public class TriggerCuenta {
             if(acc.Usuario_a_asignar__c != null){
 				PlazaUser = [SELECT Id, Plaza__c FROM User WHERE Id=: acc.Usuario_a_asignar__c];
                 System.debug('datos: ' + acc.Usuario_a_asignar__c);
-            	Plazas.add(PlazaUser[0].Plaza__c);
-            	System.debug('Plaza del usuario: ' + PlazaUser[0].Plaza__c);
+                if(PlazaUser.size() > 0){
+                    Plazas.add(PlazaUser[0].Plaza__c);
+                }
             }
         }
         if(Plazas.size()>0){
@@ -319,49 +320,6 @@ public class TriggerCuenta {
                     CallWS_AsignaEjecutivo.callValidaEjecutivo(acc.Id);
                 }
             }
-        }
-    }
-    public static void GeneraColaboracionGerenteSucursal(List<Account> accList){
-        /*Creada: 12/04/2022. Creó: Salvador Ramírez (sramirez@freewayconsulting.com). Caso: 6596. Descripción: Método creado para generar la regla de colaboración que permita al gerente de sucursal ver la cuenta de su sucursal
-                                                                                                                aunque pertenezca a un usuario que no pertenezca a su jerarquía.*/
-        List<User> lstUser = new List<User>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Lista para los usuarios gerentes de sucursal
-        List<AccountShare> lstInsertAccountShare = new List<AccountShare>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Lista para almacenar las reglas de colaboración que se van a crear
-        Map<Id, String> mapSucursal = new Map<Id, String>(); //Salvador Ramírez (sramirez@freewayconsulting.com): Mapa para almacenar la relación entre el usuario y la sucursal
-        Id idGerenteSucursal = null;
-        try {
-            //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las relaciones entre la cuenta y su sucursal
-            for(Account acc:accList){
-                mapSucursal.put(acc.id, [SELECT NAME FROM Sucursal__c WHERE ID = :acc.Sucursal__c].Name.substring(0,3));
-                System.debug('Sucursal: ' + mapSucursal.get(acc.id));
-            }
-            for(Account acc: accList){
-                String strSucursal = '%' + mapSucursal.get(acc.id).substring(0,3) + '%';//Salvador Ramírez (sramirez@freewayconsulting.com): Se arma el like de la consulta
-                System.debug('Like: ' + strSucursal);
-                lstUser = [SELECT Id FROM USER WHERE UserRole.name like '%GERENTE%' AND UserRole.Name LIKE :strSucursal]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se busca al gerente de la sucursal por medio de a función
-                System.debug('Lista: ' + lstUser);
-                if(lstUser.size() > 0){
-                    System.debug('Entra');
-                    idGerenteSucursal = lstUser[0].Id;
-                    System.debug('Id gerente de sucursal: ' + idGerenteSucursal);
-                    if([SELECT Id FROM AccountShare where UserOrGroupId = :idGerenteSucursal AND AccountId = :acc.Id].size() == 0){
-                        System.debug('Entra 2');
-                        //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay una regla de colaboración para el gerente la crea
-                        AccountShare acs = new AccountShare();
-                        acs.AccountId = acc.id;
-                        acs.UserOrGroupId = idGerenteSucursal;
-                        acs.RowCause = 'Manual';
-                        acs.AccountAccessLevel = 'Edit';
-                        acs.OpportunityAccessLevel = 'Edit';
-                        acs.ContactAccessLevel = 'Edit';
-                        lstInsertAccountShare.add(acs);
-                    }
-                }
-            }
-            if(lstInsertAccountShare.size() > 0){
-                insert lstInsertAccountShare;
-            }
-        } catch (Exception ex) {
-            System.debug('Error: ' + ex.getMessage() + '. Línea: ' + ex.getLineNumber());
         }
     }
     public static wrapperAsignacionEjecutivoNuevo ValidaAsignacionEjecutivoNuevo (String razonSocial, String RFC, String IdSipweb, String Plaza){
