@@ -2720,7 +2720,8 @@
                         }
 
                         if(notEmpty(strNameProcess))
-                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, gerenteSucursal);
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.Convenio.strApprovalComment);
+                            //19/10/2021 Salvador (sramirez@freewayconsulting.com): Se cambia el último argumento para que ahora mande los comentarios al aprobador ya que antes mandaba el ID del aprobador pero esto no espera del lado del servidor
                         else
                             $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
                     }
@@ -2784,7 +2785,8 @@
                         }
 
                         if(notEmpty(strNameProcess))
-                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, gerenteSucursal);
+                            callSent($scope, $scope.Wrapper.objQuote.Id, strNameProcess, $scope.Convenio.strApprovalComment);
+                            //19/10/2021 Salvador (sramirez@freewayconsulting.com): Se cambia el último argumento para que ahora mande los comentarios al aprobador ya que antes mandaba el ID del aprobador pero esto no espera del lado del servidor
                         else
                             $scope.DML.listErrors.push('NO se encontró el proceso de aprobación aplicable');
                     }
