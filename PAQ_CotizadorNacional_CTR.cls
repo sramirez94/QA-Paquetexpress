@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 05-26-2021
+ * @last modified on  : 10-27-2021
  * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
  * Modifications Log 
  * Ver   Date         Author                               Modification
@@ -369,8 +369,10 @@ public class PAQ_CotizadorNacional_CTR {
 		}
 
         if(wp.blnSuccess){
-            for(SBQQ__QuoteLine__c quoteItem : listQuoteItem)
+            for(SBQQ__QuoteLine__c quoteItem : listQuoteItem){
+                System.debug('tarifa que va a guardarse: ' + quoteItem.Tarifa__c);
                 quoteItem.SBQQ__Quote__c = quoteInsResult.getId();
+            }
 
             for(Database.SaveResult qItemInsResult : Database.insert(listQuoteItem, false)){
                 if(!qItemInsResult.isSuccess()) {
@@ -418,7 +420,14 @@ public class PAQ_CotizadorNacional_CTR {
         /*Salvador Ramírez (sramirez@freewayconsulting.com): Se elabora esta función para uso especificamente del cotizador de costo base más excedente debido a los problemas que había para editar sus partidas de presupuesto puesto que no siempre coincidía el ID al que pertenecía.
                                                             Esta función elimina primero las partidas de presupuesto que existen en la cotización, actualiza la cabecera de la cotización y posteriormente crea las partidas con la nueva información.*/
         DmlWrapper wp = new DmlWrapper();
-        List<SBQQ__QuoteLine__c> QT = [SELECT Id FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se consultan las partidas de presupuesto existentes
+        System.debug('id de cotización: ' + strQuoteId);
+        List<SBQQ__QuoteLine__c> QT = [SELECT Id, Tarifa__c FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c = :strQuoteId]; //Salvador Ramírez (sramirez@freewayconsulting.com): Se consultan las partidas de presupuesto existentes
+        for(SBQQ__QuoteLine__c QL : QT){
+            System.debug('tarifa que se va a borrar: ' + QL.Tarifa__c);
+        }
+        for(SBQQ__QuoteLine__c QL : listQuoteItem){
+            System.debug('Tarifa que se va a guardar: ' + QL.Tarifa__c);
+        }
         for(Database.DeleteResult delRes : Database.delete(QT, false)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se hace un recorrido sobre ellas para eliminarlas
             if(!delRes.isSuccess()){
                 wp.blnSuccess = false;
@@ -432,17 +441,26 @@ public class PAQ_CotizadorNacional_CTR {
         if(quoteInsResult.isSuccess()){
 			wp.objQuote = queryQuote(quoteInsResult.getId());
             wp.blnSuccess = true;
+            /*for(SBQQ__QuoteLine__c quoteItem : listQuoteItem)
+                quoteItem.SBQQ__Quote__c = quoteInsResult.getId();*/
 		}
         else{
             wp.blnSuccess = false;
             for(Database.Error errorInsQuote: quoteInsResult.getErrors())
                 wp.listErrors.add('Error actualizando Cotización: ' + errorInsQuote.getMessage());
         }
-        for(Database.SaveResult qItemInsResult : Database.insert(listQuoteItem, false)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las nuevas partidas de cotización
+        /*for(Database.SaveResult qItemInsResult : Database.insert(listQuoteItem, false)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se crean las nuevas partidas de cotización
             if(!qItemInsResult.isSuccess()) {
                 wp.blnSuccess = false;
                 for (Database.Error errorInsItemQuote : qItemInsResult.getErrors())
                     wp.listErrors.add('Error creando partida de cotización: ' + errorInsItemQuote.getMessage());
+            }
+        }*/
+        for(Database.UpsertResult qItemInsResult : Database.upsert(listQuoteItem, false)){
+            if(!qItemInsResult.isSuccess()){
+                wp.blnSuccess = false;
+                for (Database.Error errorInsItemQuote : qItemInsResult.getErrors())
+                    wp.listErrors.add('Error actualizando partida de cotización: ' + errorInsItemQuote.getMessage());
             }
         }
         return wp;
@@ -586,8 +604,10 @@ public class PAQ_CotizadorNacional_CTR {
     public static Wrapper getHierarchyUser(){
         Wrapper wp = new Wrapper();
         User objManager;
+        System.debug('userinfo nombre: ' + UserInfo.getName() + '. Id: ' + UserInfo.getUserId());
         objManager = getManager(UserInfo.getUserId());
-        if(objManager.UserRole.Name.Contains('EJECUTIVOS TELEMARKETING (18)') || objManager.UserRole.Name.Contains('SUPERVISOR TELEMARKETING') || objManager.UserRole.Name.Contains('GERENCIA MARKETING Y PDV')){
+        System.debug('name: ' + objManager.UserRole.Name);
+        if(objManager.UserRole.Name != null && (objManager.UserRole.Name.Contains('EJECUTIVOS TELEMARKETING (18)') || objManager.UserRole.Name.Contains('SUPERVISOR TELEMARKETING') || objManager.UserRole.Name.Contains('GERENCIA MARKETING Y PDV'))){
             wp.mapHierarchy = functionUsers();
         }    
         for(CapacidadSucursal__c tender : queryTender())
@@ -614,6 +634,7 @@ public class PAQ_CotizadorNacional_CTR {
 
     @RemoteAction
     public static DmlWrapper checkDestiny(String strOrigin, String strDestiny){
+        System.debug('Origen: ' + strOrigin + '. Destino: ' + strDestiny);
         DmlWrapper wp = new DmlWrapper();
         try{
             Distancia_entre_sucursales__c destiny = [SELECT Rangos_km__c FROM Distancia_entre_sucursales__c WHERE Origen__c =: strOrigin AND Destino__c =: strDestiny LIMIT 1];
@@ -883,6 +904,7 @@ public class PAQ_CotizadorNacional_CTR {
         , DiscountDelivery__c
         , DiscountSeg__c
         , DiscountGuia__c
+        , Destiny__c
         , Servicio__c
         , PackWeightAVG__c
         , PackVolAVG__c
@@ -904,7 +926,6 @@ public class PAQ_CotizadorNacional_CTR {
         , Tarifa__c
         , Rango_KM__c
         , ZonaPlus__c
-        , Destiny__c
         , PAQ_QGuides__c
         , SBQQ__SpecialPrice__c
         , SBQQ__Description__c
@@ -1062,6 +1083,7 @@ public class PAQ_CotizadorNacional_CTR {
     public static Estructura__c queryEstructura(String idSucLead, String idSucOpp){
         Estructura__c objEst;
         try {
+            System.debug('idsuclead: ' + idSucLead + '. opp: ' + idSucOpp);
             if(String.isNotBlank(idSucLead))
                 objEst = [SELECT Gerente_Sucursal__c, KAM_regional__c, Gerente_desarrollo_de_negocios__c, Director_Comercial__c FROM Estructura__c WHERE Sucursal__c =:idSucLead LIMIT 1];
             else if(String.isNotBlank(idSucOpp))
