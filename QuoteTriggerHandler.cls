@@ -1,5 +1,6 @@
 /*
  * Created by Fran on 10/07/2020.
+ * Modificada: 10/06/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se agrega validación para que los ejecutivos de venta no puedan eliminar cotizaciones.
  */
 public class QuoteTriggerHandler {
 	public QuoteTriggerHandler(){
@@ -64,13 +65,15 @@ public class QuoteTriggerHandler {
 					System.debug(LoggingLevel.ERROR, errINSTemp.getMessage());
 	}
 
-	/*public void sendTarifas(List<SBQQ__Quote__c> newQuoteList, Map<Id, SBQQ__Quote__c> oldMap){
-		for(SBQQ__Quote__c objNewQuote :newQuoteList)
-			if (objNewQuote.SBQQ__Status__c == 'Approved' &&
-					(
-						oldMap.get(objNewQuote.Id).SBQQ__Status__c == 'Draft' ||
-						oldMap.get(objNewQuote.Id).SBQQ__Status__c == 'In Review')
-			)
-				CallWS_GrabadoTarifas grabado = new CallWS_GrabadoTarifas(objNewQuote.Id);
-	}*/
+	public  void ValidaEliminacion(List<SBQQ__Quote__c> lstQuote){
+        //método para validar si un ejecutivo de ventas intenta eliminar una cotización para evitarlo
+		String strPerfil = [SELECT NAME FROM PROFILE WHERE ID = :System.UserInfo.getProfileId()].Name; //Se obtiene el nombre del perfil
+		for(SBQQ__Quote__c objQuote : lstQuote){
+            //Se recorren los registros que se van a eliminar
+			if(strPerfil == 'Ejecutivo de venta'){
+                //Si es un ejecutivo de venta le restringe la eliminación
+				objQuote.addError('Los ejecutivos de venta no tienen permitido eliminar cotizaciones. Consulte a su administrador de Salesforce para mas información');
+			}
+		}
+	}
 }
