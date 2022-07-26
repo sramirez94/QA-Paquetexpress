@@ -1,5 +1,7 @@
 /*
  * Created by Fran on 10/07/2020.
+ * Modificada: 21/06/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se ajusta para que en los mapas de RAD y EAD no se guarde el valor obtenido cuando en el ciclo la tarifa sea express.
+ * Modificada: 20/07/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se ajusta el código que obtiene el costo de la primer tarifa estándar ya que siempre tomaba la tarifa sobre como primera, para que tome realmente solo la primera.
  */
 public class TempleateTriggerHandler {
     public String   strId                                                   {get; set;}
@@ -170,27 +172,39 @@ public class TempleateTriggerHandler {
                             if(!mapSubTotalZP.get(objQLine.Tarifa__c).containsKey(strRangeDest)){
                                 mapSubTotalZP.get(objQLine.Tarifa__c).put(strRangeDest, objQline.SBQQ__CustomerPrice__c);
                             }
+                            System.debug('mapFleteSobreZP.containsKey(strRangeDest): ' + mapFleteSobreZP.containsKey(strRangeDest));
                             if(!mapFleteSobreZP.containsKey(strRangeDest)){
+                                System.debug('rango: ' + strRangeDest + '. objQline.SBQQ__CustomerPrice__c: ' + objQline.SBQQ__CustomerPrice__c);
                                 mapFleteSobreZP.put(strRangeDest, objQline.SBQQ__CustomerPrice__c);
+                                System.debug('mapFleteSobreZP: ' + mapFleteSobreZP.get(strRangeDest));
                             }
                         } else if(!objQLine.ZonaPlus__c && blnEAD && !blnRAD){
                             //Se respalda primero el cálculo del flete de la tarifa sobre. En este caso es escencial ya que primero se deben tomar los costos de zona plus
                             //Pero por cuestiones de la forma en que se guardan los datos no es posible.
-                            if(objQLine.Tarifa__c == 'TARIFA SOBRE'){
+                            //if(objQLine.Tarifa__c == 'TARIFA SOBRE'){
+                                System.debug('mapFleteSobre.containsKey(strRangeDest): ' + mapFleteSobre.containsKey(strRangeDest));
                                 if(!mapFleteSobre.containsKey(strRangeDest)){
+                                    System.debug('rango: ' + strRangeDest + '. objQline.SBQQ__CustomerPrice__c: ' + objQline.SBQQ__CustomerPrice__c);
                                     mapFleteSobre.put(strRangeDest, (objQline.SBQQ__CustomerPrice__c / 1.11));
+                                    System.debug('mapFleteSobre.get(strRangeDest): ' + mapFleteSobre.get(strRangeDest));
                                 }
-                            }
+                            //}
                         }
                     }
                 }
             }
             //Si es una cotización de costos fijos por tarifa y solo tiene EAD pero no RAD
             if((!blnCostoBaseGMP) && blnEAD && !blnRAD && mapFleteSobreZP != null && mapFleteSobre != null){
+                System.debug('Entra a primer validación');
                 for(String strRange : listRangeDestiny){
                     //Se calcula el valor de la zona plus ya que es necesaria para calcular los fletes de las tarifas incluso si no es de zona plus
+                    System.debug('Rango: ' + strRange);
+                    System.debug('mapFleteSobreZP.containsKey(strRange): ' + mapFleteSobreZP.containsKey(strRange));
+                    System.debug('mapFleteSobre.containsKey(strRange): ' + mapFleteSobre.containsKey(strRange));
                     if(!mapZPL.containsKey(strRange) && mapFleteSobreZP.containsKey(strRange) && mapFleteSobre.containsKey(strRange)){
+                        System.debug('Entra a asignar valor al mapa mapZPL');
                         mapZPL.put(strRange, (mapFleteSobreZP.get(strRange) - mapFleteSobre.get(strRange)));
+                        System.debug('mapZPL.get(strRange): ' + mapZPL.get(strRange));
                     }
                 }
             }
@@ -280,6 +294,8 @@ public class TempleateTriggerHandler {
             //mapeo de plantillas dependiendo si son por rango de kilometros o destinos y le asigna el subtotal.
             Integer contador = 0;
             String strTarifaResp = '';
+            System.debug('mapSubTotalZP: ' + mapSubTotalZP);
+            System.debug('mapZPL: ' + mapZPL);
             for(Templeate__c objTempleate : listNewTempleates){
                 for(SBQQ__QuoteLine__c objQLine : mapQLines.get(objTempleate.Quote__c)){
                     if(objQLine.ZonaPlus__c && mapQLinesPAQ.containsKey(objQLine.Tarifa__c) && mapQLinesPAQ.get(objQLine.Tarifa__c).containsKey(objQLine.Rango_KM__c)){
@@ -481,11 +497,15 @@ public class TempleateTriggerHandler {
                                 } else if((!blnACK && !blnSEG) || (blnACK && blnSEG)){
                                     if((blnEAD && blnRAD)){
                                         if(!mapFlete.get(objTempleateLine.Tarifa__C).containsKey(strRangeDest)){
-                                            if(mapEAD.containsKey(strRangeDest) && mapRAD.containsKey(strRangeDest))
+                                            if(mapEAD.containsKey(strRangeDest) && mapRAD.containsKey(strRangeDest)){
                                                 objTempleateLine.Flete__c = objQLine.SBQQ__CustomerPrice__c - mapEAD.get(strRangeDest) - mapRAD.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
-                                            else  objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, 0);
+                                            } else {
+                                                objTempleateLine.FLETE__c = Ctrl_pantalla_ww.getFlete(objQLine.SBQQ__CustomerPrice__c, mapQuotes.get(objQLine.SBQQ__Quote__c).Servicios_adicionales__c, objTempleateLine, 0);
+                                            }
                                             mapFlete.get(objTempleateLine.Tarifa__C).put(strRangeDest, objTempleateLine.FLETE__c);
-                                        } else objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__C).get(strRangeDest);
+                                        } else {
+                                            objTempleateLine.FLETE__c = mapFlete.get(objTempleateLine.Tarifa__C).get(strRangeDest);
+                                        }
                                     } else if((blnEAD && !blnRAD && !blnACK && !blnSEG) || (blnEAD && !blnRAD && blnSEG && blnACK)){
                                         if(contador == 0){
                                             if(!mapFlete.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
@@ -496,7 +516,13 @@ public class TempleateTriggerHandler {
                                             }
                                         } else {
                                             if(mapSubTotalZP.containsKey(objTempleateLine.Tarifa__c) && mapSubTotalZP.get(objTempleateLine.Tarifa__c).containsKey(strRangeDest)){
-                                                System.debug('valor del mapa: ' + mapZPL.get(strRangeDest));
+                                                System.debug('Tarifa: ' + objTempleateLine.Tarifa__c);
+                                                System.debug('Rango: ' + strRangeDest);
+                                                System.debug('mapSubTotalZP contiene llave tarifa: ' + mapSubTotalZP.containsKey(objTempleateLine.Tarifa__c));
+                                                System.debug('mapSubTotalZP.containsKey(objTempleateLine.Tarifa__c) contiene llave rango: ' + mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest));
+                                                System.debug('MapZPL contiene llave Rango: ' + mapZPL.containsKey(strRangeDest));
+                                                System.debug('Costo de seguro: ' + objTempleateLine.SEG__c);
+                                                System.debug('Costo acuse: ' + objTempleateLine.ACK__c);
                                                 objTempleateLine.Flete__c = mapSubTotalZP.get(objTempleateLine.Tarifa__c).get(strRangeDest) - mapZPL.get(strRangeDest) - objTempleateLine.SEG__c - objTempleateLine.ACK__c;
                                             }
                                         }
@@ -532,7 +558,9 @@ public class TempleateTriggerHandler {
                                     } else {
                                         if(!mapRAD.containsKey(strRangeDest)){
                                             objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por RAD
-                                            mapRAD.put(strRangeDest, objTempleateLine.RAD__c);//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
+                                            if(objTempleateLine.Tarifa__C != 'SEG-DS' && objTempleateLine.Tarifa__C != 'SEG-2D' && objTempleateLine.Tarifa__C != 'SEG-A12'){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se agrega validación para que no cargue costo de RAD si primero pasó una tarifa express
+                                                mapRAD.put(strRangeDest, objTempleateLine.RAD__c);//Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa con su tarifa y su rango de km
+                                            }
                                         } else objTempleateLine.RAD__c = mapRAD.get(strRangeDest);
                                     }
                                 } else if(!this.blnZP) {
@@ -551,7 +579,9 @@ public class TempleateTriggerHandler {
                                         } else {
                                             if(!mapEAD.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): si el mapa que respalda el costo de EAD no tiene ese rango de km
                                                 objTempleateLine.EAD__c = Ctrl_pantalla_ww.getEAD(objTempleateLine.FLETE__c, objTempleateLine); //Salvador Ramírez (sramirez@freewayconsulting.com): Se obtiene el costo por EAD de ese rango
-                                                mapEAD.put(strRangeDest, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
+                                                if(objTempleateLine.Tarifa__C != 'SEG-DS' && objTempleateLine.Tarifa__C != 'SEG-2D' && objTempleateLine.Tarifa__C != 'SEG-A12'){ //Salvador Ramírez (sramirez@freewayconsulting.com): Se agrega validación para que no cargue costo de EAD si primero pasó una tarifa express
+                                                    mapEAD.put(strRangeDest, objTempleateLine.EAD__C); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda en el mapa
+                                                }
                                             } else  objTempleateLine.EAD__c = mapEAD.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si ya existe en el mapa entonces se le asigna el costo del rango de km que actualmente se está recorriendo
                                         }
                                     } else if(!this.blnZP){
