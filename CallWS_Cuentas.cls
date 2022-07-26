@@ -3,41 +3,50 @@
  * @author            : Néstor Ortiz (nortiz@freemayconsulting.com)
  * Project            : Paquetexpress
 **/
+// Modificada: 24/05/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se agrega que los errores que regrese la API se puedan mostrar por medio de una notificación. Además de los campos Regimen_fiscal_CCP__c, Uso_de_cfdi_CCP__c
 public class CallWS_Cuentas {
+    public static String strError {get;set;}
     @future(callout=true)
     public static void callCuentas (String IdCuenta, String accion ){
         System.debug('Accion: ' +  accion);
+        strError = '';
         Account cuenta = [SELECT Id, Id_SIpWeb__c,  Name, RFC__c, comentarios__c, industry, Giro__c,
                           BillingCountry, BillingState, Delegacion_o_municipio__c, BillingCity, BillingStreet, Numero_de_facturacion__c, Colonia_Facturaci_n__c, BillingPostalCode, Email_de_factura__c, Phone,
-                          ShippingCountry, ShippingState, ShippingCity, ShippingStreet, Colonia__c, Numero__c, ShippingPostalCode, Municipio_Delegaci_n_Sector_facturacion__c, Sucursal__r.Name
+                          ShippingCountry, ShippingState, ShippingCity, ShippingStreet, Colonia__c, Numero__c, ShippingPostalCode, Municipio_Delegaci_n_Sector_facturacion__c, Sucursal__r.Name,
+                          Regimen_fiscal_CCP__c, Uso_de_cfdi_CCP__c //Salvador (sramirez@freewayconsulting.com): Se agregan los campos Regimen_fiscal_CCP__c, Uso_de_cfdi_CCP__c para el regimen fiscal y uso CFDI
                           FROM Account
                           WHERE Id =: IdCuenta];
         Http http = new Http();
         HttpRequest request = new HttpRequest();
-        // TEST request.setEndpoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
-        request.setEndpoint('https://apiqa.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
-        //request.setEndpoint('https://sf.paquetexpress.com.mx/SalesForceRestFul/api/restful/v1/client');
+        request.setEndpoint(Label.API_Registra_clientes);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
         request.setBody(generaJSONBody(cuenta, accion));
-        HttpResponse response = http.send(request);
-        if (response.getStatusCode() != 200) {
-            System.debug('The status code returned was not expected: ' +
-            response.getStatusCode() + ' ' + response.getStatus());
-        } else {
-            System.debug(response.getBody());
-        }
-        generaSolicitudEmail('REQUEST:  \n\n ' + generaJSONBody(cuenta, accion) + 'RESPONSE: \n\n  '+ response.getBody());
-        if(accion != 'update'){
-            ObjetoCuenta cuentaObj = new ObjetoCuenta();
-            cuentaObj = ObjetoCuenta.parse(response.getBody());
-            if(CuentaObj.body.response.success == true && CuentaObj.body.response.data.clntId != ''){
-                cuenta.Id_SIpWeb__c = ''+ CuentaObj.body.response.data.clntId;
-                update cuenta;
-            } else if(CuentaObj.body.response.data.clntId == ''){
-                GeneraNotificacion('Error al generar id de sipweb', 'No se pudo generar el id de sipweb. Favor de revisar con su área de TI', 'Error_generacin_de_cliente', IdCuenta);
-                System.debug('No generó id de sipweb');
-                return;
+        if(!test.isRunningTest()){
+            HttpResponse response = http.send(request);
+            if (response.getStatusCode() != 200) {
+                System.debug('The status code returned was not expected: ' +
+                response.getStatusCode() + ' ' + response.getStatus());
+            } else {
+                System.debug(response.getBody());
+            }
+            generaSolicitudEmail('REQUEST:  \n\n ' + generaJSONBody(cuenta, accion) + 'RESPONSE: \n\n  '+ response.getBody());
+            try {
+                if(accion != 'update'){
+                    ObjetoCuenta cuentaObj = new ObjetoCuenta();
+                    cuentaObj = ObjetoCuenta.parse(response.getBody());
+                    if(CuentaObj.body.response.success == true && CuentaObj.body.response.data.clntId != ''){
+                        cuenta.Id_SIpWeb__c = ''+ CuentaObj.body.response.data.clntId;
+                        update cuenta;
+                    } else if(CuentaObj.body.response.messages.size() > 0){
+                        //Salvador Ramírez (sramirez@freewayconsulting.com): Si la generación de la cuenta regresó errores los va a mostrar en una notificación.
+                        System.debug('Mensajes: ' + CuentaObj.body.response.messages[0].description);
+                        publicarEvento(false, 'Error al generar cuenta en SipWeb. La causa es: ' + CuentaObj.body.response.messages[0].description);
+                        return;
+                    }
+                }
+            } catch (Exception ex) {
+                System.debug('Error callCuentas: ' + ex.getMessage() + '. Línea: ' + ex.getlinenumber());
             }
         }
     }
@@ -90,18 +99,30 @@ public class CallWS_Cuentas {
         gen.writeEndObject();
         return gen.getAsString();
     }
-    public static void GeneraNotificacion(String Title, String Body, String Noti, String IdAparecer){
-        Messaging.CustomNotification notification = new Messaging.CustomNotification();
-        Set<String> users = new Set<String>();
-        CustomNotificationType notificationType = [SELECT Id FROM CustomNotificationType WHERE DeveloperName = :Noti];
-        users.add(System.UserInfo.getUserId());
-        notification.setTitle(Title);
-        notification.setBody(Body);
-        notification.SetNotificationTypeId(notificationType.Id);
-        notification.setTargetId(IdAparecer);
-        notification.send(users);
+    public static void publicarEvento(Boolean EjecucionCorrecta, String mensaje){
+        try{
+            System.debug('Publicando evento...');
+            String mensajeFinal;
+            List<ResultadoGrabado__e> inkEvents = new List<ResultadoGrabado__e>();
+            if(mensaje==null)mensajeFinal = 'Grabado exitoso';else mensajeFinal = mensaje;
+            System.debug('mensaje final: ' + mensajeFinal);
+            inkEvents.add(new ResultadoGrabado__e(Mensaje__c=mensajeFinal, Usuario__c=System.UserInfo.getUserId()
+                                                  , Ejecucion_correcta__c = EjecucionCorrecta));
+            List<Database.SaveResult> results = EventBus.publish(inkEvents);
+            for (Database.SaveResult sr : results) {
+                if (sr.isSuccess()) {System.debug('Successfully published event.');} else {
+                    for(Database.Error err : sr.getErrors()) {
+                        System.debug('Error returned: ' +
+                                     err.getStatusCode() +
+                                     ' - ' +
+                                     err.getMessage());
+                    }
+                }
+            }
+        }catch(Exception ex){
+            System.debug('publicarEvento: '+ex.getLineNumber()+' '+ex.getMessage());
+        }
     }
-
     public class SecurityObj{
         public String user;
         public String token;
@@ -117,6 +138,8 @@ public class CallWS_Cuentas {
         public String clntName;
         public String taxId;
         public String clntType;
+        public String regimFiscalId;
+        public String usoCfdiId;
         public String bsnsLineId;
         public String bsnsSegId;
         public String comments;
@@ -131,13 +154,13 @@ public class CallWS_Cuentas {
             this.clntName 		= cuenta.name;//'ALFONSO FELIX';
             this.taxId			= cuenta.RFC__c;//'XAXX-010101-000';
             this.clntType 		= 'I';	//
+            this.regimFiscalId  = cuenta.Regimen_fiscal_CCP__c.subString(0, 3); //Salvador Ramírez (sramirez@freewayconsulting.com): Campo para el regimen fiscal
+            this.usoCfdiId      = cuenta.Uso_de_cfdi_CCP__c.subString(0,3); //Salvador Ramírez (sramirez@freewayconsulting.com):Campo para el uso de CFDI
             this.bsnsLineId 	= cuenta.Giro__c;			//'0099'; // SEGMENTO
             this.bsnsSegId 		= cuenta.Industry; 		// GIRO
             this.comments 		= cuenta.Comentarios__c;	//'COMENTARIOS DE PRUEBAS';
             this.groupClntId 	= 'null';
-            if(cuenta.Sucursal__r.Name != null && cuenta.Sucursal__r.Name != ''){
-            	this.site 			= (cuenta.Sucursal__r.Name).substring(0,3);
-            }else{
+            if(cuenta.Sucursal__r.Name != null && cuenta.Sucursal__r.Name != ''){this.site = (cuenta.Sucursal__r.Name).substring(0,3);}else{
                 this.site = 'MEX';
             }
             this.user 			= 'USERSALESFORCE';
@@ -200,11 +223,7 @@ public class CallWS_Cuentas {
                 this.contacto 				= new List<ContactoObj>();
                 if(acc.Id != null){
                     List<Contact> contactList = [SELECT Id, Name, FirstName, LastName, phone, MobilePhone, accountId FROM Contact WHERE accountId =: acc.Id];
-                    if(contactList.size()>0){
-                        for(Contact c: contactList){
-                            this.contacto.add(new ContactoObj(c, acc.Id));
-                        }
-                    }
+                    if(contactList.size()>0){for(Contact c: contactList){this.contacto.add(new ContactoObj(c, acc.Id));}}
                 }
             }
         }
