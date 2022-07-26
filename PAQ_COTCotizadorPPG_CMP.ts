@@ -2,7 +2,7 @@
   @description       : 
   @author            : ChangeMeIn@UserSettingsUnder.SFDoc
   @group             : 
-  @last modified on  : 12-28-2021
+  @last modified on  : 02-17-2022
   @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
 -->
 <apex:component controller="PAQ_CotizadorNacional_CTR">
@@ -4127,7 +4127,7 @@
 
                                 if($scope.DML.blnSuccess)
                                     $scope.SuccessMessage = 'Se han guardado los cambios con exito.';
-                                //$scope.PP.blnBotonActivo = false;
+                                $scope.PP.blnBotonActivo = false;
                                 $scope.$apply();
                                 j$.unblockUI();
 
