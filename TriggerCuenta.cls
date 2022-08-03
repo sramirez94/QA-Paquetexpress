@@ -1,6 +1,7 @@
 /**
  * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 12/04/2022. Caso: 6596. Se genera un nuevo caso para poder generar una nueva regla de colaboración para que los gerentes de sucursal puedan visualizar las cuentas de su sucursal
  * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 25/05/2022. Se agrega llamado a clase ValidaRFC para llamar WS que valide que el RFC sea correcto.
+ * Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Fecha: 21/07/2022. Se elimina llamado a clase ValidaRFC ya que no será necesario validar el RFC, cambió el proceso
 **/
 public class TriggerCuenta {
     public Static Boolean blnRFCValido;
@@ -416,6 +417,75 @@ public class TriggerCuenta {
         System.debug('valorDeRetorno: ' + valorDeRetorno);
         return wAsigEjecNuevo;
     }
+    public static void ConsultaDatosFiscales(List<Account> lstAccounts, Map<Id, Account> accOldMap, Boolean blninsert, Boolean blnUpdate){
+        for(Account ac : lstAccounts){
+            if(!ac.DatosFiscalesObtenidosDeSipWeb__c){
+                Account oldAcc = new Account();
+                if(blnUpdate){
+                    oldAcc = accOldMap.get(ac.Id);
+                }
+                if(blninsert ||
+                    (blnUpdate &&
+                    (ac.RFC__c != oldAcc.RFC__c ||
+                    ac.RazonSocial__c != oldAcc.RazonSocial__c ||
+                    ac.RegimenCapital__c != oldAcc.RegimenCapital__c) ||
+                    ac.Colonia_Facturaci_n__c != oldAcc.Colonia_Facturaci_n__c ||
+                    ac.Zona_facturacion__c != oldAcc.Zona_facturacion__c ||
+                    ac.Regimen_fiscal_CCP__c != oldAcc.Regimen_fiscal_CCP__c ||
+                    ac.Uso_de_cfdi_CCP__c != oldAcc.Uso_de_cfdi_CCP__c ||
+                    ac.Email_de_factura__c != oldAcc.Email_de_factura__c ||
+                    ac.Numero_de_facturacion__c != oldAcc.Numero_de_facturacion__c ||
+                    ac.NumeroInterior__c != oldAcc.NumeroInterior__c ||
+                    ac.Tipo_direccion__c != oldAcc.Tipo_direccion__c ||
+                    ac.Piso_facturacion__c != oldAcc .Piso_facturacion__c ||
+                    ac.Municipio_Delegaci_n_Sector_facturacion__c != oldAcc.Municipio_Delegaci_n_Sector_facturacion__c ||
+                    ac.Nombres__c != oldAcc.Nombres__c ||
+                    ac.ApellidoPaterno__c != oldAcc.ApellidoPaterno__c ||
+                    ac.ApellidoMaterno__c != oldAcc.ApellidoMaterno__c
+                    ))
+                {
+                    PAQ_WSDatosFiscales.CallWS_DatosFiscales(ac.RFC__c);
+                }
+            }
+        }
+    }
+    public static void ValidaDatosFiscales(List<Account> lstAccounts, Map<Id, Account> accOldMap, Boolean blninsert, Boolean blnUpdate){
+        String M        = '';
+        Account oldAcc  = new Account();
+        for(Account ac:lstAccounts){
+            if(!ac.DatosFiscalesObtenidosDeSipWeb__c){
+                if(blnUpdate){
+                    oldAcc = accOldMap.get(ac.Id);
+                }
+                if(blninsert ||
+                    (blnUpdate &&
+                    (ac.RFC__c != oldAcc.RFC__c ||
+                    ac.RazonSocial__c != oldAcc.RazonSocial__c ||
+                    ac.RegimenCapital__c != oldAcc.RegimenCapital__c) ||
+                    ac.Colonia_Facturaci_n__c != oldAcc.Colonia_Facturaci_n__c ||
+                    ac.Zona_facturacion__c != oldAcc.Zona_facturacion__c ||
+                    ac.Regimen_fiscal_CCP__c != oldAcc.Regimen_fiscal_CCP__c ||
+                    ac.Uso_de_cfdi_CCP__c != oldAcc.Uso_de_cfdi_CCP__c ||
+                    ac.Email_de_factura__c != oldAcc.Email_de_factura__c ||
+                    ac.Numero_de_facturacion__c != oldAcc.Numero_de_facturacion__c ||
+                    ac.NumeroInterior__c != oldAcc.NumeroInterior__c ||
+                    ac.Tipo_direccion__c != oldAcc.Tipo_direccion__c ||
+                    ac.Piso_facturacion__c != oldAcc .Piso_facturacion__c ||
+                    ac.Municipio_Delegaci_n_Sector_facturacion__c != oldAcc.Municipio_Delegaci_n_Sector_facturacion__c ||
+                    ac.Nombres__c != oldAcc.Nombres__c ||
+                    ac.ApellidoPaterno__c != oldAcc.ApellidoPaterno__c ||
+                    ac.ApellidoMaterno__c != oldAcc.ApellidoMaterno__c
+                    ))
+                {
+                    M  = '';
+                    M = PAQ_FuncionesGenericas.ValidaDatosFiscales(ac);
+                    if(M != ''){
+                        ac.addError(M);
+                    }
+                }
+            }
+        }
+    }
     public static wrapperAsignacionEjecutivoRecuperado ValidaAsignacionEjecutivoRecuperado (String razonSocial, String RFC, String IdSipweb, String Plaza){
         Map<Integer, String> valorMes = new Map <Integer, String>();
         Map<String, Decimal> valorVentaMes = new Map <String, Decimal>();
@@ -827,18 +897,6 @@ public class TriggerCuenta {
         }
         
         return validaCotizaciones;
-    }
-    public static void validaRFC(List<Account> lstAcc, Map<Id, Account> accOldMap){
-        for(Account acc : lstAcc){
-            String strTipo = [SELECT NAME FROM RECORDTYPE WHERE ID = :acc.RecordTypeId].Name;
-            String strRFCOld = '';
-            if(accOldMap != null){
-                strRFCOld = accOldMap.get(acc.Id).RFC__c;
-            }
-            if(acc.RFC__c != strRFCOld){
-                validaRFC.ValidaRFC(acc.id, acc.RFC__c, strTipo);
-            }
-        }
     }
     public static void pre_asignaEjecutivo (Id accId, Id usuarioAAsignar){
         
