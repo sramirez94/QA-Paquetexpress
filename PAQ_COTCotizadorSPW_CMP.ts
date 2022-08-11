@@ -1,10 +1,3 @@
-<!--
-  @description       : 
-  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
-  @group             : 
-  @last modified on  : 10-19-2021
-  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
--->
 <apex:component controller="PAQ_CotizadorNacional_CTR">
     <div ng-controller="SWPController as SWP">
         <div class="row" >
@@ -1855,6 +1848,7 @@
                         , KAM_aprobacion__c : $scope.Managers['KAM']
                         , Gerente_desarrollo_aprobacion__c : $scope.Managers['GDS']
                         , Director_comercial_aprobacion__c : $scope.Managers['DCO']
+                        , GerenteSEG__c : $scope.Managers['SEG'] //25/07/2022 SRL: Gerente de servicio express garantizado
                     };
 
                     if($scope.Wrapper.objQuote && $scope.Wrapper.objQuote.Id){
@@ -3110,7 +3104,10 @@
                                     $scope.Managers['GDS'] = $scope.Wrapper.objEstructura.Gerente_desarrollo_de_negocios__c	;
                                 if(!notEmpty($scope.Managers['DCO']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Director_Comercial__c))
                                     $scope.Managers['DCO'] = $scope.Wrapper.objEstructura.Director_Comercial__c;
-                               
+                                if(!notEmpty($scope.Managers['SEG']) && $scope.Wrapper.objEstructura && notEmpty($scope.Wrapper.objEstructura.Director_Comercial__c)){
+                                    //25/07/2022 SRL: Se agrega caso para obtener también el usuario gerente de servicios express
+                                    $scope.Managers['SEG'] = $scope.Wrapper.objEstructura.GerenteSEG__c;
+                                }
                                 $scope.$apply();
                                 j$.unblockUI();
                             }
