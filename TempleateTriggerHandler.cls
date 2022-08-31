@@ -529,6 +529,7 @@ public class TempleateTriggerHandler {
                                 if((objTempleateLine.Tarifa__C == 'TARIFA T7-P' || objTempleateLine.Tarifa__C == 'TARIFA T7-V' || objTempleateLine.Tarifa__C == 'TARIFA T7') || !this.blnZP){
                                     objTempleateLine.RAD__c = Ctrl_pantalla_ww.getRAD(objTempleateLine.FLETE__c);
                                 } else if(this.blnZP) {
+                                    System.debug('Rango de km: ' + strRangeDest + '. Tarifa: ' + objTempleateLine.Tarifa__c + '. Zona plus: ' + objQline.ZonaPlus__c);
                                     if(!blnSEG && blnRAD && blnEAD && blnACK){
                                         if(!objQline.ZonaPlus__c){
                                             if(!mapRAD.containsKey(strRangeDest)){
@@ -575,8 +576,12 @@ public class TempleateTriggerHandler {
                                 }
                             }
                             if(objQline.ZonaPlus__c){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si se está usando zona plus
+                                System.debug('En zona plus. Contador: ' + contador);
+                                System.debug('En zona plus. Rango: ' + strRangeDest);
                                 if(!mapZPL.containsKey(strRangeDest)){ //Salvador Ramírez (sramirez@freewayconsulting.com): Si no hay un costo de zona plus para ese rango
+                                    System.debug('1');
                                     objTempleateLine.EAD__c = objQLine.SBQQ__CustomerPrice__c - objTempleateLine.FLETE__c - objTempleateLine.RAD__c - objTempleateLine.ACK__c - objTempleateLine.SEG__c; //Salvador Ramírez (sramirez@freewayconsulting.com): se calcula de acuerdo a las reglas de paquetexpress
+                                    System.debug('Costo de zona plus: ' + objTempleateLine.EAD__c);
                                     mapZPL.put(strRangeDest, objTempleateLine.EAD__c); //Salvador Ramírez (sramirez@freewayconsulting.com): Se respalda el costo en su rango de km
                                 } else objTempleateLine.EAD__c = mapZPL.get(strRangeDest); //Salvador Ramírez (sramirez@freewayconsulting.com): Si el rango de km ya tiene un costo de zona plus se asigna al rango actual.
                             }
