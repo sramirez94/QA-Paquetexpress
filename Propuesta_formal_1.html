@@ -1,10 +1,3 @@
-<!--
-  @description       : 
-  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
-  @group             : 
-  @last modified on  : 03-09-2022
-  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
--->
 <apex:page standardController="SBQQ__Quote__c" extensions="Ctrl_Propuesta_formal_1" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
     <html>
     <head>
@@ -444,7 +437,7 @@
                                     <th align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">0.005 m3</th>
                                 </tr>
                                 <apex:repeat value="{!listRangeProp}" var="keyRange">
-                                    <apex:outputText rendered="{!if(mapPropuestaT7ZP[keyRange].SBQQ__Description__c == 'Propuesta',true,false)}">
+                                    <apex:outputText rendered="{!if(mapPropuestaT7ZP[keyRange].SBQQ__Description__c == 'Propuesta' && mapPropuestaT7ZP[keyRange].SBQQ__CustomerPrice__c > 0,true,false)}">
                                         <tr>
                                             <apex:outputText rendered="{!keyRange!='Más de 2400'}">
                                                 <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange}</td>
@@ -467,26 +460,6 @@
                                         </tr>
                                     </apex:outputText>
                                 </apex:repeat>
-                                <!--apex:repeat value="{!listRangeT7}" var="keyRange">
-                                <apex:outputText rendered="{!if(mapQuotesT7ZP[keyRange].SBQQ__Description__c == 'Destino',true,false)}">
-                                <tr>
-                                    <td align="left"  style="font-size:12px; background-color:rgb(31, 73, 125); color: white;">{!keyRange} {!mapQuotesT7ZP[keyRange].Name}</td>
-                                    <apex:outputText rendered="{!T7ZP}">
-                                        <td align="center" style="font-size:12px; ">
-                                            <apex:outputText value="{0, number, ###,###,##0.00}">
-                                                $<apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__CustomerPrice__c}" />
-                                            </apex:outputText>
-                                        </td>
-                                    <td align="center" style="font-size:12px; ">
-                                        <apex:outputText value="{0, number, ###,###,##0.00}">
-                                            $<apex:param value="{!mapQuotesT7ZP[keyRange].SBQQ__SpecialPrice__c}" />
-                                        </apex:outputText>
-                                    </td>
-                                    </apex:outputText>
-                                </tr>
-                                </apex:outputText>
-                                </apex:repeat-->
-
                             </table>
                         </apex:outputText>
                     </div>
@@ -911,7 +884,6 @@
                     </apex:outputPanel>
                 </apex:repeat>
             </div>
-
             <apex:outputPanel rendered="{!ServicioExpress && NOT(ServicioEstandar)}">
                 <div style="width: 350px; height:300px; position:absolute; top: 3150px; left: 900px; text-align: left">
                     <ul>
