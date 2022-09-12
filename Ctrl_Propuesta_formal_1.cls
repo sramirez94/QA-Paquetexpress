@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @group             : 
+ * @last modified on  : 10-22-2021
+ * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+**/
 public class Ctrl_Propuesta_formal_1 { //Controlador para propuesta formal y plantilla de convenio desde oportunidades
 
     public boolean Excedente				{get;set;}
@@ -385,6 +392,8 @@ public class Ctrl_Propuesta_formal_1 { //Controlador para propuesta formal y pla
         Boolean blnCotizaT7 = false;
         Set<String> setRange = new Set<String>();
         Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
+
+        String strRangeDest = '';
         for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
             if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
                 if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
@@ -553,7 +562,6 @@ public class Ctrl_Propuesta_formal_1 { //Controlador para propuesta formal y pla
                     //System.debug(LoggingLevel.DEBUG, 'keyRange '+ keyRange);
                     if(!this.listRange.contains(keyRange)){
                         //this.listRange = insertRange(quoteItem.Destiny__c, quoteItem.Rango_KM__c);
-                        System.debug(LoggingLevel.DEBUG, 'listRange '+ JSON.serialize(this.listRange));
                         for(String keyFee: this.listFee){
                             this.mapTotalByFee.put(keyFee, new QuoteWP());
                             this.mapTotalByFeeZP.put(keyFee, new QuoteWP());
@@ -648,10 +656,18 @@ public class Ctrl_Propuesta_formal_1 { //Controlador para propuesta formal y pla
                     }
                 }
             } else if(this.mapQuotes.containsKey(quoteItem.Tarifa__c)){
-                this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                strRangeDest = '';
+                if(quoteItem.Destiny__c != null)
+                    strRangeDest = quoteItem.Destiny__c;
+                else strRangeDest = quoteItem.Rango_KM__c;
+                this.mapQuotes.get(quoteItem.Tarifa__c).put(strRangeDest, quoteItem);
 
             } else{
-                this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                strRangeDest = '';
+                if(quoteItem.Destiny__c != null)
+                    strRangeDest = quoteItem.Destiny__c;
+                else strRangeDest = quoteItem.Rango_KM__c;
+                this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {strRangeDest => quoteItem});
 
             }
 
