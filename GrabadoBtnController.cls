@@ -298,7 +298,8 @@ global class GrabadoBtnController {
                 bdp.request = req;
                 rdp.body = bdp;
                 System.debug('JSON: ' + JSON.serialize(rdp));
-                if(!System.isScheduled()){
+                generaSolicitudEmail(JSON.serialize(rdp));
+                /*if(!System.isScheduled()){
                     if(!cotizacion.Electronicas__c){
                         if(envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion))
                             publicarEvento(true,null);}
@@ -312,12 +313,37 @@ global class GrabadoBtnController {
                         publicarEvento(false,'No se pudo realizar el grabado');
                 }
                 else
-                    envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion);
+                    envioGrabadoPOST(JSON.serialize(rdp),endpoint,cotizacion);*/
             }
         }catch(Exception ex){
             System.debug('validacionEnPiso: '+ex.getLineNumber()+' '+ex.getMessage());
             publicarEvento(false,'No se pudo realizar el grabado');
         }
+    }
+    public static void generaSolicitudEmail (String json){
+        try{
+
+            Blob body = Blob.valueOf(json);
+            Messaging.EmailFileAttachment attach = new Messaging.EmailFileAttachment();
+            attach.setContentType('application/txt');
+            attach.setFileName('JSON_RESPONSE.txt');
+            attach.setInline(false);
+            attach.Body = body;
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            mail.setUseSignature(false);
+            mail.setToAddresses(new String[] { 'sramirez@freewayconsulting.com' });
+            mail.setSubject('Request grabado');
+            mail.setHtmlBody('REQUEST GRABADO');
+            mail.setFileAttachments(new Messaging.EmailFileAttachment[] { attach });
+            // Send the email
+            Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+        }catch (Exception e){
+                system.debug(e);
+                System.debug(e.getlinenumber());
+                System.debug(e.getCause());
+                System.debug(e.getStackTraceString());
+        }
+
     }
     @future(callout=true)
     public static void actualizarCotizacionExpirada(String cot){
