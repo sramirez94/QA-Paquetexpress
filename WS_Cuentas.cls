@@ -1,8 +1,12 @@
+/**
+ * @description       : Integración Sipweb - Salesforce que recibe datos para crear cuenta
+ * @author            : Néstor Ortiz (nortiz@freewayconsulting.com)
+ * *********************** Modificaciones **************************
+ * Modificada: 29/07/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se agregan campos para facturación 4.0
+**/
 @RestResource(urlMapping='/Cuentas/*')
 global with sharing class WS_Cuentas {
-       
     global class wrapperCuenta{
-        
         public String tipoDeCuenta;
         //DETALLE DE CUENTA
         public String nombreCuenta;
@@ -17,8 +21,6 @@ global with sharing class WS_Cuentas {
         public Boolean agenteCorporativo;      // Cuenta_con_un_agente_corporativo__c
         public Boolean documentadorInHouse;    // documentador_in_house__c
         public Decimal Monto;                  // Monto__c
-        
-        
         //DATOS FISCALES
         public String rfc;                     // RFC_c
         public String tipoDeDireccion;         // Tip-o_direccion__c Replicar Tipo Domicilio - Envío, Estructurada (Otra), No estructurada 
@@ -34,6 +36,26 @@ global with sharing class WS_Cuentas {
         public String regimFiscalId;
         public String usoCfdiId;
         public String nombreFiscal;
+        /*29/07/2022 SRL: Añadido para datos fiscales facturación 4.0 */
+        public String taxDataTaxId;
+        public String taxDataClntType;
+        public String taxDataBusinessName;
+        public String taxDataCapitalRegm;
+        public String taxDataFirstName;
+        public String taxDataLastName1;
+        public String taxDataLastName2;
+        public String taxDataStreet;
+        public String taxDataNoInt;
+        public String taxDataNoExt;
+        public String taxDataZipCode;
+        public String taxDataRegmFisc;
+        public String taxDataUsoCFDI;
+        public String taxDataValidFlag;
+        public String taxDataCountry;
+        public String taxDataState;
+        public String taxDataMunicipality;
+        public String taxDataColony;
+        public String taxDataCity;
         //DATOS GENERALES
         public Integer numeroEmpleados;        // NumberOfEmployees
         public String sitioWeb;                // webSite
@@ -63,8 +85,6 @@ global with sharing class WS_Cuentas {
         public String pisoEnvio;                           //Piso_envio__c 
         public String zonaEnvio;                           //Zona_envio__c 
         public String coloniaEnvio;						   //Colonia__c
-				
-        
         //REPRESENTANTE LEGAL
         public String nombreRepresentanteLegal;            //Nombre_representante_legal__c 
         public String telefonoRepresentanteLegal;          //Tel_fono_representante_legal__c   
@@ -78,21 +98,15 @@ global with sharing class WS_Cuentas {
         public String folioMercantil;                      //Folio_mercantil__c    
         public String fechaActaRepresentanteLegal;         //Fecha_acta_representante_legal__c 
         public String numeroDeActa;                        //n_mero_de_ac__c
-        
     }
-    
     global class Response{
         public String recordId;
         public String status;
         public String message;
-        
     }
-  
     @HttpPost
     global static List<Response> generaCuenta(wrapperCuenta cuenta){
-        
         System.debug(cuenta);
-        
         List<Response> responseList         = new List<Response>();
         List<Account> AccountList           = new List<Account>();
         List<Schema.PicklistEntry> entries  = new List<Schema.PicklistEntry>(); //Para recorrer los valores de picklist para uso de CFDI y regimen fiscal.
@@ -100,31 +114,24 @@ global with sharing class WS_Cuentas {
 		String strRegimenFiscal             = ''; //Se agrega para regimen fiscal
         try{
             Account acc = new Account ();
-            acc.Name                                =   cuenta.nombreCuenta;        
+            acc.Name                                =   cuenta.nombreCuenta;
             acc.Id_SIpWeb__c                        =   cuenta.idSipweb;
             acc.AccountNumber                       =   cuenta.numeroDeLaCuenta;
-            acc.ParentId                            =   validaCuenta(cuenta.cuentaPrincipal)    != '' ? validaCuenta(cuenta.cuentaPrincipal) : null;            
+            acc.ParentId                            =   validaCuenta(cuenta.cuentaPrincipal)    != '' ? validaCuenta(cuenta.cuentaPrincipal) : null;
             acc.Cuenta_de_Facebook__c               =   cuenta.cuentaFacebook;
             acc.Cliente_Favorito__c                 =   cuenta.clienteFavorito;
             acc.Cuenta_de_Twitter__c                =   cuenta.cuentaTwitter;
-            
-            
             List<Sucursal__c> sucursal              = [SELECT id, Id_SIpWeb__c FROM Sucursal__c WHERE Name =:cuenta.sucursal];
-            
             acc.Sucursal__c                         =   sucursal.size()>0 ? sucursal[0].Id : null;
             acc.Cuenta_con_c_digo_de_recompensa__c  =   cuenta.codigoRecompensa == true ? cuenta.codigoRecompensa : false;
             acc.documentador_in_house__c            =   cuenta.documentadorInHouse == true ? cuenta.documentadorInHouse : false;
             acc.Cuenta_con_un_agente_corporativo__c =   cuenta.agenteCorporativo == true ? cuenta.agenteCorporativo : false;
-            
             // DATOS FISCALES
             acc.RFC__c                              = cuenta.rfc;
             acc.Tipo_direccion__c                   = cuenta.tipoDeDireccion;
             acc.Piso_Facturacion__c                 = cuenta.pisoFacturacion;
-            
             List<Sucursal__c> plazaFacturacion      = [SELECT id, Id_SIpWeb__c FROM Sucursal__c WHERE Name =:cuenta.plazaFacturacion];
-            
             acc.Plaza_Facturacion__c                = plazaFacturacion.size()>0 ? plazaFacturacion[0].Id : null;
-            
             acc.Email_de_factura__c                 = cuenta.emailDeFactura;
             acc.BillingStreet                       = cuenta.calleDeFacturacion;
             acc.BillingPostalCode                   = cuenta.cpFacturacion;
@@ -151,11 +158,34 @@ global with sharing class WS_Cuentas {
                 }
             }
             acc.NombreFiscal__c                     = cuenta.nombreFiscal;
+            if(cuenta.taxDataTaxId != 'XAXX010101000'){
+                //29/07/2022 SRL: Si es diferente de un RFC genérico (Sin obligaciones fiscales)
+                if(cuenta.taxDataClntType == 'M'){
+                    //29/07/2022 SRL: Si es una persona moral
+                    acc.RazonSocial__c = cuenta.taxDataBusinessName;
+                    acc.RegimenCapital__c = cuenta.taxDataCapitalRegm;
+                } else {
+                    //29/07/2022 SRL: Persona física
+                    acc.Nombres__c = cuenta.taxDataFirstName;
+                    acc.ApellidoPaterno__c = cuenta.taxDataLastName1;
+                    acc.ApellidoMaterno__c = cuenta.taxDataLastName2;
+                }
+                //29/07/2022 SRL: Datos fiscales generales
+                acc.BillingStreet = cuenta.taxDataStreet;
+                acc.NumeroInterior__c = cuenta.taxDataNoInt;
+                acc.Numero_de_facturacion__c = cuenta.taxDataNoExt == null?null:Decimal.valueOf(cuenta.taxDataNoExt);
+                acc.BillingPostalCode = cuenta.taxDataZipCode;
+                acc.DatosFiscalesObtenidosDeSipWeb__c =  cuenta.taxDataValidFlag == 'N'?false:true;
+                acc.BillingCountry = cuenta.taxDataCountry;
+                acc.BillingState = cuenta.taxDataState;
+                acc.Municipio_Delegaci_n_Sector_facturacion__c = cuenta.taxDataMunicipality;
+                acc.Colonia_Facturaci_n__c = cuenta.taxDataColony;
+                acc.BillingCity = cuenta.taxDataCity;
+            }
             // DATOS GENERALES
             acc.NumberOfEmployees                   = cuenta.numeroEmpleados;
             acc.webSite                             = cuenta.sitioweb;
             acc.comentarios__c                      = cuenta.comentarios;
-            
             // CONDICIONES COMERCIALES Y OPERATIVIDAD
             acc.Servicios_nacionales__c                     = cuenta.serviciosNacionales == true ? cuenta.serviciosNacionales : false;
             acc.Tipo_de_servicios_nacionales__c             = cuenta.tiposDeServiciosNacionales != null ? cuenta.tiposDeServiciosNacionales : null;
@@ -164,30 +194,24 @@ global with sharing class WS_Cuentas {
             acc.Operacion_logistica__c                      = cuenta.operacionLogistica == true ? cuenta.operacionLogistica : false;
             acc.Tipo_de_operaciones_log_sticas__c           = cuenta.tipoDeOperacionesLogisticas != null ? cuenta.tipoDeOperacionesLogisticas : null;
             acc.Programacion__c                             = cuenta.programacion != null ? cuenta.programacion : null;
-            
             if (cuenta.horariosPropuestosDeRecoleccion != null){
                 String[] strTimeSplit = cuenta.horariosPropuestosDeRecoleccion.split(':');
                 Time timeChange;
-                
                 if(strTimeSplit.size()>0){
                     timeChange = Time.newInstance( Integer.valueOf(strTimeSplit[0])  //hour
                                                   ,Integer.valueOf(strTimeSplit[1]) //min
                                                   ,Integer.valueOf(strTimeSplit[2]) //sec
                                                   ,Integer.valueOf(strTimeSplit[3]) //ms
-                                                 );                              
+                                                 );
                     acc.Horarios_propuestos_de_recoleccion__c = timeChange;
                 }
             }
-            
-            
-           
             acc.Tipo_de_acuse__c                            = cuenta.tipoDeAcuse;
             acc.Requerimientos_de_acuse_de_cliente_XT__c    = cuenta.requerimientosDeAcuseClientes;
             acc.Presentacion_de_Factura_condicionada_al__c  = cuenta.presentacionDeFacturaCondicionada;
             acc.Potencial_mensual_Total__c                  = cuenta.potencialMensualTotal;
             //acc.Segmento__c                                   = cuenta.segmento;
             acc.Potencial_mensual_de_envios__c              = cuenta.potencialMensualDeEnvios; 
-            
             acc.Tipo_de_cliente__c                          =cuenta.tipoDeCliente;
             acc.ShippingStreet                              =cuenta.calleEnvio;
             acc.ShippingpostalCode                          =cuenta.cpEnvio;
@@ -195,14 +219,10 @@ global with sharing class WS_Cuentas {
             acc.ShippingState                               =cuenta.estadoEnvio;
             acc.ShippingCountry                             =cuenta.paisEnvio;
             acc.colonia__c									=cuenta.coloniaEnvio;
-            
             List<Sucursal__c> plazaEnvio                    = [SELECT id, Id_SIpWeb__c FROM Sucursal__c WHERE Name =:cuenta.plazaDeEnvio];
-             
             acc.Plaza_Envio__c                              = plazaEnvio.size()>0 ? plazaEnvio[0].Id : null;
-            
             acc.Piso_envio__c                               =cuenta.pisoEnvio;
             acc.Zona_envio__c                               =cuenta.zonaEnvio;
-            
             //REPRESENTANTE LEGAL
             acc.Nombre_representante_legal__c               = cuenta.nombreRepresentanteLegal;
             acc.Tel_fono_representante_legal__c             = cuenta.telefonoRepresentanteLegal;
@@ -216,62 +236,41 @@ global with sharing class WS_Cuentas {
             acc.Folio_mercantil__c                          = cuenta.folioMercantil;
             acc.Fecha_acta_representante_legal__c           = cuenta.fechaActaRepresentanteLegal != null ? Date.valueOf(cuenta.fechaActaRepresentanteLegal): null;
             acc.n_mero_de_ac__c                             = cuenta.numeroDeActa;
-            
-            
             if(Cuenta.tipoDeCuenta != '' && Cuenta.tipoDeCuenta != null ){
                 if(Cuenta.tipoDeCuenta == 'Personal'){
-                    acc.RecordTypeId = [SELECT Id FROM RecordType WHERE DeveloperName = 'Persona_fisica'].Id;        
+                    acc.RecordTypeId = [SELECT Id FROM RecordType WHERE DeveloperName = 'Persona_fisica'].Id;
                 }else if (Cuenta.tipoDeCuenta == 'Empresarial'){
-                    acc.RecordTypeId = [SELECT Id FROM RecordType WHERE DeveloperName = 'Persona_moral'].Id;        
+                    acc.RecordTypeId = [SELECT Id FROM RecordType WHERE DeveloperName = 'Persona_moral'].Id;
                 }
             }
-            
-            
-            AccountList.add(acc);    
-                
+            AccountList.add(acc);
             Database.UpsertResult [] ticketsResultUpsert =  database.upsert(AccountList, Account.Fields.Id_SIpWeb__c, false);
-            
-                
-            
             for (Database.UpsertResult ur : ticketsResultUpsert){
-                
                 Response r = new Response();
-                
                 if(ur.isSuccess()){
-                    r.recordId  =  ur.getId();      
-                    r.status    =  'Exitoso';       
-                    r.message   =  'OK';        
+                    r.recordId  =  ur.getId();
+                    r.status    =  'Exitoso';
+                    r.message   =  'OK';
                     responseList.add(r);
                 }else{
                     for(DataBase.Error error: ur.getErrors()){
                         Response re = new Response();
-                        
                         re.recordId = 'NA';
                         re.status   =  ''+error.getStatusCode();
                         re.message  =  error.getMessage() ;
                         responseList.add(re);
                     }
-                            
                 }
-                
-                
-                
-            } 
-            
-            
+            }
         }catch (Exception e){
             Response re = new Response();
-                        
              re.recordId    = 'NA';
              re.status      =  'Error';
              re.message     =  e.getStackTraceString() + ' ' + e.getMessage() + ' ' +  e.getCause();
              responseList.add(re);
         }
-        
         return responseList;
     }
-    
-    
     global static String validaCuenta (String idSipWeb){
         String idSF;
         if(idSipWeb != null && idSipWeb != 'NA'){
@@ -281,8 +280,6 @@ global with sharing class WS_Cuentas {
         }
         return idSF;
     }
-    
-    
     global static String validaSucursal (String idSucursal){
         String idSF;
         if(idSucursal != null){
@@ -292,6 +289,4 @@ global with sharing class WS_Cuentas {
         }
         return idSF;
     }
-    
-    
 }
