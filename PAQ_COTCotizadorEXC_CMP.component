@@ -1,12 +1,9 @@
 <!--
-  @description       : 
-  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
-  @group             : 
-  @last modified on  : 10-18-2021
-  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
-  Modifications Log 
-  Ver   Date         Author                               Modification
-  1.0   09-17-2020   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
+  @description       : Cotizador costo base mas excedente (Documentación en línea) Paquetexpress.
+  @author            : Francisco rojas (frojas@freewayconsulting.com) / Salvador Ramírez (sramirez@freewayconsulting.com)
+  ---------------------------------------- Modificaciones ----------------------------------------
+  * Modificada: 20/06/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se corrige el funcionamiento del combo de tipo de acuse para que no obtenga el texto sino el id del combo para el modelo.
+  * Modificada: 22/07/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se ajusta el caso AVGVolOW de la función setvalue para que ahora se respalde la cantidad de paquetes para ese rango de tarifa también se cambió el llamado a función para que llame a calculateXY.
 -->
 <apex:component controller="PAQ_CotizadorNacional_CTR">
     <div ng-controller="EXCController as EXC">
@@ -2142,6 +2139,7 @@
                 };
 
                 $scope.calculateQ = function () {
+                    debugger;
                     $scope.EX.TOTAL['PAQUETES'] = 0;
                     $scope.EX.blnZP = false;
                     $scope.EX.mapFrecc.fltFTotal = 0;
@@ -3058,13 +3056,14 @@
 
                 $scope.setACKmode = function (model) {
                     if (model.id === 'G')
-                        $scope.EX.strAckCost = 'Guía';
+                        $scope.EX.strAckCost = 'G'; //Salvador Ramírez 20/06/2022 (sramirez@freewayconsulting.com): Se cambia para que no guarde el texto seleccionado en el combo sino el valor de la letra para que al recargar lo pueda validar
                     if (model.id === 'B')
-                        $scope.EX.strAckCost = 'Paquete';
+                        $scope.EX.strAckCost = 'P'; //Salvador Ramírez 20/06/2022 (sramirez@freewayconsulting.com): Se cambia para que no guarde el texto seleccionado en el combo sino el valor de la letra para que al recargar lo pueda validar
                     $scope.calculateEX();
                 };
 
                 $scope.setValue = function (name, key, cmp, keyX) {
+                    debugger;
                     if (notEmpty(cmp.target.textContent))
                         switch (name) {
                             case 'fltCost':
@@ -3151,11 +3150,19 @@
                                 break;
                             case 'AVGWeightOW':
                                 $scope.EX.OWFrecc[keyX].ranges[key].fltAVGWeight = getNum(cmp.target.textContent);
-                                $scope.calculateQ();
+                                $scope.EX.mapRanges[key]['PAQ'].fltFrecc = $scope.EX.OWFrecc[keyX].ranges[key].intFrecuency; //Se respalda el total de los bultos para que puedan usarse en la función
+                                if ($scope.EX.mapRanges[key]['PAQ'].fltFrecc !== 0 && $scope.EX.mapRanges[key]['PAQ'].fltFrecc !== undefined){
+                                    //Solo si el rango de la tarifa tiene una cantidad de tarimas entonces entra a la función
+                                    $scope.calculateXY(); //Se cambia el llamado a la función para que ahora llame a calculateXY
+                                }
                                 break;
                             case 'AVGVolOW':
                                 $scope.EX.OWFrecc[keyX].ranges[key].fltAVGVol = getNum(cmp.target.textContent);
-                                $scope.calculateQ();
+                                $scope.EX.mapRanges[key]['PAQ'].fltFrecc = $scope.EX.OWFrecc[keyX].ranges[key].intFrecuency;//Se respalda el total de los bultos para que puedan usarse en la función
+                                if ($scope.EX.mapRanges[key]['PAQ'].fltFrecc !== 0 && $scope.EX.mapRanges[key]['PAQ'].fltFrecc !== undefined){
+                                    //Solo si el rango de la tarifa tiene una cantidad de tarimas entonces entra a la función
+                                    $scope.calculateXY();//Se cambia el llamado a la función para que ahora llame a calculateXY
+                                }
                                 break;
                             case 'intFrecuencyOW':
                                 $scope.EX.OWFrecc[keyX].ranges[key].intFrecuency = getNum(cmp.target.textContent);
@@ -3555,83 +3562,6 @@
 
                 $scope.validateKG = function (fltMaxW) {
                     return isNaN(fltMaxW) || fltMaxW < 1;
-                };
-
-                $scope.dataTest = function () {
-                    $scope.EX.mapRanges['0-400']['PAQ'].fltFrecc = .15;
-                    $scope.EX.mapRanges['0-400']['ZP'].fltFrecc = .15;
-                    $scope.EX.mapRanges['401-800']['PAQ'].fltFrecc = .20;
-                    $scope.EX.mapRanges['401-800']['ZP'].fltFrecc = .20;
-                    $scope.EX.mapRanges['801-1200']['PAQ'].fltFrecc = .20;
-                    $scope.EX.mapRanges['801-1200']['ZP'].fltFrecc = .20;
-                    $scope.EX.mapRanges['1201-1600']['PAQ'].fltFrecc = .10;
-                    $scope.EX.mapRanges['1201-1600']['ZP'].fltFrecc = .10;
-                    $scope.EX.mapRanges['1601-2000']['PAQ'].fltFrecc = .20;
-                    $scope.EX.mapRanges['1601-2000']['ZP'].fltFrecc = .20;
-                    $scope.EX.mapRanges['2001-2400']['PAQ'].fltFrecc = .10;
-                    $scope.EX.mapRanges['2001-2400']['ZP'].fltFrecc = .10;
-                    $scope.EX.mapRanges['+2400']['PAQ'].fltFrecc = .05;
-                    $scope.EX.mapRanges['+2400']['ZP'].fltFrecc = .05;
-                    $scope.EX.mapFrecc['TS'].fltFrecc = .30;
-                    $scope.EX.mapFreccZP['TS'].fltFrecc = .30;
-                    $scope.EX.mapFrecc['T0'].fltFrecc = .35;
-                    $scope.EX.mapFreccZP['T0'].fltFrecc = .35;
-                    $scope.EX.mapFrecc['T1'].fltFrecc = .10;
-                    $scope.EX.mapFreccZP['T1'].fltFrecc = .10;
-                    $scope.EX.mapFrecc['T2'].fltFrecc = .07;
-                    $scope.EX.mapFreccZP['T2'].fltFrecc = .07;
-                    $scope.EX.mapFrecc['T3'].fltFrecc = .06;
-                    $scope.EX.mapFreccZP['T3'].fltFrecc = .06;
-                    $scope.EX.mapFrecc['T4'].fltFrecc = .05;
-                    $scope.EX.mapFreccZP['T4'].fltFrecc = .05;
-                    $scope.EX.mapFrecc['T5'].fltFrecc = .03;
-                    $scope.EX.mapFreccZP['T5'].fltFrecc = .04;
-                    $scope.EX.mapFrecc['T6'].fltFrecc = .03;
-                    $scope.EX.mapFreccZP['T6'].fltFrecc = .03;
-                    $scope.EX.mapFrecc['T7'].fltFrecc = .01;
-                    j$.each($scope.EX.listRange, function (keyRange, range) {
-                        $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGWeight = 155.3;
-                        $scope.EX.mapFrecc['T7'].ranges[keyRange].fltAVGVol = 1.3;
-                        $scope.EX.mapService['ZP'].ranges[keyRange].fltCost = 150;
-                        $scope.EX.mapService['ACK'].ranges[keyRange].fltCost = 25;
-                    });
-                    $scope.EX.mapFrecc.intQTotal = 23040;
-                    $scope.EX.mapFreccZP.intQTotal = 15000;
-                    $scope.addBlock(4);
-                    $scope.EX.mapBlock['T04'].fltVolW = .009;
-                    $scope.EX.mapBlock['T04'].fltVolWeight = 1.8;
-                    $scope.addBlock(9);
-                    $scope.EX.mapBlock['T19'].fltVolW = .015;
-                    $scope.EX.mapBlock['T19'].fltVolWeight = 3;
-                    $scope.EX.mapBlock['T04'].ranges['0-400'].fltCost = 85;
-                    $scope.EX.mapBlock['T04'].ranges['401-800'].fltCost = 85;
-                    $scope.EX.mapBlock['T04'].ranges['801-1200'].fltCost = 85;
-                    $scope.EX.mapBlock['T04'].ranges['1201-1600'].fltCost = 95;
-                    $scope.EX.mapBlock['T04'].ranges['1601-2000'].fltCost = 95;
-                    $scope.EX.mapBlock['T04'].ranges['2001-2400'].fltCost = 95;
-                    $scope.EX.mapBlock['T04'].ranges['+2400'].fltCost = 95;
-                    $scope.EX.mapBlock['T19'].ranges['0-400'].fltCost = 95;
-                    $scope.EX.mapBlock['T19'].ranges['401-800'].fltCost = 95;
-                    $scope.EX.mapBlock['T19'].ranges['801-1200'].fltCost = 95;
-                    $scope.EX.mapBlock['T19'].ranges['1201-1600'].fltCost = 105;
-                    $scope.EX.mapBlock['T19'].ranges['1601-2000'].fltCost = 105;
-                    $scope.EX.mapBlock['T19'].ranges['2001-2400'].fltCost = 105;
-                    $scope.EX.mapBlock['T19'].ranges['+2400'].fltCost = 105;
-                    $scope.EX.mapService['Add'].ranges['0-400'].fltCostWeight = 4.75;
-                    $scope.EX.mapService['Add'].ranges['401-800'].fltCostWeight = 4.75;
-                    $scope.EX.mapService['Add'].ranges['801-1200'].fltCostWeight = 4.75;
-                    $scope.EX.mapService['Add'].ranges['1201-1600'].fltCostWeight = 6;
-                    $scope.EX.mapService['Add'].ranges['1601-2000'].fltCostWeight = 6;
-                    $scope.EX.mapService['Add'].ranges['2001-2400'].fltCostWeight = 6;
-                    $scope.EX.mapService['Add'].ranges['+2400'].fltCostWeight = 6;
-                    $scope.EX.mapService['Add'].ranges['0-400'].fltCostVol = 4.75 * 200;
-                    $scope.EX.mapService['Add'].ranges['401-800'].fltCostVol = 4.75 * 200;
-                    $scope.EX.mapService['Add'].ranges['801-1200'].fltCostVol = 4.75 * 200;
-                    $scope.EX.mapService['Add'].ranges['1201-1600'].fltCostVol = 6 * 200;
-                    $scope.EX.mapService['Add'].ranges['1601-2000'].fltCostVol = 6 * 200;
-                    $scope.EX.mapService['Add'].ranges['2001-2400'].fltCostVol = 6 * 200;
-                    $scope.EX.mapService['Add'].ranges['+2400'].fltCostVol = 6 * 200;
-                    $scope.calculateQ();
                 };
                 $scope.redireccionar = function () {
                     var blnRedirec = false;
@@ -4363,6 +4293,7 @@
                 $scope.SuccessMessage = '';
                 $scope.sent = true;
                 $scope.Wrapper.objQuote = {};//Se inicializa el objeto antes de llamar a la función de grabado.
+                debugger;
                 Visualforce.remoting.Manager.invokeAction(
                     '{!$RemoteAction.PAQ_CotizadorNacional_CTR.saveQuoteConv}'
                     , objQuote
