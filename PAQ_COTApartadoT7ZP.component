@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 03-18-2022
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+-->
 <apex:component controller="PAQ_CotizadorNacional_CTR">
     <div ng-controller="ODCControllerTZP as ODCZP">
         <div class="col-md-6 col-sm-6">
@@ -45,7 +52,6 @@
                 </div>
             </div>
         </div>
-    
         <div class="row">
             <div class="col-md-12 col-sm-12">
                 <div class="panel panel-default" style="overflow: scroll;">
@@ -96,6 +102,53 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="col-sm-4 col-md-4" ng-show="blnT7GuiaMult">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th colspan="5" class="center" data-toggle="collapse" data-target="#ZPTableSmall"><a href="#ZPTableSmall">Frecuencia de envios Guias T7 Zona plus</a> </th>
+                    </tr>
+                </thead>
+                <tbody id="ZPTableSmall" class="collapse in">
+                    <tr>
+                        <th class="center"> Kilómetros  </th>
+                        <th class="center" ng-repeat="(keyFee, frecc) in ODZP.mapFreccPorc" ng-bind="keyFee" ></th>
+                        <!--<th class="center">PAQUETES</th>
+                        <th class="center">FRECUENCIA</th>-->
+                    </tr>
+                    <tr>
+                        <th class="center">Paquetes promedio</th>
+                        <th class="center" ng-repeat="(keyFee, frecc) in ODZP.mapFreccPorc" ng-bind="frecc.fltCantidad" contenteditable="true" ng-blur="setValue('intFrecuencyPorc', keyFee, $event, keyFee)" ></th>
+                        <!--<th></th>
+                        <th></th>-->
+                    </tr>
+                    <tr>
+                        <th class="center">Calcular</th>
+                        <th class="center" ng-repeat="(keyFee, frecc) in ODZP.mapFreccPorc"><input type="checkbox" ng-model="ODZP.mapFreccPorc[keyFee].blnCalcular" ng-click="replicate('frecPaqGuias', ODZP.mapFreccPorc[keyFee].blnCalcular, keyFee)"/></th>
+                        <!--<th></th>
+                        <th></th>-->
+                    </tr>
+                    <tr ng-repeat="(keyRange, strRange) in ODZP.listRange">
+                        <td class="verticalTH" ng-bind="strRange"></td>
+                        <td class="center" width="7%" contenteditable="true" ng-repeat="(keyFee, frecc) in ODZP.mapFreccPorc"  ng-bind="frecc.ranges[keyRange].intFrecuency | number" ng-blur="setValue('intPaqGuias', keyRange, $event, keyFee)" ></td>
+                        <!--<td class="center thead-light" width="7%" ng-bind="ODZP.mapRanges[keyRange]['POR'].intQTotal | number"></td>
+                        <td class="center thead-light" width="7%" contenteditable="true" ng-bind="ODZP.mapRanges[keyRange]['POR'].fltFrecc | percentage:2" ng-blur="setValue('fltFreccRangeZP', keyRange, $event, keyFee)"></td>-->
+                    </tr>
+                    <tr>
+                        <td class="thead-light">Total</td>
+                        <td class="center thead-light" ng-repeat="(keyFee, frecc) in ODZP.mapFreccPorc"  ng-bind="frecc.intQTotal | number"></td>
+                        <!--<td class="center thead-light" contenteditable="true" ng-bind="ODZP.mapFreccPorc.intQTotal | number" ng-blur="setValue('intQTotalZP', keyRange, $event, keyFee)"></td>
+                        <td class="center" ng-bind="ODZP.mapFreccPorc.fltFTotal | percentage:2" ></td>-->
+                    </tr>
+                    <!--<tr>
+                        <td/>
+                        <td class="center thead-light" contenteditable="true" ng-repeat="(keyFee, frecc) in ODZP.mapFreccPorc" ng-bind="ODZP.mapFreccPorc[keyFee].fltFrecc | percentage:2" ng-blur="setValue('fltFreccFeeZP', keyRange, $event, keyFee)"></td>
+                        <td class="center" ng-bind="ODZP.mapFreccPorc.fltFEETotal | percentage:2" ></td>
+                    </tr>-->
+                </tbody>
+            </table>
         </div>
 
         <!--<div class="row">
@@ -235,9 +288,12 @@
                     , ranges : {}
                 }
                 , mapT7normal : {}
+                , mapFreccPorc : {}
+                , mapRanges : {}
                 , fltRespaldoTotalPropuesta : 0
                 , fltRespaldoTotalNormal : 0
                 , intRespaldoPaq : 0
+                , fltRespaldoGuias : 0
                 , intTotalPaq : 0
                 , strOrigen : ''
                 , keyT7 : ''
@@ -272,7 +328,7 @@
                             j$.each($scope.ODZP.mapTender, function(keyTender, strTender){
                                 $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strOrigen = Origen; //23/1/2020 Salvador: Se asigna el origen, será el mismo para todos.
                                 $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strTenderDestino = keyTender;//23/11/2020 Salvador: Se le agrega un 70 al tender ya que de esa forma se compone la clave
-                                $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltNormalFee = 208.50; //23/11/2020 Salvador: Cuota fija hasta T6, a partir de aquí se cobran excedentes
+                                $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].fltNormalFee = $scope.Wrapper.mapCS['AEZP']; //23/11/2020 Salvador: Cuota fija hasta T6, a partir de aquí se cobran excedentes
                             });
                             j$.each($scope.ODZP.mapTender, function(keyTender, strTender){
                                 ObtieneRangoKMT7ZP($scope, $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strOrigen, keyTender.replace('70',''));
@@ -299,10 +355,18 @@
                         case 'fltAlto':
                             $scope.ODZP.mapQuotesT7ZP.Tender[key].fltAlto = getNum(cmp.target.textContent);
                         break;
+                        case 'intFrecuencyPorc':
+                            $scope.ODZP.mapFreccPorc[key].fltCantidad = getNum(cmp.target.textContent);
+                        break;
+                        case 'intPaqGuias':
+                            $scope.ODZP.mapFreccPorc[keyX].ranges[key].intFrecuency = getNum(cmp.target.textContent);
+                        break;
                     };
                 if($scope.blnT7CostosFijos)
                     $scope.$parent.$parent.$$childHead.$$childHead.calculateEXPOD();
                 else if($scope.blnT7CostoBase)
+                    $scope.$parent.$parent.$$childHead.$$childHead.calculateXY();
+                else if($scope.blnT7GuiaMult)
                     $scope.$parent.$parent.$$childHead.$$childHead.calculateXY();
                 $scope.ValidarPropuesta();
             };
@@ -357,6 +421,36 @@
                                 else $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].intFrecuency = num;
                             });
                     break;
+                    case 'frecPaqGuias':
+                        if($scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].blnCalcular){
+                            /*j$.each($scope.ODZP.listRange, function (keyRange, strRange){
+                                if(!key.includes('T7_')){
+                                    if($scope.ODZP.mapFrecc[key].ranges[keyRange].intFrecuency !== 0 && $scope.ODZP.mapFreccPorc[key].fltCantidad !== 0)
+                                        $scope.ODZP.mapFreccPorc[key].ranges[keyRange].intFrecuency = $scope.ODZP.mapFrecc[key].ranges[keyRange].intFrecuency / $scope.ODZP.mapFreccPorc[key].fltCantidad;
+                                    else $scope.ODZP.mapFreccPorc[key].ranges[keyRange].intFrecuency = 0;
+                                } else {
+                                    if($scope.ODZP.OWFrecc[key].ranges[keyRange].intFrecuency !== 0 && $scope.ODZP.mapFreccPorc[key].fltCantidad !== 0)
+                                        $scope.ODZP.mapFreccPorc[key].ranges[keyRange].intFrecuency = $scope.ODZP.OWFrecc[key].ranges[keyRange].intFrecuency / $scope.ODZP.mapFreccPorc[key].fltCantidad;
+                                    else $scope.ODZP.mapFreccPorc[key].ranges[keyRange].intFrecuency = 0;
+                                }
+                                
+                            });*/
+                            j$.each($scope.ODZP.mapTender, function (keyTender, map) {
+                                let rango = '';
+                                if(map.blnDestino)
+                                    rango = keyTender;
+                                else {
+                                    if ($scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strRange === 'Más de 2400')
+                                        rango = '+2400';
+                                    else rango = $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].strRange;
+                                }
+                                if($scope.ODZP.mapQuotesT7ZP.Tender[keyTender].intFrecuency !== 0 && $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].fltCantidad !== 0)
+                                    $scope.ODZP.mapFreccPorc[key].ranges[rango].intFrecuency = $scope.ODZP.mapQuotesT7ZP.Tender[keyTender].intFrecuency / $scope.ODZP.mapFreccPorc[key].fltCantidad;
+                            });
+                        }
+                    break;
+                    if($scope.blnT7GuiaMult)
+                        $scope.$parent.$parent.$$childHead.$$childHead.calculateXY();
                     $scope.ValidarPropuesta();
                 };
             };
@@ -380,6 +474,15 @@
                     $scope.$parent.$parent.$$childHead.$$childHead.EX.TOTAL['NORMAL']       = 0;
                     $scope.$parent.$parent.$$childHead.$$childHead.EX.TOTAL['PROPUESTA']    = 0;
                     $scope.$parent.$parent.$$childHead.$$childHead.EX.TOTAL['PAQUETES']     = 0;
+                } else if ($scope.blnT7GuiaMult){
+                    $scope.fltRespaldoTotalNormal = $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['NORMAL'];
+                    $scope.fltRespaldoTotalPropuesta = $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PROPUESTA'];
+                    $scope.intRespaldoPaq = $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PAQUETES'];
+                    $scope.fltRespaldoGuias = $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['GUIAS'];
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['NORMAL']       = 0;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PROPUESTA']    = 0;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PAQUETES']     = 0;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['GUIAS']        = 0;
                 }
 
                 
@@ -420,15 +523,19 @@
                         }*/
                         $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoVol = ObtienePesoVolum($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltLargo, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltAncho, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltAlto);
                         $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom = ObtienePesoDominante($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPeso, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoVol);
-                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee = ObtieneTarifaLlena($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom, $scope.ODZP.mapTender[strTender].fltExc);
+                        $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee = ObtieneTarifaLlena($scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom, $scope.ODZP.mapTender[strTender].fltExc, $scope.Wrapper.mapCS['AEZP']);
                         $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltTotalQuote = ObtieneTotalTarifaLlena($scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee);
                         if($scope.blnT7CostosFijos)
                             $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp = ObtieneTarifaPropuesta($scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltCost, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltPesoDom);
                         else if ($scope.blnT7CostoBase)
                             $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp = $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltCost;
+                        else if ($scope.blnT7GuiaMult)
+                            $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp = $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].ranges[strRango].intFrecuency *  $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltCost;
                         $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltQuoteFull = $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp * $scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency;
                         $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltDiscount = $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp / $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltFullFee - 1;
-                        $scope.AgregaTotalPropuestaMapaPropuesta(strRango, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltQuoteFull);
+                        if($scope.blnT7CostosFijos || $scope.blnT7CostoBase)
+                            $scope.AgregaTotalPropuestaMapaPropuesta(strRango, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltQuoteFull);
+                        else $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltTotalPropuesta += $scope.ODZP.mapQuotesT7ZP.Tender[strTender].flttarifaProp
                         $scope.AgregaTotalTarifaLlenaMapaPropuesta(strRango, $scope.ODZP.mapQuotesT7ZP.Tender[strTender].fltTotalQuote);
                         $scope.AgregaDescuentoMapaPropuesta(strRango, $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltTotalPropuesta, $scope.ODZP.mapPropuesta['PROP'].ranges[strRango].fltTotalTarifaLlena);
                         $scope.ODZP.mapQuotesT7ZP.intFeeTotalFrec += $scope.ODZP.mapQuotesT7ZP.Tender[strTender].intFrecuency;
@@ -456,6 +563,8 @@
                 let fltACK = 0;
                 var listRangesZP = {};
                 $scope.ODZP.intTotalPaq = 0;
+                if($scope.blnT7GuiaMult)
+                	$scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].intQTotal = 0;
                 $scope.ODZP.mapTotalesT7ZP.fltTotalNormal = 0;
                 $scope.ODZP.mapTotalesT7ZP.fltTotalPropuesta = 0;
                 j$.each($scope.ODZP.listRange, function(keyRange, strRange){
@@ -476,7 +585,7 @@
                             $scope.ODZP.mapT7ZPP.ranges[keyRange].fltFlete                = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltPrecio * $scope.ODZP.mapQuotes['T7P'].ranges[keyRange].fltWeightAVR;
                         }
                         
-                    } else if($scope.blnT7CostoBase){
+                    } else if($scope.blnT7CostoBase || $scope.blnT7GuiaMult){
                         $scope.ODZP.mapT7ZPV.ranges[keyRange].fltFlete                = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltPrecio * $scope.ODZP.mapQuotes.fltMaxV;
                         $scope.ODZP.mapT7ZPP.ranges[keyRange].fltFlete                = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltPrecio * $scope.ODZP.mapQuotes.fltMaxW;
                     }
@@ -489,15 +598,22 @@
                         if($scope.blnT7CostosFijos){
                             $scope.ODZP.mapT7ZPV.ranges[keyRange].fltACK = $scope.Wrapper.mapACK[$scope.$parent.$parent.$$childHead.$$childHead.OD.strAck];
                             $scope.ODZP.mapT7ZPP.ranges[keyRange].fltACK = $scope.Wrapper.mapACK[$scope.$parent.$parent.$$childHead.$$childHead.OD.strAck];
-                        } else {
+                        } else if($scope.blnT7CostoBase) {
                             $scope.ODZP.mapT7ZPV.ranges[keyRange].fltACK = $scope.Wrapper.mapACK[$scope.$parent.$parent.$$childHead.$$childHead.EX.strACK];
                             $scope.ODZP.mapT7ZPP.ranges[keyRange].fltACK = $scope.Wrapper.mapACK[$scope.$parent.$parent.$$childHead.$$childHead.EX.strACK];
                             fltACK = $scope.$parent.$parent.$$childHead.$$childHead.EX.mapService["ACK"].ranges[keyRange].fltCost;
+                        } else if ($scope.blnT7GuiaMult){
+                            $scope.ODZP.mapT7ZPV.ranges[keyRange].fltACK = $scope.Wrapper.mapACK[$scope.$parent.$parent.$$childHead.$$childHead.GM.strACK];
+                            $scope.ODZP.mapT7ZPP.ranges[keyRange].fltACK = $scope.Wrapper.mapACK[$scope.$parent.$parent.$$childHead.$$childHead.GM.strACK];
+                            fltACK = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapService["ACK"].ranges[keyRange].fltCost;
                         }
                         
                     }
-                    $scope.ODZP.mapT7ZPV.ranges[keyRange].fltZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
-                    $scope.ODZP.mapT7ZPP.ranges[keyRange].fltZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    if($scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena !== 0 && $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency !== 0){
+                        $scope.ODZP.mapT7ZPV.ranges[keyRange].fltZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                        $scope.ODZP.mapT7ZPP.ranges[keyRange].fltZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalTarifaLlena / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    }
+                    
 
                     $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaLlena = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltFlete + $scope.ODZP.mapT7ZPV.ranges[keyRange].fltRAD + $scope.ODZP.mapT7ZPV.ranges[keyRange].fltZP + $scope.ODZP.mapT7ZPV.ranges[keyRange].fltACK;
                     $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaLlena = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltFlete + $scope.ODZP.mapT7ZPP.ranges[keyRange].fltRAD + $scope.ODZP.mapT7ZPP.ranges[keyRange].fltZP + $scope.ODZP.mapT7ZPP.ranges[keyRange].fltACK;
@@ -512,17 +628,16 @@
                             $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.listRangePrecio['T7P'].ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima;
                         }
                         
-                    }else if($scope.blnT7CostoBase){
-                        /*$scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltPesoDom;
-                        $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima;
-                        $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTarima;*/
+                    }else if($scope.blnT7CostoBase || $scope.blnT7GuiaMult){
                         $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost + fltACK;
                         $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta = $scope.ODZP.mapQuotes.ranges[keyRange].fltCost + $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltCost + fltACK;
                     }
                     
-
-                    $scope.ODZP.mapT7ZPV.ranges[keyRange].fltAdicZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
-                    $scope.ODZP.mapT7ZPP.ranges[keyRange].fltAdicZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    if($scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta !== 0 &&  $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency !== 0){
+                        $scope.ODZP.mapT7ZPV.ranges[keyRange].fltAdicZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                        $scope.ODZP.mapT7ZPP.ranges[keyRange].fltAdicZP = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalPropuesta / $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    }
+                    
 
                     if($scope.blnT7CostosFijos){
                         if($scope.$parent.$parent.$$childHead.$$childHead.PPT7Calc === 'byDelivery' ){
@@ -532,7 +647,7 @@
                             $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalTarifaPropuesta = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaPropuesta;
                             $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalTarifaPropuesta = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta;
                         }
-                    } else if($scope.blnT7CostoBase){
+                    } else if($scope.blnT7CostoBase || $scope.blnT7GuiaMult){
                         $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalTarifaPropuesta = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaPropuesta;
                         $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalTarifaPropuesta = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaPropuesta;
                     }
@@ -542,8 +657,13 @@
                     $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalNormal = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency * $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTarifaLlena;
                     $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalNormal = $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency * $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTarifaLlena;
 
-                    $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotProp = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
-                    $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotProp = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    if($scope.blnT7GuiaMult){
+                        $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotProp = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].ranges[keyRange].intFrecuency;
+                        $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotProp = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].ranges[keyRange].intFrecuency;
+                    } else {
+                        $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotProp = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                        $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotProp = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalTarifaPropuesta * $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    }
 
                     $scope.ODZP.mapT7ZPV.ranges[keyRange].fltDesc = $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotProp / $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalNormal - 1;
                     $scope.ODZP.mapT7ZPP.ranges[keyRange].fltDesc = $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotProp / $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotalNormal - 1;
@@ -558,6 +678,8 @@
                     totalpropuestaP += $scope.ODZP.mapT7ZPP.ranges[keyRange].fltTotProp;
 
                     $scope.ODZP.intTotalPaq += $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].intFrecuency;
+                    if($scope.blnT7GuiaMult)
+                    	$scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].intQTotal += $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].ranges[keyRange].intFrecuency;
                     if($scope.ODZP.mapT7ZPV.ranges[keyRange].fltDesc < $scope.ODZP.mapT7ZPP.ranges[keyRange].fltDesc){
                         $scope.ODZP.mapTotalesT7ZP.ranges[keyRange] = $scope.ODZP.mapT7ZPV.ranges[keyRange];
                         $scope.ODZP.mapTotalesT7ZP.fltTotalNormal += $scope.ODZP.mapT7ZPV.ranges[keyRange].fltTotalNormal;
@@ -589,6 +711,15 @@
                     $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta         = $scope.ODZP.mapTotalesT7ZP.ranges[keyRange].fltTotProp;
                     if($scope.blnT7CostoBase){
                         $scope.$parent.$parent.$$childHead.$$childHead.EX.mapProjEXZP['T7' + $scope.ODZP.mapQuotes.fltMaxW] = {
+                            strFee : 'T7'
+                            , fltMaxW: $scope.ODZP.mapQuotes.fltMaxW
+                            , fltTotalNormal : $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
+                            , fltTotalQuote : $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotPropuesta
+                            , fltDisc : ($scope.ODZP.mapTotalesT7ZP.fltTotalPropuesta / $scope.ODZP.mapTotalesT7ZP.fltTotalNormal) - 1
+                            ,  ranges : listRangesZP
+                        };
+                    } else if ($scope.blnT7GuiaMult){
+                        $scope.$parent.$parent.$$childHead.$$childHead.GM.mapProjGMZP['T7' + $scope.ODZP.mapQuotes.fltMaxW] = {
                             strFee : 'T7'
                             , fltMaxW: $scope.ODZP.mapQuotes.fltMaxW
                             , fltTotalNormal : $scope.ODZP.mapPropuesta['PROP'].ranges[keyRange].fltTotalNormal
@@ -667,6 +798,18 @@
                     $scope.$parent.$parent.$$childHead.$$childHead.EX.strOrigen     = $scope.ODZP.strOrigen;
                     $scope.$parent.$parent.$$childHead.$$childHead.EX.TOTAL['DESCUENTO'] = ($scope.$parent.$parent.$$childHead.$$childHead.EX.TOTAL['PROPUESTA'] / $scope.$parent.$parent.$$childHead.$$childHead.EX.TOTAL['NORMAL']) -1;
                     $scope.$parent.$parent.$$childHead.$$childHead.calculateDiscProjection();
+                } else if($scope.blnT7GuiaMult){
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['NORMAL'] = $scope.fltRespaldoTotalNormal + $scope.ODZP.mapTotalesT7ZP.fltTotalNormal;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PROPUESTA']    = $scope.fltRespaldoTotalPropuesta + $scope.ODZP.mapTotalesT7ZP.fltTotalPropuesta;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PAQUETES']     = $scope.intRespaldoPaq + $scope.ODZP.intTotalPaq;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['GUIAS']        = $scope.fltRespaldoGuias + $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].intQTotal;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.mapTender     = $scope.ODZP.mapTender;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.mapQuotesT7ZP = $scope.ODZP.mapQuotesT7ZP;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.mapPropuesta  = $scope.ODZP.mapPropuesta;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.mapFreccPorcT7ZP  = $scope.ODZP.mapFreccPorc;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.strOrigen     = $scope.ODZP.strOrigen;
+                    $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['DESCUENTO'] = ($scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['PROPUESTA'] / $scope.$parent.$parent.$$childHead.$$childHead.GM.TOTAL['NORMAL']) -1;
+                    $scope.$parent.$parent.$$childHead.$$childHead.calculateDiscProjection();
                 }
                 
             }
@@ -726,8 +869,44 @@
                     }
                 });
                 $scope.ODZP.mapT7normal = $scope.$parent.$parent.$$childHead.$$childHead.EX.mapQuotes[$scope.ODZP.keyT7];
-                //$scope.ODZP.mapQuotes = $scope.$parent.$parent.$$childHead.$$childHead.EX.mapQuotes;
-                //$scope.ODZP.OnlineDocByDestiny = $scope.$parent.$parent.$$childHead.$$childHead.EX.OnlineDocByDestiny;
+            } else if ($scope.blnT7GuiaMult) {
+                $scope.ODZP.mapTender = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapTender;
+                $scope.ODZP.mapQuotesT7ZP = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapQuotesT7ZP;
+                $scope.ODZP.mapPropuesta = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapPropuesta;
+                $scope.ODZP.listRange = $scope.$parent.$parent.$$childHead.$$childHead.GM.listRange;
+                $scope.ODZP.blnRAD = $scope.$parent.$parent.$$childHead.$$childHead.GM.blnRAD;
+                $scope.ODZP.blnEAD = $scope.$parent.$parent.$$childHead.$$childHead.GM.blnEAD;
+                $scope.ODZP.blnACK = $scope.$parent.$parent.$$childHead.$$childHead.GM.blnACK;
+                $scope.ODZP.OnlineDocByDestiny = $scope.OnlineDocByDestiny;
+                $scope.ODZP.strOrigen = $scope.$parent.$parent.$$childHead.$$childHead.GM.strOrigen;
+                $scope.ODZP.mapRanges = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapRanges;
+                j$.each($scope.$parent.$parent.$$childHead.$$childHead.GM.mapBlock, function(key, map){
+                    if(map.blnT7ZP){
+                        $scope.ODZP.mapQuotes = map;
+                        $scope.ODZP.keyT7 = key.replace('T7', 'T7_');
+                    }
+                });
+                //$scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7] = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapFreccPorc[$scope.ODZP.keyT7];
+                $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7] = {
+                    ranges : {} 
+                    , fltFrecc: 0
+                    , intQTotal:0
+                    , fltCantidad : 0
+                    , blnCalcular : false
+                };
+                j$.each($scope.ODZP.listRange, function (key, str) {
+                    $scope.ODZP.mapFreccPorc[$scope.ODZP.keyT7].ranges[key] = {
+                        intFrecuency : 0
+                        , fltBaseFee : 0
+                        , fltFullFee : 0
+                        , fltRAD : 0
+                        , fltEAD : 0
+                        , fltACK : 0
+                        , fltSEG : 0
+                        , fltTotalNormal : 0
+                    };
+                });
+                $scope.ODZP.mapT7normal = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapQuotes[$scope.ODZP.keyT7];
             }
             j$.each($scope.ODZP.listRange, function(keyRange, strRange){
                 $scope.ODZP.mapT7ZPV.ranges[keyRange] = {
@@ -772,6 +951,11 @@
                 }
             });
             if($scope.hasRecord()){
+                if($scope.blnT7GuiaMult){
+                    $scope.ODZP.mapFreccPorc = {};
+                	$scope.ODZP.mapFreccPorc = $scope.$parent.$parent.$$childHead.$$childHead.GM.mapFreccPorcT7ZP;
+                    $scope.$parent.$parent.$$childHead.$$childHead.calculateXY();
+                }
                 $scope.ValidarPropuesta();
             }
                 /*j$.each($scope.ODZP.mapTender, function(keyTender, strTender){
@@ -835,11 +1019,11 @@
                     ,{escape: false, timeout: 120000}
             );
         }
-        function ObtieneTarifaLlena(decPesoPred, decExc){
+        function ObtieneTarifaLlena(decPesoPred, decExc, decEADZP){
             //19/09/2020 Salvador: Función para obtener el total de tarifa llena para la tarifa T7 ZP
             var decTarifaLlena = 0;
             if (decPesoPred !== 0 && decExc !== 0)
-                decTarifaLlena = 208.5 + ((decPesoPred - 60) * decExc);
+                decTarifaLlena = decEADZP + ((decPesoPred - 60) * decExc);
             return decTarifaLlena;
         }
         function ObtieneTotalTarifaLlena(intPaq, fltFullFee){
