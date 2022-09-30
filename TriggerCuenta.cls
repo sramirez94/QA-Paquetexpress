@@ -86,14 +86,14 @@ public class TriggerCuenta {
             }
 
             if(acc.Preasignar_Ejecutivo__c != AccOld.Preasignar_Ejecutivo__c && acc.Preasignar_Ejecutivo__c == true ){
-                //system.debug('ENTRA  PREASIGNACION IF 47'); 
+                //system.debug('ENTRA  PREASIGNACION IF 47');
                 acc.OwnerId = acc.Usuario_a_asignar__c;
                 acc.Preasignar_Ejecutivo__c = false;
             }else if (acc.Preasignacion_Mantenimiento__c != AccOld.Preasignacion_Mantenimiento__c && acc.Preasignacion_Mantenimiento__c == true ){
-                system.debug('ENTRA  PREASIGNACION IF 47'); 
+                system.debug('ENTRA  PREASIGNACION IF 47');
             }else{
                 //INTERNACIONAL
-                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
+                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.Asignacion_Internacional__c == true
                    && acc.MigracionPrepagoADocumentacionEnLinea__c == false && acc.RFC__c != '' && acc.RFC__c != null){
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
@@ -101,7 +101,7 @@ public class TriggerCuenta {
                        }
                    }
                 //PREPAGO
-                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c 
+                if(acc.AsignarEjecutivoACuentaEnSipweb__c != AccOld.AsignarEjecutivoACuentaEnSipweb__c
                    && acc.AsignarEjecutivoACuentaEnSipweb__c == true && acc.AsignacionNacionalPrepago__c == true
                    && acc.MigracionPrepagoADocumentacionEnLinea__c == false && acc.RFC__c != '' && acc.RFC__c != null){
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
@@ -127,7 +127,7 @@ public class TriggerCuenta {
                        acc.Validacion_Nuevo__c = wAsigEjecNuevo.valorDeRetorno;
                        System.debug('acc.Validacion_Nuevo__c: ' + acc.Validacion_Nuevo__c);
                        if(acc.Validacion_Nuevo__c == false && acc.OmitirValidacionDeInformacion__c == false){
-                           acc.addError('El cliente ya cuenta con ventas mensuales promedio de $ '+ String.format(wAsigEjecNuevo.promedioVentasMensual.format(), args) +', Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');       
+                           acc.addError('El cliente ya cuenta con ventas mensuales promedio de $ '+ String.format(wAsigEjecNuevo.promedioVentasMensual.format(), args) +', Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                        }
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){
                            acc.addError('No hay suficientes registros que justifiquen su asignación');
@@ -162,12 +162,12 @@ public class TriggerCuenta {
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
                        String mensaje = '';
 
-                       wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado  = ValidaAsignacionEjecutivoRecuperado (razonSocial, RFC, IdSipweb, Plaza); 
-                       acc.Validacion_Recuperado__c = wAsigEjecRecuperado.valorDeRetorno; 
+                       wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado  = ValidaAsignacionEjecutivoRecuperado (razonSocial, RFC, IdSipweb, Plaza);
+                       acc.Validacion_Recuperado__c = wAsigEjecRecuperado.valorDeRetorno;
 
                        if(acc.Validacion_Recuperado__c == false && acc.OmitirValidacionDeInformacion__c == false){
                            if(wAsigEjecRecuperado.valorVentaMes == null && wAsigEjecRecuperado.otrosIdsConVenta== true){
-                               System.debug('ENTRA IF');   
+                               System.debug('ENTRA IF');
                                mensaje = 'El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social';
                                acc.addError('El cliente ya cuenta con ventas mensuales en otros ids de sipweb con la misma razon social, Si está seguro de avanzar bajo el estatus solicitado, marque la casilla De acuerdo con validación de información');
                            }else if(wAsigEjecRecuperado.valorVentaMes != null && wAsigEjecRecuperado.otrosIdsConVenta== true){
@@ -219,7 +219,7 @@ public class TriggerCuenta {
                        IdSipweb 	= acc.Id_SIpWeb__c;
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
                        String mensaje = '';
-                       wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado  =  ValidaAsignacionEjecutivoMigracion(razonSocial, RFC, IdSipweb, Plaza); 
+                       wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado  =  ValidaAsignacionEjecutivoMigracion(razonSocial, RFC, IdSipweb, Plaza);
                        System.debug('wAsigEjecRecuperado.valorDeRetorno: ' + wAsigEjecRecuperado.valorDeRetorno);
                        System.debug('wAsigEjecRecuperado.otrosIdsConVenta: ' + wAsigEjecRecuperado.otrosIdsConVenta);
                        System.debug('wAsigEjecRecuperado.ventasUltimos6Meses: ' + wAsigEjecRecuperado.ventasUltimos6Meses);
@@ -281,7 +281,7 @@ public class TriggerCuenta {
                        razonSocial = acc.Name.substring(0, posiciones);
                        if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 9);    if(razonSocial.endsWith(' ')){razonSocial = acc.Name.substring(0, 8);    }}
                        RFC			= acc.RFC__c;
-                       IdSipweb 	= acc.Id_SIpWeb__c; 
+                       IdSipweb 	= acc.Id_SIpWeb__c;
                        Plaza		= [SELECT Id, Plaza__c FROM Sucursal__c WHERE Id =: acc.Sucursal__c].Plaza__c;
                        acc.PromedioMensualVentas__c = getVentaPromedioMensual (razonSocial, RFC, IdSipweb, Plaza);
                        if(getValidacionTareas(acc.Id, acc.Usuario_a_asignar__c, acc.CreatedDate) == false){		acc.addError('No hay suficientes registros que justifiquen su asignación');
@@ -303,7 +303,7 @@ public class TriggerCuenta {
                        }else if ( acc.Comision_directa__c  == TRUE && acc.Porcentaje_de_comision_directa__c == null || acc.Porcentaje_de_comision_directa__c == 0){
                            acc.addError('Si seleccionó comisión directa coloque un valor en porcentaje de comisión directa mayor que 0 y menor a 1.5');
                        }
-                       else if (acc.Porcentaje_de_comision_diferenciada__c> 99 || acc.Porcentaje_de_comision_directa__c>= 1.5 
+                       else if (acc.Porcentaje_de_comision_diferenciada__c> 99 || acc.Porcentaje_de_comision_directa__c>= 1.5
                                 || acc.Porcentaje_de_comision_diferenciada__c<= 0 || acc.Porcentaje_de_comision_directa__c<= 0){
                                     acc.addError('La comisión diferenciada debe ser <= 99% y el porcentaje de comisión directa debe ser <1.5 y mayor que 0 para ambos casos');
                                 }
@@ -418,7 +418,7 @@ public class TriggerCuenta {
         return wAsigEjecNuevo;
     }
     public static void ConsultaDatosFiscales(List<Account> lstAccounts, Map<Id, Account> accOldMap, Boolean blninsert, Boolean blnUpdate){
-        for(Account ac : lstAccounts){
+        /*for(Account ac : lstAccounts){
             if(!ac.DatosFiscalesObtenidosDeSipWeb__c){
                 Account oldAcc = new Account();
                 if(blnUpdate){
@@ -447,16 +447,19 @@ public class TriggerCuenta {
                     PAQ_WSDatosFiscales.CallWS_DatosFiscales(ac.RFC__c);
                 }
             }
-        }
+        }*/
     }
     public static void ValidaDatosFiscales(List<Account> lstAccounts, Map<Id, Account> accOldMap, Boolean blninsert, Boolean blnUpdate){
-        String M        = '';
-        Account oldAcc  = new Account();
+        //Salvador Ramírez (sramirez@freewayconsulting.com) Método encargado de validar si los datos fiscales han cambiado y de llamar al WS que los obtendrá de acuerdo a como se encuentren en sipweb
+        String M                = '';
+        String strTipoRegistro  = '';
+        Account oldAcc          = new Account();
         for(Account ac:lstAccounts){
-            if(!ac.DatosFiscalesObtenidosDeSipWeb__c){
-                if(blnUpdate){
-                    oldAcc = accOldMap.get(ac.Id);
-                }
+            strTipoRegistro = PAQ_FuncionesGenericas.GetNombreTipoDeRegistro(ac.RecordTypeId);
+            if(blnUpdate){
+                oldAcc = accOldMap.get(ac.Id);
+            }
+            if(ac.RFC__c != 'XAXX010101000'){
                 if(blninsert ||
                     (blnUpdate &&
                     (ac.RFC__c != oldAcc.RFC__c ||
@@ -477,10 +480,41 @@ public class TriggerCuenta {
                     ac.ApellidoMaterno__c != oldAcc.ApellidoMaterno__c
                     ))
                 {
-                    M  = '';
-                    M = PAQ_FuncionesGenericas.ValidaDatosFiscales(ac);
-                    if(M != ''){
-                        ac.addError(M);
+                    System.debug('Marca: ' + ac.Cuenta_originada_de_prospecto__c + '. Tipo de persona: ' + strTipoRegistro);
+                    if(!ac.DatosFiscalesObtenidosDeSipWeb__c){
+                        if(!test.isRunningTest() && !System.isBatch() && !System.isFuture() && !ac.Cuenta_originada_de_prospecto__c){
+                            M  = '';
+                            //M = PAQ_FuncionesGenericas.ValidaDatosFiscales(ac); //Función que validará si los datos fiscales cambiaron
+                            if(M != ''){
+                                ac.addError(M);
+                            }
+                            PAQ_WSDatosFiscales.CallWS_DatosFiscales(ac.RFC__c); //Método que llamará el servicio web para obtener los datos fiscales de sipweb
+                        }
+                    } else {
+                        if(blnUpdate && ac.DatosFiscalesObtenidosDeSipWeb__c == oldAcc.DatosFiscalesObtenidosDeSipWeb__c && ac.DatosFiscalesObtenidosDeSipWeb__c && !System.isBatch() && !System.isFuture()){
+                            //Si se está actualizando y no ha cambiado el flag de los datos fiscales obtenidos de sipweb y este se encuentra en true y no se está ejecutando un batch (PAQ_BatchActualizaDatosFiscales) o por un método futuro (PAQ_WSDatosFiscales.CallWS_DatosFiscales)
+                            ac.addError('Error actualizando datos fiscales de la cuenta. No es posible alterarlos cuando ya han sido sincronizados con SipWeb.');
+                        }
+                    }
+                    if (ac.Cuenta_originada_de_prospecto__c) {
+                        if (strTipoRegistro == 'Persona Moral') {
+                            ac.RazonSocial__c = '.';
+                            if (ac.RFC__c == null) {
+                                ac.RFC__c = 'RFC123456PM1';
+                            }
+                            ac.Regimen_Fiscal_CCP__c = '603 Personas Morales con Fines no Lucrativos';
+                        } else {
+                            ac.Nombres__c = '.';
+                            ac.ApellidoPaterno__c = '.';
+                            ac.ApellidoMaterno__c = '.';
+                            if (ac.RFC__c == null) {
+                                ac.RFC__c = 'XAXX010101000';
+                            }
+                            ac.Regimen_Fiscal_CCP__c = '616 Sin obligaciones fiscales';
+                        }
+                        ac.Uso_de_cfdi_CCP__c = 'S01 Sin efectos fiscales.';
+                        ac.BillingPostalCode = '00000';
+                        ac.Cuenta_originada_de_prospecto__c = false;
                     }
                 }
             }
@@ -501,98 +535,98 @@ public class TriggerCuenta {
         valorMes.put(10, 'OCTUBRE');
         valorMes.put(11, 'NOVIEMBRE');
         valorMes.put(12, 'DICIEMBRE');
-       
+
         List<AggregateResult> ventasListOtrosIds 	= new List<AggregateResult>();
         List<AggregateResult> ventasList6MESES	 	= new List<AggregateResult>();
         List<Opportunity> opportunityList	= new List<Opportunity>();
-        
+
         Decimal sumaVenta 				= 0;
         Decimal promedioMensualVenta 	= 0;
-        
+
         Decimal sumaOportunidades		= 0;
         Decimal sumaPromedioOpps		= 0;
         Decimal crecimiento 			= 0;
-        
+
         Integer mesesAPromediar = 6;
-        
+
         Date fechaInicioANIOACTUAL 	= date.newinstance(Date.today().Year(), 1, 1);
         Date fechaFinANIOACTUAL 	= date.newinstance(Date.today().Year(), 12, 31);
-        
+
         Date fechaInicio6MESES = System.today().addMonths(0);
         Date fechaFin6MESES = System.today().addMonths(-6);
-        
+
         Boolean valorDeRetorno;
-        
+
         System.debug('IdSipweb: ' 				+ IdSipweb);
         System.debug('razonSocial: ' 			+ razonSocial);
         System.debug('RFC: ' 					+ RFC);
         System.debug('fechaInicio 6 MESES: ' 	+ fechaInicio6MESES);
         System.debug('fechaFin 6 MESES: ' 		+ fechaFin6MESES);
 		System.debug('Plaza: ' 					+ Plaza);
-        
-			
-        ventasListOtrosIds= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c)   
-                     FROM Ventas__c 
-                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%' 
-                     AND Cuenta__r.RFC__c =: RFC 
-                     AND fechaId__c <=: fechaInicio6MESES 
+
+
+        ventasListOtrosIds= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c)
+                     FROM Ventas__c
+                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%'
+                     AND Cuenta__r.RFC__c =: RFC
+                     AND fechaId__c <=: fechaInicio6MESES
                      AND fechaId__c >=: fechaFin6MESES
                      AND Cuenta__r.Id_SIpWeb__c !=: IdSipweb
                      AND Cuenta__r.Sucursal__r.Plaza__c =: Plaza
                      GROUP BY calendar_month(fechaId__c), Cuenta__c
-                    ]; 
-        
+                    ];
+
         system.debug('ventasListOtrosIds.size(): ' + ventasListOtrosIds.size());
-        
-        ventasList6MESES= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c)   
-                     FROM Ventas__c 
-                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%' 
-                     AND Cuenta__r.RFC__c =: RFC 
-                     AND fechaId__c <=: fechaInicio6MESES 
-                     AND fechaId__c >=: fechaFin6MESES  
+
+        ventasList6MESES= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c)
+                     FROM Ventas__c
+                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%'
+                     AND Cuenta__r.RFC__c =: RFC
+                     AND fechaId__c <=: fechaInicio6MESES
+                     AND fechaId__c >=: fechaFin6MESES
                      AND Cuenta__r.Id_SIpWeb__c =: IdSipweb
                      AND Cuenta__r.Sucursal__r.Plaza__c =: Plaza
                      GROUP BY calendar_month(fechaId__c), Cuenta__c
                      ORDER BY calendar_month(fechaId__c)
-                    ]; 
-        
+                    ];
+
         system.debug('ventasList6MESES.size(): ' + ventasList6MESES.size());
-        
-        
+
+
         if(ventasList6MESES.size()>0){
             for (AggregateResult ar : ventasList6MESES)  {
                 System.debug('MES: ' + ar.get('expr0'));
                 System.debug('VALOR: ' + ar.get('expr1'));
                 valorVentaMes.put((String)valorMes.get((Integer)ar.get('expr0')), (Decimal)ar.get('expr1'));
             }
-        }    
-        
-        
-        wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado = new wrapperAsignacionEjecutivoRecuperado ();
-        
-        
-        if(ventasList6MESES.size()>0){wAsigEjecRecuperado.valorVentaMes 	= valorVentaMes;    }
-        
-        if(ventasListOtrosIds.size()>0 ){wAsigEjecRecuperado.otrosIdsConVenta = true;	        
-        }else{
-			wAsigEjecRecuperado.otrosIdsConVenta = false;           
         }
-        
+
+
+        wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado = new wrapperAsignacionEjecutivoRecuperado ();
+
+
+        if(ventasList6MESES.size()>0){wAsigEjecRecuperado.valorVentaMes 	= valorVentaMes;    }
+
+        if(ventasListOtrosIds.size()>0 ){wAsigEjecRecuperado.otrosIdsConVenta = true;
+        }else{
+			wAsigEjecRecuperado.otrosIdsConVenta = false;
+        }
+
         if(ventasListOtrosIds.size()>0 || ventasList6MESES.size()>0 ){valorDeRetorno= false;
         }else{
             valorDeRetorno= true;
         }
-        
+
         wAsigEjecRecuperado.valorDeRetorno 	= valorDeRetorno;
         System.debug('valorDeRetorno: ' + valorDeRetorno);
-        
+
         return wAsigEjecRecuperado;
     }
-    
+
     public static wrapperAsignacionEjecutivoRecuperado ValidaAsignacionEjecutivoMigracion (String razonSocial, String RFC, String IdSipweb, String Plaza){
-        
+
         wrapperAsignacionEjecutivoRecuperado wAsigEjecRecuperado = new wrapperAsignacionEjecutivoRecuperado ();
-        
+
         Map<Integer, String> valorMes = new Map <Integer, String>();
         Map<String, Decimal> valorVentaMes = new Map <String, Decimal>();
         valorMes.put(1, 'ENERO');
@@ -607,7 +641,7 @@ public class TriggerCuenta {
         valorMes.put(10, 'OCTUBRE');
         valorMes.put(11, 'NOVIEMBRE');
         valorMes.put(12, 'DICIEMBRE');
-       
+
         List<AggregateResult> ventasListANIOACTUAL 	= new List<AggregateResult>();
         List<AggregateResult> ventasList6MESES	 	= new List<AggregateResult>();
         List<Opportunity> opportunityList	= new List<Opportunity>();
@@ -615,24 +649,24 @@ public class TriggerCuenta {
         valoresConsultaMigracion.add('DOCUMLINEA');
         valoresConsultaMigracion.add('ECOMMERCE');
         valoresConsultaMigracion.add('SERVICIOWEB');
-        
+
         Decimal sumaVenta 				= 0;
         Decimal promedioMensualVenta 	= 0;
-        
+
         Decimal sumaOportunidades		= 0;
         Decimal sumaPromedioOpps		= 0;
         Decimal crecimiento 			= 0;
-        
+
         Integer mesesAPromediar = 6;
-        
+
         Date fechaInicioANIOACTUAL 	= date.newinstance(Date.today().Year(), 1, 1);
         Date fechaFinANIOACTUAL 	= date.newinstance(Date.today().Year(), 12, 31);
-        
+
         Date fechaInicio6MESES = System.today();
         Date fechaFin6MESES = System.today().addMonths(-6);
-        
+
         Boolean valorDeRetorno;
-        
+
         System.debug('IdSipweb: ' 				+ IdSipweb);
         System.debug('razonSocial: ' 			+ razonSocial);
         System.debug('RFC: ' 					+ RFC);
@@ -641,37 +675,37 @@ public class TriggerCuenta {
         System.debug('fechaInicio 6 MESES: ' 	+ fechaInicio6MESES);
         System.debug('fechaFin 6 MESES: ' 		+ fechaFin6MESES);
 		System.debug('Plaza: ' 					+ Plaza);
-        
-			
-        ventasListANIOACTUAL= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c), OrigenDoc__c   
-                     FROM Ventas__c 
-                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%' 
-                     AND Cuenta__r.RFC__c =: RFC 
-                     AND fechaId__c >=: fechaInicioANIOACTUAL 
+
+
+        ventasListANIOACTUAL= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c), OrigenDoc__c
+                     FROM Ventas__c
+                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%'
+                     AND Cuenta__r.RFC__c =: RFC
+                     AND fechaId__c >=: fechaInicioANIOACTUAL
                      AND fechaId__c <=: fechaFinANIOACTUAL
                      AND Cuenta__r.Sucursal__r.Plaza__c =: Plaza
-                     AND OrigenDoc__c IN: valoresConsultaMigracion 
+                     AND OrigenDoc__c IN: valoresConsultaMigracion
                      GROUP BY calendar_month(fechaId__c), Cuenta__c, OrigenDoc__c
                      ORDER BY calendar_month(fechaId__c)
-                    ]; 
-        
+                    ];
+
         system.debug('ventasListANIOACTUAL.size(): ' + ventasListANIOACTUAL.size());
-        
-        ventasList6MESES= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c) , OrigenDoc__c      
-                     FROM Ventas__c 
-                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%' 
-                     AND Cuenta__r.RFC__c =: RFC 
-                     AND fechaId__c <=: fechaInicio6MESES 
-                     AND fechaId__c >=: fechaFin6MESES  
+
+        ventasList6MESES= [SELECT calendar_month(fechaId__c), Cuenta__c, SUM(totalAntesdeImpuestos__c) , OrigenDoc__c
+                     FROM Ventas__c
+                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%'
+                     AND Cuenta__r.RFC__c =: RFC
+                     AND fechaId__c <=: fechaInicio6MESES
+                     AND fechaId__c >=: fechaFin6MESES
                      //AND Cuenta__r.Id_SIpWeb__c =: IdSipweb
                      AND Cuenta__r.Sucursal__r.Plaza__c =: Plaza
-                     AND OrigenDoc__c IN: valoresConsultaMigracion      
-                     GROUP BY calendar_month(fechaId__c), Cuenta__c, OrigenDoc__c      
+                     AND OrigenDoc__c IN: valoresConsultaMigracion
+                     GROUP BY calendar_month(fechaId__c), Cuenta__c, OrigenDoc__c
                      ORDER BY calendar_month(fechaId__c)
-                    ]; 
-        
+                    ];
+
         system.debug('ventasList6MESES.size(): ' + ventasList6MESES.size());
-        
+
         if(ventasListANIOACTUAL.size()==0 && ventasList6MESES.size()==0){
             valorDeRetorno = true;
         }else{
@@ -681,207 +715,207 @@ public class TriggerCuenta {
                     System.debug('VALOR: ' + ar.get('expr1'));
                     valorVentaMes.put((String)valorMes.get((Integer)ar.get('expr0')), (Decimal)ar.get('expr1'));
                 }
-                wAsigEjecRecuperado.valorVentaMes 	= valorVentaMes;    
-            	wAsigEjecRecuperado.ventasUltimos6Meses = true;	
+                wAsigEjecRecuperado.valorVentaMes 	= valorVentaMes;
+            	wAsigEjecRecuperado.ventasUltimos6Meses = true;
             }else{
-                wAsigEjecRecuperado.ventasUltimos6Meses = false;	
-            }    
+                wAsigEjecRecuperado.ventasUltimos6Meses = false;
+            }
             valorDeRetorno = false;
-        } 
-                
-        if(ventasListANIOACTUAL.size()>0){wAsigEjecRecuperado.otrosIdsConVenta = true;	        
-        }else{
-			wAsigEjecRecuperado.otrosIdsConVenta = false;           
         }
-        
-        wAsigEjecRecuperado.ventasUltimos6Meses = true;	
+
+        if(ventasListANIOACTUAL.size()>0){wAsigEjecRecuperado.otrosIdsConVenta = true;
+        }else{
+			wAsigEjecRecuperado.otrosIdsConVenta = false;
+        }
+
+        wAsigEjecRecuperado.ventasUltimos6Meses = true;
         wAsigEjecRecuperado.valorDeRetorno = valorDeRetorno;
-        
+
         System.debug('valorDeRetorno: ' + valorDeRetorno);
         return wAsigEjecRecuperado;
     }
-    
+
     public static Decimal getVentaPromedioMensual (String razonSocial, String RFC, String IdSipweb, String Plaza){
-        
+
         List<Ventas__c> ventasList 			= new List<Ventas__c>();
-        
+
         Decimal sumaVenta 				= 0;
         Decimal promedioMensualVenta 	= 0;
-        
+
         Integer numberDays = date.daysInMonth(Date.today().Year(), Date.today().Month()-1);
         Date fechaFin = Date.newInstance(Date.today().Year(), Date.today().Month()-1, numberDays);
         system.debug('END_DATE: ' +  fechaFin);
-        
+
         Date fechaInicio = Date.newInstance(Date.today().Year(), Date.today().Month()-6, 1);
         system.debug('START_DATE: ' +  fechaInicio);
-        
+
         Boolean valorDeRetorno;
-        
+
         System.debug('IdSipweb: ' 		+ IdSipweb);
         System.debug('razonSocial: ' 	+ razonSocial);
         System.debug('RFC: ' 			+ RFC);
         System.debug('fechaInicio: ' 	+ fechaInicio);
         System.debug('fechaFin: ' 		+ fechaFin);
 		System.debug('Plaza: ' 			+ Plaza);
-        
-			
-        ventasList= [SELECT Id, CreatedDate, Cuenta__c, totalAntesdeImpuestos__c, fechaId__c,Cuenta__r.Name, Cuenta__r.RFC__c, Cuenta__r.Id_Sipweb__c, Cuenta__r.Sucursal__r.Plaza__c   
-                     FROM Ventas__c 
-                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%' 
-                     AND Cuenta__r.RFC__c =: RFC 
-                     AND fechaId__c >=: fechaInicio 
-                     AND fechaId__c <=: fechaFin 
+
+
+        ventasList= [SELECT Id, CreatedDate, Cuenta__c, totalAntesdeImpuestos__c, fechaId__c,Cuenta__r.Name, Cuenta__r.RFC__c, Cuenta__r.Id_Sipweb__c, Cuenta__r.Sucursal__r.Plaza__c
+                     FROM Ventas__c
+                     WHERE Cuenta__r.Name LIKE: '%'+ razonSocial +'%'
+                     AND Cuenta__r.RFC__c =: RFC
+                     AND fechaId__c >=: fechaInicio
+                     AND fechaId__c <=: fechaFin
                      AND Cuenta__r.Id_SIpWeb__c =: IdSipweb
                      AND Cuenta__r.Sucursal__r.Plaza__c =: Plaza
                      ORDER BY fechaId__c ASC
-                    ]; 
-        
+                    ];
+
         system.debug('ventasList.size(): ' + ventasList.size());
-        
+
         if(ventasList.size()==0){
-            
+
             valorDeRetorno = true;
-            
+
         }else{
-            
-            DateTime getfechePrimeraVenta = ventasList[0].fechaId__c;	
-            Date fechaPrimeraVenta = date.newinstance(getfechePrimeraVenta.year(), getfechePrimeraVenta.month(), 1);	
+
+            DateTime getfechePrimeraVenta = ventasList[0].fechaId__c;
+            Date fechaPrimeraVenta = date.newinstance(getfechePrimeraVenta.year(), getfechePrimeraVenta.month(), 1);
             Integer mesesAPromediar = fechaPrimeraVenta.monthsBetween(fechaFin);
-            
+
             system.debug('fechePrimeraVenta: ' +  fechaPrimeraVenta);
             system.debug('fechaFin: ' +  fechaFin);
             system.debug('fechaInicio: ' +  fechaInicio);
             system.debug('mesesAPromediar: ' +  mesesAPromediar);
-            
+
             if(mesesAPromediar == 0){
                 mesesAPromediar = 1;
                 System.debug('Nuevo Valor de meses = 1');
             } else {
                 System.debug('El valor de meses se queda igual = ' + mesesAPromediar);
             }
-            
-            for(Ventas__c v: ventasList){sumaVenta += v.totalAntesdeImpuestos__c;                   
+
+            for(Ventas__c v: ventasList){sumaVenta += v.totalAntesdeImpuestos__c;
             }
-            
+
             System.debug('sumaVenta: ' + sumaVenta);
-            
+
             promedioMensualVenta = sumaVenta / mesesAPromediar;
             System.debug('promedioMensualVenta: ' + promedioMensualVenta);
         }
-    
+
         return promedioMensualVenta;
     }
-    
+
     public static Boolean getValidacionTareas (Id accId, Id usuarioAAsignar, Datetime fechaCreacion){
-        
+
         Boolean validaActividad = false;
-        
+
         System.debug('fechaCreacion: ' + fechaCreacion);
         System.debug('usuarioAAsignar: ' + usuarioAAsignar);
         System.debug('accId: ' + accId);
-        
+
         Account papaId = [SELECT Id, ParentId FROM Account WHERE Id=:accId];
         System.debug('ParentId: ' + papaId.ParentId);
-        
+
         List<Opportunity> oppo = new List<Opportunity>();
         List<String> OppsIds = new List<String>();
-        
+
         if(papaId.ParentId != null) {
-        	oppo = [SELECT Id, AccountId, OwnerId FROM Opportunity 
+        	oppo = [SELECT Id, AccountId, OwnerId FROM Opportunity
                 WHERE (AccountId=:accId OR AccountId=:papaId.ParentId)
-                AND OwnerId=:usuarioAAsignar];    
+                AND OwnerId=:usuarioAAsignar];
         } else {
-        oppo = [SELECT Id, AccountId, OwnerId FROM Opportunity 
-                WHERE AccountId=:accId 
+        oppo = [SELECT Id, AccountId, OwnerId FROM Opportunity
+                WHERE AccountId=:accId
                 AND OwnerId=:usuarioAAsignar];
         }
-        
+
         System.debug('opportunities: ' + oppo.size());
-        
+
         if(oppo.size() > 0) {
             for(Opportunity o : oppo){
                 OppsIds.add(o.Id);
             }
         }
-        
+
         System.debug('OppsIds.size(): ' + OppsIds.size());
-        
+
         List<Task> tareasGeneradas = new List<Task>();
         List<Event> EventosGenerados = new List<Event>();
-        
+
         if(OppsIds.size() > 0){
             if(papaId.ParentId != null){
             	system.debug('ParentId != null');
-        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                      	  FROM Task 
+        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                      	  FROM Task
                                       	  WHERE (WhatId =: papaId.ParentId OR WhatId =: accId OR WhatId IN: OppsIds)
                                       	  AND OwnerId =: usuarioAAsignar];
-            
-            	EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                        	FROM EVENT 
+
+            	EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                        	FROM EVENT
                                         	WHERE (WhatId =: papaId.ParentId OR WhatId =: accId OR WhatId IN: OppsIds)
                                         	AND OwnerId =: usuarioAAsignar];
         	} else {
         		system.debug('ParentId == null');
-        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                      FROM Task 
+        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                      FROM Task
                                       WHERE (WhatId =: accId OR WhatId IN: OppsIds)
                                       AND OwnerId =: usuarioAAsignar];
-        
-        		EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                        FROM EVENT 
+
+        		EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                        FROM EVENT
                                         WHERE (WhatId =: accId OR WhatId IN: OppsIds)
                                         AND OwnerId =: usuarioAAsignar];
         	}
-            
+
         } else {
         	if(papaId.ParentId != null){
             	system.debug('ParentId != null');
-        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                      	  FROM Task 
+        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                      	  FROM Task
                                       	  WHERE (WhatId =: papaId.ParentId OR WhatId =: accId)
                                       	  AND OwnerId =: usuarioAAsignar];
-            
-            	EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                        	FROM EVENT 
+
+            	EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                        	FROM EVENT
                                         	WHERE (WhatId =: papaId.ParentId OR WhatId =: accId)
                                         	AND OwnerId =: usuarioAAsignar];
         	} else {
         		system.debug('ParentId == null');
-        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                      FROM Task 
-                                      WHERE WhatId =: accId 
+        		tareasGeneradas = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                      FROM Task
+                                      WHERE WhatId =: accId
                                       AND OwnerId =: usuarioAAsignar];
-        
-        		EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId 
-                                        FROM EVENT 
-                                        WHERE WhatId =: accId 
+
+        		EventosGenerados = [SELECT Id, OwnerId, CreatedDate, WhatId
+                                        FROM EVENT
+                                        WHERE WhatId =: accId
                                         AND OwnerId =: usuarioAAsignar];
         	}
         }
-        
+
         System.debug('tareasGeneradas.size(): ' + tareasGeneradas.size());
         System.debug('EventosGenerados.size(): ' + EventosGenerados.size());
-        
+
         if((tareasGeneradas.size()>0 || EventosGenerados.size()>0)){
             validaActividad = true;
         }
-        
+
         return validaActividad;
     }
-    
+
     public static Boolean getValidacionCotizaciones (Id accId, Id usuarioAAsignar){
-        
+
         Boolean validaCotizaciones = false;
-        
+
         System.debug('usuarioAAsignar: ' + usuarioAAsignar);
         System.debug('accId: ' + accId);
-        
+
         Account papaId = [SELECT Id, ParentId FROM Account WHERE Id=:accId];
         System.debug('ParentId: ' + papaId.ParentId);
-        
+
         List<SBQQ__Quote__c> cotizacionesGeneradas = new List<SBQQ__Quote__c>();
-        
+
         if(papaId.ParentId != null){
         	system.debug('ParentId != null');
         	cotizacionesGeneradas = [SELECT Id, OwnerId, SBQQ__Account__c FROM SBQQ__Quote__c WHERE SBQQ__Account__c=:papaId.ParentId OR SBQQ__Account__c=:accId];
@@ -889,17 +923,17 @@ public class TriggerCuenta {
             system.debug('ParentId == null');
             cotizacionesGeneradas = [SELECT Id, OwnerId, SBQQ__Account__c FROM SBQQ__Quote__c WHERE SBQQ__Account__c=:accId];
         }
-        
+
         System.debug('cotizacionesGeneradas.size(): ' + cotizacionesGeneradas.size());
-        
+
         if(cotizacionesGeneradas.size()>0){
             validaCotizaciones = true;
         }
-        
+
         return validaCotizaciones;
     }
     public static void pre_asignaEjecutivo (Id accId, Id usuarioAAsignar){
-        
+
     }
     class wrapperAsignacionEjecutivoRecuperado{
     	public Map<String, Decimal> valorVentaMes;
