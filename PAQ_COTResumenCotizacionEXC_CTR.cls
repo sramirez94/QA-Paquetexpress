@@ -1,6 +1,7 @@
 /*
  * Created by Fran on 19/08/2020.
  */
+/*Modificada: 31/10/2022. Modificó: Salvador Ramírez (sramirez@freewayconsulting.com). Se cambia el hard code que calcula el RAD y EAD a dinamico*/
 public class PAQ_COTResumenCotizacionEXC_CTR {
 
     public Wrapper wp                                                       {get; set;}
@@ -199,565 +200,500 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
         this.mapTotal.put('Quote', 0);
         this.mapTotalZP.put('Quote', 0);
         this.wp.objQuote = queryQuote(sc.getId());
-        
-        if(wp.objQuote.OriginCity__c != null)
-            this.strOrigen = wp.objQuote.OriginCity__c;
+        try {
+            if(wp.objQuote.OriginCity__c != null)
+                this.strOrigen = wp.objQuote.OriginCity__c;
+            if(wp.objQuote.PAQ_DescuentoGlobal__c != null)
+                this.wp.objQuote.PAQ_DescuentoGlobal__c = wp.objQuote.PAQ_DescuentoGlobal__c / 100;
 
-        if(wp.objQuote.PAQ_DescuentoGlobal__c != null)
-            this.wp.objQuote.PAQ_DescuentoGlobal__c = wp.objQuote.PAQ_DescuentoGlobal__c / 100;
 
+            if (String.isNotBlank(this.wp.objQuote.Acuse__c)) this.blnACK = true;
+            if(String.isNotBlank(wp.objQuote.SBQQ__Account__c))
+                this.wp.objAccount = queryAccount(wp.objQuote.SBQQ__Account__c);
+            if(String.isNotBlank(wp.objQuote.SBQQ__Opportunity2__c))
+                this.wp.objOpp = queryOpp(wp.objQuote.SBQQ__Opportunity2__c);
+            
+            if (!Test.isRunningTest()){ this.wp.listQuoteItem = queryQuoteItem(sc.getId());
+            } else {
+                this.wp.listQuoteItem = PAQ_COTResumenCotizacionEXC_Test.quoteLineList;
+            }
 
-        if (String.isNotBlank(this.wp.objQuote.Acuse__c)) this.blnACK = true;
-        if(String.isNotBlank(wp.objQuote.SBQQ__Account__c))
-            this.wp.objAccount = queryAccount(wp.objQuote.SBQQ__Account__c);
-        if(String.isNotBlank(wp.objQuote.SBQQ__Opportunity2__c))
-            this.wp.objOpp = queryOpp(wp.objQuote.SBQQ__Opportunity2__c);
-        
-        if (!Test.isRunningTest()){ this.wp.listQuoteItem = queryQuoteItem(sc.getId());
-        } else {
-             this.wp.listQuoteItem = PAQ_COTResumenCotizacionEXC_Test.quoteLineList;
-        }
-
-        if(String.isNotBlank(this.wp.objQuote.Servicios_adicionales__c)){          
-            for (String strKeyService : this.wp.objQuote.Servicios_adicionales__c.split(';')){
-                switch on strKeyService {
-                    when 'RAD' {
-                        this.blnRAD = true;
-                        //System.debug(LoggingLevel.DEBUG, 'this.blnRAD: ' + this.blnRAD);
-                    }
-                    when 'EAD' {
-                        this.blnEAD = true;
-                        // System.debug(LoggingLevel.DEBUG, 'this.blnEAD: ' + this.blnEAD);
-                    }
-                    when 'Seguro' {
-                        this.blnSEG = true;
-                        // System.debug(LoggingLevel.DEBUG, 'this.blnSEG: ' + this.blnSEG);
-                    }
-                    when 'EAD Zona plus'{
-                        this.blnZP = true;
-                    }
-                    /*when 'Acuse Interno' {
-                        this.blnACK = true;
-                    // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }
-                    when 'Acuse Empresa' {
-                        this.blnACK = true;
+            if(String.isNotBlank(this.wp.objQuote.Servicios_adicionales__c)){          
+                for (String strKeyService : this.wp.objQuote.Servicios_adicionales__c.split(';')){
+                    switch on strKeyService {
+                        when 'RAD' {
+                            this.blnRAD = true;
+                            //System.debug(LoggingLevel.DEBUG, 'this.blnRAD: ' + this.blnRAD);
+                        }
+                        when 'EAD' {
+                            this.blnEAD = true;
+                            // System.debug(LoggingLevel.DEBUG, 'this.blnEAD: ' + this.blnEAD);
+                        }
+                        when 'Seguro' {
+                            this.blnSEG = true;
+                            // System.debug(LoggingLevel.DEBUG, 'this.blnSEG: ' + this.blnSEG);
+                        }
+                        when 'EAD Zona plus'{
+                            this.blnZP = true;
+                        }
+                        /*when 'Acuse Interno' {
+                            this.blnACK = true;
                         // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
+                        }
+                        when 'Acuse Empresa' {
+                            this.blnACK = true;
+                            // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
+                        }
+                        when 'Acuse XT' {
+                            this.blnACK = true;
+                        // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
+                        }*/
                     }
-                    when 'Acuse XT' {
-                        this.blnACK = true;
-                    // System.debug(LoggingLevel.DEBUG, 'this.blnACK: ' + this.blnACK);
-                    }*/
+                }
+                
+            }
+            
+            Set<String> setRange = new Set<String>();
+            Set<String> setDestiny = new Set<String>();
+            Integer indexOD = 0;
+            String destino = '';
+            Decimal descuento = 0;
+            Decimal decVol = 0;
+            String tarifa = '';
+            Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
+        
+            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
+                /*if(String.isNotBlank(quoteItem.Destiny__c) && quoteItem.Tarifa__c != 'TARIFA T7' && quoteItem.ZonaPlus__c == false){
+                    this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
+                    quoteItem.Rango_KM__c = quoteItem.Destiny__c;
+                    
+                }*/
+                //if(!test.isRunningTest()){
+                    tarifa = quoteItem.Tarifa__c;
+                    if(String.isNotBlank(quoteItem.Destiny__c)){
+                        if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c && (quoteItem.SBQQ__Description__c == 'Destino' || quoteItem.SBQQ__Description__c == 'Propuesta')){
+                            this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
+                            quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
+                        }else if(quoteItem.Tarifa__c == 'TARIFA T7' && !quoteItem.ZonaPlus__c){
+                            this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
+                            quoteItem.Rango_KM__c = quoteItem.Destiny__c;
+                        //19.03.2021 - jmerino@freewayconsulting.com - Jesus merino
+                        }else if(!(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)){
+                            this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
+                            quoteItem.Rango_KM__c = quoteItem.Destiny__c;
+                        //jmerino
+                        }else if(quoteItem.Tarifa__c == 'TARIFA SOBRE' || quoteItem.Tarifa__c == 'TARIFA T0' || quoteItem.Tarifa__c == 'TARIFA T1' || quoteItem.Tarifa__c == 'TARIFA T2' || quoteItem.Tarifa__c == 'TARIFA T3' || quoteItem.Tarifa__c == 'TARIFA T4' ||
+                                quoteItem.Tarifa__c == 'TARIFA T5' || quoteItem.Tarifa__c == 'TARIFA T6' ||quoteItem.Tarifa__c == 'TARIFA T7-P' || quoteItem.Tarifa__c == 'TARIFA T7-V' || tarifa.contains('TARIFA T7_')){
+                                    this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
+                                    quoteItem.Rango_KM__c = quoteItem.Destiny__c;
+                                }
+                    }
+                        
+                    blnByDestiny = true;
+                //}
+                if(test.isRunningTest())
+                    this.T7ZP = true;
+                setRange.add(quoteItem.Rango_KM__c);
+                if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c){
+                    if(quoteItem.SBQQ__Description__c == null || quoteItem.SBQQ__Description__c == 'Destino'){
+                        if(this.decVolumen == 0)
+                            this.decVolumen = quoteItem.PackVolAVG__c;
+                        if(this.decPeso == 0)
+                            this.decpeso = quoteItem.PackWeightAVG__c;
+                        quoteItem.PackVolAVG__c = (quoteItem.Large__c * quoteItem.Width__c * quoteItem.High__c) / 5000;
+                        if(quoteItem.PackVolAVG__c > quoteItem.Weight__c)
+                            quoteItem.PackWeightAVG__c = quoteItem.PackVolAVG__c;
+                        else quoteItem.PackWeightAVG__c = quoteItem.Weight__c;
+                        this.mapQuotesT7ZP.put(quoteItem.Destiny__c, quoteItem);
+                        this.mapQuotesT7ZPByRange.put(quoteItem.Rango_KM__c, quoteItem);
+                        this.listRangeT7.add(quoteItem.Destiny__c);
+                        this.T7ZP = true;
+                    } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
+                        this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
+                        this.listRangeProp.add(quoteItem.Rango_KM__c);
+                        Descuento = 0;
+                        Descuento = quoteItem.SBQQ__Discount__c;//(quoteItem.GUIA__c / quoteItem.FLETE__c) - 1;
+                        this.mapDescT7ZP.put(quoteItem.Rango_KM__c, Descuento/*(quoteItem.GUIA__c /* quoteItem.FLETE__c) - 1*/);
+                    } 
+                    listRangeT7.sort();
+                    /*if(this.mapQuotesT7ZP != null)
+                        this.T7ZP = true;*/
+                } else {
+                    if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
+                        if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
+                            if(wp.perSob == 0)
+                                wp.perSob = quoteItem.DiscountFlete__c;
+                        }
+                        else if (quoteItem.Tarifa__c != 'SEG-DS' && quoteItem.Tarifa__c != 'SEG-2D' && quoteItem.Tarifa__c != 'SEG-A12'){
+                            if(wp.perPack == 0)
+                                wp.perPack = quoteItem.DiscountFlete__c;
+                        }
+                        if(quoteItem.ZonaPlus__c){
+                            if(wp.perZP == 0)
+                                wp.perZP = quoteItem.DiscountDelivery__c;
+                            if(quoteItem.SEG__c != null)
+                                totalAmountSegZP += quoteItem.SEG__c * quoteItem.SBQQ__Quantity__c;
+                        }
+                        else{
+                            if(wp.perEAD == 0)
+                                wp.perEAD = quoteItem.DiscountDelivery__c;
+                            if(quoteItem.SEG__c != null)
+                                totalAmountSeg += quoteItem.SEG__c  * quoteItem.SBQQ__Quantity__c;
+                        }
+                        if(wp.perRAD == 0)
+                            wp.perRAD = quoteItem.DiscountRecolection__c;
+                        if(wp.perACK == 0)
+                            wp.perACK = quoteItem.DiscountAcuse__c;
+                        if(wp.perSEG == 0)
+                            wp.perSEG = quoteItem.DiscountSEG__c;
+        
+                        if(quoteItem.ZonaPlus__c){
+                            if(this.mapTotalDiscFeeZP.containsKey(quoteItem.Tarifa__c))
+                                this.mapTotalDiscFeeZP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
+        
+                        }
+                        if(quoteItem.PackVolAVG__c != null)
+                            decVol = quoteItem.PackVolAVG__c;
+                        else decVol = 0;
+                        if(!this.mapGuide.containsKey(quoteItem.PackWeightAVG__c))
+                            this.mapGuide.put(quoteItem.PackWeightAVG__c, decVol);
+        
+                        if(!mapRangesByBlock.containsKey(quoteItem.PackWeightAVG__c))
+                            mapRangesByBlock.put(quoteItem.PackWeightAVG__c, new Map<String, Decimal>{quoteItem.Rango_KM__c => quoteItem.FLETE__c});
+                        else if(!mapRangesByBlock.get(quoteItem.PackWeightAVG__c).containsKey(quoteItem.Rango_KM__c)) mapRangesByBlock.get(quoteItem.PackWeightAVG__c).put(quoteItem.Rango_KM__c , quoteItem.FLETE__c);
+        
+                        if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                            this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
+        
+                        if(!this.mapService.get('ACK').mapRanges.containsKey(quoteItem.Rango_KM__c))
+                            this.mapService.get('ACK').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.ACK__c);
+        
+                        if(quoteItem.ZonaPlus__c) this.mapService.get('ZP').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);
+                        if(quoteitem.ZonaPlus__c && quoteitem.EAD__c > 0) this.blnCostosZP = true;
+                    }
+                    if(this.blnSEG && this.decSEG == 0) this.decSEG = quoteItem.SEG__c;
                 }
             }
             
-        }
+            this.listRangeDestiny.addAll(setRange);
         
-        Set<String> setRange = new Set<String>();
-        Set<String> setDestiny = new Set<String>();
-        Integer indexOD = 0;
-        String destino = '';
-        Decimal descuento = 0;
-        String tarifa = '';
-        Map<Decimal, Map<String, Decimal>> mapRangesByBlock = new Map<Decimal, Map<String, Decimal>>();
-      
-        for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
-            /*if(String.isNotBlank(quoteItem.Destiny__c) && quoteItem.Tarifa__c != 'TARIFA T7' && quoteItem.ZonaPlus__c == false){
-                this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
-                quoteItem.Rango_KM__c = quoteItem.Destiny__c;
-                
-            }*/
-            //if(!test.isRunningTest()){
-                tarifa = quoteItem.Tarifa__c;
-                if(String.isNotBlank(quoteItem.Destiny__c)){
-                    if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c && (quoteItem.SBQQ__Description__c == 'Destino' || quoteItem.SBQQ__Description__c == 'Propuesta')){
-                        this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
-                        quoteItem.Rango_KM__c = quoteItem.Destiny__c + ' (' + quoteItem.Rango_KM__c + ')';
-                    }else if(quoteItem.Tarifa__c == 'TARIFA T7' && !quoteItem.ZonaPlus__c){
-                        this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
-                        quoteItem.Rango_KM__c = quoteItem.Destiny__c;
-                    //19.03.2021 - jmerino@freewayconsulting.com - Jesus merino
-                    }else if(!(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)){
-                        this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
-                        quoteItem.Rango_KM__c = quoteItem.Destiny__c;
-                    //jmerino
-                    }else if(quoteItem.Tarifa__c == 'TARIFA SOBRE' || quoteItem.Tarifa__c == 'TARIFA T0' || quoteItem.Tarifa__c == 'TARIFA T1' || quoteItem.Tarifa__c == 'TARIFA T2' || quoteItem.Tarifa__c == 'TARIFA T3' || quoteItem.Tarifa__c == 'TARIFA T4' ||
-                            quoteItem.Tarifa__c == 'TARIFA T5' || quoteItem.Tarifa__c == 'TARIFA T6' ||quoteItem.Tarifa__c == 'TARIFA T7-P' || quoteItem.Tarifa__c == 'TARIFA T7-V' || tarifa.contains('TARIFA T7_')){
-                                this.mapRangosByDest.put(quoteitem.Destiny__c, quoteItem.Rango_KM__c);
-                                quoteItem.Rango_KM__c = quoteItem.Destiny__c;
-                            }
+            for(String keyFee: this.listFee){
+                this.mapTotalByFee.put(keyFee, new QuoteWP());
+                this.mapTotalByFeeZP.put(keyFee, new QuoteWP());
+                this.mapTotalDiscFee.put(keyFee, 0);
+                this.mapTotalDiscFeeZP.put(keyFee, 0);
+                for(String keyRange: this.listRangeDestiny){
+                    if(!this.mapQuotes.containsKey(keyFee))
+                        this.mapQuotes.put(keyFee, new Map<String, SBQQ__QuoteLine__c>{
+                        keyRange => new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0)
+                        });
+                    else if(!this.mapQuotes.get(keyFee).containsKey(keyRange))
+                        this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
+
+                    if(keyFee != 'TARIFA T7')
+                        if(!this.mapQuotesZP.containsKey(keyFee))
+                            this.mapQuotesZP.put(keyFee, new Map<String, SBQQ__QuoteLine__c>{keyRange => new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0)});
+                        else if(!this.mapQuotesZP.get(keyFee).containsKey(keyRange))
+                            this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
                 }
-                    
-                blnByDestiny = true;
-            //}
-            if(test.isRunningTest())
-                this.T7ZP = true;
-            setRange.add(quoteItem.Rango_KM__c);
-            if(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c){
-                if(quoteItem.SBQQ__Description__c == null || quoteItem.SBQQ__Description__c == 'Destino'){
-                    if(this.decVolumen == 0)
-                        this.decVolumen = quoteItem.PackVolAVG__c;
-                    if(this.decPeso == 0)
-                        this.decpeso = quoteItem.PackWeightAVG__c;
-                    quoteItem.PackVolAVG__c = (quoteItem.Large__c * quoteItem.Width__c * quoteItem.High__c) / 5000;
-                    if(quoteItem.PackVolAVG__c > quoteItem.Weight__c)
-                        quoteItem.PackWeightAVG__c = quoteItem.PackVolAVG__c;
-                    else quoteItem.PackWeightAVG__c = quoteItem.Weight__c;
-                    this.mapQuotesT7ZP.put(quoteItem.Destiny__c, quoteItem);
-                    this.mapQuotesT7ZPByRange.put(quoteItem.Rango_KM__c, quoteItem);
-                    this.listRangeT7.add(quoteItem.Destiny__c);
-                    this.T7ZP = true;
-                } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
-                    this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
-                    this.listRangeProp.add(quoteItem.Rango_KM__c);
-                    Descuento = 0;
-                    Descuento = quoteItem.SBQQ__Discount__c;//(quoteItem.GUIA__c / quoteItem.FLETE__c) - 1;
-                    this.mapDescT7ZP.put(quoteItem.Rango_KM__c, Descuento/*(quoteItem.GUIA__c /* quoteItem.FLETE__c) - 1*/);
-                } 
-                listRangeT7.sort();
-                /*if(this.mapQuotesT7ZP != null)
-                    this.T7ZP = true;*/
-            } else {
-                if(quoteItem.Tarifa__c != 'TARIFA T7-V' && quoteItem.Tarifa__c != 'TARIFA T7-P'){
-                    if(quoteItem.Tarifa__c == 'TARIFA SOBRE'){
-                        if(wp.perSob == 0)
-                            wp.perSob = quoteItem.DiscountFlete__c;
-                    }
-                    else if (quoteItem.Tarifa__c != 'SEG-DS' && quoteItem.Tarifa__c != 'SEG-2D' && quoteItem.Tarifa__c != 'SEG-A12'){
-                        if(wp.perPack == 0)
-                            wp.perPack = quoteItem.DiscountFlete__c;
-                    }
-                    if(quoteItem.ZonaPlus__c){
-                        if(wp.perZP == 0)
-                            wp.perZP = quoteItem.DiscountDelivery__c;
-                        if(quoteItem.SEG__c != null)
-                            totalAmountSegZP += quoteItem.SEG__c * quoteItem.SBQQ__Quantity__c;
+            }
+        
+            String strTarifa = '';
+        
+            for(String keyRange: this.listRangeDestiny){
+                this.mapTotalByRangeT7.put(keyRange, 0);
+                this.mapTotalesT7ZP.put(keyRange, 0);
+            }
+            
+            for(String keyRange: this.listRangeT7){
+                if(test.isRunningTest()){
+                if (this.mapTotalesT7ZP.containsKey(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) && this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) == 0)
+                    this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c,  this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
+                else if(this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) != 0){
+                    Decimal tempRangeCount = this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c);
+                    this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, 0);
+                    this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, tempRangeCount + this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
+                }
+                }
+            }
+            
+            for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
+                if(quoteItem.Tarifa__c != 'TARIFA T7' && !quoteItem.ZonaPlus__c){
+                    if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
+                        if(quoteItem.ZonaPlus__c) this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                        else
+                            this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
                     }
                     else{
-                        if(wp.perEAD == 0)
-                            wp.perEAD = quoteItem.DiscountDelivery__c;
-                        if(quoteItem.SEG__c != null)
-                            totalAmountSeg += quoteItem.SEG__c  * quoteItem.SBQQ__Quantity__c;
+                        if(quoteItem.ZonaPlus__c) this.mapQuotesZP.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                        else
+                            this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
                     }
-                    if(wp.perRAD == 0)
-                        wp.perRAD = quoteItem.DiscountRecolection__c;
-                    if(wp.perACK == 0)
-                        wp.perACK = quoteItem.DiscountAcuse__c;
-                    if(wp.perSEG == 0)
-                        wp.perSEG = quoteItem.DiscountSEG__c;
-    
-                    if(quoteItem.ZonaPlus__c){
-                        if(this.mapTotalDiscFeeZP.containsKey(quoteItem.Tarifa__c))
-                            this.mapTotalDiscFeeZP.put(quoteItem.Tarifa__c, quoteItem.SBQQ__VolumeDiscount__c);
-    
+                    strTarifa = quoteItem.Tarifa__c;
+                    if(strTarifa.contains('TARIFA T7_')){
+                        if(!this.listFeeT7.contains(strTarifa))
+                            this.listFeeT7.add(strTarifa);
                     }
-    
-                    if(!this.mapGuide.containsKey(quoteItem.PackWeightAVG__c))
-                        this.mapGuide.put(quoteItem.PackWeightAVG__c, quoteItem.PackVolAVG__c);
-    
-                    if(!mapRangesByBlock.containsKey(quoteItem.PackWeightAVG__c))
-                        mapRangesByBlock.put(quoteItem.PackWeightAVG__c, new Map<String, Decimal>{quoteItem.Rango_KM__c => quoteItem.FLETE__c});
-                    else if(!mapRangesByBlock.get(quoteItem.PackWeightAVG__c).containsKey(quoteItem.Rango_KM__c)) mapRangesByBlock.get(quoteItem.PackWeightAVG__c).put(quoteItem.Rango_KM__c , quoteItem.FLETE__c);
-    
-                    if(!this.mapService.get('ADD').mapRanges.containsKey(quoteItem.Rango_KM__c))
-                        this.mapService.get('ADD').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.KG_ADICIONAL__c);
-    
-                    if(!this.mapService.get('ACK').mapRanges.containsKey(quoteItem.Rango_KM__c))
-                        this.mapService.get('ACK').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.ACK__c);
-    
-                    if(quoteItem.ZonaPlus__c) this.mapService.get('ZP').mapRanges.put(quoteItem.Rango_KM__c, quoteItem.EAD__c);
-                    if(quoteitem.ZonaPlus__c && quoteitem.EAD__c > 0) this.blnCostosZP = true;
                 }
-                if(this.blnSEG && this.decSEG == 0) this.decSEG = quoteItem.SEG__c;
+                
+                //19.03.2021 - AJUSTE DE CÓDIGO PARA T7 - COT SIN ZP
+                //jmerino@freewayconsulting.com - Jesús Merino
+                
+                if(!(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)){ //14/10/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Solo va a entrar cuando no sea Tarifa T7 zona plus.
+                    if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
+                        if(quoteItem.ZonaPlus__c)
+                            this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                        else
+                            this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
+                    }
+                    else{
+                        if(quoteItem.ZonaPlus__c)
+                            this.mapQuotesZP.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                        else
+                            this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
+                    }
+                    strTarifa = quoteItem.Tarifa__c;
+                    if(strTarifa.contains('TARIFA T7_')){
+                        if(!this.listFeeT7.contains(strTarifa))
+                            this.listFeeT7.add(strTarifa);
+                    }
+                }
             }
-        }
-        
-        this.listRangeDestiny.addAll(setRange);
-       
-        for(String keyFee: this.listFee){
-            this.mapTotalByFee.put(keyFee, new QuoteWP());
-            this.mapTotalByFeeZP.put(keyFee, new QuoteWP());
-            this.mapTotalDiscFee.put(keyFee, 0);
-            this.mapTotalDiscFeeZP.put(keyFee, 0);
+            //Termina ajuste para T7 sin ZP
+            
+            for(String strkeyfee : this.listFeeT7){
+                strTarifa = strkeyfee;
+                if(strTarifa.contains('TARIFA T7_')){
+                    for(String keyRange: this.listRangeDestiny){
+                        if (this.mapTotalByRangeT7.containsKey(keyRange) && this.mapTotalByRangeT7.get(keyRange) == 0)
+                            this.mapTotalByRangeT7.put(keyRange, this.mapQuotes.get(strTarifa).get(keyRange).SBQQ__Quantity__c);
+                        else if(!this.mapTotalByRangeT7.containsKey(keyRange))
+                            this.mapTotalByRangeT7.put(keyRange, 0);
+                        else if(this.mapTotalByRangeT7.get(keyRange) != 0){
+                            Decimal tempRangeCount = this.mapTotalByRangeT7.get(keyRange);
+                            this.mapTotalByRangeT7.put(keyRange, 0);
+                            this.mapTotalByRangeT7.put(keyRange, tempRangeCount + this.mapQuotes.get(strTarifa).get(keyRange).SBQQ__Quantity__c);
+                        }
+                    }
+                }
+            }
+            
+            Integer blockCounter = 1;
+            for(Decimal decW : this.mapGuide.keySet()){
+                this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
+                this.mapBlocks.get('BLOQUE '+ blockCounter).mapRanges = mapRangesByBlock.get(decW);
+                blockCounter++;
+            }
+            
             for(String keyRange: this.listRangeDestiny){
-                if(!this.mapQuotes.containsKey(keyFee))
-                    this.mapQuotes.put(keyFee, new Map<String, SBQQ__QuoteLine__c>{
-                    keyRange => new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0)
-                    });
-                else if(!this.mapQuotes.get(keyFee).containsKey(keyRange))
-                    this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
-
-                if(keyFee != 'TARIFA T7')
-                    if(!this.mapQuotesZP.containsKey(keyFee))
-                        this.mapQuotesZP.put(keyFee, new Map<String, SBQQ__QuoteLine__c>{keyRange => new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0)});
-                    else if(!this.mapQuotesZP.get(keyFee).containsKey(keyRange))
-                        this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0));
+                this.mapTotalByRange.put(keyRange, new QuoteWP());
+                this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
+                this.mapT7W.put(keyRange, 0);
+                this.mapT7V.put(keyRange, 0);
             }
-        }
-       
-        String strTarifa = '';
-      
-        for(String keyRange: this.listRangeDestiny){
-            this.mapTotalByRangeT7.put(keyRange, 0);
-            this.mapTotalesT7ZP.put(keyRange, 0);
-        }
-        
-        for(String keyRange: this.listRangeT7){
-            if(test.isRunningTest()){
-            if (this.mapTotalesT7ZP.containsKey(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) && this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) == 0)
-                this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c,  this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
-            else if(this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c) != 0){
-                Decimal tempRangeCount = this.mapTotalesT7ZP.get(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c);
-                this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, 0);
-                this.mapTotalesT7ZP.put(this.mapQuotesT7ZP.get(keyRange).Rango_KM__c, tempRangeCount + this.mapQuotesT7ZP.get(keyRange).SBQQ__Quantity__c);
-            }
-            }
-        }
-        
-        for(SBQQ__QuoteLine__c quoteItem : this.wp.listQuoteItem){
-            if(quoteItem.Tarifa__c != 'TARIFA T7' && !quoteItem.ZonaPlus__c){
-                if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
-                    if(quoteItem.ZonaPlus__c) this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
-                    else
-                        this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
-                }
-                else{
-                    if(quoteItem.ZonaPlus__c) this.mapQuotesZP.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
-                    else
-                        this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
-                }
-                strTarifa = quoteItem.Tarifa__c;
-                if(strTarifa.contains('TARIFA T7_')){
-                    if(!this.listFeeT7.contains(strTarifa))
-                        this.listFeeT7.add(strTarifa);
-                }
-            }
-            
-            //19.03.2021 - AJUSTE DE CÓDIGO PARA T7 - COT SIN ZP
-            //jmerino@freewayconsulting.com - Jesús Merino
-            
-            if(!(quoteItem.Tarifa__c == 'TARIFA T7' && quoteItem.ZonaPlus__c)){ //14/10/2021 Salvador Ramírez (sramirez@freewayconsulting.com): Solo va a entrar cuando no sea Tarifa T7 zona plus.
-                if(this.mapQuotes.containsKey(quoteItem.Tarifa__c) ){
-                    if(quoteItem.ZonaPlus__c)
-                        this.mapQuotesZP.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
-                    else
-                        this.mapQuotes.get(quoteItem.Tarifa__c).put(quoteItem.Rango_KM__c, quoteItem);
-                }
-                else{
-                    if(quoteItem.ZonaPlus__c)
-                        this.mapQuotesZP.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
-                    else
-                        this.mapQuotes.put(quoteItem.Tarifa__c , new Map<String, SBQQ__QuoteLine__c> {quoteItem.Rango_KM__c => quoteItem});
-                }
-                strTarifa = quoteItem.Tarifa__c;
-                if(strTarifa.contains('TARIFA T7_')){
-                    if(!this.listFeeT7.contains(strTarifa))
-                        this.listFeeT7.add(strTarifa);
-                }
-            }
-        }
-        //Termina ajuste para T7 sin ZP
-        
-        for(String strkeyfee : this.listFeeT7){
-            strTarifa = strkeyfee;
-            if(strTarifa.contains('TARIFA T7_')){
+            //System.debug(this.mapBlocks.get('BLOQUE 1').mapRanges.get('0-400'));
+            for(String keyFee: this.listFee){
                 for(String keyRange: this.listRangeDestiny){
-                    if (this.mapTotalByRangeT7.containsKey(keyRange) && this.mapTotalByRangeT7.get(keyRange) == 0)
-                        this.mapTotalByRangeT7.put(keyRange, this.mapQuotes.get(strTarifa).get(keyRange).SBQQ__Quantity__c);
-                    else if(!this.mapTotalByRangeT7.containsKey(keyRange))
-                        this.mapTotalByRangeT7.put(keyRange, 0);
-                    else if(this.mapTotalByRangeT7.get(keyRange) != 0){
-                        Decimal tempRangeCount = this.mapTotalByRangeT7.get(keyRange);
-                        this.mapTotalByRangeT7.put(keyRange, 0);
-                        this.mapTotalByRangeT7.put(keyRange, tempRangeCount + this.mapQuotes.get(strTarifa).get(keyRange).SBQQ__Quantity__c);
-                    }
-                }
-            }
-        }
-        
-        Integer blockCounter = 1;
-        System.debug('mapguide: ' + this.mapGuide);
-        for(Decimal decW : this.mapGuide.keySet()){
-            System.debug('contador: ' + blockCounter + '. Ciclo: ' + decW + '. mapguia: ' + this.mapGuide.get(decW));
-            this.mapBlocks.put('BLOQUE '+ blockCounter, new Block('BLOQUE '+ blockCounter, decW, this.mapGuide.get(decW), this.mapGuide.get(decW) * 200) );
-            this.mapBlocks.get('BLOQUE '+ blockCounter).mapRanges = mapRangesByBlock.get(decW);
-            blockCounter++;
-        }
-        
-        for(String keyRange: this.listRangeDestiny){
-            this.mapTotalByRange.put(keyRange, new QuoteWP());
-            this.mapTotalByRangeZP.put(keyRange, new QuoteWP());
-            this.mapT7W.put(keyRange, 0);
-            this.mapT7V.put(keyRange, 0);
-        }
-        //System.debug(this.mapBlocks.get('BLOQUE 1').mapRanges.get('0-400'));
-        for(String keyFee: this.listFee){
-            for(String keyRange: this.listRangeDestiny){
-                if(this.mapQuotes.get(keyFee).containsKey(keyRange) &&  this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
-                    total += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    if(this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange)){
-                        if(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null) totalAmount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                        if(keyFee != 'TARIFA T7' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                        else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                        else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                    if(this.mapQuotes.get(keyFee).containsKey(keyRange) &&  this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
+                        total += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                        if(this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange)){
+                            if(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null) totalAmount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
+                            if(keyFee != 'TARIFA T7' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                            else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                            else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) totalAmountQ += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+
+                        }
+                    } else if(!this.mapQuotes.get(keyFee).containsKey(keyRange)) this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
+
+                    if(keyFee == 'TARIFA T7'){
+                        if(this.mapQuotes.get(keyFee).get(keyRange).Weight__c != null)
+                            this.mapT7W.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).Weight__c);
+
+                        if(this.mapQuotes.get(keyFee).get(keyRange).Vol__c != null) this.mapT7V.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).Vol__c);
 
                     }
-                } else if(!this.mapQuotes.get(keyFee).containsKey(keyRange)) this.mapQuotes.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
 
-                if(keyFee == 'TARIFA T7'){
-                    if(this.mapQuotes.get(keyFee).get(keyRange).Weight__c != null)
-                        this.mapT7W.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).Weight__c);
+                    if(keyFee != 'TARIFA T7' && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
+                        totalZP +=  this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                        if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange))
+                        if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null){
+                            totalAmountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
+                            if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
+                                totalAmountQZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                        }
+                    } else if( keyFee != 'TARIFA T7' && !this.mapQuotesZP.get(keyFee).containsKey(keyRange))
+                        this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
 
-                    if(this.mapQuotes.get(keyFee).get(keyRange).Vol__c != null) this.mapT7V.put(keyRange, this.mapQuotes.get(keyFee).get(keyRange).Vol__c);
-
-                }
-
-                if(keyFee != 'TARIFA T7' && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c > 0){
-                    totalZP +=  this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange))
-                    if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c != null){
-                        totalAmountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__NetTotal__c;
-                        if(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)
-                            totalAmountQZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                    }
-                } else if( keyFee != 'TARIFA T7' && !this.mapQuotesZP.get(keyFee).containsKey(keyRange))
-                    this.mapQuotesZP.get(keyFee).put(keyRange, new SBQQ__QuoteLine__c(SBQQ__Quantity__c = 0, SBQQ__CustomerPrice__c = 0, SBQQ__Discount__c = 0, SBQQ__NetPrice__c = 0));
-
-            }
-
-        }
-        
-        this.totalSTD = total;
-        this.totalSTDZP = totalZP;
-        
-        for(String keyFee: this.listFee){
-            coutFee = 0;
-            countFeeZP = 0;
-            amount = 0;
-            amountZP = 0;
-            
-            for(String keyRange: this.listRangeDestiny) {
-                coutFee += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c ;
-                if(keyFee != 'TARIFA T7' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
-                else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c != null) amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c;
-                if (keyFee != 'TARIFA T7'){
-                    countFeeZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
-                    if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)  amountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
                 }
 
             }
             
+            this.totalSTD = total;
+            this.totalSTDZP = totalZP;
             
-            this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
-            if(keyFee != 'TARIFA T7')
-                this.mapTotalByFeeZP.put(keyFee, new QuoteWP(countFeeZP, totalZP, amountZP));
-            for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
-                if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
-                    wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
-                else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c)) wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
-
-            for (AcusePorGuia__mdt objACK : queryACK())
-                wp.mapACK.put(objACK.Label, objACK.Amount__c);
-            
-            for(ServicioDomicilio__c objService : queryDomesticService()){
-                if(!wp.mapDomesticService.containsKey(objService.Servicio__c))
-                    wp.mapDomesticService.put(objService.Servicio__c, new Map<String, ServicioDomicilio__c>{objService.Tamanio__c => objService});
-                else if(!wp.mapDomesticService.get(objService.Servicio__c).containsKey(objService.Tamanio__c)) wp.mapDomesticService.get(objService.Servicio__c).put(objService.Tamanio__c, objService);
-            }
-            wp.mapCS = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
-        }
-        
-        for(String keyFee: this.listFee){
-            for(String keyRange: this.listRangeDestiny){
-                if (this.mapTotalByRange.containsKey(keyRange) && this.mapTotalByRange.get(keyRange).totalPaquetes == 0)
-                    this.mapTotalByRange.put(keyRange, new QuoteWP(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
-                else if(!this.mapTotalByRange.containsKey(keyRange))
-                    this.mapTotalByRange.put(keyRange, new QuoteWP());
-                else if(this.mapTotalByRange.get(keyRange).totalPaquetes != 0){
-                    Decimal tempRangeCount = this.mapTotalByRange.get(keyRange).totalPaquetes;
-                    this.mapTotalByRange.put(keyRange, new QuoteWP(tempRangeCount + this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
-                }
-                if(keyFee != 'TARIFA T7'){
-                    if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
-                        this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
-                    else if (!this.mapTotalByRangeZP.containsKey(keyRange))
-                        this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
-                    else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
-                        Decimal tempRangeCountZP = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
-                        this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( tempRangeCountZP + this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
+            for(String keyFee: this.listFee){
+                coutFee = 0;
+                countFeeZP = 0;
+                amount = 0;
+                amountZP = 0;
+                
+                for(String keyRange: this.listRangeDestiny) {
+                    coutFee += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c ;
+                    if(keyFee != 'TARIFA T7' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                    else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDelivery' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null) amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
+                    else if(keyFee == 'TARIFA T7' && this.wp.objQuote.TipoCotizacion__c == 'byDimension' && this.mapQuotes.containsKey(keyFee) && this.mapQuotes.get(keyFee).containsKey(keyRange) && this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c != null) amount += this.mapQuotes.get(keyFee).get(keyRange).SBQQ__SpecialPrice__c;
+                    if (keyFee != 'TARIFA T7'){
+                        countFeeZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c;
+                        if(this.mapQuotesZP.containsKey(keyFee) && this.mapQuotesZP.get(keyFee).containsKey(keyRange) && this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c != null)  amountZP += this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__CustomerTotal__c;
                     }
+
+                }
+                
+                
+                this.mapTotalByFee.put(keyFee, new QuoteWP(coutFee, total, amount));
+                if(keyFee != 'TARIFA T7')
+                    this.mapTotalByFeeZP.put(keyFee, new QuoteWP(countFeeZP, totalZP, amountZP));
+                for(Tarifario_general_terrestre__c objTarifarioT: queryTarifarioTFull())
+                    if(!wp.mapTarifarioT.containsKey(objTarifarioT.Tarifa__c))
+                        wp.mapTarifarioT.put(objTarifarioT.Tarifa__c, new Map<String, Tarifario_general_terrestre__c>{objTarifarioT.RangoKM__c => objTarifarioT});
+                    else if (!wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).containsKey(objTarifarioT.RangoKM__c)) wp.mapTarifarioT.get(objTarifarioT.Tarifa__c).put(objTarifarioT.RangoKM__c, objTarifarioT);
+
+                for (AcusePorGuia__mdt objACK : queryACK())
+                    wp.mapACK.put(objACK.Label, objACK.Amount__c);
+                
+                for(ServicioDomicilio__c objService : queryDomesticService()){
+                    if(!wp.mapDomesticService.containsKey(objService.Servicio__c))
+                        wp.mapDomesticService.put(objService.Servicio__c, new Map<String, ServicioDomicilio__c>{objService.Tamanio__c => objService});
+                    else if(!wp.mapDomesticService.get(objService.Servicio__c).containsKey(objService.Tamanio__c)) wp.mapDomesticService.get(objService.Servicio__c).put(objService.Tamanio__c, objService);
+                }
+                wp.mapCS = queryCustomSetting([SELECT Id FROM Profile Where Name = 'System Administrator' OR Name = 'Administrador del sistema'].Id);
+            }
+            
+            for(String keyFee: this.listFee){
+                for(String keyRange: this.listRangeDestiny){
+                    if (this.mapTotalByRange.containsKey(keyRange) && this.mapTotalByRange.get(keyRange).totalPaquetes == 0)
+                        this.mapTotalByRange.put(keyRange, new QuoteWP(this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
+                    else if(!this.mapTotalByRange.containsKey(keyRange))
+                        this.mapTotalByRange.put(keyRange, new QuoteWP());
+                    else if(this.mapTotalByRange.get(keyRange).totalPaquetes != 0){
+                        Decimal tempRangeCount = this.mapTotalByRange.get(keyRange).totalPaquetes;
+                        this.mapTotalByRange.put(keyRange, new QuoteWP(tempRangeCount + this.mapQuotes.get(keyFee).get(keyRange).SBQQ__Quantity__c, total, 0));
+                    }
+                    if(keyFee != 'TARIFA T7'){
+                        if (this.mapTotalByRangeZP.containsKey(keyRange) && this.mapTotalByRangeZP.get(keyRange).totalPaquetes == 0)
+                            this.mapTotalByRangeZP.put(keyRange, new QuoteWP(this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
+                        else if (!this.mapTotalByRangeZP.containsKey(keyRange))
+                            this.mapTotalByRangeZP.put(keyRange,new QuoteWP());
+                        else if(this.mapTotalByRangeZP.get(keyRange).totalPaquetes != 0){
+                            Decimal tempRangeCountZP = this.mapTotalByRangeZP.get(keyRange).totalPaquetes;
+                            this.mapTotalByRangeZP.put(keyRange,  new QuoteWP( tempRangeCountZP + this.mapQuotesZP.get(keyFee).get(keyRange).SBQQ__Quantity__c, totalZP, 0));
+                        }
+                    }
+
                 }
 
             }
+            
+            for(String r : this.mapPropuestaT7ZP.keySet()){
+                this.elPeso = mapPropuestaT7ZP.get(r).PackWeightAVG__c;
+                this.elVol  = mapQuotesT7ZPByRange.get(r).PackVolAVG__c;
+            }
+            
+            Decimal disc = 0;
+            this.mapTotal.put('Full', totalAmount);
+            this.mapTotal.put('Quote', totalAmountQ);
+            if(totalAmount > 0 ) disc = ((totalAmountQ - totalAmountSeg) / (totalAmount - totalAmountSeg) - 1);
+            this.mapTotal.put('Disc', disc);
+            Decimal discZP = 0;
+            this.mapTotalZP.put('Full', totalAmountZP);
+            this.mapTotalZP.put('Quote', totalAmountQZP);
+            if(totalAmountZP > 0 ) discZP = ((totalAmountQZP - totalAmountSegZP)/ (totalAmountZP - totalAmountSegZP) - 1);
 
+            this.mapTotalZP.put('Disc', discZP);
+            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + this.mapTotalByRangeT7));
+            calculateProjection();
+        } catch (Exception ex) {
+            System.debug('Error en constructor PAQ_COTResumenCotizacionEXC_CTR: ' + ex.getMessage() + '. Línea: ' + ex.getLineNumber());
         }
-        
-        for(String r : this.mapPropuestaT7ZP.keySet()){
-        	this.elPeso = mapPropuestaT7ZP.get(r).PackWeightAVG__c;
-            this.elVol  = mapQuotesT7ZPByRange.get(r).PackVolAVG__c;
-        }
-        
-        Decimal disc = 0;
-        this.mapTotal.put('Full', totalAmount);
-        this.mapTotal.put('Quote', totalAmountQ);
-        if(totalAmount > 0 ) disc = ((totalAmountQ - totalAmountSeg) / (totalAmount - totalAmountSeg) - 1);
-        this.mapTotal.put('Disc', disc);
-        Decimal discZP = 0;
-        this.mapTotalZP.put('Full', totalAmountZP);
-        this.mapTotalZP.put('Quote', totalAmountQZP);
-        if(totalAmountZP > 0 ) discZP = ((totalAmountQZP - totalAmountSegZP)/ (totalAmountZP - totalAmountSegZP) - 1);
-
-        this.mapTotalZP.put('Disc', discZP);
-        //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + this.mapTotalByRangeT7));
-        calculateProjection();
     }
 
     private void calculateProjection() {
-        Decimal firstBlock = 0;
-        Decimal lastBlock = 0;
-        List<Decimal> listBlocksW = new List<Decimal>();
-        List<Decimal> listBlocksWReverse = new List<Decimal>();
-        Map<Decimal, Block> mapBlocksByW = new Map<Decimal, Block>();
-        String strTarifa = '';
-        for(String strName : this.mapBlocks.keySet()){
-            mapBlocksByW.put(this.mapBlocks.get(strName).decWeight, this.mapBlocks.get(strName));
-            if(firstBlock == 0)
-                firstBlock = this.mapBlocks.get(strName).decWeight;
-            lastBlock = this.mapBlocks.get(strName).decWeight;
-        }
-        listBlocksW.addAll(mapBlocksByW.keySet());
-        for(Integer j = listBlocksW.size() - 1; j > 0; j--) listBlocksWReverse.add(listBlocksW.get(j));
-        Decimal keyBlock = 0;
-        Block wpBlock;
-        Decimal decSUMCustomerPrice = 0;
-        Decimal decSUMCustomerPriceZP = 0;
-        Decimal decSUMNetPrice = 0;
-        Decimal decSUMNetPriceZP = 0;
-        Decimal fltTotalQuote = 0;
-        Decimal decRespExcedente = 0;
-        Decimal respTarifaPropuesta = 0;
-        for(Integer i = 0; i <= 60; i++ ){
-            decSUMCustomerPrice = 0;
-            decSUMCustomerPriceZP = 0;
-            decSUMNetPrice = 0;
-            decSUMNetPriceZP = 0;
-            String strfee = '';
+        try {
+            Decimal firstBlock = 0;
+            Decimal lastBlock = 0;
+            List<Decimal> listBlocksW = new List<Decimal>();
+            List<Decimal> listBlocksWReverse = new List<Decimal>();
+            Map<Decimal, Block> mapBlocksByW = new Map<Decimal, Block>();
+            String strTarifa = '';
+            for(String strName : this.mapBlocks.keySet()){
+                mapBlocksByW.put(this.mapBlocks.get(strName).decWeight, this.mapBlocks.get(strName));
+                if(firstBlock == 0)
+                    firstBlock = this.mapBlocks.get(strName).decWeight;
+                lastBlock = this.mapBlocks.get(strName).decWeight;
+            }
+            listBlocksW.addAll(mapBlocksByW.keySet());
+            for(Integer j = listBlocksW.size() - 1; j > 0; j--) listBlocksWReverse.add(listBlocksW.get(j));
+            Decimal keyBlock = 0;
+            Block wpBlock;
+            Decimal decSUMCustomerPrice = 0;
+            Decimal decSUMCustomerPriceZP = 0;
+            Decimal decSUMNetPrice = 0;
+            Decimal decSUMNetPriceZP = 0;
+            Decimal fltTotalQuote = 0;
+            Decimal decRespExcedente = 0;
+            Decimal respTarifaPropuesta = 0;
+            for(Integer i = 0; i <= 60; i++ ){
+                decSUMCustomerPrice = 0;
+                decSUMCustomerPriceZP = 0;
+                decSUMNetPrice = 0;
+                decSUMNetPriceZP = 0;
+                String strfee = '';
 
-            if (i == 0)
-                strfee = 'TS';
-            else if (i == 1)
-                strfee = 'T0';
-            else
-                strfee = getTarifa(i);
+                if (i == 0)
+                    strfee = 'TS';
+                else if (i == 1)
+                    strfee = 'T0';
+                else
+                    strfee = getTarifa(i);
 
-            if(i <= firstBlock)
-                keyBlock = firstBlock;
-            else if(i > lastBlock)
-                keyBlock = lastBlock;
-            else
-                for(Decimal decW : listBlocksWReverse)
-                    if(i < decW)
-                        keyBlock = decW;
-            wpBlock = mapBlocksByW.get(keyBlock);
-            SBQQ__QuoteLine__c range;
-            SBQQ__QuoteLine__c rangeZP;
-            
-            
-            for (String strRange : listRangeDestiny){
-                Decimal ejemplo = 0;
-                Decimal ejemplo2 = 0;
-                Decimal ejemplo3 = 0;
-                Decimal ejemplo4 = 0;
-                Decimal ejemplo5 = 0;
-                Decimal ejemplo6 = 0;
-                String tarifa = '';
-                Decimal fltGuia = 0;
-                String strRango = '';
-                Decimal decFlete = 0;
-                Decimal descuento = 0;
-                Decimal decTarifaPropuesta2 = 0;
-                if(test.isRunningTest())
-                    strRango = '0-400';
-                else {
-                    if(strRange.contains('('))
-                        strRango = this.mapRangosByDest.get(strRange);
-                    else strRango = strRange;
-                }
-                range = new SBQQ__QuoteLine__c (
-                    FLETE__c = wpBlock.mapRanges.get(strRange)
-                    , SBQQ__CustomerPrice__c = 0
-                    , SBQQ__NetPrice__c = 0
-                    , SBQQ__Quantity__c = 0
-                    , KG_ADICIONAL__c = 0
-                    , RAD__c = 0
-                    , EAD__c = 0
-                    , ACK__c = 0
-                    , SEG__c = 0
-                    , Pack_Seg__c = 0
-                    , SBQQ__Discount__c = 0
-                    , PackWeightAVG__c = keyBlock
-                    , Tarifa__c = getTarifa(i)
-                );
-                if(!Test.isRunningTest()){
-                if (range.Tarifa__c == 'TARIFA SOBRE')
-                    tarifa = 'TARIFA TS';
-                else tarifa = range.Tarifa__c;
-                if(mapBlocksByW.get(keyBlock).mapRanges.get(strRange) != null)
-                    fltGuia = mapBlocksByW.get(keyBlock).mapRanges.get(strRange);
-                if (i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
-                    range.KG_ADICIONAL__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c;
-                if(this.mapService.get('ACK').mapRanges.get(strRange)!= null)
-                    range.ACK__c = mapService.get('ACK').mapRanges.get(strRange);
-                if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c != null)
-                    range.SEG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c;
-                if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
-                    decFlete = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c; 
-                   //  decFlete = 10.10; //puesto manual y comentado arriba
-                if(this.blnRAD  && range.Tarifa__c != 'TARIFA SOBRE')
-                    range.RAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), decFlete);
-                if(this.blnEAD && range.Tarifa__c != 'TARIFA SOBRE')
-                    range.EAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), decFlete);
-                Decimal fltQuoteAdKG = 0;
-                if(range.Tarifa__c == 'TARIFA T0' || range.Tarifa__c == 'TARIFA T1')
-                    range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c / 5;
-                else if (range.Tarifa__c != 'TARIFA SOBRE' || range.Tarifa__c != 'TARIFA T0'|| range.Tarifa__c != 'TARIFA T1' || range.Tarifa__c != 'TARIFA T2')
-                    range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c / 10;
-                else range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                if(i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
-                    fltQuoteAdKG = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
-                if(fltQuoteAdKG > 0){
-                    decRespExcedente = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c;
-                }
-                if(test.isRunningTest())
-                    ejemplo = decflete + this.wp.mapACK.get('Interno');
-               	else{
-                    if(blnACK)
-                        ejemplo = decFlete + this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
-                }
-
-                ejemplo2 = decFlete  + range.RAD__c + range.EAD__c;
-                if(blnACK)
-                    ejemplo2 += this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
-                decTarifaPropuesta2 = fltGuia + range.ACK__c;
-                if(i > lastBlock && fltQuoteAdKG == 0)
-                    fltQuoteAdKG = decRespExcedente + respTarifaPropuesta;
-                decTarifaPropuesta2 += fltQuoteAdKG;
-                ejemplo3 = range.Flete__c + range.ACK__C + fltQuoteAdKG;
-                ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
-                fltGuia += range.ACK__C;
-                fltGuia += fltQuoteAdKG;
-                ejemplo5 = decTarifaPropuesta2 * range.SBQQ__Quantity__c;
-                range.SBQQ__NetPrice__c = ejemplo5;
-                range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
-                decSUMCustomerPrice += ejemplo4;
-                decSUMNetPrice += ejemplo5;
-                }
-                rangeZP = new SBQQ__QuoteLine__c (
-                        FLETE__c = 0
+                if(i <= firstBlock)
+                    keyBlock = firstBlock;
+                else if(i > lastBlock)
+                    keyBlock = lastBlock;
+                else
+                    for(Decimal decW : listBlocksWReverse)
+                        if(i < decW)
+                            keyBlock = decW;
+                wpBlock = mapBlocksByW.get(keyBlock);
+                SBQQ__QuoteLine__c range;
+                SBQQ__QuoteLine__c rangeZP;
+                
+                
+                for (String strRange : listRangeDestiny){
+                    Decimal ejemplo = 0;
+                    Decimal ejemplo2 = 0;
+                    Decimal ejemplo3 = 0;
+                    Decimal ejemplo4 = 0;
+                    Decimal ejemplo5 = 0;
+                    Decimal ejemplo6 = 0;
+                    String tarifa = '';
+                    Decimal fltGuia = 0;
+                    String strRango = '';
+                    Decimal decFlete = 0;
+                    Decimal descuento = 0;
+                    Decimal decTarifaPropuesta2 = 0;
+                    if(test.isRunningTest())
+                        strRango = '0-400';
+                    else {
+                        if(strRange.contains('('))
+                            strRango = this.mapRangosByDest.get(strRange);
+                        else strRango = strRange;
+                    }
+                    range = new SBQQ__QuoteLine__c (
+                        FLETE__c = wpBlock.mapRanges.get(strRange)
                         , SBQQ__CustomerPrice__c = 0
-                        , SBQQ__Quantity__c = 0
                         , SBQQ__NetPrice__c = 0
+                        , SBQQ__Quantity__c = 0
                         , KG_ADICIONAL__c = 0
                         , RAD__c = 0
                         , EAD__c = 0
@@ -767,242 +703,62 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                         , SBQQ__Discount__c = 0
                         , PackWeightAVG__c = keyBlock
                         , Tarifa__c = getTarifa(i)
-                );
-                rangeZP.EAD__c = wp.mapCS.get('AEZP');
-                Decimal TarifaLlenaZP = 0;
-                Decimal FleteZP = 0;
-                Decimal TarLlena2ZP = 0;
-                Decimal TarifaPropuestaZP = 0;
-                Decimal TarifaPropuesta2ZP = 0;
-                Decimal AcuseZP = 0;
-                Decimal fltQuoteAdKGZP = 0;
-                Decimal prueba  = 0;
-                Decimal decEAD = 0;
-                if(!Test.isRunningTest()){
-                if(rangeZP.Tarifa__c == 'TARIFA SOBRE')
-                     FleteZP = this.wp.mapTarifarioT.get('TARIFA TS').get(strRango).Flete__c;
-                   //  FleteZP = 10.10; //comentado arriba
-                else {
+                    );
+                    if(!Test.isRunningTest()){
+                    if (range.Tarifa__c == 'TARIFA SOBRE')
+                        tarifa = 'TARIFA TS';
+                    else tarifa = range.Tarifa__c;
+                    if(mapBlocksByW.get(keyBlock).mapRanges.get(strRange) != null)
+                        fltGuia = mapBlocksByW.get(keyBlock).mapRanges.get(strRange);
+                    if (i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
+                        range.KG_ADICIONAL__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c;
+                    if(this.mapService.get('ACK').mapRanges.get(strRange)!= null)
+                        range.ACK__c = mapService.get('ACK').mapRanges.get(strRange);
+                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c != null)
+                        range.SEG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SEG__c;
                     if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
-                        FleteZP = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c;
-                     //   FleteZP = 10.10; //comentado arriba
-                     }
-                }
-                if(blnRAD && rangeZP.Tarifa__c != 'TARIFA SOBRE')
-                    rangeZP.RAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), FleteZP);
-                if(this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).EAD__c != null)
-                    decEAD = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).EAD__c;
-                if(this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).ACK__c != null)
-                    AcuseZP = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).ACK__c;
-                if(this.blnACK)
-                    rangeZP.ACK__C = this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
-                if(!Test.isRunningTest()){
-                TarifaLlenaZP = FleteZP + rangeZP.RAD__c + rangeZP.EAD__c + rangeZP.ACK__C;
-                TarLlena2ZP = TarifaLlenaZP + rangeZP.RAD__c + rangeZP.EAD__c + rangezp.ACK__C;
-                rangeZP.SBQQ__Quantity__c = rangeZP.RAD__c;
-                }
-                if(i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
-                    fltQuoteAdKGZP = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
-                if(rangeZP.Tarifa__c == 'TARIFA T0' || rangeZP.Tarifa__c == ' TARIFA T1')
-                    rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c / 5;
-                else if (rangeZP.Tarifa__c != 'TARIFA SOBRE' || rangeZP.Tarifa__c != 'TARIFA T0'|| rangeZP.Tarifa__c != 'TARIFA T1' || rangeZP.Tarifa__c != 'TARIFA T2')
-                    rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c / 10;
-                else rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                prueba = fltGuia  + fltQuoteAdKGZP;
-                if(mapService.get('ZP').mapRanges.get(strRange) != null)
-                    prueba = fltGuia + mapService.get('ZP').mapRanges.get(strRange);
-                TarifaPropuestaZP = fltGuia  + decEAD;
-                TarifaPropuesta2ZP = TarifaPropuestaZP + AcuseZP;
-                rangeZP.SBQQ__CustomerPrice__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c * TarifaLlenaZP;
-                rangeZP.SBQQ__NetPrice__c = prueba * this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                if(!Test.isRunningTest()) rangeZP.SBQQ__Discount__c = (prueba / TarifaLlenaZP) - 1;
-                decSUMCustomerPriceZP += rangeZP.SBQQ__CustomerPrice__c;
-                decSUMNetPriceZP += rangeZP.SBQQ__NetPrice__c;
-                if(!this.mapDiscounts.containsKey(i)){
-                    this.mapDiscounts.put(i, new Map<String, Decimal>{
-                        'MaxDisc' => range.SBQQ__Discount__c
-                        , 'MaxDiscZP' => rangeZP.SBQQ__Discount__c
-                        , 'AVGDisc' => 0
-                        , 'AVGDiscZP' => 0
-                    });
-                    if(i == 0)
-                        this.mapTarifasName.put(i, 'TS');
-                    else
-                        this.mapTarifasName.put(i, this.mapTarifasKey.get(getTarifa(i)));
-                    if(i <= 30)
-                        this.listKg30.add(i);
-                }
-                if(this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(i).get('MaxDisc')){
-                    this.mapDiscounts.get(i).put('MaxDisc', range.SBQQ__Discount__c);
-                }
-                if(this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('MaxDisc') && rangeZP.SBQQ__Discount__c < this.mapDiscounts.get(i).get('MaxDiscZP')){
-                    this.mapDiscounts.get(i).put('MaxDiscZP', rangeZP.SBQQ__Discount__c);
-                }
-               // }
-                respTarifaPropuesta = decTarifaPropuesta2;
-                
-            }
-            
-            if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDisc')) this.mapDiscounts.get(i).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
+                        decFlete = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c; 
+                    //  decFlete = 10.10; //puesto manual y comentado arriba
+                    if(this.blnRAD  && range.Tarifa__c != 'TARIFA SOBRE')
+                        range.RAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), decFlete);
+                    if(this.blnEAD && range.Tarifa__c != 'TARIFA SOBRE')
+                        range.EAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinEAD'), decFlete);
+                    Decimal fltQuoteAdKG = 0;
+                    if(range.Tarifa__c == 'TARIFA T0' || range.Tarifa__c == 'TARIFA T1')
+                        range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c / 5;
+                    else if (range.Tarifa__c != 'TARIFA SOBRE' || range.Tarifa__c != 'TARIFA T0'|| range.Tarifa__c != 'TARIFA T1' || range.Tarifa__c != 'TARIFA T2')
+                        range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c / 10;
+                    else range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
+                    if(i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
+                        fltQuoteAdKG = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
+                    if(fltQuoteAdKG > 0){
+                        decRespExcedente = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c;
+                    }
+                    if(test.isRunningTest())
+                        ejemplo = decflete + this.wp.mapACK.get('Interno');
+                    else{
+                        if(blnACK)
+                            ejemplo = decFlete + this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
+                    }
 
-            if(decSUMCustomerPriceZP > 0 && decSUMNetPriceZP > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDiscZP')) this.mapDiscounts.get(i).put('AVGDiscZP', decSUMNetPriceZP /decSUMCustomerPriceZP - 1);
-        }
-        // T7
-        //if(!Test.isRunningTest()){
-        if(this.T7ZP){
-            Decimal decM3Tarima = 0;
-            Decimal Peso        = 0;
-            Decimal decFleteV   = 0;
-            Decimal decFleteW   = 0;
-            Decimal decRADW     = 0;
-            Decimal decRADV     = 0;
-            Decimal decEADW     = 0;
-            Decimal decEADV     = 0;
-            Decimal decTarifaLlenaW = 0;
-            Decimal decTarifaLlenaV = 0;
-            Decimal decACKW         = 0;
-            Decimal decACKV         = 0;
-            Decimal decTarifaPropuestaW = 0;
-            Decimal decTarifaPropuestaV = 0;
-            Decimal decTarima           = 0;
-            Decimal decTotalNormalW     = 0;
-            Decimal decTotalNormalV     = 0;
-            Decimal decTotalPropuestaW  = 0;
-            Decimal decTotalPropuestaV  = 0;
-            Decimal decDescuentoV       = 0;
-            Decimal decDescuentoW       = 0;
-            Decimal decSUMCustomerPriceT7ZP = 0;
-            Decimal decSUMNetPriceT7ZP      = 0;
-            String strRango         = '';
-            Decimal decAcuse = 0;
-            SBQQ__QuoteLine__c rangeZP;
-            for (String strRange : listRangeDestiny){
-                if(test.isRunningTest())
-                    strRango = '0-400';
-                else {
-                    if(strRange.contains('('))
-                        strRango = this.mapRangosByDest.get(strRange);
-                    else strRango = strRange;
-                }
-                rangeZP = new SBQQ__QuoteLine__c (
-                    FLETE__c = 0
-                    , SBQQ__CustomerPrice__c = 0
-                    , SBQQ__Quantity__c = 0
-                    , SBQQ__NetPrice__c = 0
-                    , KG_ADICIONAL__c = 0
-                    , RAD__c = 0
-                    , EAD__c = 0
-                    , ACK__c = 0
-                    , SEG__c = 0
-                    , Pack_Seg__c = 0
-                    , SBQQ__Discount__c = 0
-                    , PackWeightAVG__c = keyBlock
-                    , Tarifa__c = 'TARIFA T7'
-                );
-                decM3Tarima = 0;
-                Peso        = 0;
-                decFleteV   = 0;
-                decFleteW   = 0;
-                decRADV     = 0;
-                decRADW     = 0;
-                decEADV     = 0;
-                decEADW     = 0;
-                decTarifaLlenaV = 0;
-                decTarifaLlenaW = 0;
-                decTotalPropuestaW = 0;
-                decTotalPropuestaV = 0;
-                decTarima           = 0;
-                decTotalPropuestaW  = 0;
-                decTotalPropuestaV  = 0;
-                decDescuentoV       = 0;
-                decDescuentoW       = 0;
-                decAcuse            = 0;
-                decM3Tarima = this.decVolumen;
-                Peso = this.decPeso;
-                if(!Test.isRunningTest()){
-                if(this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c != null)
-                    rangeZP.SBQQ__Quantity__c =this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
-                
-                decFleteW = Peso * this.wp.mapTarifarioT.get('TARIFA T7P').get(strRango).Flete__c;
-                decFleteV = this.wp.mapTarifarioT.get('TARIFA T7V').get(strRango).Flete__c * decM3Tarima;
-                
-                if(blnRAD){
-                    decRADV = decFleteV * 0.11;
-                    decRADW = decFleteW * 0.11;
-                }
-                decEADV = this.mapPropuestaT7ZP.get(strRange).SBQQ__NetPrice__c / this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
-                decEADW = this.mapPropuestaT7ZP.get(strRange).SBQQ__NetPrice__c / this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
-                if(this.blnACK){
-                    decACKV = this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
-                    decACKW = this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
-                    decAcuse = this.mapQuotesT7ZPByRange.get(strRange).ACK__c;
-                }
-                decTarifaLlenaV = decFleteV + decRADV + decEADV + decACKV;
-                decTarifaLlenaW = decFleteW + decRADW + decEADW + decACKW;
-                decTarima = this.mapPropuestaT7ZP.get(strRange).SBQQ__SpecialPrice__c;
-
-                decTarifaPropuestaV = this.mapPropuestaT7ZP.get(strRange).FLETE__c + decTarima + decAcuse;
-                decTarifaPropuestaW = this.mapPropuestaT7ZP.get(strRange).FLETE__c + decTarima + decAcuse;
-
-                decTotalNormalV = this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c * decTarifaLlenaV;
-                decTotalNormalW = this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c * decTarifaLlenaW;
-                decTotalPropuestaV = decTarifaPropuestaV * this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
-                decTotalPropuestaW = decTarifaPropuestaW * this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
-
-                decDescuentoV = decTotalPropuestaV / decTotalNormalV - 1;
-                decDescuentoW = decTotalPropuestaW / decTotalNormalW - 1;
-                if(decDescuentoV < decDescuentoW){
-                    rangeZP.SBQQ__Discount__c   = decDescuentoV;
-                    decSUMNetPriceT7ZP          += decTotalPropuestaV;
-                    decSUMCustomerPriceT7ZP     += decTotalNormalV;
-                } else {
-                    rangeZP.SBQQ__Discount__c = decDescuentoW;
-                    decSUMNetPriceT7ZP        += decTotalPropuestaW;
-                    decSUMCustomerPriceT7ZP   += decTotalNormalW;
-                }
-                }
-                if(!this.mapDiscounts.containsKey(Peso)){ this.mapDiscounts.put(Peso, new Map<String, Decimal>{
-                    'MaxDisc' => rangeZP.SBQQ__Discount__c
-                    , 'MaxDiscZP' => 0
-                    , 'AVGDisc' => 0
-                    , 'AVGDiscZP' => 0
-                    });
-    
-                    this.mapTarifasName.put(Peso, 'T7');
-                    this.listKg70ZP.add(Peso);
-                }
-                if(this.mapDiscounts.containsKey(Peso) && this.mapDiscounts.get(Peso).containsKey('MaxDisc') && rangeZP.SBQQ__Discount__c < this.mapDiscounts.get(Peso).get('MaxDisc')){ this.mapDiscounts.get(Peso).put('MaxDisc', rangeZP.SBQQ__Discount__c);
-                }
-                //}
-
-            }
-            if(decSUMCustomerPriceT7ZP > 0 && decSUMNetPriceT7ZP > 0 && this.mapDiscounts.containsKey(Peso) && this.mapDiscounts.get(Peso).containsKey('AVGDisc'))  this.mapDiscounts.get(Peso).put('AVGDisc', decSUMNetPriceT7ZP / decSUMCustomerPriceT7ZP - 1);
-        }
-        //}
-        keyBlock = lastBlock;
-        Integer i = 61;
-        SBQQ__QuoteLine__c range;
-        String strRangeT7 = '';
-        Integer intPeso = 0;
-        Decimal decFleteW = 0;
-        Decimal decFleteV = 0;
-        Decimal decFleteDefinitivo = 0;
-        Decimal decTotalNormal = 0;
-        Decimal decTotalpropuesta = 0;
-        String strRango = '';
-        for(Decimal decW : this.mapGuide.keySet()){
-            //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + this.mapGuide.get(decW)));
-            intpeso = decW.intvalue();
-            decFleteDefinitivo = 0;
-            decSUMCustomerPrice = 0;
-            decSUMNetPrice = 0;
-            if(intpeso > 60){
-                this.listBlocksT7.add('TARIFA T7_' + intpeso);
-                this.listBlocksT7Desc.add('T7 ' + intpeso);
-                this.mapT7Vol.put('T7 ' + intpeso, this.mapGuide.get(decW));
-                blnBloquesT7 = true;
-                for (String strRange : listRangeDestiny){
-                    range = new SBQQ__QuoteLine__c (
+                    ejemplo2 = decFlete  + range.RAD__c + range.EAD__c;
+                    if(blnACK)
+                        ejemplo2 += this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
+                    decTarifaPropuesta2 = fltGuia + range.ACK__c;
+                    if(i > lastBlock && fltQuoteAdKG == 0)
+                        fltQuoteAdKG = decRespExcedente + respTarifaPropuesta;
+                    decTarifaPropuesta2 += fltQuoteAdKG;
+                    ejemplo3 = range.Flete__c + range.ACK__C + fltQuoteAdKG;
+                    ejemplo4 = range.SBQQ__Quantity__c * ejemplo2;
+                    fltGuia += range.ACK__C;
+                    fltGuia += fltQuoteAdKG;
+                    ejemplo5 = decTarifaPropuesta2 * range.SBQQ__Quantity__c;
+                    range.SBQQ__NetPrice__c = ejemplo5;
+                    range.SBQQ__Discount__c = (decTarifaPropuesta2 / ejemplo2) - 1;
+                    decSUMCustomerPrice += ejemplo4;
+                    decSUMNetPrice += ejemplo5;
+                    }
+                    rangeZP = new SBQQ__QuoteLine__c (
                             FLETE__c = 0
                             , SBQQ__CustomerPrice__c = 0
                             , SBQQ__Quantity__c = 0
@@ -1015,65 +771,317 @@ public class PAQ_COTResumenCotizacionEXC_CTR {
                             , Pack_Seg__c = 0
                             , SBQQ__Discount__c = 0
                             , PackWeightAVG__c = keyBlock
-                            , Tarifa__c = 'TARIFA T7_' + intpeso
-                            , PackVolAVG__c = 0
+                            , Tarifa__c = getTarifa(i)
                     );
-                    if(strRange.contains('('))
-                        strRango = this.mapRangosByDest.get(strRange);
-                    else strRango = strRange;
-                    decTotalNormal = 0;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c != null)
-                        range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c != null)
-                        range.PackWeightAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c != null)
-                        range.PackVolAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c;
-                    if(this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c != null)
-                        range.Flete__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c;
-                    decFleteW = range.PackWeightAVG__c * this.wp.mapTarifarioT.get('TARIFA T7P').get(strRango).Flete__c;
-                    decFleteV = this.wp.mapTarifarioT.get('TARIFA T7V').get(strRango).Flete__c * range.PackVolAVG__c;
-                    if(decFleteV > decFleteW)
-                        decFleteDefinitivo = decFleteV;
-                    else decFleteDefinitivo = decFleteW;
-                    if(this.blnRAD)
-                        range.RAD__c = decFleteDefinitivo * 0.11;
-                    if(this.blnEAD)
-                        range.EAD__c = decFleteDefinitivo * 0.11;
-                    range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
-                    if(blnACK)
-                        range.SBQQ__CustomerPrice__c += this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
-                    decTotalNormal = range.SBQQ__Quantity__c * range.SBQQ__CustomerPrice__c;
-                    decTotalpropuesta = range.Flete__c * range.SBQQ__Quantity__c;
-                    range.SBQQ__Discount__c = range.Flete__c / range.SBQQ__CustomerPrice__c - 1;
-                    decSUMCustomerPrice  += decTotalNormal;
-                    decSUMNetPrice += decTotalpropuesta;
-                    if(!this.mapDiscounts.containsKey(intpeso)){
-                        this.mapDiscounts.put(intpeso, new Map<String, Decimal>{
-                        'MaxDisc' => range.SBQQ__Discount__c
+                    rangeZP.EAD__c = wp.mapCS.get('AEZP');
+                    Decimal TarifaLlenaZP = 0;
+                    Decimal FleteZP = 0;
+                    Decimal TarLlena2ZP = 0;
+                    Decimal TarifaPropuestaZP = 0;
+                    Decimal TarifaPropuesta2ZP = 0;
+                    Decimal AcuseZP = 0;
+                    Decimal fltQuoteAdKGZP = 0;
+                    Decimal prueba  = 0;
+                    Decimal decEAD = 0;
+                    if(!Test.isRunningTest()){
+                    if(rangeZP.Tarifa__c == 'TARIFA SOBRE')
+                        FleteZP = this.wp.mapTarifarioT.get('TARIFA TS').get(strRango).Flete__c;
+                    //  FleteZP = 10.10; //comentado arriba
+                    else {
+                        if(this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c != null)
+                            FleteZP = this.wp.mapTarifarioT.get(tarifa).get(strRango).Flete__c;
+                        //   FleteZP = 10.10; //comentado arriba
+                        }
+                    }
+                    if(blnRAD && rangeZP.Tarifa__c != 'TARIFA SOBRE')
+                        rangeZP.RAD__c = dominantFeeServiceDom(this.wp.mapCS.get('MinRAD'), FleteZP);
+                    if(this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).EAD__c != null)
+                        decEAD = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).EAD__c;
+                    if(this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).ACK__c != null)
+                        AcuseZP = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).ACK__c;
+                    if(this.blnACK)
+                        rangeZP.ACK__C = this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
+                    if(!Test.isRunningTest()){
+                    TarifaLlenaZP = FleteZP + rangeZP.RAD__c + rangeZP.EAD__c + rangeZP.ACK__C;
+                    TarLlena2ZP = TarifaLlenaZP + rangeZP.RAD__c + rangeZP.EAD__c + rangezp.ACK__C;
+                    rangeZP.SBQQ__Quantity__c = rangeZP.RAD__c;
+                    }
+                    if(i > lastBlock && this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c != null)
+                        fltQuoteAdKGZP = this.mapQuotes.get(range.Tarifa__c).get(strRange).KG_ADICIONAL__c * (i - lastBlock);
+                    if(rangeZP.Tarifa__c == 'TARIFA T0' || rangeZP.Tarifa__c == ' TARIFA T1')
+                        rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c / 5;
+                    else if (rangeZP.Tarifa__c != 'TARIFA SOBRE' || rangeZP.Tarifa__c != 'TARIFA T0'|| rangeZP.Tarifa__c != 'TARIFA T1' || rangeZP.Tarifa__c != 'TARIFA T2')
+                        rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c / 10;
+                    else rangeZP.SBQQ__Quantity__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
+                    prueba = fltGuia  + fltQuoteAdKGZP;
+                    if(mapService.get('ZP').mapRanges.get(strRange) != null)
+                        prueba = fltGuia + mapService.get('ZP').mapRanges.get(strRange);
+                    TarifaPropuestaZP = fltGuia  + decEAD;
+                    TarifaPropuesta2ZP = TarifaPropuestaZP + AcuseZP;
+                    rangeZP.SBQQ__CustomerPrice__c = this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c * TarifaLlenaZP;
+                    rangeZP.SBQQ__NetPrice__c = prueba * this.mapQuotesZP.get(rangeZP.Tarifa__c).get(strRange).SBQQ__Quantity__c;
+                    if(!Test.isRunningTest()) rangeZP.SBQQ__Discount__c = (prueba / TarifaLlenaZP) - 1;
+                    decSUMCustomerPriceZP += rangeZP.SBQQ__CustomerPrice__c;
+                    decSUMNetPriceZP += rangeZP.SBQQ__NetPrice__c;
+                    if(!this.mapDiscounts.containsKey(i)){
+                        this.mapDiscounts.put(i, new Map<String, Decimal>{
+                            'MaxDisc' => range.SBQQ__Discount__c
+                            , 'MaxDiscZP' => rangeZP.SBQQ__Discount__c
+                            , 'AVGDisc' => 0
+                            , 'AVGDiscZP' => 0
+                        });
+                        if(i == 0)
+                            this.mapTarifasName.put(i, 'TS');
+                        else
+                            this.mapTarifasName.put(i, this.mapTarifasKey.get(getTarifa(i)));
+                        if(i <= 30)
+                            this.listKg30.add(i);
+                    }
+                    if(this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(i).get('MaxDisc')){
+                        this.mapDiscounts.get(i).put('MaxDisc', range.SBQQ__Discount__c);
+                    }
+                    if(this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('MaxDisc') && rangeZP.SBQQ__Discount__c < this.mapDiscounts.get(i).get('MaxDiscZP')){
+                        this.mapDiscounts.get(i).put('MaxDiscZP', rangeZP.SBQQ__Discount__c);
+                    }
+                // }
+                    respTarifaPropuesta = decTarifaPropuesta2;
+                    
+                }
+                
+                if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDisc')) this.mapDiscounts.get(i).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
+
+                if(decSUMCustomerPriceZP > 0 && decSUMNetPriceZP > 0 && this.mapDiscounts.containsKey(i) && this.mapDiscounts.get(i).containsKey('AVGDiscZP')) this.mapDiscounts.get(i).put('AVGDiscZP', decSUMNetPriceZP /decSUMCustomerPriceZP - 1);
+            }
+            // T7
+            //if(!Test.isRunningTest()){
+            if(this.T7ZP){
+                Decimal decM3Tarima = 0;
+                Decimal Peso        = 0;
+                Decimal decFleteV   = 0;
+                Decimal decFleteW   = 0;
+                Decimal decRADW     = 0;
+                Decimal decRADV     = 0;
+                Decimal decEADW     = 0;
+                Decimal decEADV     = 0;
+                Decimal decTarifaLlenaW = 0;
+                Decimal decTarifaLlenaV = 0;
+                Decimal decACKW         = 0;
+                Decimal decACKV         = 0;
+                Decimal decTarifaPropuestaW = 0;
+                Decimal decTarifaPropuestaV = 0;
+                Decimal decTarima           = 0;
+                Decimal decTotalNormalW     = 0;
+                Decimal decTotalNormalV     = 0;
+                Decimal decTotalPropuestaW  = 0;
+                Decimal decTotalPropuestaV  = 0;
+                Decimal decDescuentoV       = 0;
+                Decimal decDescuentoW       = 0;
+                Decimal decSUMCustomerPriceT7ZP = 0;
+                Decimal decSUMNetPriceT7ZP      = 0;
+                String strRango         = '';
+                Decimal decAcuse = 0;
+                SBQQ__QuoteLine__c rangeZP;
+                for (String strRange : listRangeDestiny){
+                    if(test.isRunningTest())
+                        strRango = '0-400';
+                    else {
+                        if(strRange.contains('('))
+                            strRango = this.mapRangosByDest.get(strRange);
+                        else strRango = strRange;
+                    }
+                    rangeZP = new SBQQ__QuoteLine__c (
+                        FLETE__c = 0
+                        , SBQQ__CustomerPrice__c = 0
+                        , SBQQ__Quantity__c = 0
+                        , SBQQ__NetPrice__c = 0
+                        , KG_ADICIONAL__c = 0
+                        , RAD__c = 0
+                        , EAD__c = 0
+                        , ACK__c = 0
+                        , SEG__c = 0
+                        , Pack_Seg__c = 0
+                        , SBQQ__Discount__c = 0
+                        , PackWeightAVG__c = keyBlock
+                        , Tarifa__c = 'TARIFA T7'
+                    );
+                    decM3Tarima = 0;
+                    Peso        = 0;
+                    decFleteV   = 0;
+                    decFleteW   = 0;
+                    decRADV     = 0;
+                    decRADW     = 0;
+                    decEADV     = 0;
+                    decEADW     = 0;
+                    decTarifaLlenaV = 0;
+                    decTarifaLlenaW = 0;
+                    decTotalPropuestaW = 0;
+                    decTotalPropuestaV = 0;
+                    decTarima           = 0;
+                    decTotalPropuestaW  = 0;
+                    decTotalPropuestaV  = 0;
+                    decDescuentoV       = 0;
+                    decDescuentoW       = 0;
+                    decAcuse            = 0;
+                    decM3Tarima = this.decVolumen;
+                    Peso = this.decPeso;
+                    if(!Test.isRunningTest()){
+                    if(this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c != null)
+                        rangeZP.SBQQ__Quantity__c =this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
+                    
+                    decFleteW = Peso * this.wp.mapTarifarioT.get('TARIFA T7P').get(strRango).Flete__c;
+                    decFleteV = this.wp.mapTarifarioT.get('TARIFA T7V').get(strRango).Flete__c * decM3Tarima;
+                    
+                    if(blnRAD){
+                        decRADV = decFleteV * 0.11;
+                        decRADW = decFleteW * 0.11;
+                    }
+                    decEADV = this.mapPropuestaT7ZP.get(strRange).SBQQ__NetPrice__c / this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
+                    decEADW = this.mapPropuestaT7ZP.get(strRange).SBQQ__NetPrice__c / this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
+                    if(this.blnACK){
+                        decACKV = this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
+                        decACKW = this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
+                        decAcuse = this.mapQuotesT7ZPByRange.get(strRange).ACK__c;
+                    }
+                    decTarifaLlenaV = decFleteV + decRADV + decEADV + decACKV;
+                    decTarifaLlenaW = decFleteW + decRADW + decEADW + decACKW;
+                    decTarima = this.mapPropuestaT7ZP.get(strRange).SBQQ__SpecialPrice__c;
+
+                    decTarifaPropuestaV = this.mapPropuestaT7ZP.get(strRange).FLETE__c + decTarima + decAcuse;
+                    decTarifaPropuestaW = this.mapPropuestaT7ZP.get(strRange).FLETE__c + decTarima + decAcuse;
+
+                    decTotalNormalV = this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c * decTarifaLlenaV;
+                    decTotalNormalW = this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c * decTarifaLlenaW;
+                    decTotalPropuestaV = decTarifaPropuestaV * this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
+                    decTotalPropuestaW = decTarifaPropuestaW * this.mapQuotesT7ZPByRange.get(strRange).SBQQ__Quantity__c;
+
+                    decDescuentoV = decTotalPropuestaV / decTotalNormalV - 1;
+                    decDescuentoW = decTotalPropuestaW / decTotalNormalW - 1;
+                    if(decDescuentoV < decDescuentoW){
+                        rangeZP.SBQQ__Discount__c   = decDescuentoV;
+                        decSUMNetPriceT7ZP          += decTotalPropuestaV;
+                        decSUMCustomerPriceT7ZP     += decTotalNormalV;
+                    } else {
+                        rangeZP.SBQQ__Discount__c = decDescuentoW;
+                        decSUMNetPriceT7ZP        += decTotalPropuestaW;
+                        decSUMCustomerPriceT7ZP   += decTotalNormalW;
+                    }
+                    }
+                    if(!this.mapDiscounts.containsKey(Peso)){ this.mapDiscounts.put(Peso, new Map<String, Decimal>{
+                        'MaxDisc' => rangeZP.SBQQ__Discount__c
                         , 'MaxDiscZP' => 0
                         , 'AVGDisc' => 0
                         , 'AVGDiscZP' => 0
                         });
         
-                        if(intpeso == 0)
-                            this.mapTarifasName.put(intpeso, 'TS');
-                        else
-                            this.mapTarifasName.put(intpeso, 'T7 ' + intpeso);
-                        this.listKg70.add(intpeso);
+                        this.mapTarifasName.put(Peso, 'T7');
+                        this.listKg70ZP.add(Peso);
                     }
-                    if(this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(intpeso).get('MaxDisc')){
-                        this.mapDiscounts.get(intpeso).put('MaxDisc', range.SBQQ__Discount__c);
+                    if(this.mapDiscounts.containsKey(Peso) && this.mapDiscounts.get(Peso).containsKey('MaxDisc') && rangeZP.SBQQ__Discount__c < this.mapDiscounts.get(Peso).get('MaxDisc')){ this.mapDiscounts.get(Peso).put('MaxDisc', rangeZP.SBQQ__Discount__c);
                     }
-                    if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('AVGDisc'))
-                        this.mapDiscounts.get(intpeso).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
+                    //}
+
+                }
+                if(decSUMCustomerPriceT7ZP > 0 && decSUMNetPriceT7ZP > 0 && this.mapDiscounts.containsKey(Peso) && this.mapDiscounts.get(Peso).containsKey('AVGDisc'))  this.mapDiscounts.get(Peso).put('AVGDisc', decSUMNetPriceT7ZP / decSUMCustomerPriceT7ZP - 1);
+            }
+            //}
+            keyBlock = lastBlock;
+            Integer i = 61;
+            SBQQ__QuoteLine__c range;
+            String strRangeT7 = '';
+            Integer intPeso = 0;
+            Decimal decFleteW = 0;
+            Decimal decFleteV = 0;
+            Decimal decFleteDefinitivo = 0;
+            Decimal decTotalNormal = 0;
+            Decimal decTotalpropuesta = 0;
+            String strRango = '';
+            for(Decimal decW : this.mapGuide.keySet()){
+                //ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, 'Cantidad: ' + this.mapGuide.get(decW)));
+                intpeso = decW.intvalue();
+                decFleteDefinitivo = 0;
+                decSUMCustomerPrice = 0;
+                decSUMNetPrice = 0;
+                if(intpeso > 60){
+                    this.listBlocksT7.add('TARIFA T7_' + intpeso);
+                    this.listBlocksT7Desc.add('T7 ' + intpeso);
+                    this.mapT7Vol.put('T7 ' + intpeso, this.mapGuide.get(decW));
+                    blnBloquesT7 = true;
+                    for (String strRange : listRangeDestiny){
+                        range = new SBQQ__QuoteLine__c (
+                                FLETE__c = 0
+                                , SBQQ__CustomerPrice__c = 0
+                                , SBQQ__Quantity__c = 0
+                                , SBQQ__NetPrice__c = 0
+                                , KG_ADICIONAL__c = 0
+                                , RAD__c = 0
+                                , EAD__c = 0
+                                , ACK__c = 0
+                                , SEG__c = 0
+                                , Pack_Seg__c = 0
+                                , SBQQ__Discount__c = 0
+                                , PackWeightAVG__c = keyBlock
+                                , Tarifa__c = 'TARIFA T7_' + intpeso
+                                , PackVolAVG__c = 0
+                        );
+                        if(strRange.contains('('))
+                            strRango = this.mapRangosByDest.get(strRange);
+                        else strRango = strRange;
+                        decTotalNormal = 0;
+                        if(this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c != null)
+                            range.SBQQ__Quantity__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).SBQQ__Quantity__c;
+                        if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c != null)
+                            range.PackWeightAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackWeightAVG__c;
+                        if(this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c != null)
+                            range.PackVolAVG__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).PackVolAVG__c;
+                        if(this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c != null)
+                            range.Flete__c = this.mapQuotes.get(range.Tarifa__c).get(strRange).Flete__c;
+                        decFleteW = range.PackWeightAVG__c * this.wp.mapTarifarioT.get('TARIFA T7P').get(strRango).Flete__c;
+                        decFleteV = this.wp.mapTarifarioT.get('TARIFA T7V').get(strRango).Flete__c * range.PackVolAVG__c;
+                        if(decFleteV > decFleteW)
+                            decFleteDefinitivo = decFleteV;
+                        else decFleteDefinitivo = decFleteW;
+                        if(this.blnRAD)
+                            range.RAD__c = decFleteDefinitivo * 0.11;
+                        if(this.blnEAD)
+                            range.EAD__c = decFleteDefinitivo * 0.11;
+                        range.SBQQ__CustomerPrice__c = decFleteDefinitivo + range.RAD__c + range.EAD__c;
+                        if(blnACK)
+                            range.SBQQ__CustomerPrice__c += this.wp.mapACK.get(this.wp.objQuote.Acuse__c);
+                        decTotalNormal = range.SBQQ__Quantity__c * range.SBQQ__CustomerPrice__c;
+                        decTotalpropuesta = range.Flete__c * range.SBQQ__Quantity__c;
+                        range.SBQQ__Discount__c = range.Flete__c / range.SBQQ__CustomerPrice__c - 1;
+                        decSUMCustomerPrice  += decTotalNormal;
+                        decSUMNetPrice += decTotalpropuesta;
+                        if(!this.mapDiscounts.containsKey(intpeso)){
+                            this.mapDiscounts.put(intpeso, new Map<String, Decimal>{
+                            'MaxDisc' => range.SBQQ__Discount__c
+                            , 'MaxDiscZP' => 0
+                            , 'AVGDisc' => 0
+                            , 'AVGDiscZP' => 0
+                            });
+            
+                            if(intpeso == 0)
+                                this.mapTarifasName.put(intpeso, 'TS');
+                            else
+                                this.mapTarifasName.put(intpeso, 'T7 ' + intpeso);
+                            this.listKg70.add(intpeso);
+                        }
+                        if(this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('MaxDisc') && range.SBQQ__Discount__c < this.mapDiscounts.get(intpeso).get('MaxDisc')){
+                            this.mapDiscounts.get(intpeso).put('MaxDisc', range.SBQQ__Discount__c);
+                        }
+                        if(decSUMCustomerPrice > 0 && decSUMNetPrice > 0 && this.mapDiscounts.containsKey(intpeso) && this.mapDiscounts.get(intpeso).containsKey('AVGDisc'))
+                            this.mapDiscounts.get(intpeso).put('AVGDisc', decSUMNetPrice / decSUMCustomerPrice - 1);
+                    }
                 }
             }
-        }
-       for(Decimal decW: this.mapDiscounts.keySet()){
-            this.mapCircleClass.get('MAX').put(decW , getClass(this.mapDiscounts.get(decW).get('MaxDisc')));
-            this.mapCircleClass.get('AVG').put(decW , getClass(this.mapDiscounts.get(decW).get('AVGDisc')));
-            this.mapCircleClass.get('MAXZP').put(decW , getClass(this.mapDiscounts.get(decW).get('MaxDiscZP')));
-            this.mapCircleClass.get('AVGZP').put(decW , getClass(this.mapDiscounts.get(decW).get('AVGDiscZP')));
+            for(Decimal decW: this.mapDiscounts.keySet()){
+                this.mapCircleClass.get('MAX').put(decW , getClass(this.mapDiscounts.get(decW).get('MaxDisc')));
+                this.mapCircleClass.get('AVG').put(decW , getClass(this.mapDiscounts.get(decW).get('AVGDisc')));
+                this.mapCircleClass.get('MAXZP').put(decW , getClass(this.mapDiscounts.get(decW).get('MaxDiscZP')));
+                this.mapCircleClass.get('AVGZP').put(decW , getClass(this.mapDiscounts.get(decW).get('AVGDiscZP')));
+            }
+        } catch (Exception ex) {
+            System.debug('Error calculateProjection: ' + ex.getMessage() + '. Línea: ' + ex.getLineNumber());
         }
     }
 
