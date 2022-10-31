@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : ChangeMeIn@UserSettingsUnder.SFDoc
  * @group             : 
- * @last modified on  : 02-24-2022
- * @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+ * @last modified on  : 26-07-2022
+ * @last modified by  : Salvador Ramírez (sramirez@freewayconsulting.com
  * Modifications Log 
  * Ver   Date         Author                               Modification
  * 1.0   04-08-2021   ChangeMeIn@UserSettingsUnder.SFDoc   Initial Version
@@ -166,7 +166,6 @@ public class Ctrl_pantalla_ww {
     public String lastGuide2                                                    {get; set;}
     public Integer IntAnioVigencia                                              {get;set;}
     public String strFechaVigencia                                              {get;set;}
-
 
     public Ctrl_pantalla_ww(ApexPages.StandardController sc){
        Decimal coutFee = 0;
@@ -430,6 +429,7 @@ public class Ctrl_pantalla_ww {
         this.mapTotal.put('Quote', 0);
         this.mapTotalZP.put('Quote', 0);
         this.strIdQuote = sc.getId();
+        List<AcusePorGuia__mdt>objAcuse = AcusePorGuia__mdt.getAll().values(); //Salvador Ramírez(sramirez@freewayconsulting.com): Se obtienen los datos del acuse con el costo más alto.
 
         objtempleate = queryTempleate();
 
@@ -502,15 +502,15 @@ public class Ctrl_pantalla_ww {
                     } else {
                         //14/01/2022 Salvador Ramírez (sramirez@freewayconsulting.com): Si es cualquier otra tarifa que no sea express
                         if(line.Tarifa__c == 'TARIFA T7'){
-                            if(line.ACK__c >= 66){
-                                line.ACK__c = 65;
+                            if(line.ACK__c >= objAcuse[0].Amount__c + 1){
+                                line.ACK__c = objAcuse[0].Amount__c;
                             }else{
                                 line.ACK__c = line.ACK__c;
                                 }
                         }
                         if(line.Tarifa__c == 'TARIFA T7-V' ){
-                        if(line.ACK__c >= 66){
-                                line.ACK__c = 65;
+                        if(line.ACK__c >= objAcuse[0].Amount__c + 1){
+                                line.ACK__c = objAcuse[0].Amount__c;
                             }else{
                                 line.ACK__c = line.ACK__c;
                             }
@@ -1138,7 +1138,7 @@ public class Ctrl_pantalla_ww {
                             blnCotizaT7 = true;
                         } else if(quoteItem.SBQQ__Description__c == 'Propuesta'){
                             decTotNormal += quoteItem.FLETE__c;
-                            decTotProp += quoteItem.GUIA__c;
+                            decTotProp += quoteItem.GUIA__c == null?0:quoteItem.GUIA__c;
                             this.mapPropuestaT7ZP.put(quoteItem.Rango_KM__c, quoteItem);
                             this.listRangeProp.add(quoteItem.Rango_KM__c);
                             if(quoteItem.GUIA__c > 0 && quoteItem.FLETE__c > 0)
@@ -1617,6 +1617,7 @@ public class Ctrl_pantalla_ww {
             }
             for(TempleateLine__c line : listPlantillaLineItems){
                 if (!mapTarifas.containsKey(line.Tarifa__c)){
+                    System.debug('Tarifa: ' + line.Tarifa__c);
                     Tarifas objTarifa   = new Tarifas();
                     objTarifa.strtarifa = line.Tarifa__c;
                     objTarifa.decWeight = line.Weight__c;
@@ -1750,13 +1751,14 @@ public class Ctrl_pantalla_ww {
     //metodos involucrados en el problema que presentamos a soporte tecnico.
     public static Decimal getFlete(Decimal decCustomerPrice, String strServiciosAdd, TempleateLine__c objtempleateItem, Integer contador){
         Decimal decFlete = 0;
+        List<AcusePorGuia__mdt> objAcuse = AcusePorGuia__mdt.getAll().values(); //Salvador Ramírez(sramirez@freewayconsulting.com): Se obtienen los datos del acuse con el costo más alto.
         if(!objtempleateItem.Zona_Plus__c){
-            if((objtempleateItem.Tarifa__c == 'TARIFA T7' || objtempleateItem.Tarifa__c == 'TARIFA T7-V') &&  objtempleateItem.ACK__c >= 66){
-                objtempleateItem.ACK__c = 65;
+            if((objtempleateItem.Tarifa__c == 'TARIFA T7' || objtempleateItem.Tarifa__c == 'TARIFA T7-V') &&  objtempleateItem.ACK__c >= objAcuse[0].Amount__c + 1){
+                objtempleateItem.ACK__c = objAcuse[0].Amount__c;
             }
             if(objtempleateItem.Tarifa__c == 'TARIFA T7-V' || objtempleateItem.Tarifa__c == 'TARIFA T7-P'){
                 if(objtempleateItem.Tarifa__c == 'TARIFA T7-V'){
-                    decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c; 
+                    decFlete = decCustomerPrice - objtempleateItem.ACK__c - objtempleateItem.SEG__c;
                 } else {
                     decFlete = decCustomerPrice;
                 }
@@ -1773,8 +1775,8 @@ public class Ctrl_pantalla_ww {
                 }
             }
         } else if(objtempleateItem.Zona_Plus__c) {
-            if(objtempleateItem.Tarifa__c == 'TARIFA T7' &&  objtempleateItem.ACK__c >= 66){
-                objtempleateItem.ACK__c = 65;
+            if(objtempleateItem.Tarifa__c == 'TARIFA T7' &&  objtempleateItem.ACK__c >= objAcuse[0].Amount__c + 1){
+                objtempleateItem.ACK__c = objAcuse[0].Amount__c;
             }
             decFlete = decCustomerPrice - (objtempleateItem.ACK__c + objtempleateItem.SEG__c + objtempleateItem.EAD__c + objtempleateItem.RAD__c);
             if(strServiciosAdd != null){
@@ -2258,7 +2260,7 @@ public class Ctrl_pantalla_ww {
                 , BillingPostalCode
                 , BillingState
                 , BillingCountry
-                , Numero_de_facturacion__c
+                //, Numero_de_facturacion__c
                 , Phone
                 , Email_de_factura__c
                 , Nombre_representante_legal__c
