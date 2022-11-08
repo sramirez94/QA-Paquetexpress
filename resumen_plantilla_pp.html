@@ -1,0 +1,457 @@
+<apex:page standardController="SBQQ__Quote__c" extensions="ctrl_ResPlantilla" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false">
+    <html> 
+        <head> 
+             
+            <style type="text/css"> 
+                @media print {                     
+                            html, body {
+                              height:100vh; 
+                              margin: 0 !important; 
+                              padding: 0 !important;
+                              overflow: hidden;
+                            } 
+                        }
+                                        
+                @page { size: Letter; margin: 10mm; margin-top: 13mm;
+                <!--@top-center { content: " "; font-family: sans-serif; font-size: 90pt;}-->
+                <!--@bottom-center { content: "Page " counter(page) " of " counter(pages);--> } }
+                <!--table,td,th {border:0.5px solid black;}-->              
+                .page-break { display:block; page-break-before:always; }
+                .page-break2 { display:block; page-break-after:always; 
+                                bottom-center { content: counter(page); border-top:solid rgb(31, 73, 125); }
+                            }
+             </style>
+        </head>      
+        <apex:outputPanel rendered="{!IF(SBQQ__Quote__c.Tipo_de_documentacion__c='Guías prepagadas','true','false')}">     
+        <div class="page-break2">
+            <div style="width:750px; height:80px; position:top left">
+                <img src="{!URLFOR($Resource.PaqueteEslogan)}" width="150px" height="auto" top="10px"/>
+                <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; color: black; width: 450px; height:70px; position: absolute; right: 20px; border-left: .5px solid black">
+                    <table>
+                        <tr>
+                        <th>    </th>
+                        <th>OPERADORA DE SERVICIOS PAQUETEXPRESS S.A. DE C.V.</th>
+                        </tr>
+                        <tr>
+                        <td>    </td>
+                        <td>Fecha: 
+                            <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!today()}" />
+                            </apex:outputText>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td>    </td>
+                        <td>Sucursal: {!SBQQ__Quote__c.SBQQ__Account__r.Sucursal__r.Name}</td>
+                        </tr>
+                        <tr>
+                        <td>    </td>
+                        <td>Ejecutivo: {!SBQQ__Quote__c.Owner.Name}</td>
+                        </tr>
+                    </table>  
+                </div>    
+            </div>
+            <div align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; color: white; background-color:rgb(31, 73, 125); padding-top: 5px; width: 300px; height:20px">
+                ASUNTO: SOLICITUD DE COMPRA PRE-GUÍAS
+            </div>
+            <div>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; padding-top: 5px">
+                    <tr>
+                    <th>Estimado Señor:</th>
+                    </tr>
+                    <tr>
+                    <td> Por medio de la presente, solicito me sean vendidas guías prepagadas para uso exclusivo de nuestra empresa,
+                        asociados y clientes que previamente designaremos en base a nuestras necesidades comerciales.</td>
+                    </tr>
+                    <tr>
+                    <td>Nuestros envíos consisten en mercancías no riesgosas tales como 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Opportunity2__r.Descripci_n_de_la_mercanc_a__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Opportunity2__r.Descripci_n_de_la_mercanc_a__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Opportunity2__r.Descripci_n_de_la_mercanc_a__c),'true','false')}"> </apex:outputText>
+                             para lo cual requerimos
+                             adquirir dichas pre-guías con los siguientes requerimientos:</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default" >
+                    <div class="panel-body">
+                        <br/>
+                        <table class="table table-hover table-striped" style="border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size:10px;
+                          padding-top: 5px; padding-bottom: 5px" width="100%;" >
+                            <tr>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; text-align: center; border:0.5px solid black">N° GUÍAS</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black">TARIFA</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black; width: 6%">PESO (kg)</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black">VOL (m3)</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black">RANGO (km)</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black; width: 10%">VALOR DECLARADO</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black">RAD</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black">EAD</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black; width: 5%">ZONA PLUS</th>
+                                <th align="center" style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black; width: 7%">
+                                <apex:outputText rendered="{!objtempleate.Acuse__c =='Interno'}">ACUSE Interno</apex:outputText>
+                                <apex:outputText rendered="{!objtempleate.Acuse__c =='Empresa'}">ACUSE Empresa</apex:outputText>
+                                <apex:outputText rendered="{!objtempleate.Acuse__c =='XT'}">ACUSE XT</apex:outputText>
+                                <apex:outputText rendered="{!objtempleate.Acuse__c == null}">ACUSE</apex:outputText></th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black; width: 10%">COSTO UNITARIO</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black;  width: 9%">IMPRESAS</th>
+                                <th align="center"  style=" background-color:rgb(31, 73, 125); color: white; border:0.5px solid black;  width: 9%">WEB</th>
+                           </tr>
+                            <apex:repeat var="objtempleateItem" value="{!listPlantillaLineItems}">
+                                <apex:outputText rendered="{!objtempleateItem.Tarifa__c != 'TARIFA T7-P' && objtempleateItem.Tarifa__c != 'TARIFA T7-V'}">
+                                <tr>
+                                   
+                                    <td align="center" style="border:0.5px solid black"><apex:outputField value="{!objtempleateItem.Quantity__c}" rendered="{!NOT(objtempleateItem.EditMode__c)}"></apex:outputField></td>
+                                    <td align="center" style="border:0.5px solid black">{!objtempleateItem.Tarifa__c}</td>
+                                    <td align="center" type="number" style="border:0.5px solid black"><apex:outputTEXT value="{!objtempleateItem.Weight__c}"></apex:outputTEXT></td>
+                                    <td align="center" type="number" style="border:0.5px solid black"><apex:outputTEXT value="{!objtempleateItem.Vol__c}"></apex:outputTEXT></td>
+                                    <td align="center" style="border:0.5px solid black">{!objtempleateItem.Rango_KM__c}</td>
+                                    <td align="center" style="border:0.5px solid black">{!objtempleateItem.Pack_Seg__c}</td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputText rendered="{!blnRAD}">X</apex:outputText></td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputText rendered="{!blnEAD}">X</apex:outputText></td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputText rendered="{!IF(objtempleateItem.Zona_Plus__c=true,true,false)}">X</apex:outputText></td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputText rendered="{!IF(ISBLANK(objtempleate.Acuse__c)=false,true,false)}">X</apex:outputText></td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputField value="{!objtempleateItem.CustomerPrice__c}"/> </td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputText rendered="{!IF(objtempleate.Impresas__c=true,true,false)}">X</apex:outputText></td>
+                                    <td align="center" style="border:0.5px solid black"><apex:outputText rendered="{!IF(objtempleate.Electronicas__c=true,true,false)}">X</apex:outputText></td>
+                                    
+                                    </tr>
+                                    </apex:outputText>
+                            </apex:repeat>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div>      
+            <div>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:11px;padding-top: .5px">
+                    <tr>
+                    <th>IMPORTANTE</th>
+                    </tr>
+                    <tr>
+                    <td> -Costos unitarios antes de Impuestos.</td>
+                    </tr>
+                    <tr>
+                    <td> -La vigencia de las guías prepagadas es de 2 años calendario a partir de su fecha de compra.</td>
+                    </tr>
+                    <tr>
+                    <td> -Los Costos plasmados en la presente solicitud de compra, sólo podrán tener una vigencia máxima al 31 de diciembre del año en curso.</td>
+                    </tr>
+                    <tr>
+                    <td> -No se aceptan devoluciones.</td>
+                    </tr>
+                    <tr>
+                    <td> -Pagos en una sola exhibición.</td>
+                    </tr>
+                </table>
+            </div>
+            <div> <br/>
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+                    <tr>
+                    <td>Empresa que solicita: {!SBQQ__Quote__c.SBQQ__Account__r.Name}</td>
+                    <td style="color: white"> espacio espacio</td>
+                    <td>Nombre comercial: {!SBQQ__Quote__c.SBQQ__Account__r.Name}</td>
+                    </tr>
+                    <tr>
+                    <td>ID Sipweb: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Id_SIpWeb__c),'true','false')}">
+                            
+                        </apex:outputText>  
+                    </td>
+                    <td>   </td>
+                    <td>Usuario y contraseña web:</td>
+                    </tr>
+                    <tr>
+                    <td>Contacto para cobro: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Contacto__r.Name)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Contacto__r.Name}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Contacto__r.Name),'true','false')}">
+                           
+                        </apex:outputText>
+                        
+                    </td>
+                    <td>   </td>
+                    <td>Domicilio: Calle
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingStreet)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.BillingStreet}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingStreet),'true','false')}">
+                            
+                        </apex:outputText> , No.
+                        <apex:outputText value=" "/>
+                        <apex:outputField value="{!SBQQ__Quote__c.SBQQ__Account__r.Numero__c}" rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Numero__c)),'true','false')}">
+                   
+                        </apex:outputField>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Numero__c),'true','false')}">
+                            
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>Teléfono(s): 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Phone)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Contacto__r.Phone}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Phone),'true','false')}">
+                            
+                        </apex:outputText>
+                    </td>
+                    <td>   </td>
+                    <td>Email: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Email_de_factura__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Email_de_factura__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Email_de_factura__c),'true','false')}">
+                            
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>Representante legal: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Nombre_representante_legal__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Nombre_representante_legal__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Nombre_representante_legal__c),'true','false')}">
+                            
+                        </apex:outputText>
+                    </td>
+                    <td>   </td>
+                    <td>Email: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Email_Representante_Legal__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Email_Representante_Legal__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Email_Representante_Legal__c),'true','false')}">
+                            
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                </table> <br/><br/>
+            </div>
+            <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; color: black; font-weight: bolder">
+                Es necesario nos facturen esta compra de pre-guías con los siguientes datos: <br/><br/>
+            </div>
+            <div align="left" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; color: black; border: .8px solid black">
+                <table style= "font-family: Arial, Helvetica, sans-serif; font-size:12px">
+                    <tr>
+                    <td>Razón social: {!SBQQ__Quote__c.SBQQ__Account__r.Name}</td>
+                    <td style="color: white"> espacio espacio espacio</td>
+                    <td>RFC: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.RFC__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.RFC__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.RFC__c),'true','false')}">
+                            
+                        </apex:outputText>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>Calle: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingStreet)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.BillingStreet}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingStreet),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    <td>   </td>
+                    <td>No.: 
+                        <apex:outputText value=" "/>
+                        <apex:outputField value=" {!SBQQ__Quote__c.SBQQ__Account__r.Numero__c}" rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Numero__c)),'true','false')}">
+                        
+                        </apex:outputField>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Numero__c),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>Colonia: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Colonia__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Colonia__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Colonia__c),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    <td>   </td>
+                    <td>Código postal: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingPostalCode)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.BillingPostalCode}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingPostalCode),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    </tr>
+                    <tr>
+                    <td> Ciudad: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingCity)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.BillingCity}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingCity),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    <td>   </td>
+                    <td>Estado: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingState)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.BillingState}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.BillingState),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>Método de pago: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Opportunity2__r.Forma_de_pago__c)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Opportunity2__r.Forma_de_pago__c}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Opportunity2__r.Forma_de_pago__c),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    <td>   </td>
+                    <td>Uso del CFDI: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Phone)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Uso_de_cfdi_CCP__c}
+                        </apex:outputText></td>
+                    </tr>
+                    <tr>
+                    <td> Teléfono: 
+                        <apex:outputText rendered="{!IF(NOT(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Phone)),'true','false')}">
+                            {!SBQQ__Quote__c.SBQQ__Account__r.Phone}
+                        </apex:outputText>
+                        <apex:outputText rendered="{!IF(ISBLANK(SBQQ__Quote__c.SBQQ__Account__r.Phone),'true','false')}">
+                            
+                        </apex:outputText>    
+                    </td>
+                    <td>   </td>
+                    <td>   </td>
+                    </tr>
+                </table>
+            </div>
+            
+          
+            <div align="justify" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; padding-top: 5px">
+                <br/>Asimismo, manifiesto que conozco el alcance de las condiciones especiales y vigencia bajo las cuales adquiero
+                estas guías prepagadas, mismas que apruebo y he leído al reverso de este documento, o bien a través de su sitio web ingresando a
+                https://www.paquetexpress.com.mx/clausulado-solicitud-servicios.
+            </div>
+                <br/>
+                <br/>
+            <div Id="footer">
+              <div class="container">
+                <table align="center" style= "font-family: Arial, Helvetica, sans-serif; font-size:12px; padding-top: 5px">
+                    <tr>
+                    <td align="center" style="border-top: .5px solid black">FIRMA DE CONFORMIDAD DEL CLIENTE</td>
+                    </tr>
+                    <tr>
+                    <td>   </td>
+                    </tr>
+                    <tr>
+                    <td align="center" style="font-style: italic; font-size:11px"> VER CONDICIONES AL REVERSO</td>
+                    </tr>
+                </table>
+            </div>
+            </div>
+    
+                
+        </div>         
+     </div>   
+        </apex:outputPanel>
+        
+        <apex:outputPanel >
+         <div class="page-break">
+        <div class="panel-body" align="justify" style= "font-family: Arial, Helvetica, sans-serif; font-size:9.5px">
+              <p>    
+               CONTRATO DE COMPRAVENTA DE SOLICITUDES DE SERVICIO PRE-PAGADAS (EN LO SUCESIVO EL "CONTRATO") QUE CELEBRAN EN LA FECHA ESTIPULADA AL ANVERSO DE ESTE DOCUMENTO, 
+                POR UNA PARTE, OPERADORA DE SERVICIOS PAQUETEXPRESS S.A. DE C.V. A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "PAQUETEXPRESS", Y POR LA OTRA PARTE, LA PERSONA FÍSICA 
+                O PERSONA MORAL, EN SU CASO, QUE ADQUIERA LAS SOLICITUDES DE SERVICIO PRE-PAGADAS, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ EL "CLIENTE", CUYOS DATOS SE ENCUENTRAN
+                PLASMADOS AL ANVERSO DEL PRESENTE DOCUMENTO, MISMOS QUE SE SUJETAN AL TENOR DE LAS SIGUIENTES CLÁUSULAS.</p>
+        
+                <p>PRIMERA. - El objeto del presente Contrato es la adquisición por parte del Cliente a Paquetexpress, de Solicitudes de Servicio Prepagadas
+                (en lo sucesivo las "Solicitudes de Servicio"), mismas que servirán para solicitar a Paquetexpress, los servicios de transportación e intermediación
+                de transportación de mercancías para los propios clientes del Cliente con motivo de las operaciones comerciales de este último (en lo sucesivo los "Servicios").</p>
+        
+               <p> SEGUNDA. - Una vez que el presente Contrato sea firmado por el Cliente, éste podrá adquirir las Solicitudes de Servicio de Paquetexpress en cualquier momento,
+                bastando para ello el envío de una solicitud vía correo electrónico a la dirección que Paquetexpress le manifieste por escrito, y siempre y cuando los datos que
+                se plasman al anverso de este documento no se modifiquen. En caso contrario, el Cliente estará obligado a realizar de nuevo el debido llenado de este documento,
+                asentando los datos que para tales efectos desee modificar, siendo responsabilidad del Cliente el dar aviso de cualquier cambio a la información en el anverso de este clausulado.</p> 
+        
+            <p>TERCERA. - Como contraprestación por la adquisición de las Solicitudes de Servicio, el Cliente se obliga a pagar a Paquetexpress, ya sea en una sola exhibición al
+            momento de adquirir las Solicitudes de Servicio o a través de un crédito que para tales efectos debe aprobar Paquetexpress, la cantidad que este último haga del 
+            conocimiento del Cliente. Para ello, Paquetexpress deberá emitirle al Cliente la factura con los requisitos fiscales aplicables, adicionalmente se detallarán los
+            folios asignados a las Solicitudes de Servicio que se están adquiriendo, mismos que no podrán ser variados ni modificados por el Cliente. Derivado de ello, el Cliente
+            asume las consecuencias de intentar o llevar a cabo algún cambio a los folios asignados. En aquellos supuestos que el Cliente cuente con crédito otorgado por Paquetexpress
+            para el pago de las Solicitudes de Servicios, éste tendrá el derecho de ampliar los servicios iniciales que fueron amparados mediante las Solicitudes de Servicio que adquirió
+            de forma inicial, debiendo para ello informar a Paquetexpress respecto de los cambios que desee realizar. Adicionalmente, el Cliente acepta que no podrá disminuir los servicios
+            que fueron contratados en primera instancia, ni estará sujeto a reembolso de ninguna naturaleza.</p>
+           
+           <p> CUARTA. - El Cliente acepta que las Solicitudes de Servicio que éste adquiera a Paquetexpress, bajo ningún supuesto serán reembolsables, razón por la cual, una vez que realice el
+            pago de la contraprestación debida, Paquetexpress no tendrá obligación de reembolsar cantidad alguna al Cliente en caso de que éste no utilice dichos documentos. Adicionalmente,
+            el Cliente conviene que deberá utilizar dichas Solicitudes de Servicio en un periodo que no deberá exceder de Dos años contados a partir de la fecha de la factura correspondiente.
+            Las Solicitudes de Servicio que el Cliente adquiere, podrán ser entregadas mediante formatos impresos o formatos electrónicos, en ambas, el Cliente es el único responsable por la
+            debida elaboración y llenado de información respecto de la información de sus clientes en la Solicitud de Servicio, debiendo asentar correctamente todos los datos que sean requeridos
+            en dicha solicitud, tales como: nombre completo, domicilio, destinatario, domicilio del destinatario, descripción de las mercancías y en su caso, el valor de las mismas, entre otras,
+            asimismo, manifiesta el Cliente conocer la Política de Aceptación de Mercancías de Paquetexpress, por lo anterior, libera y deslinda a este último en caso que los datos plasmados sean
+            incorrectos y no se pueda prestar de conformidad los servicios. En base a lo anterior, el Cliente está de acuerdo en asumir la responsabilidad por una falla en la prestación del servicio
+            cuando la misma se haya generado por errores en la información o llenado de la Solicitud de Servicios, así como también, será responsable por el contenido de la mercancía que se haya
+            descrito en el documento referido anteriormente.</p>
+        
+            <p>QUINTA. - Paquetexpress tiene la facultad de cancelar las Solicitudes de Servicio prepagadas que no haya utilizado el Cliente cuando haya expirado el término de 2 dos años para su uso, 
+            así como también cuando el Cliente incumpla con lo estipulado en el presente instrumento o que no realice el pago de éstas en aquellos casos que sea sujeto de crédito. Asimismo, en caso
+            de que alguna de las mercancías que el Cliente entregue a Paquetexpress para su debida transportación sea decomisada o declarada como ilícita por parte de las autoridades competentes, este
+            último podrá cancelar el resto de los folios de las Solicitudes de Servicio asignadas al Cliente, pudiendo Paquetexpress retener las mismas hasta en tanto no se libere a Paquetexpress y/o 
+            al Cliente de cualquier responsabilidad derivado de dichos eventos.</p>
+        
+            <p>SEXTA. - El Cliente tendrá las siguientes obligaciones: 1) Aceptar las condiciones de prestación de servicios estipuladas al amparo de la Solicitud de Servicios para las mercancías propias
+            o de sus propios clientes; 2) Facilitar a Paquetexpress de forma veraz, cualquier información que éste le requiera para poderle prestar los servicios, tales como nombre completo, domicilio,
+            destinatario, domicilio del destinatario, descripción de las mercancías y en su caso, el valor de las mismas, entre otras; 3) Someterse a la Política de Aceptación de Mercancías de Paquetexpress,
+            así como las leyes aplicables al transporte en relación con mercancías peligrosas, por lo que este último tiene la facultad de aceptar y/o rechazar mercancías entregadas por el Cliente para la
+            prestación del Servicio; 4) Entregar la mercancía debidamente embalada, empacada y etiquetada para ser transportada, haciéndose responsable en caso que la misma se dañe por causas derivadas de 
+            un mal embalaje y/o empaque; 5) En caso que la mercancía deba trasladarse utilizando para ello tramos de jurisdicción federal, deberá el Cliente someterse a la Ley de Caminos, Puentes y Autotransporte
+            Federal así como sus reglamentos y leyes auxiliares para la prestación de los servicios de transportación; 6) Garantizar y responsabilizarse que el contenido de su mercancía fue debidamente descrito
+            en las Solicitudes de Servicio y que legalmente es aceptable para su transportación, por contar con toda la documentación y permisos que acrediten su legal estancia en el país, y que además, no es una
+            mercancía que contravenga ninguna disposición legal, por lo que cualquier problema que su mercancía genere ante alguna autoridad, el Cliente será responsable por cualquier sanción que le impongan a
+            Paquetexpress o sus Coordinadas, así como por todos los gastos que se tengan que erogar por el pago de abogados y demás profesionistas, con el fin de liberarlo de toda responsabilidad que se le impute;
+            al igual que al resto de las mercancías que se estaban transportando del resto de los clientes de Paquetexpress o terceras personas a consecuencia de la controversia que causó su mercancía, debiendo
+            sacar en paz y a salvo a estos últimos de cualquier problema legal que pudiera surgir al respecto; y 7) Todas las demás que establece este documento. </p>
+        
+            <p>SÉPTIMA. - Paquetexpress se limitará únicamente a recibir la mercancía ya mencionada que se requiera enviar, sin verificar contenidos. Asimismo, no prestará los servicios, cuando la mercancía sea 
+            considerada como riesgosa, contenga materiales perecederos o en su caso, se contraponga con la Política de Aceptación de Mercancías de Paquetexpress, razón por la cual, si el Cliente falseó su declaración
+            al momento de documentar con el objeto que se le preste el Servicio, y durante el envío o resguardo de la mercancía, llegaren a derramarse o descomponerse biológicamente, poniendo en riesgo al resto de las
+            mercancías transportadas o a personal de Paquetexpress, así como a los vehículos utilizados para prestar el Servicio, se procederá, sin previo aviso ni responsabilidad alguna, a destruir o desechar la 
+            mercancía del Cliente. Lo anterior, no exime al Cliente y/o destinatario del pago del servicio y/o daños que pudieran generarse por tales circunstancias.</p>
+     
+            <p>OCTAVA. - En aquellos casos que el Cliente desee que Paquetexpress asuma la responsabilidad hasta por el valor real de la pérdida reclamada, con tope máximo en el valor declarado de su mercancía cuando ésta
+            sufriera un daño, robo con violencia o extravío en la prestación del Servicio, deberá el Cliente contratar un seguro que ampare dichos riesgos, mismo que deberá ser contratado al momento que el Cliente 
+            solicite a Paquetexpress la intención de adquirir Solicitudes de Servicio prepagadas.</p>
+        
+            <p>NOVENA.- En cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (la “LFPDPPP” o la “Ley”) y su Reglamento (el “Reglamento”), Paquetexpress pone a disposición del Cliente,
+            en su carácter de titular de datos personales, el Aviso de Privacidad al amparo de esta cláusula, en el cual se les informan los términos y condiciones bajo las cuales se llevará a cabo el tratamiento de los datos
+            personales que nos proporcionó y se encuentren bajo nuestro control y ámbito de decisión razonable, así como la forma y los medios bajo los cuales podrá ejercer sus derechos de acceso, rectificación, cancelación y
+            oposición (“Derechos ARCO”), en apego a las disposiciones aplicables, cumpliendo Paquetexpress con los principios de licitud, calidad, consentimiento, información, finalidad, lealtad, proporcionalidad y responsabilidad
+            que marca la Ley y el Reglamento.
+            El domicilio que Paquetexpress señala para todos los efectos aplicables al presente Aviso de Privacidad es el ubicado en Blvd. Rosendo G. Castro, Número 26 Poniente, Colonia Bienestar, Los Mochis, Sinaloa, México, C.P. 81280.
+            Hacemos de su conocimiento que los datos personales que recabamos serán utilizados únicamente para: (1) Cotizar los servicios; (2) Contratar los servicios; (3) Llevar a cabo el alta del Cliente y el destinatario en el sistema
+            de Paquetexpress, así como integrar su expediente; (4) Llevar a cabo los cobros correspondientes por los servicios; (5) Elaborar y/o modificar contratos, convenios, acuerdos comerciales y/o cualquier otro documento en el que
+            se prevea el tratamiento de sus Datos Personales; y (6) Contactarlo de manera personal, vía telefónica o a través del correo electrónico para fines mercadológicos, publicitarios o de prospección comercial. En caso de no estar
+            de acuerdo con las finalidades antes mencionadas y/o que necesite ejercer sus Derechos ARCO, deberá hacérnoslo saber vía correo electrónico a nuestra Oficina de Datos Personales, a la siguiente cuenta de correo electrónico: 
+            solicitud.arco@paquetexpress.com.mx. Para más información respecto del Aviso de Privacidad favor de acudir a cualquiera de nuestras sucursales o visite el sitio web https://www.paquetexpress.com.mx/aviso-de-privacidad</p>
+        
+           <p> DÉCIMA. - El Cliente reconoce que ninguna de las estipulaciones del presente acuerdo, se entenderán como modificatorias a los términos, plazos, condiciones y responsabilidades especificados en la Solicitud de Servicios con que opera
+            Paquetexpress, mismas que conoce y ha aceptado, por lo que dichas condiciones prevalecerán sobre cualquier estipulación contenida en este instrumento.</p>
+        </div>
+        </div>
+        </apex:outputPanel>
+        
+    </html>
+</apex:page>
