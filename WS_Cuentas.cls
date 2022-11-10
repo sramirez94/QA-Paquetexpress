@@ -127,7 +127,7 @@ global with sharing class WS_Cuentas {
             acc.documentador_in_house__c            =   cuenta.documentadorInHouse == true ? cuenta.documentadorInHouse : false;
             acc.Cuenta_con_un_agente_corporativo__c =   cuenta.agenteCorporativo == true ? cuenta.agenteCorporativo : false;
             // DATOS FISCALES
-            acc.RFC__c                              = cuenta.rfc;
+            acc.RFC__c                              = cuenta.taxDataTaxId;
             acc.Tipo_direccion__c                   = cuenta.tipoDeDireccion;
             acc.Piso_Facturacion__c                 = cuenta.pisoFacturacion;
             List<Sucursal__c> plazaFacturacion      = [SELECT id, Id_SIpWeb__c FROM Sucursal__c WHERE Name =:cuenta.plazaFacturacion];
@@ -142,7 +142,7 @@ global with sharing class WS_Cuentas {
             //Obtiene el uso de CFDI en base a la clave recibida en el request
 			entries = Account.Uso_de_cfdi_CCP__c.getDescribe().getPickListValues();
             for(Schema.PicklistEntry p : entries){
-                if(p.getLabel().contains(cuenta.usoCfdiId)){
+                if(p.getLabel().contains(cuenta.taxDataUsoCFDI)){
                     acc.Uso_de_cfdi_CCP__c = p.getLabel();
                     System.debug('Uso cfdi: ' + p.getLabel());
                     break;
@@ -151,7 +151,7 @@ global with sharing class WS_Cuentas {
             //Obtiene el régimen fiscal en base a la clave recibida en el request
             entries  = Account.Regimen_fiscal_CCP__c.getDescribe().getPickListValues();
             for(Schema.PicklistEntry p : entries){
-                if(p.getLabel().contains(cuenta.regimFiscalId)){
+                if(p.getLabel().contains(cuenta.taxDataRegmFisc)){
                     acc.Regimen_fiscal_CCP__c = p.getLabel();
                     System.debug('Regimen: ' + p.getLabel());
                     break;
@@ -173,7 +173,8 @@ global with sharing class WS_Cuentas {
                 //29/07/2022 SRL: Datos fiscales generales
                 acc.BillingStreet = cuenta.taxDataStreet;
                 acc.NumeroInterior__c = cuenta.taxDataNoInt;
-                acc.Numero_de_facturacion__c = cuenta.taxDataNoExt == null?null:Decimal.valueOf(cuenta.taxDataNoExt);
+                //acc.Numero_de_facturacion__c = (cuenta.taxDataNoExt == null || !cuenta.taxDataNoExt.IsNumeric())?null:Decimal.valueOf(cuenta.taxDataNoExt);
+                acc.Numero_de_facturacion__c = cuenta.taxDataNoExt;
                 acc.BillingPostalCode = cuenta.taxDataZipCode;
                 acc.DatosFiscalesObtenidosDeSipWeb__c =  cuenta.taxDataValidFlag == 'N'?false:true;
                 acc.BillingCountry = cuenta.taxDataCountry;
@@ -243,6 +244,7 @@ global with sharing class WS_Cuentas {
                     acc.RecordTypeId = [SELECT Id FROM RecordType WHERE DeveloperName = 'Persona_moral'].Id;
                 }
             }
+            acc.Actualizado_desde_API__c = true; //sramirez: Se agrega campo flag para que el trigger detecte cuando una cuenta está siendo actualizada desde el API y no entre a las validaciones de datos fiscales.
             AccountList.add(acc);
             Database.UpsertResult [] ticketsResultUpsert =  database.upsert(AccountList, Account.Fields.Id_SIpWeb__c, false);
             for (Database.UpsertResult ur : ticketsResultUpsert){
