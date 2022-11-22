@@ -820,11 +820,43 @@
                 <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
                         Servicios opcionales no incluidos:
                         <ul>
-                            <li>Recolección a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.</li>
-                            <li>Entrega a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.</li>
-                            <li>Entrega en Zona plus $241.01 más IVA por paquete.</li>
-                            <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                            <li>Acuse $74.87 más IVA.</li>
+                            <li>Recolección a domicilio 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['RADMacro']}"/>
+                                </apex:outputText> en ciudades macro, 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['RADMacroG']}"/>
+                                </apex:outputText> en ciudades grandes y 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['RADMacroCHM']}"/>
+                                </apex:outputText> en ciudades chicas y medianas.
+                            </li>
+                            <li>Entrega a domicilio 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['EADMacro']}"/>
+                                </apex:outputText> en ciudades macro, 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['EADMacroG']}"/>
+                                </apex:outputText> en ciudades grandes y 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['EADMacroCHM']}"/>
+                                </apex:outputText>en ciudades chicas y medianas.
+                            </li>
+                            <li>Entrega en Zona plus 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['AEZP']}"/>
+                                </apex:outputText> más IVA por paquete.
+                            </li>
+                            <li>Seguro 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                </apex:outputText> más IVA por cada $1,000.00 de valor declarado.
+                            </li>
+                            <li>Acuse 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapACK['XT']}"/>
+                                </apex:outputText> más IVA.
+                            </li>
                         </ul>
                     </apex:outputText>
                 </li>
@@ -884,6 +916,7 @@
                     </apex:outputPanel>
                 </apex:repeat>
             </div>
+
             <apex:outputPanel rendered="{!ServicioExpress && NOT(ServicioEstandar)}">
                 <div style="width: 350px; height:300px; position:absolute; top: 3150px; left: 900px; text-align: left">
                     <ul>
@@ -910,11 +943,18 @@
                                 Servicios opcionales no incluidos:
                                 <ul>
                                     <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                                        <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
+                                        <li> Seguro
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                            </apex:outputText> más IVA por cada $1,000.00 de valor declarado.
                                         </li>
                                     </apex:outputText>
                                     <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
-                                        <li>Acuse $74.87 más IVA</li>
+                                        <li>Acuse 
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapACK['XT']}"/>
+                                            </apex:outputText> más IVA
+                                        </li>
                                     </apex:outputText>
                                 </ul>
                             </apex:outputText>
@@ -924,8 +964,15 @@
                     <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
                             Servicios opcionales no incluidos:
                             <ul>
-                                <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                                <li>Acuse $74.87 más IVA.</li>
+                                <li>Seguro
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                    </apex:outputText> más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse 
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        $<apex:param value="{!wp.mapACK['XT']}"/>
+                                    </apex:outputText> más IVA.
+                                </li>
                             </ul>
                         </apex:outputText>
                     </li>
@@ -957,11 +1004,17 @@
                                 Servicios opcionales no incluidos:
                                 <ul>
                                     <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                                        <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
+                                        <li> Seguro 
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                            </apex:outputText>más IVA por cada $1,000.00 de valor declarado.
                                         </li>
                                     </apex:outputText>
                                     <apex:outputText rendered="{!IF(CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse Empresa')=false && CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse Interno')=false && CONTAINS(wp.objQuote.Servicios_adicionales__c,'Acuse XT')=false,true,false)}">
-                                        <li>Acuse $74.87 más IVA.
+                                        <li>Acuse 
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapACK['XT']}"/>
+                                            </apex:outputText> más IVA.
                                         </li>
                                     </apex:outputText>
                                 </ul>
@@ -972,8 +1025,14 @@
                     <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
                             Servicios opcionales no incluidos:
                             <ul>
-                                <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                                <li>Acuse $74.87 más IVA.</li>
+                                <li>Seguro 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                </apex:outputText> más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapACK['XT']}"/>
+                                </apex:outputText> más IVA.</li>
                             </ul>
                         </apex:outputText>
                     </li>
@@ -1095,11 +1154,17 @@
                                 Servicios opcionales no incluidos:
                                 <ul>
                                     <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                                        <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
+                                        <li> Seguro 
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                            </apex:outputText>  más IVA por cada $1,000.00 de valor declarado.
                                         </li>
                                     </apex:outputText>
                                     <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
-                                        <li>Acuse $74.87 más IVA</li>
+                                        <li>Acuse 
+                                        <apex:outputText value="{0, number, ###,###,##0.00}">
+                                            $<apex:param value="{!wp.mapACK['XT']}"/>
+                                        </apex:outputText> más IVA</li>
                                     </apex:outputText>
                                 </ul>
                             </apex:outputText>
@@ -1109,8 +1174,14 @@
                     <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
                             Servicios opcionales no incluidos:
                             <ul>
-                                <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                                <li>Acuse $74.87 más IVA.</li>
+                                <li>Seguro 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                </apex:outputText> más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapACK['XT']}"/>
+                                </apex:outputText> más IVA.</li>
                             </ul>
                         </apex:outputText>
                     </li>
@@ -1143,11 +1214,18 @@
                                 Servicios opcionales no incluidos:
                                 <ul>
                                     <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                                        <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
+                                        <li> Seguro 
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                            </apex:outputText> más IVA por cada $1,000.00 de valor declarado.
                                         </li>
                                     </apex:outputText>
                                     <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
-                                        <li>Acuse $74.87 más IVA</li>
+                                        <li>Acuse 
+                                            <apex:outputText value="{0, number, ###,###,##0.00}">
+                                                $<apex:param value="{!wp.mapACK['XT']}"/>
+                                            </apex:outputText> más IVA
+                                        </li>
                                     </apex:outputText>
                                 </ul>
                             </apex:outputText>
@@ -1157,8 +1235,15 @@
                     <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
                             Servicios opcionales no incluidos:
                             <ul>
-                                <li>Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.</li>
-                                <li>Acuse $74.87 más IVA.</li>
+                                <li>Seguro 
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                    </apex:outputText> más IVA por cada $1,000.00 de valor declarado.</li>
+                                <li>Acuse 
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        $<apex:param value="{!wp.mapACK['XT']}"/>
+                                    </apex:outputText> más IVA.
+                                </li>
                             </ul>
                         </apex:outputText>
                     </li>
@@ -1327,23 +1412,50 @@
                     SERVICIOS OPCIONALES NO INCLUIDOS:
                     <ul>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false}">
-                            <li>Recolección a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.
+                            <li>Recolección a domicilio 
+                                <apex:outputText value="{0, number, ###, ###, ##0.00}">
+                                    $<apex:param value="{!wp.mapCS['RADMacro']}"/>
+                                </apex:outputText> en ciudades macro,
+                                <apex:outputText value="{0, number, ###, ###, ##0.00}">
+                                    $<apex:param value="{!wp.mapCS['RADMacroG']}" />
+                                </apex:outputText> en ciudades grandes y 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['RADMacroCHM']}"/>
+                                </apex:outputText> en ciudades chicas y medianas.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false}">
-                            <li>Entrega a domicilio $113.13 en ciudades macro, $91.27 en ciudades grandes y $73.78 en ciudades chicas y medianas.
+                            <li>Entrega a domicilio 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['EADMacro']}"/>
+                                </apex:outputText> en ciudades macro, 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['EADMacroG']}"/>
+                                </apex:outputText> en ciudades grandes y 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['EADMacroCHM']}"/>
+                                </apex:outputText>en ciudades chicas y medianas.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false}">
-                            <li>Entrega en Zona plus $241.01 más IVA por paquete.
+                            <li>Entrega en Zona plus 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['AEZP']}"/>
+                                </apex:outputText> más IVA por paquete.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
-                            <li> Seguro $12.00 más IVA por cada $1,000.00 de valor declarado.
+                            <li>Seguro 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapCS['SEG']}"/>
+                                </apex:outputText> más IVA por cada $1,000.00 de valor declarado.
                             </li>
                         </apex:outputText>
                         <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
-                            <li>Acuse $74.87 más IVA.
+                            <li>Acuse 
+                                <apex:outputText value="{0, number, ###,###,##0.00}">
+                                    $<apex:param value="{!wp.mapACK['XT']}"/>
+                                </apex:outputText> más IVA.
                             </li>
                         </apex:outputText>
                     </ul>
