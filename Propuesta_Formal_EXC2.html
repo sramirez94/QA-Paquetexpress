@@ -1,0 +1,313 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 03-09-2022
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+-->
+<apex:page standardController="SBQQ__Quote__c" extensions="PAQ_COTResumenCotizacionEXC_CTR" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false"> 
+    <html> 
+        <head> 
+             
+            <style type="text/css"> 
+                @page { size: Legal landscape; margin: 10mm; 
+                @top-center { content: " "; font-family: sans-serif; font-size: 90pt;} 
+                @bottom-center { content: "Page " counter(page) " of " counter(pages); } }
+                <!--table,td,th {border:0.5px solid black;}-->
+                
+                .page-break { display:block; page-break-after:always; } 
+                
+                .objetivo {
+                font-family: sans-serif; font-size: 15pt; color: white;
+                background-image: url({!$Resource.Diapositiva2});
+                background-repeat: no-repeat;
+                background-position: right;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .cotizacion {
+                font-family: sans-serif; font-size: 15pt; color: black;
+                background: url({!$Resource.Diapositiva5}) no-repeat;
+                background-position:top center;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .tarifa {
+                font-family: sans-serif; font-size: 12pt; color: black; text-align:center;
+                background: url({!$Resource.Diapositiva5_2}) no-repeat;
+                background-position:top center;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .consideraciones {
+                font-family: sans-serif; font-size: 15pt; color: black; line-height: 30px;
+                background: url({!$Resource.Diapositiva6}) no-repeat;
+                background-position: top center;
+                background-size:contain;
+                display:block; 
+                page-break-after:always;}
+                
+                .gracias {
+                font-family: sans-serif; font-size: 15pt; color: black;
+                background: url({!$Resource.Diapositiva7}) no-repeat;
+                background-position:top center;
+                background-size:contain;}
+               
+            </style> 
+        </head> 
+        <body> 
+            
+            <div class="page-break">
+               <img src="{!URLFOR($Resource.Diapositiva1)}" width="100%" height="auto"/>
+            </div> 
+            
+            <div class="objetivo">
+                <div align="justify" style="width:500px; height:700px; position:relative; top:350px; left: 650px">
+                    Establish a commercial partnership between {!SBQQ__Quote__c.SBQQ__Account__r.Name}
+                	and PAQUETEXPRESS® offering  the portfolio of services
+                    with comprehensive logistics solutions, guaranteeing the 
+                    fulfillment of your delivery promise expectations,
+                    with closeness and mutual help. 
+                    </div>
+            </div> 
+            
+            <div class="page-break">
+               <img src="{!URLFOR($Resource.Slide3)}" width="100%" height="auto"/>
+            </div>  
+            <div class="page-break">
+               <img src="{!URLFOR($Resource.Slide4)}" width="100%" height="auto"/>
+            </div> 
+      		<!-- COSTO BASE MÁS EXCEDENTE -->
+            
+            <apex:outputPanel >
+            <div class="tarifa">
+                <div style= "width: 850px; height:700px; position:relative; top: 145px">
+                    <br />
+                    <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                		<tr style="height: 2px"></tr>
+                			<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;"></td>
+                				<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                    				<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">
+                                        <apex:outputText value="{!substitute(nameBlock, 'BLOQUE', 'BLOCK')}" escape="false" />
+                                        </td>
+                				</apex:repeat>
+                			<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">SURPLUS</td>
+                        	<apex:outputText rendered="{!T7ZP}">
+                        		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">EXTENDED AREA T7</td>
+                        	</apex:outputText>
+                		<tr>
+                    		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">WEIGHT Kg</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">{!mapBlocks[nameBlock].decWeight}</td>
+                    			</apex:repeat>
+                    		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">1.000</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">
+                                <apex:outputText value="{0, number, ###,###,##0.00}" rendered="true">
+                                        <apex:param value="{!elPeso}" />
+                                    </apex:outputText>
+                                </td>
+                        	</apex:outputText>
+                		</tr>
+                		<tr>
+                    		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">VOLUME m3</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">{!mapBlocks[nameBlock].decVol}</td>
+                    			</apex:repeat>
+                    		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">0.005</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">---</td>
+                        	</apex:outputText>
+                		</tr>
+                		<tr>
+                            <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">WEIGHT Kg/V</td>
+                    			<apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        			<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">{!mapBlocks[nameBlock].decVolWeight}</td>
+                    			</apex:repeat>
+                    		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">1.000</td>
+                            <apex:outputText rendered="{!T7ZP}">
+                        		<td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">
+                                    <apex:outputText value="{0, number, ###,###,##0.000}" rendered="true">
+                                        <apex:param value="{!elVol}" />
+                                    </apex:outputText></td>
+                        	</apex:outputText>
+                		</tr>
+            		</table>
+                    <br /><br />
+                <table align="center" style="border-collapse: collapse;" border="solid 0.5px">
+                 <tr>
+                	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">KILOMETERS</td>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 35px 0px 35px; background-color:rgb(31, 73, 125); color: white;">
+                        <apex:outputText value="{!substitute(nameBlock, 'BLOQUE', 'BLOCK')}" escape="false" /></td>
+                    </apex:repeat>
+                	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">ADITIONAL Kg</td>
+                    <apex:outputText rendered="{!blnACK}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">ACKNOWLEDGEMENT OF RECEIPT</td>
+                	</apex:outputText>
+                	<apex:outputText rendered="{!blnZP}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">EXTENDED AREA COVERAGE</td>
+                	</apex:outputText>
+                    <apex:outputText rendered="{!T7ZP}">
+                    	<td colspan="30" rowspan ="2" align="Center" style="font-size:12px; padding:0px 10px 0px 10px; background-color:rgb(31, 73, 125); color: white;">EXTENDED AREA T7</td>
+                	</apex:outputText>
+                </tr>
+                <tr>
+                    <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 5px 0px 5px; background-color:rgb(31, 73, 125); color: white;">PROPOSED RATE</td>
+                    </apex:repeat>
+                </tr>
+                <apex:repeat value="{!listRangeDestiny}" var="strRange">
+                    <tr>
+                        <td colspan="30" align="left" style="font-size:12px; padding:0px 5px 0px 5px;">{!strRange}</td>
+                        <apex:repeat value="{!mapBlocks}" var="nameBlock">
+                            <td colspan="30" align="Center" style="font-size:12px; padding:0px 5px 0px 5px;">
+                                <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                    <apex:param value="{!mapBlocks[nameBlock].mapRanges[strRange]}" />
+                                </apex:outputText>
+                            </td>
+                        </apex:repeat>
+                        <td colspan="30" align="Center" style="font-size:12px; padding:0px 5px 0px 5px;">
+                            <apex:outputText value="{0, number, $ ###,###,##0.00}">
+                                <apex:param value="{!mapService['ADD'].mapRanges[strRange]}" />
+                            </apex:outputText>
+                        </td>
+                        <apex:outputText rendered="{!blnACK}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 5px 0px 5px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnACK}">
+                                        <apex:param value="{!mapService['ACK'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                            <apex:outputText rendered="{!blnZP}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 5px 0px 5px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!blnZP}">
+                                        <apex:param value="{!mapService['ZP'].mapRanges[strRange]}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                        	<apex:outputText rendered="{!T7ZP}">
+                                <td colspan="30" align="Center" style="font-size:12px; padding:0px 5px 0px 5px;">
+                                    <apex:outputText value="{0, number, $ ###,###,##0.00}" rendered="{!T7ZP}">
+                                        <apex:param value="{!mapPropuestaT7ZP[strRange].SBQQ__SpecialPrice__c}" />
+                                    </apex:outputText>
+                                </td>
+                            </apex:outputText>
+                    </tr>
+                </apex:repeat>
+            </table>
+            
+            	</div>
+                </div>
+            </apex:outputPanel>
+            
+            <div style="width: 350px; height:400px; position:absolute; top: 3150px; left: 900px; text-align: left; font-family: sans-serif">
+                    <ul>
+                        <apex:outputText rendered="{!IF(wp.objQuote.Tipo_de_documentacion__c='Documentación Remota','true','false')}">
+                      	<li>Agreement: Online documentation</li>   
+                    	</apex:outputText>
+                        <apex:outputText rendered="{!IF(wp.objQuote.Tipo_de_documentacion__c='Guías prepagadas','true','false')}">
+                      	<li>Agreement: Prepaid letter</li>   
+                    	</apex:outputText>
+                        <li>Promise to delivery:<ul>
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.PAQ_TipoServicio__c,'Estándar terrestre (STD)')=true}">
+                      	<li>Standard</li>   
+                    	</apex:outputText>
+                        <apex:outputText rendered="{!CONTAINS(wp.objQuote.PAQ_TipoServicio__c,'Servicio Express Garantizado (SEG)')=true}">
+                      	<li>Express</li>   
+                    	</apex:outputText>
+                        </ul></li>
+                        <li>Destination place: National coverage</li>
+                        <li> <apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c != null}">
+                            	Included services:
+                            </apex:outputText>
+                    <ul>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=true}">
+                      <li>Home Pickup</li>   
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=true}">
+                      <li>Home Delivery</li>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!blnZP}">
+                      <li>Extended Area Coverage</li>   
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=true}">
+                      <li>Insurance</li>   
+                    </apex:outputText>
+                    <apex:outputText rendered="{!wp.objQuote.Acuse__c != null}">
+                      <li>Acknowledgment of receipt</li>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!T7ZP}">
+                      <li>Extended area coverage for pallets</li>
+                    </apex:outputText>
+                    </ul>
+                    </li>
+                        <li>Costs before tax.</li>
+                        <li>Costs are charged per package.</li>
+                        <li>Effective December 31, {!YEAR(TODAY())}.</li>
+                        <li>Unlisted services will be sharged at the Counter Rates, without discounts.</li>
+                        <li><apex:outputText rendered="{!IF(wp.objQuote.Servicios_adicionales__c != null && (CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false || CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false || wp.objQuote.Acuse__c == null),true,false)}">
+                            Optional Services not Included: 
+                    <ul>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'RAD')=false}">
+                      <li>Home Pickup $103.50 in macro cities, $83.50 in big cities and $74.87 in small cities.
+                      </li>   
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD')=false}">
+                      <li>Home Delivery $103.50 in macro cities, $83.50 in big cities and $74.87 in small cities.
+                      </li>
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'EAD Zona plus')=false}">
+                      <li>Home Delivery in Extended Area $241.01 plus VAT for each package (Only available up to T6).
+                      </li>   
+                    </apex:outputText>
+                    <apex:outputText rendered="{!CONTAINS(wp.objQuote.Servicios_adicionales__c,'Seguro')=false}">
+                      <li>Insurance $12.00 MXN plus VAT for every $1,000 of declared value.
+                      </li>   
+                    </apex:outputText>
+                    <apex:outputText rendered="{!wp.objQuote.Acuse__c == null}">
+                    <li>Acknowledgment of receipt $74.87 MXN plus VAT.
+                    </li>
+                    </apex:outputText>            
+                    </ul>
+                    </apex:outputText>
+                    </li>
+                    </ul>
+                    
+                    <li><apex:outputText rendered="{!wp.objQuote.Servicios_adicionales__c == null}">
+                            Optional services not included:
+                        <ul>
+                            <li>Home Pickup $103.50 in macro cities, $83.50 in big cities and $74.87 in small cities.</li>
+                            <li>Home Delivery $103.50 in macro cities, $83.50 in big cities and $74.87 in small cities.</li>
+                        	<li>Home Delivery in Extended Area $241.01 plus VAT for each package.</li> 
+                            <li>Insurance $12.00 MXN plus VAT for every $1,000 of declared value.</li>
+                            <li>Acknowledgment of receipt $74.87 MXN plus VAT.</li> 
+                        </ul>
+                        </apex:outputText>
+                    </li>
+                </div>
+             
+            <!-- CONSIDERACIONES ESPECIALES -->
+            
+            <apex:outputPanel rendered="{!IF(ISBLANK(wp.objOpp.Consideraciones_especiales__c)=false,true,false)}">
+            <div class="consideraciones">
+                <div align="justify" style="width: 650px; height: 700px; position:relative; top: 150px; left:550px">
+                	<apex:outputField value="{!wp.objOpp.Consideraciones_especiales__c}" />
+                </div>
+            </div> 
+            </apex:outputPanel>  
+               
+            <div class="gracias">
+                <div style= "width: 300px; height:720px; position:relative; left: 675px; text-align:center">
+                    <br/><br/><br/><br/><br/><br/><br/>
+                    <br/><br/><br/><br/><br/><br/><br/>
+                    <br/><br/><br/><br/><br/><br/>  
+                    {! $User.FirstName & ' ' & $User.LastName }
+                </div>    
+            </div> 
+        </body> 
+    </html> 
+</apex:page>
