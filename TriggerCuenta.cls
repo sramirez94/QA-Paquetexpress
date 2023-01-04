@@ -466,14 +466,11 @@ public class TriggerCuenta {
                     ac.RazonSocial__c != oldAcc.RazonSocial__c ||
                     ac.RegimenCapital__c != oldAcc.RegimenCapital__c) ||
                     ac.Colonia_Facturaci_n__c != oldAcc.Colonia_Facturaci_n__c ||
-                    ac.Zona_facturacion__c != oldAcc.Zona_facturacion__c ||
                     ac.Regimen_fiscal_CCP__c != oldAcc.Regimen_fiscal_CCP__c ||
                     ac.Uso_de_cfdi_CCP__c != oldAcc.Uso_de_cfdi_CCP__c ||
-                    ac.Email_de_factura__c != oldAcc.Email_de_factura__c ||
                     ac.Numero_de_facturacion__c != oldAcc.Numero_de_facturacion__c ||
                     ac.NumeroInterior__c != oldAcc.NumeroInterior__c ||
                     ac.Tipo_direccion__c != oldAcc.Tipo_direccion__c ||
-                    ac.Piso_facturacion__c != oldAcc .Piso_facturacion__c ||
                     ac.Municipio_Delegaci_n_Sector_facturacion__c != oldAcc.Municipio_Delegaci_n_Sector_facturacion__c ||
                     ac.Nombres__c != oldAcc.Nombres__c ||
                     ac.ApellidoPaterno__c != oldAcc.ApellidoPaterno__c ||
@@ -482,7 +479,7 @@ public class TriggerCuenta {
                 {
                     System.debug('Marca: ' + ac.Cuenta_originada_de_prospecto__c + '. Tipo de persona: ' + strTipoRegistro);
                     if(!ac.DatosFiscalesObtenidosDeSipWeb__c){
-                        if(!test.isRunningTest() && !System.isBatch() && !System.isFuture() && !ac.Cuenta_originada_de_prospecto__c){
+                        if(!test.isRunningTest() && !System.isBatch() && !System.isFuture() && !ac.Cuenta_originada_de_prospecto__c && !ac.Actualizado_desde_API__c){
                             M  = '';
                             //M = PAQ_FuncionesGenericas.ValidaDatosFiscales(ac); //Función que validará si los datos fiscales cambiaron
                             if(M != ''){
@@ -491,9 +488,9 @@ public class TriggerCuenta {
                             PAQ_WSDatosFiscales.CallWS_DatosFiscales(ac.RFC__c); //Método que llamará el servicio web para obtener los datos fiscales de sipweb
                         }
                     } else {
-                        if(blnUpdate && ac.DatosFiscalesObtenidosDeSipWeb__c == oldAcc.DatosFiscalesObtenidosDeSipWeb__c && ac.DatosFiscalesObtenidosDeSipWeb__c && !System.isBatch() && !System.isFuture()){
+                        if(blnUpdate && ac.DatosFiscalesObtenidosDeSipWeb__c == oldAcc.DatosFiscalesObtenidosDeSipWeb__c && ac.DatosFiscalesObtenidosDeSipWeb__c && !System.isBatch() && !System.isFuture() && !ac.Actualizado_desde_API__c){
                             //Si se está actualizando y no ha cambiado el flag de los datos fiscales obtenidos de sipweb y este se encuentra en true y no se está ejecutando un batch (PAQ_BatchActualizaDatosFiscales) o por un método futuro (PAQ_WSDatosFiscales.CallWS_DatosFiscales)
-                            ac.addError('Error actualizando datos fiscales de la cuenta. No es posible alterarlos cuando ya han sido sincronizados con SipWeb.');
+                            //ac.addError('Error actualizando datos fiscales de la cuenta. No es posible alterarlos cuando ya han sido sincronizados con SipWeb.');
                         }
                     }
                     if (ac.Cuenta_originada_de_prospecto__c) {
@@ -515,6 +512,9 @@ public class TriggerCuenta {
                         ac.Uso_de_cfdi_CCP__c = 'S01 Sin efectos fiscales.';
                         ac.BillingPostalCode = '00000';
                         ac.Cuenta_originada_de_prospecto__c = false;
+                    }
+                    if (ac.Actualizado_desde_API__c) {
+                        ac.Actualizado_desde_API__c = false;
                     }
                 }
             }
