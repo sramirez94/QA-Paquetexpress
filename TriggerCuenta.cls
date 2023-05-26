@@ -7,6 +7,7 @@ public class TriggerCuenta {
     public Static Boolean blnRFCValido;
 	public static void genera_Gerente_KAM(List<Account> accList){
         Set<Id> sucursalesId = new Set<Id>();
+        String nameUser, nameUserFilter;
 		List<Estructura__c> estructurasList = new List<Estructura__c>();
         List<Estructura__c> estructuraUser = new List<Estructura__c>();
         List<User> PlazaUser = new List<User>();
@@ -14,25 +15,76 @@ public class TriggerCuenta {
         for(Account acc: accList){
             if(acc.Sucursal__c != null){
                 sucursalesId.add(acc.Sucursal__c);
+                System.debug('Sucursallll '+acc.Sucursal__c);
             }
         }
         if(sucursalesId.size()>0){
-            estructurasList = [SELECT Id, Sucursal__c, Gerente_Sucursal__c, KAM_regional__c, Gerente_desarrollo_de_negocios__c FROM Estructura__c WHERE Sucursal__c IN: sucursalesId];
+            nameUser = UserInfo.getName();//Nombre usuario referencia para asignacion  de KAM_Regional__c
+            nameUserFilter = nameUser.replace(' ','_');
+
+            estructurasList = [SELECT Id, Sucursal__c,Sucursal__r.Name, Gerente_Sucursal__c, KAM_regional__c, Gerente_desarrollo_de_negocios__c FROM Estructura__c WHERE Sucursal__c IN: sucursalesId];
             if(estructurasList.size()>0){
+                Map<Id, Estructura__c> idSucursalWEstructura=  new Map<Id, Estructura__c>();
+                for(estructura__c est: estructurasList){
+                    idSucursalWEstructura.put(est.Sucursal__c, est);
+                }
+
+                //Sucursales evaluación previa Division norte
+                String SucAsesores = System.Label.SucursalesAsesores;
+                String [] ArraySucAsesores = SucAsesores.split(';');
+                Boolean enrutadoKAM_Norte = false;
+                String kamNorte='';
+
+                //Sucursales caso 8209 Configuracion MEX01
+                String sucursalesEnr = Label.SucursalesEnrutador;
+                String [] idsSucursales = sucursalesEnr.split(';');
+                Boolean enrutadoKAM = false;
+                String kam='';
             	for(Account acc: accList){
-                    for(estructura__c est: estructurasList){
-                        if(acc.Sucursal__c == est.Sucursal__c){
-                            acc.Gerente_de_sucursal__c = est.Gerente_Sucursal__c;
-                            acc.KAM_Regional__c = est.KAM_regional__c;
-                            acc.Gerente_de_Desarrollo_de_Negocios__c = est.Gerente_desarrollo_de_negocios__c;
+                    enrutadoKAM = false;
+                    System.debug('Previo a Evaluacion');
+                    System.debug('Sucursales '+idsSucursales + ' cuenta '+acc.Sucursal__c);
+
+                    if(ArraySucAsesores.contains(acc.Sucursal__c)){
+                        FW_Asesores_Division_Norte__mdt mcNorte = FW_Asesores_Division_Norte__mdt.getInstance(nameUserFilter);
+                        if(mcNorte!=null){     
+                            enrutadoKAM_Norte = true;  
+                            kamNorte = mcNorte.Id_Usuario__c;                                                                  
                         }
                     }
+
+                    System.debug('El nameFilter '+nameUserFilter);
+                    FW_Asesores__mdt mcMEXCentro = FW_Asesores__mdt.getInstance(nameUserFilter);
+                    if(mcMEXCentro!=null){
+                        enrutadoKAM = true;
+                        kam = mcMEXCentro.Id_Usuario__c;
+                    }
+                    //if(idsSucursales.contains(acc.Sucursal__c)){                        
+                    //}                    
+
+                    if(idSucursalWEstructura.containsKey(acc.Sucursal__c)){
+                        Estructura__c estLocal = idSucursalWEstructura.get(acc.Sucursal__c);
+                        acc.Gerente_de_sucursal__c = estLocal.Gerente_Sucursal__c;
+                        System.debug('EL KAM '+kam + 'kam localold '+estLocal.KAM_regional__c);
+                        if(enrutadoKAM){
+                            acc.KAM_Regional__c =  kam;                            
+                        }
+                        if(enrutadoKAM_Norte){
+                            acc.KAM_Regional__c =  kamNorte;
+                        }
+
+                        if(!enrutadoKAM && !enrutadoKAM_Norte){
+                            acc.KAM_Regional__c = estLocal.KAM_regional__c;
+                        }                        
+                        acc.Gerente_de_Desarrollo_de_Negocios__c = estLocal.Gerente_desarrollo_de_negocios__c;
+                    }                    
                 }
             }
         }
         //Asigna gerente, kam y gdn para el usuario que se quiere asignar
 		for(Account acc: accList){
             if(acc.Usuario_a_asignar__c != null){
+                System.debug('Usuario a asignar '+acc.Usuario_a_asignar__c);
 				PlazaUser = [SELECT Id, Plaza__c FROM User WHERE Id=: acc.Usuario_a_asignar__c];
                 System.debug('datos: ' + acc.Usuario_a_asignar__c);
                 if(PlazaUser.size() > 0){
@@ -41,7 +93,10 @@ public class TriggerCuenta {
             }
         }
         if(Plazas.size()>0){
-            estructuraUser = [SELECT Id, Gerente_Sucursal__c, KAM_regional__c, Gerente_desarrollo_de_negocios__c, Plaza_sucursal__c FROM Estructura__c WHERE Plaza_sucursal__c IN: Plazas];
+            nameUser = UserInfo.getName();//Nombre usuario referencia para asignacion  de KAM_Regional__c
+            nameUserFilter = nameUser.replace(' ','_');
+
+            estructuraUser = [SELECT Id, Gerente_Sucursal__c,Sucursal__c,Sucursal__r.Name, KAM_regional__c, Gerente_desarrollo_de_negocios__c, Plaza_sucursal__c FROM Estructura__c WHERE Plaza_sucursal__c IN: Plazas];
             System.debug('Plazas de estructuras encontradas: ' + estructuraUser.size());
             if(estructuraUser.size()>0){
                 for(Account acc: accList){
@@ -53,10 +108,39 @@ public class TriggerCuenta {
                     		acc.Gerente_de_Sucursal_User__c = est.Gerente_Sucursal__c;
                     		acc.KAM_Regional_User__c = est.KAM_regional__c;
                     		acc.GDN_User__c = est.Gerente_desarrollo_de_negocios__c;
+
+                            //Se verifica que el KAM corresponde a esa sucursal
+                            //Nueva forma con etiquetas
+                            String SucAsesores = System.Label.SucursalesAsesores;
+                            String [] ArraySucAsesores = SucAsesores.split(';');
+                            if(ArraySucAsesores.contains(Est.Sucursal__c)){
+                                FW_Asesores_Division_Norte__mdt mc = FW_Asesores_Division_Norte__mdt.getInstance(nameUserFilter);
+                                if(mc!=null){                                   
+                                    acc.KAM_regional__c = mc.Id_Usuario__c;
+                                }
+                            }
+
+                            //Sucursales caso 8209 Configuracion MEX01
+                            String sucursalesEnr = Label.SucursalesEnrutador;
+                            String [] idsSucursales = sucursalesEnr.split(';');
+
+                            System.debug('El nameFilter '+nameUserFilter);
+                            FW_Asesores__mdt mcMEXCentro = FW_Asesores__mdt.getInstance(nameUserFilter);
+                            if(mcMEXCentro!=null){
+                                acc.KAM_regional__c = mcMEXCentro.Id_Usuario__c;
+                            }
+                            //if(idsSucursales.contains(Est.Sucursal__c)){                        
+                            //}              
+
+
                         }
                     }
                 }
             }
+        }
+
+        for(Account acc: accList){
+            System.debug('Cuenta FINAL '+acc.KAM_Regional__c);
         }
     }
     public static void AsignacionEjecutivoNuevo (List<Account> accList, Map<Id, Account> accOldMap){
@@ -81,9 +165,11 @@ public class TriggerCuenta {
             System.debug('AccOld.Preasignar_Ejecutivo__c: ' + AccOld.Preasignar_Ejecutivo__c);
             System.debug('Usuario que detona el flujo: '+ UserInfo.getProfileId());
 
+            //Si el Propietario es el que ejecuta el trigger y es de perfil Ejecutivo de venta
             if(acc.OwnerId == UserInfo.getUserId() && UserInfo.getProfileId() == '00e2E0000016QlkQAE'){
                 acc.Usuario_a_asignar__c = acc.OwnerId;
             }
+
 
             if(acc.Preasignar_Ejecutivo__c != AccOld.Preasignar_Ejecutivo__c && acc.Preasignar_Ejecutivo__c == true ){
                 //system.debug('ENTRA  PREASIGNACION IF 47');
